@@ -7,6 +7,7 @@ import { Renderer } from "../../core/engine.js";
 import { SearchIndex } from "../../core/search.js";
 import { BUILTIN_STYLES } from "../../core/styles.js";
 import type { CiteRef, DocState } from "../../core/types.js";
+import type { SavedSearch } from "../../core/searchquery.js";
 import { type Collection, type Item, now } from "../../core/zotero.js";
 import * as store from "../store.js";
 import * as word from "../word.js";
@@ -16,6 +17,9 @@ export const S = {
   byKey: new Map<string, Item>(),
   index: new SearchIndex(),
   collections: [] as Collection[],
+  searches: [] as SavedSearch[],
+  /** Zotero-style colored tags: tag → color, in order (keys 1–9 in Zotero). */
+  tagColors: [] as { tag: string; color: string }[],
   doc: null as DocState | null,
   /** Citation being built or edited. */
   basket: [] as CiteRef[],
@@ -112,14 +116,20 @@ export function libraryChanged(): void {
 }
 
 export async function loadLibrary(): Promise<void> {
-  const [items, collections] = await Promise.all([store.loadItems(), store.loadCollections()]);
+  const [items, collections, searches, colors] = await Promise.all([store.loadItems(), store.loadCollections(), store.loadSearches(), store.getMeta<{ tag: string; color: string }[]>("tagColors")]);
   S.items = items;
   S.collections = collections;
+  S.searches = searches;
+  S.tagColors = colors ?? [];
   libraryChanged();
 }
 
-/** Adds or replaces items (and removes keys) in memory and storage. */
-export async function putItems(items: readonly Item[], remove: readonly string[] = []): Promise<void> {
+/**
+ * Adds or replaces items (and removes keys) in memory and storage. `local`:
+ * the user changed them here, so Zotero items get the mark for "Zotero'ya gönder".
+ */
+export async function putItems(items: readonly Item[], remove: readonly string[] = [], local = false): Promise<void> {
+  if (local) items = items.map((i) => (i.source.startsWith("zotero:") ? { ...i, dirty: true } : i));
   await store.write("items", items, remove);
   const map = new Map(S.items.map((i) => [i.key, i]));
   for (const k of remove) map.delete(k);
@@ -128,9 +138,14 @@ export async function putItems(items: readonly Item[], remove: readonly string[]
   libraryChanged();
 }
 
+/** A local change: new modification time, and Zotero items are marked for "Zotero'ya gönder". */
+export function touched(item: Item): Item {
+  return { ...item, dateModified: now(), ...(item.source.startsWith("zotero:") ? { dirty: true } : {}) };
+}
+
 export async function saveItem(item: Item): Promise<Item> {
-  const next = { ...item, dateModified: now() };
-  await putItems([next]);
+  const next = touched(item);
+  await putItems([next], [], true);
   return next;
 }
 
@@ -140,6 +155,21 @@ export async function putCollections(collections: readonly Collection[], remove:
   for (const k of remove) map.delete(k);
   for (const c of collections) map.set(c.key, c);
   S.collections = [...map.values()];
+  libraryChanged();
+}
+
+export async function putSearches(searches: readonly SavedSearch[], remove: readonly string[] = []): Promise<void> {
+  await store.write("searches", searches, remove);
+  const map = new Map(S.searches.map((x) => [x.key, x]));
+  for (const k of remove) map.delete(k);
+  for (const x of searches) map.set(x.key, x);
+  S.searches = [...map.values()];
+  libraryChanged();
+}
+
+export async function setTagColors(colors: { tag: string; color: string }[]): Promise<void> {
+  S.tagColors = colors;
+  await store.setMeta("tagColors", colors);
   libraryChanged();
 }
 

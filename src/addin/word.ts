@@ -266,3 +266,14 @@ export function onSelectionChanged(handler: () => void): void {
     /* older hosts: the pane still works with the Düzenle button */
   }
 }
+
+/** Writes plain text at the cursor (Zotero's "Add Note" puts a note into the document). */
+export async function insertPlainText(text: string): Promise<void> {
+  if (!text.trim()) return;
+  await Word.run(async (context) => {
+    const paras = text.split(/\n+/);
+    let range = context.document.getSelection().insertText(paras[0]!, "Replace");
+    for (const p of paras.slice(1)) range = range.insertParagraph(p, "After").getRange("End");
+    await context.sync();
+  });
+}

@@ -6,9 +6,10 @@ import { newCitationId, putCitation } from "../../core/docstate.js";
 import { LOCATOR_LABELS } from "../../core/engine.js";
 import { htmlToSegments } from "../../core/html.js";
 import type { CiteRef } from "../../core/types.js";
-import { type Item, containerOf, creatorLine, itemTypeLabel, titleOf, yearOf } from "../../core/zotero.js";
+import { type Item, containerOf, creatorLine, isNoteItem, itemTypeLabel, titleOf, yearOf } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { citedKeys, refresh } from "./document.js";
+import { parseQuick } from "../../core/search.js";
 import { $, S, doc, getRenderer, h, run, serial, setMessage, showView, work } from "./core.js";
 
 let results: Item[] = [];
@@ -19,7 +20,8 @@ const OWN_VOLUME = new Set(["journalArticle", "magazineArticle", "newspaperArtic
 
 export function search(): void {
   const q = $<HTMLInputElement>("q").value;
-  results = q.trim() ? S.index.search(q, 60).map((x) => x.item) : recent();
+  const words = parseQuick(q).words;
+  results = q.trim() ? S.index.search(words, 80).map((x) => x.item).filter((i) => !isNoteItem(i)).slice(0, 60) : recent();
   cursor = 0;
   renderResults();
 }
@@ -28,7 +30,7 @@ export function search(): void {
 function recent(): Item[] {
   const cited = [...citedKeys()].map((k) => S.byKey.get(k)).filter((x): x is Item => Boolean(x && !x.deleted));
   const seen = new Set(cited.map((c) => c.key));
-  const newest = [...S.items].filter((i) => !i.deleted && !seen.has(i.key)).sort((a, b) => b.dateAdded.localeCompare(a.dateAdded)).slice(0, 30);
+  const newest = [...S.items].filter((i) => !i.deleted && !isNoteItem(i) && !seen.has(i.key)).sort((a, b) => b.dateAdded.localeCompare(a.dateAdded)).slice(0, 30);
   return [...cited, ...newest].slice(0, 40);
 }
 
@@ -224,7 +226,17 @@ export function wireCite(): void {
     else if (e.key === "Enter") {
       e.preventDefault();
       const item = results[cursor];
-      if (item) addToBasket(item);
+      if (item) {
+        addToBasket(item);
+        const quick = parseQuick(q.value);
+        const ref = S.basket.find((b) => b.id === item.key);
+        if (ref && quick.locator) {
+          ref.locator = quick.locator;
+          if (quick.volume) ref.volume = quick.volume;
+          if (quick.label) ref.label = quick.label;
+          renderBasket();
+        }
+      }
       q.select();
     } else if (e.key === "Escape") {
       q.value = "";

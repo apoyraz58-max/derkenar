@@ -123,18 +123,24 @@ export function zoteroToItems(objects: readonly ZoteroObject[], library: string)
   const source = `zotero:${library}`;
   const items = new Map<string, Item>();
   const notes: ZoteroObject[] = [];
+  const attachments: ZoteroObject[] = [];
   for (const o of objects) {
     const type = o.data.itemType;
-    if (type === "attachment" || type === "annotation") continue;
+    if (type === "annotation") continue;
+    if (type === "attachment") {
+      if (o.data.parentItem) attachments.push(o);
+      continue;
+    }
     if (type === "note") {
       if (o.data.parentItem) notes.push(o);
       else {
-        // Standalone note: kept as a document so nothing is lost.
-        const item = emptyItem("document", source);
+        // Standalone note.
+        const item = emptyItem("note", source);
         item.key = o.key;
-        item.fields.title = (o.data.note ?? "").replace(/<[^>]+>/g, " ").trim().slice(0, 80) || "Not";
+        item.version = o.version;
         item.notes.push({ key: o.key, note: String(o.data.note ?? ""), dateModified: String(o.data.dateModified ?? now()) });
-        item.tags.push({ tag: "_bağımsız not", type: 1 });
+        item.tags = ((o.data.tags as { tag: string; type?: number }[] | undefined) ?? []).map((t) => ({ tag: t.tag, ...(t.type ? { type: t.type } : {}) }));
+        item.collections = (o.data.collections as string[] | undefined) ?? [];
         items.set(o.key, item);
       }
       continue;
@@ -144,6 +150,21 @@ export function zoteroToItems(objects: readonly ZoteroObject[], library: string)
   for (const n of notes) {
     const parent = items.get(n.data.parentItem!);
     if (parent) parent.notes.push({ key: n.key, note: String(n.data.note ?? ""), dateModified: String(n.data.dateModified ?? now()) });
+  }
+  // Linked URLs come along; Zotero's stored files stay in Zotero (their link is kept).
+  for (const a of attachments) {
+    const parent = items.get(a.data.parentItem!);
+    if (!parent) continue;
+    const url = String(a.data.url ?? "");
+    const mode = String(a.data.linkMode ?? "");
+    (parent.attachments ??= []).push({
+      key: a.key,
+      kind: "link",
+      title: String(a.data.title ?? (url || "Ek")),
+      url: url || (mode.startsWith("imported") ? `zotero://select/library/items/${a.key}` : undefined),
+      contentType: a.data.contentType ? String(a.data.contentType) : undefined,
+      dateAdded: String(a.data.dateAdded ?? now()),
+    });
   }
   return [...items.values()];
 }
@@ -214,11 +235,16 @@ export async function lookupDoi(doi: string, fetchFn: Fetch = fetch): Promise<It
   return fromCsl(csl, "doi");
 }
 
+/** ISBN: Open Library first, Google Books when Open Library does not know the book (common for Turkish books). */
 export async function lookupIsbn(isbn: string, fetchFn: Fetch = fetch): Promise<Item> {
-  const r = await fetchFn(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
-  if (!r.ok) throw new Error(`ISBN bulunamadı (${isbn}).`);
-  const data = ((await r.json()) as Record<string, OpenLibraryBook>)[`ISBN:${isbn}`];
-  if (!data) throw new Error(`ISBN bulunamadı (${isbn}).`);
+  let data: OpenLibraryBook | undefined;
+  try {
+    const r = await fetchFn(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+    if (r.ok) data = ((await r.json()) as Record<string, OpenLibraryBook>)[`ISBN:${isbn}`];
+  } catch {
+    /* try Google Books */
+  }
+  if (!data) return lookupGoogleBooks(isbn, fetchFn);
   const item = emptyItem("book", "isbn");
   item.fields.title = [data.title, data.subtitle].filter(Boolean).join(": ");
   item.creators = (data.authors ?? []).map((a) => ({ creatorType: "author", ...splitName(a.name) }));
@@ -229,6 +255,93 @@ export async function lookupIsbn(isbn: string, fetchFn: Fetch = fetch): Promise<
   if (data.number_of_pages) item.fields.numPages = String(data.number_of_pages);
   item.fields.ISBN = isbn;
   return item;
+}
+
+async function lookupGoogleBooks(isbn: string, fetchFn: Fetch): Promise<Item> {
+  const r = await fetchFn(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+  const v = r.ok ? ((await r.json()) as { items?: { volumeInfo: GoogleVolume }[] }).items?.[0]?.volumeInfo : undefined;
+  if (!v) throw new Error(`ISBN bulunamadı (${isbn}).`);
+  const item = emptyItem("book", "isbn");
+  item.fields.title = [v.title, v.subtitle].filter(Boolean).join(": ");
+  item.creators = (v.authors ?? []).map((a) => ({ creatorType: "author", ...splitName(a) }));
+  if (v.publisher) item.fields.publisher = v.publisher;
+  if (v.publishedDate) item.fields.date = v.publishedDate.slice(0, 4);
+  if (v.pageCount) item.fields.numPages = String(v.pageCount);
+  if (v.language) item.fields.language = v.language;
+  item.fields.ISBN = isbn;
+  return item;
+}
+
+interface GoogleVolume {
+  title?: string;
+  subtitle?: string;
+  authors?: string[];
+  publisher?: string;
+  publishedDate?: string;
+  pageCount?: number;
+  language?: string;
+}
+
+/** PubMed id → item (NCBI E-utilities). */
+export async function lookupPmid(pmid: string, fetchFn: Fetch = fetch): Promise<Item> {
+  const r = await fetchFn(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmid}`);
+  const d = r.ok ? ((await r.json()) as { result?: Record<string, PubmedSummary> }).result?.[pmid] : undefined;
+  if (!d || !d.title) throw new Error(`PMID bulunamadı (${pmid}).`);
+  const item = emptyItem("journalArticle", "pmid");
+  item.fields.title = d.title.replace(/\.$/, "");
+  item.creators = (d.authors ?? []).filter((a) => a.authtype === "Author").map((a) => {
+    const [last, ...ini] = a.name.split(" ");
+    return { creatorType: "author", lastName: last!, firstName: ini.join(" ") };
+  });
+  item.fields.publicationTitle = d.fulljournalname ?? d.source ?? "";
+  if (d.volume) item.fields.volume = d.volume;
+  if (d.issue) item.fields.issue = d.issue;
+  if (d.pages) item.fields.pages = d.pages;
+  if (d.pubdate) item.fields.date = d.pubdate.slice(0, 4);
+  const doi = d.articleids?.find((x) => x.idtype === "doi")?.value;
+  if (doi) item.fields.DOI = doi;
+  item.fields.extra = `PMID: ${pmid}`;
+  return item;
+}
+
+interface PubmedSummary {
+  title?: string;
+  authors?: { name: string; authtype: string }[];
+  fulljournalname?: string;
+  source?: string;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  pubdate?: string;
+  articleids?: { idtype: string; value: string }[];
+}
+
+/** arXiv id ("2101.01234", "arXiv:hep-th/9901001") → preprint. */
+export async function lookupArxiv(id: string, fetchFn: Fetch = fetch): Promise<Item> {
+  const r = await fetchFn(`https://export.arxiv.org/api/query?id_list=${encodeURIComponent(id)}`);
+  const xml = r.ok ? await r.text() : "";
+  const entry = /<entry>([\s\S]*?)<\/entry>/.exec(xml)?.[1];
+  const tag = (t: string, s = entry ?? ""): string | undefined => new RegExp(`<${t}[^>]*>([\\s\\S]*?)</${t}>`).exec(s)?.[1]?.replace(/\s+/g, " ").trim();
+  if (!entry || !tag("title")) throw new Error(`arXiv kaydı bulunamadı (${id}).`);
+  const item = emptyItem("preprint", "arxiv");
+  item.fields.title = tag("title")!;
+  item.creators = [...entry.matchAll(/<author>\s*<name>([^<]+)<\/name>/g)].map((m) => ({ creatorType: "author", ...splitName(m[1]!) }));
+  const published = tag("published");
+  if (published) item.fields.date = published.slice(0, 10);
+  const summary = tag("summary");
+  if (summary) item.fields.abstractNote = summary;
+  item.fields.repository = "arXiv";
+  item.fields.archiveID = `arXiv:${id}`;
+  item.fields.url = `https://arxiv.org/abs/${id}`;
+  return item;
+}
+
+export function cleanPmid(text: string): string | null {
+  return /^\s*(?:pmid:?\s*)?(\d{5,9})\s*$/i.exec(text)?.[1] ?? null;
+}
+
+export function cleanArxiv(text: string): string | null {
+  return /(?:arxiv:|arxiv\.org\/abs\/)\s*([\w.\/-]+?)(?:v\d+)?\s*$/i.exec(text.trim())?.[1] ?? (/^\s*(\d{4}\.\d{4,5})(v\d+)?\s*$/.exec(text)?.[1] ?? null);
 }
 
 interface OpenLibraryBook {
@@ -255,3 +368,59 @@ export function splitName(name: string): { lastName?: string; firstName?: string
 }
 
 export { textToNoteHtml };
+
+// ---------------------------------------------------------------- write back to Zotero
+
+export interface PushResult {
+  /** Items Zotero accepted, with their new version and the dirty mark cleared. */
+  readonly saved: Item[];
+  readonly failed: { key: string; message: string }[];
+  readonly version: number;
+}
+
+/**
+ * Sends changed and new items to the Zotero library (needs an API key with
+ * write access). Each item carries the version it was synced at: when the
+ * item changed in Zotero meanwhile, Zotero refuses it (412) and it is reported,
+ * never overwritten. Child notes and files stay where they are.
+ */
+export async function pushToZotero(cfg: ZoteroConfig, items: readonly Item[], zoteroCollections: ReadonlySet<string>, fetchFn: Fetch = fetch): Promise<PushResult> {
+  const { toZoteroData } = await import("./zotero.js");
+  const base = (cfg.base ?? "https://api.zotero.org").replace(/\/$/, "");
+  const headers: Record<string, string> = { "Zotero-API-Version": "3", "Content-Type": "application/json" };
+  if (cfg.apiKey) headers["Zotero-API-Key"] = cfg.apiKey;
+  const saved: Item[] = [];
+  const failed: { key: string; message: string }[] = [];
+  let version = 0;
+  for (let i = 0; i < items.length; i += 50) {
+    const batch = items.slice(i, i + 50);
+    const body = batch.map((item) => {
+      const data: Record<string, unknown> =
+        item.itemType === "note"
+          ? { key: item.key, itemType: "note", note: item.notes[0]?.note ?? "", tags: item.tags, collections: item.collections }
+          : { ...toZoteroData(item) };
+      delete data.dateAdded;
+      delete data.dateModified;
+      data.collections = ((data.collections as string[]) ?? []).filter((c) => zoteroCollections.has(c));
+      data.version = item.version ?? 0;
+      return data;
+    });
+    const r = await fetchFn(`${base}/${cfg.library}/items`, { method: "POST", headers, body: JSON.stringify(body) });
+    if (r.status === 403) throw new Error("Zotero yazmayı reddetti: API anahtarına yazma izni verin (zotero.org → Settings → Security → anahtarı düzenle → 'Allow write access').");
+    if (!r.ok) throw new Error(`Zotero yanıt vermedi (${r.status}).`);
+    version = Number(r.headers.get("Last-Modified-Version") ?? version);
+    const res = (await r.json()) as { successful?: Record<string, { key: string; version: number }>; unchanged?: Record<string, string>; failed?: Record<string, { key?: string; code: number; message: string }> };
+    batch.forEach((item, j) => {
+      const ok = res.successful?.[String(j)];
+      const same = res.unchanged?.[String(j)];
+      const bad = res.failed?.[String(j)];
+      if (ok || same) {
+        const { dirty: _d, ...rest } = item;
+        saved.push({ ...rest, version: ok?.version ?? version ?? item.version, source: `zotero:${cfg.library}` });
+      } else if (bad) {
+        failed.push({ key: item.key, message: bad.code === 412 ? "Zotero'da da değişmiş; önce Eşitle, sonra yeniden gönderin." : bad.message });
+      }
+    });
+  }
+  return { saved, failed, version };
+}

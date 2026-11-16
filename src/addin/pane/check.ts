@@ -4,13 +4,12 @@
  * document's copy), then the document refreshes.
  */
 import { type Issue, LEVEL_LABEL, applyFix, apostropheReport, checkItem } from "../../core/isnad.js";
-import { inView } from "../../core/library.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { citedKeys, refresh } from "./document.js";
 import { $, S, doc, h, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
-import { currentView } from "./library.js";
+import { inCurrentView } from "./library.js";
 
 /** Fixes applied by "Önerilen düzeltmeleri uygula"; case changes stay manual. */
 const SAFE = new Set(["encoding", "spaces", "pages", "volume", "issue", "edition", "doi-url", "title-period", "name-comma", "url", "abbr-in-field"]);
@@ -21,7 +20,7 @@ let lastIssues: Issue[] = [];
 function scopeItems(): Item[] {
   const scope = $<HTMLSelectElement>("chk-scope").value;
   if (scope === "document") return [...citedKeys()].map((k) => S.byKey.get(k) ?? doc().items[k]).filter((x): x is Item => Boolean(x));
-  if (scope === "collection") return S.items.filter((i) => inView(i, currentView(), S.collections));
+  if (scope === "collection") return S.items.filter(inCurrentView);
   if (scope === "selected") return [...S.selected].map((k) => S.byKey.get(k)).filter((x): x is Item => Boolean(x));
   return S.items.filter((i) => !i.deleted);
 }
@@ -81,7 +80,7 @@ async function fix(issues: Issue[]): Promise<void> {
     if (S.byKey.has(key)) lib.push(next);
     if (d.items[key]) d.items[key] = next;
   }
-  if (lib.length) await putItems(lib);
+  if (lib.length) await putItems(lib, [], true);
   if ([...changed.keys()].some((k) => d.items[k])) {
     await word.saveState(d);
     await refresh(false, true);

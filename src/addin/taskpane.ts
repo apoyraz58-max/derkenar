@@ -8,7 +8,7 @@ import { runCheck, wireCheck } from "./pane/check.js";
 import { $, doc, loadLibrary, onLibraryChange, onShow, renderSummary, run, showView } from "./pane/core.js";
 import { bibliography, changeStyle, nudge, refresh, renderDocList, startWatcher, wireDocument } from "./pane/document.js";
 import { wireEditor } from "./pane/editor.js";
-import { renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
+import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
 import { newItem, refreshLibraryView, wireLibrary } from "./pane/library.js";
 
 declare const __VERSION__: string;
@@ -72,7 +72,7 @@ Office.onReady(async () => {
   onShow("atif", () => $<HTMLInputElement>("q").focus());
   onShow("kutuphane", refreshLibraryView);
   onShow("belge", renderDocList);
-  onShow("aktar", renderSources);
+  onShow("aktar", () => (renderSources(), renderPushCount()));
   onLibraryChange(() => {
     renderSummary();
     if (!$("view-atif").hidden) search();

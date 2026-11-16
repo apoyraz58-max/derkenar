@@ -316,3 +316,83 @@ describe("import / export", () => {
     expect(splitName("Ahmet Yılmaz")).toEqual({ lastName: "Yılmaz", firstName: "Ahmet" });
   });
 });
+
+describe("0.3: Zotero features", () => {
+  it("advanced search: conditions, all/any, collections with sub-collections, dates", async () => {
+    const { matches, describe: desc } = await import("../src/core/searchquery.js");
+    const coll = [{ key: "A", name: "Tez" }, { key: "B", name: "Usûl", parentKey: "A" }];
+    const y = { ...YILMAZ, collections: ["B"], tags: [{ tag: "kelam" }], dateAdded: "2026-11-10T00:00:00Z" };
+    const s = { mode: "all" as const, conditions: [{ field: "title", op: "contains" as const, value: "kelam" }, { field: "year", op: "isAfter" as const, value: "2000" }] };
+    expect(matches(y, s)).toBe(true);
+    expect(matches(GAZZALI, s)).toBe(false);
+    expect(matches(y, { mode: "all", conditions: [{ field: "collection", op: "is", value: "A" }] }, coll)).toBe(true);
+    expect(matches(y, { mode: "any", conditions: [{ field: "tag", op: "is", value: "fıkıh" }, { field: "creator", op: "contains", value: "yilmaz" }] })).toBe(true);
+    expect(matches(y, { mode: "all", conditions: [{ field: "dateAdded", op: "isInTheLast", value: "30" }] }, [], Date.parse("2026-11-16T00:00:00Z"))).toBe(true);
+    expect(matches(MUKADDIME, { mode: "all", conditions: [{ field: "creator", op: "contains", value: "naşir" }] })).toBe(true);
+    expect(desc(s)).toBe('Başlık içerir "kelam" ve Yıl sonra "2000"');
+  });
+  it("Zotero RDF export reads back with keys, collections, notes, roles", async () => {
+    const { zoteroRdf } = await import("../src/core/zoteroexport.js");
+    const { parseZoteroRdf } = await import("../src/core/rdf.js");
+    const book = { ...GAZZALI, key: "ABCD2345", collections: ["CDEF2345"], notes: [{ key: "N", note: "<p>nüsha</p>", dateModified: "" }], tags: [{ tag: "usûl" }], fields: { ...GAZZALI.fields, date: "1413/1993" } };
+    const xml = zoteroRdf([book, { ...MUKADDIME, key: "MUKA2345" }], [{ key: "CDEF2345", name: "Tez" }]);
+    const back = parseZoteroRdf(xml, "file:x.rdf");
+    const b = back.items.find((i) => i.key === "ABCD2345")!;
+    expect(b.fields).toMatchObject({ title: book.fields.title, place: "Medine", publisher: "el-Câmiʿatü’l-İslâmiyye", date: "1413/1993", numberOfVolumes: "4" });
+    expect(b.creators.map((c) => c.creatorType)).toEqual(["author", "muhakkik"]);
+    expect(b.notes[0]!.note).toBe("<p>nüsha</p>");
+    expect(b.collections).toEqual(["CDEF2345"]);
+    expect(back.collections).toEqual([{ key: "CDEF2345", name: "Tez" }]);
+    const m = back.items.find((i) => i.key === "MUKA2345")!;
+    expect(m.creators.map((c) => c.creatorType).sort()).toEqual(["author", "hazirlayan", "nasir", "sadelestiren", "translator"]);
+  });
+  it("CSV has Zotero's columns", async () => {
+    const { zoteroCsv } = await import("../src/core/zoteroexport.js");
+    const csv = zoteroCsv([GAZZALI]);
+    expect(csv.split("\r\n")[0]).toContain('"Item Type","Publication Year","Author","Title"');
+    expect(csv).toContain('"Gazzâlî, Ebû Hâmid Muhammed b. Muhammed"');
+  });
+  it("quick format: cilt/sayfa, s., vr.; a year stays a year", async () => {
+    const { parseQuick } = await import("../src/core/search.js");
+    expect(parseQuick("gazzali 1/45")).toEqual({ words: "gazzali", volume: "1", locator: "45" });
+    expect(parseQuick("gazzali s. 45-47")).toEqual({ words: "gazzali", locator: "45-47" });
+    expect(parseQuick("kemalpaşazade vr. 12b")).toEqual({ words: "kemalpaşazade", locator: "12b", label: "folio" });
+    expect(parseQuick("gazzali 1982")).toEqual({ words: "gazzali 1982" });
+    expect(parseQuick("gazzali 45")).toEqual({ words: "gazzali", locator: "45" });
+  });
+  it("push to Zotero: versions, İSNAD roles in Extra, conflicts reported", async () => {
+    const { pushToZotero } = await import("../src/core/importers.js");
+    let sent: Record<string, unknown>[] = [];
+    const fake = async (_url: string, init?: RequestInit) => {
+      sent = JSON.parse(String(init!.body));
+      return new Response(JSON.stringify({ successful: { "0": { key: sent[0]!.key, version: 12 } }, failed: { "1": { key: sent[1]!.key, code: 412, message: "x" } } }), { headers: { "Last-Modified-Version": "12" } });
+    };
+    const a = { ...MUKADDIME, key: "AAAA2345", source: "zotero:users/1", version: 5, dirty: true, collections: ["C1", "LOCAL"] };
+    const b = { ...YILMAZ, key: "BBBB2345", source: "zotero:users/1", version: 3, dirty: true };
+    const res = await pushToZotero({ library: "users/1", apiKey: "k" }, [a, b], new Set(["C1"]), fake as typeof fetch);
+    expect(sent[0]).toMatchObject({ key: "AAAA2345", version: 5, collections: ["C1"] });
+    expect(String(sent[0]!.extra)).toContain("editorial-director: Nâşir || Ali");
+    expect(sent[0]!.dateModified).toBeUndefined();
+    expect(res.saved).toHaveLength(1);
+    expect(res.saved[0]!.version).toBe(12);
+    expect(res.saved[0]!.dirty).toBeUndefined();
+    expect(res.failed[0]!.message).toContain("Zotero'da da değişmiş");
+  });
+  it("PMID and arXiv lookups", async () => {
+    const { lookupPmid, lookupArxiv, cleanArxiv, cleanPmid } = await import("../src/core/importers.js");
+    const pm = await lookupPmid("12345678", (async () => new Response(JSON.stringify({ result: { "12345678": { title: "A study.", authors: [{ name: "Smith J", authtype: "Author" }], fulljournalname: "Journal", volume: "3", pages: "1-9", pubdate: "2001 Jan", articleids: [{ idtype: "doi", value: "10.1/x" }] } } }))) as typeof fetch);
+    expect(pm.fields).toMatchObject({ title: "A study", publicationTitle: "Journal", date: "2001", DOI: "10.1/x" });
+    const ax = await lookupArxiv("2101.01234", (async () => new Response("<feed><entry><title>Deep\n Things</title><published>2021-01-05T00:00:00Z</published><summary>Abs</summary><author><name>Ada Lovelace</name></author></entry></feed>")) as typeof fetch);
+    expect(ax.itemType).toBe("preprint");
+    expect(ax.fields.title).toBe("Deep Things");
+    expect(ax.creators[0]).toEqual({ creatorType: "author", lastName: "Lovelace", firstName: "Ada" });
+    expect(cleanArxiv("arXiv:2101.01234v2")).toBe("2101.01234");
+    expect(cleanPmid("PMID: 12345678")).toBe("12345678");
+  });
+  it("standalone notes and title case", async () => {
+    const { titleOf: t, titleCase, sentenceCaseTitle } = await import("../src/core/zotero.js");
+    expect(t({ ...emptyItem("note"), notes: [{ key: "n", note: "<p>İlk satır</p><p>ikinci</p>", dateModified: "" }] })).toBe("İlk satır");
+    expect(titleCase("kelâm ilminin doğuşu ve gelişimi")).toBe("Kelâm İlminin Doğuşu ve Gelişimi");
+    expect(sentenceCaseTitle("KELÂM İLMİ: GİRİŞ")).toBe("Kelâm ilmi: Giriş");
+  });
+});

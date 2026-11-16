@@ -37,14 +37,19 @@ etiketler, CSL eşlemeleri) ve Zotero'nun da kullandığı CSL işlemcisi citepr
 | --- | --- |
 | Kütüphane, koleksiyonlar ve alt koleksiyonlar | Var (oluştur, yeniden adlandır, sil, kaynak ekle/çıkar) |
 | Koleksiyonsuz, Çöp kutusu, Yinelenenler | Var (geri yükle, kalıcı sil, çöpü boşalt, birleştir) |
-| Arama, etiket süzgeci, sıralama, çoklu seçim | Var |
-| Kaynak düzenleyici: 37 tür, bütün alanlar, kişi rolleri | Var, artı İSNAD rolleri; değişiklikler yazarken kaydedilir |
-| Etiketler, notlar, ilgili kaynaklar | Var (ilişkiler iki yönlü) |
-| Tanımlayıcıyla ekleme | DOI, ISBN |
-| İçe aktarma | Zotero RDF (koleksiyon, not, etiket dahil), CSL JSON, BibTeX/BibLaTeX, RIS; Zotero web API ve Zotero 7 yerel API ile eşitleme |
-| Dışa aktarma | Derkenar yedeği (kayıpsız), CSL JSON, RIS, BibTeX; seçili kaynakların kaynakçasını kopyalama |
-| Word eklentisi: Atıf ekle/düzenle, Kaynakça, Belge tercihleri, Güncelle, Bağlantıyı kaldır | Var; dipnot ya da sonnot seçilebilir |
-| PDF okuyucu, ek dosyalar, tarayıcı eklentisi, zotero.org'a geri yazma | Yok (Word penceresinde yapılamaz ya da sonraki iş) |
+| Hızlı arama, gelişmiş arama, kayıtlı aramalar | Var (koşullar: alan, içerir/eşittir/önce/sonra/son N gün; hepsi ya da biri) |
+| Etiketler, etiket süzgeci, renkli etiketler | Var (yeniden adlandırma, birleştirme, silme, 9 renk) |
+| Kaynak düzenleyici: 37 tür, bütün alanlar, kişi rolleri | Var, artı İSNAD rolleri; yazarken kaydedilir; Cümle düzeni / Başlık Düzeni; ad-soyad değiştirme |
+| Notlar (biçimli), bağımsız notlar | Var (kalın, italik, başlık, liste, alıntı, bağlantı); notu belgeye ekleme |
+| Ekler | Bağlantı ve dosya (PDF vb., bu bilgisayarda saklanır); Zotero'daki dosyaların bağlantısı |
+| İlgili kaynaklar | Var (iki yönlü) |
+| Bul (Locate) | URL, DOI, WorldCat, Google Akademik |
+| Tanımlayıcıyla ekleme | DOI, ISBN (Open Library + Google Books), PMID, arXiv |
+| İçe aktarma | Zotero RDF, CSL JSON, BibTeX/BibLaTeX, RIS, Derkenar yedeği |
+| Zotero eşitleme | Zotero'dan al (web API ya da Zotero 7 yerel API) ve Zotero'ya gönder (değişen ve yeni kaynaklar; çakışmada üzerine yazmaz) |
+| Dışa aktarma | Zotero RDF (koleksiyon ve notlarla), CSL JSON, CSV, RIS, BibTeX, Derkenar yedeği, HTML rapor; kaynakçayı panoya kopyalama |
+| Word eklentisi: Atıf ekle/düzenle (hızlı biçim), Kaynakça, Belge tercihleri, Güncelle, Bağlantıyı kaldır | Var; "gazzali 1/45" yazınca cilt/sayfa ayrılır; dipnot ya da sonnot |
+| PDF okuyucu ve işaretleme, tarayıcı eklentisi, RSS beslemeleri, tam metin dizini | Yok (Word penceresinde yapılamaz) |
 
 Stil şimdilik yalnız İSNAD 2 (dipnotlu ve metin içi). APA ve diğerleri sonraki iş.
 

@@ -7,6 +7,7 @@
 import { LEVEL_LABEL, applyFix, checkItem } from "../../core/isnad.js";
 import { collectionTree, tagCounts } from "../../core/library.js";
 import {
+  type Attachment,
   type Creator,
   type Item,
   changeItemType,
@@ -18,13 +19,18 @@ import {
   itemTypeLabel,
   itemTypes,
   newKey,
+  isNoteItem,
   noteText,
   now,
   parseDate,
-  textToNoteHtml,
+  sentenceCaseTitle,
+  titleCase,
   titleOf,
 } from "../../core/zotero.js";
 import { addToBasket } from "./cite.js";
+import { richNote } from "./richnote.js";
+import * as store from "../store.js";
+import * as word from "../word.js";
 import { citedKeys, refresh } from "./document.js";
 import { $, S, h, putItems, run, setMessage, showView } from "./core.js";
 
@@ -65,8 +71,10 @@ function scheduleSave(): void {
 async function save(): Promise<void> {
   if (!current) return;
   window.clearTimeout(saveTimer);
-  current = { ...current, dateModified: now() };
-  await putItems([current]);
+  // Keep the version a sync or "Zotero'ya gönder" gave the stored copy meanwhile.
+  const stored = S.byKey.get(current.key);
+  current = { ...current, dateModified: now(), ...(stored?.version !== undefined ? { version: stored.version } : {}) };
+  await putItems([current], [], true);
   renderIssues();
   renderMeta();
   // Cited in this document: citations and bibliography follow the edit.
@@ -90,12 +98,21 @@ function render(): void {
   $("ed-deleted").hidden = !item.deleted;
   $("ed-trash").hidden = Boolean(item.deleted);
   $("ed-restore").hidden = !item.deleted;
+  const note = isNoteItem(item);
+  for (const id of ["ed-type-box", "ed-related-box"]) document.getElementById(id)!.hidden = false;
+  $("ed-type-box").hidden = note;
+  $("ed-attach-box").hidden = note;
+  $("ed-cite").hidden = note;
+  $("ed-notes-title").textContent = note ? "Not" : "Notlar";
+  $("ed-note-add").hidden = note;
   const typeSel = $<HTMLSelectElement>("ed-type");
   typeSel.replaceChildren(...itemTypes().map((t) => [t, itemTypeLabel(t)] as const).sort((a, b) => a[1].localeCompare(b[1], "tr")).map(([t, l]) => h("option", { value: t, selected: t === item.itemType }, l)));
   typeSel.onchange = () => update((i) => changeItemType(i, typeSel.value), true);
-  renderFields();
+  if (note) $("ed-fields").replaceChildren();
+  else renderFields();
   renderTags();
   renderNotes();
+  renderAttachments();
   renderRelated();
   renderCollections();
   renderIssues();
@@ -142,12 +159,40 @@ function renderFields(): void {
   box.replaceChildren();
   const fields = fieldsOf(item.itemType);
   box.append(fieldInput("title"));
+  const caseFix = (fn: (s: string) => string) => () => {
+    const el = box.querySelector<HTMLTextAreaElement>('[data-field="title"]')!;
+    el.value = fn(el.value);
+    el.dispatchEvent(new Event("input"));
+  };
+  box.append(
+    h(
+      "div",
+      { class: "field-tools" },
+      h("button", { type: "button", class: "link", onclick: caseFix(sentenceCaseTitle) }, "Cümle düzeni"),
+      h("button", { type: "button", class: "link", onclick: caseFix(titleCase) }, "Başlık Düzeni"),
+      ...links(item),
+    ),
+  );
   box.append(renderCreators());
   for (const f of fields) if (f !== "title" && f !== "extra" && f !== "abstractNote") box.append(fieldInput(f));
   // Values from another type (kept after a type change) stay visible.
   for (const f of Object.keys(item.fields)) if (!fields.includes(f) && f !== "extra") box.append(fieldInput(f));
   if (fields.includes("abstractNote")) box.append(fieldInput("abstractNote"));
   box.append(fieldInput("extra"));
+}
+
+/** "Bağlantıyı aç", DOI, and library catalog searches (Zotero's Locate menu). */
+function links(item: Item): HTMLElement[] {
+  const a = (href: string, text: string) => h("a", { href, target: "_blank", rel: "noopener noreferrer" }, text);
+  const out: HTMLElement[] = [];
+  if (item.fields.url) out.push(a(item.fields.url, "Bağlantıyı aç"));
+  if (item.fields.DOI) out.push(a(`https://doi.org/${item.fields.DOI}`, "DOI"));
+  const q = encodeURIComponent([titleOf(item), item.creators[0]?.lastName ?? item.creators[0]?.name ?? ""].join(" ").trim());
+  if (q) {
+    out.push(a(item.fields.ISBN ? `https://search.worldcat.org/search?q=bn:${encodeURIComponent(item.fields.ISBN)}` : `https://search.worldcat.org/search?q=${q}`, "WorldCat"));
+    out.push(a(`https://scholar.google.com/scholar?q=${q}`, "Google Akademik"));
+  }
+  return out;
 }
 
 function renderCreators(): HTMLElement {
@@ -175,9 +220,10 @@ function renderCreators(): HTMLElement {
       onclick: () =>
         set(single ? { name: undefined, lastName: c.name, firstName: "" } : { name: [c.firstName, c.lastName].filter(Boolean).join(" "), lastName: undefined, firstName: undefined }, true),
     }, single ? "⇆" : "⇥");
+    const swap = single ? null : h("button", { type: "button", class: "icon-btn", title: "Ad ile soyadı yer değiştir", onclick: () => set({ lastName: c.firstName ?? "", firstName: c.lastName ?? "" }, true) }, "⇄");
     const up = h("button", { type: "button", class: "icon-btn", title: "Yukarı", onclick: () => i > 0 && update((it) => { const cs = [...it.creators]; [cs[i - 1], cs[i]] = [cs[i]!, cs[i - 1]!]; return { ...it, creators: cs }; }, true) }, "↑");
     const del = h("button", { type: "button", class: "icon-btn", title: "Sil", onclick: () => set(null, true) }, "✕");
-    wrap.append(h("div", { class: single ? "creator single" : "creator" }, type, last, single ? null : first, h("span", { class: "creator-btns" }, toggle, up, del)));
+    wrap.append(h("div", { class: single ? "creator single" : "creator" }, type, last, single ? null : first, h("span", { class: "creator-btns" }, swap, toggle, up, del)));
   });
   wrap.append(
     h("button", {
@@ -208,13 +254,61 @@ function renderTags(): void {
 function renderNotes(): void {
   const item = current!;
   $("ed-notes").replaceChildren(
-    ...item.notes.map((n, i) => {
-      const ta = h("textarea", { rows: 3 });
-      ta.value = noteText(n.note);
-      ta.oninput = () => update((it) => ({ ...it, notes: it.notes.map((x, j) => (j === i ? { ...x, note: textToNoteHtml(ta.value), dateModified: now() } : x)) }));
-      return h("div", { class: "note" }, ta, h("button", { type: "button", class: "link danger-text", onclick: () => update((it) => ({ ...it, notes: it.notes.filter((_, j) => j !== i) }), true) }, "Notu sil"));
-    }),
+    ...item.notes.map((n, i) =>
+      h(
+        "div",
+        { class: "note" },
+        richNote(n.note, (html) => update((it) => ({ ...it, notes: it.notes.map((x, j) => (j === i ? { ...x, note: html, dateModified: now() } : x)) }))),
+        h(
+          "div",
+          { class: "field-tools" },
+          h("button", { type: "button", class: "link", title: "Notun metnini imlecin olduğu yere yazar", onclick: () => void run("Not ekleniyor", () => word.insertPlainText(noteText(current!.notes[i]?.note ?? ""))) }, "Belgeye ekle"),
+          isNoteItem(item) ? null : h("button", { type: "button", class: "link danger-text", onclick: () => update((it) => ({ ...it, notes: it.notes.filter((_, j) => j !== i) }), true) }, "Notu sil"),
+        ),
+      ),
+    ),
   );
+}
+
+function renderAttachments(): void {
+  const item = current!;
+  const list = item.attachments ?? [];
+  $("ed-attachments").replaceChildren(
+    ...list.map((att, i) =>
+      h(
+        "li",
+        {},
+        h("span", { class: "att-kind" }, att.kind === "file" ? "📄" : "🔗"),
+        att.kind === "link" && att.url && !att.url.startsWith("zotero:")
+          ? h("a", { href: att.url, target: "_blank", rel: "noopener noreferrer" }, att.title)
+          : att.kind === "file"
+            ? h("button", { type: "button", class: "link", onclick: () => void run("Dosya açılıyor", () => openFile(att.key, att.fileName ?? att.title, att.contentType)) }, att.title)
+            : h("span", { title: "Dosya Zotero'da duruyor" }, `${att.title} (Zotero'da)`),
+        att.size ? h("small", { class: "muted" }, ` ${(att.size / 1024 / 1024).toFixed(1)} MB`) : null,
+        h("button", {
+          type: "button",
+          class: "chip-x",
+          title: "Eki kaldır",
+          onclick: () =>
+            void run("Ek kaldırılıyor", async () => {
+              if (att.kind === "file") await store.deleteFiles([att.key]);
+              update((it) => ({ ...it, attachments: (it.attachments ?? []).filter((_, j) => j !== i) }), true);
+            }),
+        }, "×"),
+      ),
+    ),
+  );
+}
+
+async function openFile(key: string, name: string, type?: string): Promise<void> {
+  const blob = await store.getFile(key);
+  if (!blob) throw new Error("Dosya bu bilgisayarda bulunamadı.");
+  const url = URL.createObjectURL(type ? new Blob([blob], { type }) : blob);
+  const a = h("a", { href: url, target: "_blank", rel: "noopener", download: type === "application/pdf" ? undefined : name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 function renderRelated(): void {
@@ -242,13 +336,13 @@ function renderRelated(): void {
 function relate(key: string): void {
   const other = S.byKey.get(key);
   update((it) => ({ ...it, relations: [...it.relations, key] }), true);
-  if (other && !other.relations.includes(current!.key)) void putItems([{ ...other, relations: [...other.relations, current!.key], dateModified: now() }]);
+  if (other && !other.relations.includes(current!.key)) void putItems([{ ...other, relations: [...other.relations, current!.key], dateModified: now() }], [], true);
 }
 
 function unrelate(key: string): void {
   const other = S.byKey.get(key);
   update((it) => ({ ...it, relations: it.relations.filter((k) => k !== key) }), true);
-  if (other) void putItems([{ ...other, relations: other.relations.filter((k) => k !== current!.key), dateModified: now() }]);
+  if (other) void putItems([{ ...other, relations: other.relations.filter((k) => k !== current!.key), dateModified: now() }], [], true);
 }
 
 function renderCollections(): void {
@@ -308,6 +402,28 @@ export function wireEditor(): void {
     addToBasket(current);
     showView("atif");
   };
+  $<HTMLInputElement>("ed-file").onchange = () =>
+    void run("Dosya ekleniyor", async () => {
+      const files = [...($<HTMLInputElement>("ed-file").files ?? [])];
+      const added: Attachment[] = [];
+      for (const f of files) {
+        if (f.size > 200 * 1024 * 1024) throw new Error(`${f.name} çok büyük (200 MB sınırı).`);
+        const key = newKey();
+        await store.putFile(key, f);
+        added.push({ key, kind: "file" as const, title: f.name.replace(/\.[^.]+$/, ""), fileName: f.name, contentType: f.type || undefined, size: f.size, dateAdded: now() });
+      }
+      $<HTMLInputElement>("ed-file").value = "";
+      update((it) => ({ ...it, attachments: [...(it.attachments ?? []), ...added] }), true);
+      setMessage(`${added.length} dosya eklendi (yalnız bu bilgisayarda saklanır).`, "success");
+    });
+  $<HTMLFormElement>("ed-link-form").onsubmit = (e) => {
+    e.preventDefault();
+    const url = $<HTMLInputElement>("ed-link").value.trim();
+    if (!/^https?:\/\//i.test(url)) return setMessage("Bağlantı http:// veya https:// ile başlamalı.", "warning");
+    $<HTMLInputElement>("ed-link").value = "";
+    update((it) => ({ ...it, attachments: [...(it.attachments ?? []), { key: newKey(), kind: "link", title: url.replace(/^https?:\/\//, "").slice(0, 80), url, dateAdded: now() }] }), true);
+  };
+  $("ed-note-add").onclick = () => update((it) => ({ ...it, notes: [...it.notes, { key: newKey(), note: "", dateModified: now() }] }), true);
   $("ed-duplicate").onclick = () =>
     void run("Çoğaltılıyor", async () => {
       if (!current) return;
@@ -319,7 +435,7 @@ export function wireEditor(): void {
   $("ed-trash").onclick = () =>
     void run("Çöpe atılıyor", async () => {
       if (!current) return;
-      await putItems([{ ...current, deleted: true, dateModified: now() }]);
+      await putItems([{ ...current, deleted: true, dateModified: now() }], [], true);
       setMessage("Kaynak çöp kutusuna taşındı.", "success");
       showView("kutuphane");
     });
@@ -328,7 +444,7 @@ export function wireEditor(): void {
       if (!current) return;
       const { deleted: _d, ...rest } = current;
       current = { ...rest, dateModified: now() };
-      await putItems([current]);
+      await putItems([current], [], true);
       render();
     });
 }

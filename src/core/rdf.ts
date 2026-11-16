@@ -211,6 +211,9 @@ export function parseZoteroRdf(xml: string, source: string): RdfResult {
     if (!itemType || itemType === "attachment" || itemType === "note") continue;
     const item = emptyItem(itemType, source);
     item.dateAdded = item.dateModified = now();
+    // Derkenar's own RDF export keeps Zotero keys ("#item_ABCD2345").
+    const ownKey = /^#item_([23456789A-Z]{8})$/.exec(about(n))?.[1];
+    if (ownKey) item.key = ownKey;
     const extra: string[] = [];
     const allowed = new Set(creatorTypesOf(itemType));
     const containers: El[] = [];
@@ -247,7 +250,11 @@ export function parseZoteroRdf(xml: string, source: string): RdfResult {
 
   const collections: Collection[] = [];
   const collKey = new Map<string, string>();
-  for (const n of nodes) if (is(n, NS.z, "Collection")) collKey.set(about(n), about(n).replace(/^#collection_/, "C").slice(0, 8).padEnd(8, "0"));
+  for (const n of nodes) {
+    if (!is(n, NS.z, "Collection")) continue;
+    const a = about(n);
+    collKey.set(a, /^#collection_([23456789A-Z]{8})$/.exec(a)?.[1] ?? a.replace(/^#collection_/, "C").slice(0, 8).padEnd(8, "0"));
+  }
   for (const n of nodes) {
     if (!is(n, NS.z, "Collection")) continue;
     const key = collKey.get(about(n))!;

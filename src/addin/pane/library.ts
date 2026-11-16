@@ -7,10 +7,12 @@ import { Renderer } from "../../core/engine.js";
 import { htmlToText } from "../../core/html.js";
 import { type SortKey, type View, collectionTree, descendants, findDuplicates, inView, mergeItems, sortItems, tagCounts } from "../../core/library.js";
 import { fold } from "../../core/search.js";
+import { type Condition, type SavedSearch, OPS, SEARCH_FIELDS, describe, matches, opsFor } from "../../core/searchquery.js";
+import { report } from "../../core/zoteroexport.js";
 import { type Item, emptyItem, itemTypeLabel, itemTypes, newKey, now } from "../../core/zotero.js";
 import { addToBasket, resultRow } from "./cite.js";
 import { citedKeys } from "./document.js";
-import { $, S, copyText, getRenderer, h, putCollections, putItems, run, setMessage, showView } from "./core.js";
+import { $, S, copyText, download, getRenderer, h, putCollections, putItems, putSearches, run, setMessage, setTagColors, showView } from "./core.js";
 import { openEditor } from "./editor.js";
 
 let sortKey: SortKey = "creator";
@@ -22,7 +24,29 @@ export function currentView(): View {
   const v = S.libView;
   if (v.startsWith("c:")) return { kind: "collection", key: v.slice(2), deep: true };
   if (v === "document") return { kind: "document", keys: citedKeys() };
+  if (v.startsWith("s:") || v === "adv") return { kind: "all" };
   return { kind: v as "all" | "unfiled" | "trash" | "duplicates" };
+}
+
+/** The search being shown: a saved one ("s:KEY") or the unsaved advanced search ("adv"). */
+let advanced: SavedSearch = { key: "", name: "", mode: "all", conditions: [{ field: "any", op: "contains", value: "" }] };
+function activeSearch(): SavedSearch | null {
+  if (S.libView === "adv") return advanced;
+  if (S.libView.startsWith("s:")) return S.searches.find((x) => x.key === S.libView.slice(2)) ?? null;
+  return null;
+}
+
+/** Is the item in what the library list shows now (collection, special view or search)? */
+export function inCurrentView(item: Item): boolean {
+  const s = activeSearch();
+  if (s) return !item.deleted && matches(item, s, S.collections);
+  return inView(item, currentView(), S.collections);
+}
+
+/** Tag color of an item: Zotero shows colored tags as dots before the title. */
+function tagDots(item: Item): HTMLElement | null {
+  const dots = S.tagColors.filter((c) => item.tags.some((t) => t.tag === c.tag));
+  return dots.length ? h("span", { class: "dots" }, ...dots.map((d) => h("span", { class: "dot", style: `background:${d.color}`, title: d.tag }))) : null;
 }
 
 function renderViewSelect(): void {
@@ -42,6 +66,9 @@ function renderViewSelect(): void {
     const n = S.items.filter((i) => !i.deleted && i.collections.includes(c.key)).length;
     opts.push(h("option", { value: `c:${c.key}` }, `${"  ".repeat(depth)}${depth ? "└ " : ""}${c.name} (${n})`));
   }
+  if (S.searches.length || S.libView === "adv") opts.push(h("option", { disabled: true }, "── Kayıtlı aramalar ──"));
+  if (S.libView === "adv") opts.push(h("option", { value: "adv" }, "Gelişmiş arama (kaydedilmedi)"));
+  for (const x of [...S.searches].sort((a, b) => a.name.localeCompare(b.name, "tr"))) opts.push(h("option", { value: `s:${x.key}`, title: describe(x) }, `🔍 ${x.name}`));
   sel.replaceChildren(...opts);
   if (![...sel.options].some((o) => o.value === S.libView)) S.libView = "all";
   sel.value = S.libView;
@@ -50,8 +77,10 @@ function renderViewSelect(): void {
 }
 
 function renderTags(): void {
-  const base = S.items.filter((i) => inView(i, currentView(), S.collections));
+  const base = S.items.filter(inCurrentView);
   const tags = tagCounts(base);
+  const color = new Map(S.tagColors.map((c) => [c.tag, c.color]));
+  if (manageTags) return renderTagManager(tagCounts(S.items));
   $("tag-count").textContent = tagFilter.size ? `(${tagFilter.size} seçili)` : `(${tags.length})`;
   $("tags").replaceChildren(
     ...tags.map((t) =>
@@ -60,6 +89,7 @@ function renderTags(): void {
         {
           type: "button",
           class: `chip${tagFilter.has(t.tag) ? " on" : ""}${t.automatic ? " auto" : ""}`,
+          style: color.has(t.tag) ? `border-color:${color.get(t.tag)};box-shadow:inset 3px 0 0 ${color.get(t.tag)}` : undefined,
           onclick: () => {
             if (tagFilter.has(t.tag)) tagFilter.delete(t.tag);
             else tagFilter.add(t.tag);
@@ -71,6 +101,81 @@ function renderTags(): void {
     ),
     ...(tagFilter.size ? [h("button", { type: "button", class: "link", onclick: () => (tagFilter.clear(), renderList()) }, "Süzgeci temizle")] : []),
   );
+}
+
+let manageTags = false;
+const COLORS = ["#ff6666", "#ff8c19", "#999999", "#5fb236", "#009980", "#2ea8e5", "#576dd9", "#a28ae5", "#a6507b"];
+
+function renderTagManager(tags: { tag: string; count: number }[]): void {
+  $("tag-count").textContent = `(${tags.length})`;
+  const color = new Map(S.tagColors.map((c) => [c.tag, c.color]));
+  $("tags").replaceChildren(
+    h("p", { class: "muted small" }, "Etiketi yeniden adlandırın (aynı ada çevirirseniz birleşir), renk verin (en çok 9; renkli etiketler listede nokta olarak görünür) ya da silin."),
+    ...tags.map((t) => {
+      const name = h("input", { value: t.tag, "aria-label": "Etiket adı" });
+      const col = h("select", { "aria-label": "Renk" }, h("option", { value: "" }, "Renk yok"), ...COLORS.map((c, i) => h("option", { value: c, selected: color.get(t.tag) === c, style: `color:${c}` }, `● Renk ${i + 1}`)));
+      name.onchange = () => void run("Etiket yeniden adlandırılıyor", () => renameTag(t.tag, name.value.trim()));
+      col.onchange = () =>
+        void run("Renk", async () => {
+          const rest = S.tagColors.filter((c) => c.tag !== t.tag);
+          if (col.value) {
+            if (rest.length >= 9) throw new Error("En çok 9 renkli etiket olabilir.");
+            rest.push({ tag: t.tag, color: col.value });
+          }
+          await setTagColors(rest);
+        });
+      return h("div", { class: "tag-row" }, name, h("span", { class: "muted small" }, String(t.count)), col, h("button", { type: "button", class: "icon-btn danger-text", title: "Etiketi sil", onclick: () => void run("Etiket siliniyor", () => renameTag(t.tag, "")) }, "✕"));
+    }),
+  );
+}
+
+/** Renames a tag across the library (empty name: deletes it). */
+async function renameTag(from: string, to: string): Promise<void> {
+  const t = now();
+  const changed = S.items
+    .filter((i) => i.tags.some((x) => x.tag === from))
+    .map((i) => {
+      const tags = i.tags.filter((x) => x.tag !== from);
+      if (to && !tags.some((x) => x.tag === to)) tags.push({ tag: to });
+      return { ...i, tags, dateModified: t };
+    });
+  await putItems(changed, [], true);
+  const colors = S.tagColors.map((c) => (c.tag === from ? { ...c, tag: to } : c)).filter((c) => c.tag);
+  await setTagColors(colors);
+  tagFilter.delete(from);
+  setMessage(to ? `"${from}" → "${to}" (${changed.length} kaynak).` : `"${from}" etiketi ${changed.length} kaynaktan silindi.`, "success");
+}
+
+function renderAdvanced(): void {
+  const box = $("adv-conds");
+  box.replaceChildren(
+    ...advanced.conditions.map((c, i) => {
+      const field = h("select", { "aria-label": "Alan" }, ...SEARCH_FIELDS.map(([v, l]) => h("option", { value: v, selected: v === c.field }, l)));
+      const op = h("select", { "aria-label": "Koşul" }, ...opsFor(c.field).map((o) => h("option", { value: o, selected: o === c.op }, OPS[o])));
+      let value: HTMLInputElement | HTMLSelectElement;
+      if (c.field === "itemType") value = h("select", {}, ...itemTypes().map((t) => h("option", { value: t, selected: t === c.value }, itemTypeLabel(t))));
+      else if (c.field === "collection") value = h("select", {}, ...collectionTree(S.collections).map(({ c: col, depth }) => h("option", { value: col.key, selected: col.key === c.value }, `${"\u00a0\u00a0".repeat(depth)}${col.name}`)));
+      else value = h("input", { value: c.value, placeholder: c.field === "dateAdded" || c.field === "dateModified" ? (c.op === "isInTheLast" ? "gün sayısı" : "2025-01-31") : "değer" });
+      if (value instanceof HTMLSelectElement && !c.value) c.value = value.value;
+      field.onchange = () => {
+        advanced.conditions[i] = { field: field.value, op: opsFor(field.value)[0]!, value: "" };
+        renderAdvanced();
+      };
+      op.onchange = () => (advanced.conditions[i]!.op = op.value as Condition["op"]);
+      value.oninput = value.onchange = () => (advanced.conditions[i]!.value = value.value);
+      if (value instanceof HTMLInputElement) value.onkeydown = (e) => e.key === "Enter" && (e.preventDefault(), runAdvanced());
+      const del = h("button", { type: "button", class: "icon-btn", title: "Koşulu kaldır", onclick: () => (advanced.conditions.splice(i, 1), advanced.conditions.length || advanced.conditions.push({ field: "any", op: "contains", value: "" }), renderAdvanced()) }, "✕");
+      return h("div", { class: "cond" }, field, op, value, del);
+    }),
+  );
+  $<HTMLSelectElement>("adv-mode").value = advanced.mode;
+}
+
+function runAdvanced(): void {
+  S.libView = "adv";
+  S.selected.clear();
+  renderViewSelect();
+  renderList();
 }
 
 export function renderList(): void {
@@ -87,7 +192,7 @@ export function renderList(): void {
   $("trash-empty").hidden = !trash;
   if (view.kind === "duplicates") return renderDuplicates();
 
-  let items = S.items.filter((i) => inView(i, view, S.collections));
+  let items = S.items.filter(inCurrentView);
   if (tagFilter.size) items = items.filter((i) => [...tagFilter].every((t) => i.tags.some((x) => x.tag === t)));
   if (q) {
     const hits = new Set(S.index.search(q, 100000).map((x) => x.item.key));
@@ -112,6 +217,9 @@ function row(item: Item): HTMLLIElement {
     renderBulk();
   };
   const li = resultRow(item, { class: "item-row" });
+  const dots = tagDots(item);
+  if (dots) li.querySelector(".r-title")?.prepend(dots);
+  if (item.dirty) li.querySelector(".r-author")?.append(h("span", { class: "r-dirty", title: "Zotero'ya gönderilmedi" }, " ●"));
   li.prepend(cb);
   li.onclick = (e) => (e.detail === 2 ? (addToBasket(item), showView("atif")) : openEditor(item.key));
   return li;
@@ -163,7 +271,7 @@ function renderDuplicates(): void {
 
 async function merge(master: Item, others: Item[]): Promise<void> {
   const merged = mergeItems(master, others);
-  await putItems([merged, ...others.map((o) => ({ ...o, deleted: true, dateModified: now(), fields: { ...o.fields, extra: [o.fields.extra, `Derkenar: ${master.key} ile birleştirildi`].filter(Boolean).join("\n") } }))]);
+  await putItems([merged, ...others.map((o) => ({ ...o, deleted: true, dateModified: now(), fields: { ...o.fields, extra: [o.fields.extra, `Derkenar: ${master.key} ile birleştirildi`].filter(Boolean).join("\n") } }))], [], true);
   // Citations in this document that point at a merged-away item keep working (the document has its copy).
   setMessage(`${others.length + 1} kayıt birleştirildi; diğerleri çöp kutusunda.`, "success");
 }
@@ -185,21 +293,21 @@ async function bulk(action: string, value?: string): Promise<void> {
       return;
     case "addto":
       if (!value) return;
-      await putItems(items.map((i) => (i.collections.includes(value) ? i : { ...i, collections: [...i.collections, value], dateModified: t })));
+      await putItems(items.map((i) => (i.collections.includes(value) ? i : { ...i, collections: [...i.collections, value], dateModified: t })), [], true);
       setMessage(`${items.length} kaynak koleksiyona eklendi.`, "success");
       return;
     case "remove-from": {
       const v = currentView();
       if (v.kind !== "collection") return;
       const drop = new Set([v.key, ...descendants(v.key, S.collections)]);
-      await putItems(items.map((i) => ({ ...i, collections: i.collections.filter((c) => !drop.has(c)), dateModified: t })));
+      await putItems(items.map((i) => ({ ...i, collections: i.collections.filter((c) => !drop.has(c)), dateModified: t })), [], true);
       setMessage(`${items.length} kaynak koleksiyondan çıkarıldı.`, "success");
       return;
     }
     case "tag": {
       const tag = await ask("Eklenecek etiket");
       if (!tag) return;
-      await putItems(items.map((i) => (i.tags.some((x) => x.tag === tag) ? i : { ...i, tags: [...i.tags, { tag }], dateModified: t })));
+      await putItems(items.map((i) => (i.tags.some((x) => x.tag === tag) ? i : { ...i, tags: [...i.tags, { tag }], dateModified: t })), [], true);
       setMessage(`"${tag}" etiketi ${items.length} kaynağa eklendi.`, "success");
       return;
     }
@@ -216,6 +324,10 @@ async function bulk(action: string, value?: string): Promise<void> {
       setMessage(`${items.length} kaynağın kaynakçası panoya kopyalandı.`, "success");
       return;
     }
+    case "report":
+      download(`derkenar-rapor-${new Date().toISOString().slice(0, 10)}.html`, report(items, S.collections), "text/html");
+      setMessage(`${items.length} kaynağın raporu hazırlandı.`, "success");
+      return;
     case "export":
       $<HTMLSelectElement>("ex-scope").value = "selected";
       showView("aktar");
@@ -228,7 +340,7 @@ async function bulk(action: string, value?: string): Promise<void> {
       S.selected.clear();
       return;
     case "trash":
-      await putItems(items.map((i) => ({ ...i, deleted: true, dateModified: t })));
+      await putItems(items.map((i) => ({ ...i, deleted: true, dateModified: t })), [], true);
       S.selected.clear();
       setMessage(`${items.length} kaynak çöp kutusuna taşındı.`, "success");
       return;
@@ -236,7 +348,7 @@ async function bulk(action: string, value?: string): Promise<void> {
       await putItems(items.map((i) => {
         const { deleted: _d, ...rest } = i;
         return { ...rest, dateModified: t };
-      }));
+      }), [], true);
       S.selected.clear();
       setMessage(`${items.length} kaynak geri yüklendi.`, "success");
       return;
@@ -301,7 +413,7 @@ async function collectionAction(kind: "new" | "sub" | "rename" | "delete"): Prom
     const drop = [current!.key, ...descendants(current!.key, S.collections)];
     const t = now();
     const touched = S.items.filter((i) => i.collections.some((c) => drop.includes(c))).map((i) => ({ ...i, collections: i.collections.filter((c) => !drop.includes(c)), dateModified: t }));
-    await putItems(touched);
+    await putItems(touched, [], true);
     await putCollections([], drop);
     S.libView = "all";
     setMessage(`"${current!.name}" silindi; içindeki kaynaklar kütüphanede duruyor.`, "success");
@@ -311,6 +423,7 @@ async function collectionAction(kind: "new" | "sub" | "rename" | "delete"): Prom
 export function newItem(itemType: string): void {
   void run("Oluşturuluyor", async () => {
     const item = emptyItem(itemType, "manual");
+    if (itemType === "note") item.notes = [{ key: newKey(), note: "", dateModified: now() }];
     const v = currentView();
     if (v.kind === "collection") item.collections = [v.key];
     await putItems([item]);
@@ -322,6 +435,7 @@ export function wireLibrary(): void {
   const types = itemTypes().map((t) => [t, itemTypeLabel(t)] as const).sort((a, b) => a[1].localeCompare(b[1], "tr"));
   const common = ["book", "bookSection", "journalArticle", "encyclopediaArticle", "thesis", "manuscript", "conferencePaper", "webpage"];
   $<HTMLSelectElement>("lib-new").append(
+    h("option", { value: "note" }, "📝 Bağımsız not"),
     h("optgroup", { label: "Sık kullanılan" }, ...common.map((t) => h("option", { value: t }, itemTypeLabel(t)))),
     h("optgroup", { label: "Bütün türler" }, ...types.map(([t, l]) => h("option", { value: t }, l))),
   );
@@ -332,6 +446,11 @@ export function wireLibrary(): void {
   };
   $<HTMLSelectElement>("lib-view").onchange = () => {
     S.libView = $<HTMLSelectElement>("lib-view").value;
+    const saved = S.libView.startsWith("s:") ? activeSearch() : null;
+    if (saved) {
+      advanced = JSON.parse(JSON.stringify(saved)) as SavedSearch;
+      renderAdvanced();
+    }
     S.selected.clear();
     tagFilter.clear();
     renderList();
@@ -356,6 +475,43 @@ export function wireLibrary(): void {
     if (el instanceof HTMLSelectElement) el.onchange = () => void run("Uygulanıyor", async () => (await bulk(k, el.value), (el.value = "")));
     else el.onclick = () => void run("Uygulanıyor", () => bulk(k));
   }
+  $("tag-manage").onchange = () => {
+    manageTags = $<HTMLInputElement>("tag-manage").checked;
+    renderList();
+  };
+  renderAdvanced();
+  $<HTMLSelectElement>("adv-mode").onchange = () => (advanced.mode = $<HTMLSelectElement>("adv-mode").value as "all" | "any");
+  $("adv-add").onclick = () => (advanced.conditions.push({ field: "title", op: "contains", value: "" }), renderAdvanced());
+  $("adv-run").onclick = runAdvanced;
+  $("adv-clear").onclick = () => {
+    advanced = { key: "", name: "", mode: "all", conditions: [{ field: "any", op: "contains", value: "" }] };
+    renderAdvanced();
+    if (S.libView === "adv") S.libView = "all";
+    renderViewSelect();
+    renderList();
+  };
+  $("adv-save").onclick = () =>
+    void run("Arama kaydediliyor", async () => {
+      const name = await ask("Kayıtlı aramanın adı", S.libView.startsWith("s:") ? (activeSearch()?.name ?? "") : "");
+      if (!name) return;
+      const key = S.libView.startsWith("s:") ? S.libView.slice(2) : newKey();
+      await putSearches([{ ...JSON.parse(JSON.stringify(advanced)), key, name }]);
+      S.libView = `s:${key}`;
+      renderViewSelect();
+      renderList();
+      setMessage(`"${name}" kayıtlı aramalara eklendi.`, "success");
+    });
+  $("search-delete").onclick = () =>
+    void run("Arama siliniyor", async () => {
+      (document.querySelector("#view-kutuphane details.menu") as HTMLDetailsElement).open = false;
+      const s = S.libView.startsWith("s:") ? activeSearch() : null;
+      if (!s) throw new Error("Önce listeden bir kayıtlı arama seçin.");
+      await putSearches([], [s.key]);
+      S.libView = "all";
+      renderViewSelect();
+      renderList();
+      setMessage(`"${s.name}" silindi.`, "success");
+    });
   $("coll-new").onclick = () => void run("Koleksiyon", () => collectionAction("new"));
   $("coll-sub").onclick = () => void run("Koleksiyon", () => collectionAction("sub"));
   $("coll-rename").onclick = () => void run("Koleksiyon", () => collectionAction("rename"));

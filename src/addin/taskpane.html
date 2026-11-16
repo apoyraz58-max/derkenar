@@ -29,8 +29,8 @@
         <span>İmleçteki atıf düzenleniyor.</span>
         <button id="edit-new" type="button" class="link">Yeni atıf</button>
       </section>
-      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Yazar, başlık, yıl… (ör. gazzali mustasfa)" aria-label="Kütüphanede ara" />
-      <p class="hint">↑↓ seç · Enter sepete ekle · Ctrl+Enter atıfı ekle</p>
+      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Yazar, başlık, yıl; sayfayla: gazzali 1/45" aria-label="Kütüphanede ara" />
+      <p class="hint">↑↓ seç · Enter sepete ekle · Ctrl+Enter atıfı ekle · "gazzali 1/45", "s. 45", "vr. 12b" sayfayı da yazar</p>
       <ol id="results" class="results" role="listbox" aria-label="Sonuçlar"></ol>
       <p id="empty-library" class="notice" hidden>
         <span>Kütüphane boş.</span>
@@ -59,6 +59,7 @@
             <button type="button" id="coll-sub">Alt koleksiyon</button>
             <button type="button" id="coll-rename">Yeniden adlandır</button>
             <button type="button" id="coll-delete" class="danger-text">Koleksiyonu sil</button>
+            <button type="button" id="search-delete" class="danger-text">Kayıtlı aramayı sil</button>
             <button type="button" id="trash-empty" class="danger-text">Çöpü boşalt</button>
           </div>
         </details>
@@ -72,8 +73,22 @@
         <input id="lib-q" type="search" autocomplete="off" placeholder="Bütün alanlarda ara" aria-label="Kütüphanede ara" />
         <select id="lib-new" aria-label="Yeni kaynak"><option value="">+ Yeni</option></select>
       </div>
+      <details id="adv-box">
+        <summary>Gelişmiş arama</summary>
+        <div id="adv-conds"></div>
+        <div class="row small">
+          <select id="adv-mode" aria-label="Eşleşme"><option value="all">Koşulların hepsi</option><option value="any">Koşullardan biri</option></select>
+          <button id="adv-add" type="button" class="link">+ Koşul</button>
+        </div>
+        <div class="actions">
+          <button id="adv-run" type="button" class="primary">Ara</button>
+          <button id="adv-save" type="button">Aramayı kaydet</button>
+          <button id="adv-clear" type="button" class="link">Temizle</button>
+        </div>
+      </details>
       <details id="tag-box">
         <summary>Etiketler <span id="tag-count" class="muted"></span></summary>
+        <label class="inline small"><input type="checkbox" id="tag-manage" /> Etiketleri yönet</label>
         <div id="tags" class="chips"></div>
       </details>
       <div class="row small">
@@ -98,6 +113,7 @@
         <button type="button" data-bulk="check">Denetle</button>
         <button type="button" data-bulk="bib">Kaynakça kopyala</button>
         <button type="button" data-bulk="export">Dışa aktar</button>
+        <button type="button" data-bulk="report">Rapor</button>
         <button type="button" data-bulk="merge">Birleştir</button>
         <button type="button" data-bulk="trash" class="danger-text">Çöpe at</button>
         <button type="button" data-bulk="restore">Geri yükle</button>
@@ -124,7 +140,7 @@
       <p id="ed-deleted" class="message warning" hidden>Bu kaynak çöp kutusunda.</p>
       <div id="ed-issues"></div>
       <section>
-        <label>Kaynak türü <select id="ed-type"></select></label>
+        <label id="ed-type-box">Kaynak türü <select id="ed-type"></select></label>
         <div id="ed-fields"></div>
       </section>
       <section>
@@ -134,11 +150,20 @@
         <datalist id="all-tags"></datalist>
       </section>
       <section>
-        <h2>Notlar</h2>
+        <h2 id="ed-notes-title">Notlar</h2>
         <div id="ed-notes"></div>
         <button id="ed-note-add" type="button" class="link">+ Not ekle</button>
       </section>
-      <section>
+      <section id="ed-attach-box">
+        <h2>Ekler</h2>
+        <ul id="ed-attachments" class="plain"></ul>
+        <label class="muted small">Dosya ekle (PDF vb.; bu bilgisayarda saklanır) <input id="ed-file" type="file" multiple /></label>
+        <form id="ed-link-form" class="row">
+          <input id="ed-link" placeholder="Bağlantı ekle: https://…" autocomplete="off" />
+          <button type="submit">Ekle</button>
+        </form>
+      </section>
+      <section id="ed-related-box">
         <h2>İlgili kaynaklar</h2>
         <ul id="ed-related" class="plain"></ul>
         <input id="ed-related-q" placeholder="İlgili kaynak ara ve ekle" autocomplete="off" />
@@ -225,13 +250,16 @@
           <label class="web-only">API anahtarı <input id="z-key" type="password" autocomplete="off" placeholder="Yalnız okuma izni yeterli" /></label>
           <p class="muted web-only">Numara ve anahtar: zotero.org → Settings → Security → Applications. Anahtar yalnız bu bilgisayarda saklanır.</p>
           <p class="muted local-only" hidden>Zotero 7 → Ayarlar → Gelişmiş → "Bu bilgisayardaki diğer uygulamaların Zotero ile iletişim kurmasına izin ver" açık olmalı.</p>
-          <div class="actions"><button id="z-sync" type="submit" class="primary">Eşitle</button><span id="z-status" class="muted"></span></div>
+          <div class="actions"><button id="z-sync" type="submit" class="primary">Zotero'dan al</button><button id="z-push" type="button">Zotero'ya gönder</button></div>
+          <label class="inline small"><input type="checkbox" id="z-push-new" /> Derkenar'da girdiğim ve dosyadan aldığım kaynakları da Zotero'ya ekle</label>
+          <p class="muted small">Göndermek için anahtara yazma izni verin. Zotero'da da değişmiş bir kaynağın üzerine yazılmaz; önce "Zotero'dan al". Notlar ve dosyalar gönderilmez.</p>
+          <p class="small"><span id="z-status" class="muted"></span> <span id="z-push-count"></span></p>
         </form>
       </section>
       <section>
         <h2>Tanımlayıcıyla ekle</h2>
         <form id="lookup-form" class="grid">
-          <textarea id="lookup" rows="2" placeholder="DOI veya ISBN; birden çoksa her satıra bir tane"></textarea>
+          <textarea id="lookup" rows="2" placeholder="DOI, ISBN, PMID veya arXiv; birden çoksa her satıra bir tane"></textarea>
           <div class="actions"><button type="submit">Ekle</button></div>
         </form>
       </section>
@@ -249,7 +277,10 @@
           <label>Biçim
             <select id="ex-format">
               <option value="backup">Derkenar yedeği (kayıpsız)</option>
+              <option value="rdf">Zotero RDF (koleksiyon ve notlarla Zotero'ya döner)</option>
               <option value="csl">CSL JSON (Zotero'ya alınır)</option>
+              <option value="csv">CSV (Zotero sütunları)</option>
+              <option value="report">Rapor (HTML)</option>
               <option value="ris">RIS</option>
               <option value="bibtex">BibTeX</option>
             </select>

@@ -56,6 +56,27 @@ export interface Item {
   /** "zotero:users/1", "file:kutuphane.rdf", "doi", "isbn", "manual", "belge". */
   source: string;
   version?: number;
+  /** Changed in Derkenar since the last Zotero sync (sent by "Zotero'ya gönder"). */
+  dirty?: boolean;
+  attachments?: Attachment[];
+}
+
+/** Zotero attachment: a link, or a file kept in the add-in's storage. */
+export interface Attachment {
+  key: string;
+  kind: "link" | "file";
+  title: string;
+  url?: string;
+  fileName?: string;
+  contentType?: string;
+  size?: number;
+  dateAdded: string;
+}
+
+/** Standalone note (Zotero item type "note"): content in notes[0]. Not citable. */
+export const NOTE_TYPE = "note";
+export function isNoteItem(item: Item): boolean {
+  return item.itemType === NOTE_TYPE;
 }
 
 export interface Collection {
@@ -470,7 +491,24 @@ export function creatorLine(item: Item, max = 3): string {
 }
 
 export function titleOf(item: Item): string {
+  if (item.itemType === NOTE_TYPE) return noteText(item.notes[0]?.note ?? "").split("\n")[0]!.slice(0, 120) || "(boş not)";
   return item.fields.title ?? item.fields.caseName ?? item.fields.nameOfAct ?? item.fields.subject ?? "";
+}
+
+/** "kelâm ilminin doğuşu" → "Kelâm İlminin Doğuşu" (Turkish-aware; short connectives stay lower). */
+export function titleCase(s: string): string {
+  const small = new Set(["ve", "ile", "veya", "ya", "da", "de", "ki", "mi", "bir", "fî", "fi", "min", "alâ", "ala", "an", "ilâ", "and", "or", "of", "the", "in", "on", "a", "an", "to"]);
+  let first = true;
+  return s.toLocaleLowerCase("tr").replace(/[\p{L}\p{N}ʿʾ’'-]+/gu, (w) => {
+    const keep = !first && small.has(w);
+    first = false;
+    return keep ? w : w.charAt(0).toLocaleUpperCase("tr") + w.slice(1);
+  });
+}
+
+export function sentenceCaseTitle(s: string): string {
+  const lower = s.toLocaleLowerCase("tr");
+  return lower.replace(/(^|[:.?!]\s+)(\p{L})/gu, (_, p: string, c: string) => p + c.toLocaleUpperCase("tr"));
 }
 
 /** Container title whatever the type calls it (journal, book, encyclopedia, website…). */

@@ -3,13 +3,13 @@
  * and the list of where the library's items came from.
  */
 import { backup, cslJson, formatAs, isBackup, parseBackup } from "../../core/exporters.js";
-import { type ZoteroConfig, cleanDoi, cleanIsbn, lookupDoi, lookupIsbn, parseFile, syncZotero } from "../../core/importers.js";
-import { inView } from "../../core/library.js";
+import { type ZoteroConfig, cleanArxiv, cleanDoi, cleanIsbn, cleanPmid, lookupArxiv, lookupDoi, lookupIsbn, lookupPmid, parseFile, pushToZotero, syncZotero } from "../../core/importers.js";
+import { report, zoteroCsv, zoteroRdf } from "../../core/zoteroexport.js";
 import { type Collection, type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import { citedKeys } from "./document.js";
 import { getMeta, setMeta } from "../store.js";
 import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMessage } from "./core.js";
-import { currentView } from "./library.js";
+import { currentView, inCurrentView } from "./library.js";
 
 
 /** Imports keep existing items: a re-import of the same Zotero export updates them in place. */
@@ -54,12 +54,19 @@ async function importFiles(files: File[]): Promise<void> {
   setMessage(`${added} kaynak eklendi${updated ? `, ${updated} kaynak güncellendi` : ""}${colls ? `, ${colls} koleksiyon alındı` : ""}.`, "success");
 }
 
-async function syncFromZotero(): Promise<void> {
+function zoteroConfig(): ZoteroConfig {
   const local = $<HTMLSelectElement>("z-mode").value === "local";
   const id = $<HTMLInputElement>("z-id").value.trim();
   const apiKey = $<HTMLInputElement>("z-key").value.trim();
   if (!local && !/^\d+$/.test(id)) throw new Error("Zotero kullanıcı veya grup numarasını yazın (yalnız rakam).");
-  const cfg: ZoteroConfig = local ? { library: "users/0", base: "http://localhost:23119/api" } : { library: `${$<HTMLSelectElement>("z-kind").value}/${id}`, apiKey: apiKey || undefined };
+  return local ? { library: "users/0", base: "http://localhost:23119/api" } : { library: `${$<HTMLSelectElement>("z-kind").value}/${id}`, apiKey: apiKey || undefined };
+}
+
+async function syncFromZotero(): Promise<void> {
+  const local = $<HTMLSelectElement>("z-mode").value === "local";
+  const id = $<HTMLInputElement>("z-id").value.trim();
+  const apiKey = $<HTMLInputElement>("z-key").value.trim();
+  const cfg = zoteroConfig();
   const saved = await getMeta<{ library: string; base?: string; version: number }>("zoteroVersion");
   const since = saved && saved.library === cfg.library && saved.base === cfg.base ? saved.version : 0;
   const status = $("z-status");
@@ -68,30 +75,68 @@ async function syncFromZotero(): Promise<void> {
     throw e;
   });
   const source = `zotero:${cfg.library}`;
-  // Edits made in Derkenar to Zotero items are kept unless Zotero changed the item too.
+  // Edits made in Derkenar and not yet sent are kept unless Zotero changed the item too.
+  const conflicts: string[] = [];
   const items = page.items.map((i) => {
     const old = S.byKey.get(i.key);
-    return old && old.source === source && old.version === i.version && old.dateModified > i.dateModified ? old : i;
+    if (!old?.dirty) return i;
+    if (old.version === i.version) return old;
+    conflicts.push(i.fields.title ?? i.key);
+    return { ...i, attachments: old.attachments };
   });
   const stale = since === 0 ? S.items.filter((i) => i.source === source && !page.items.some((p) => p.key === i.key)).map((i) => i.key) : [];
   await putCollections(page.collections);
   await putItems(items, [...stale, ...page.deletedKeys]);
   await setMeta("zoteroVersion", { library: cfg.library, base: cfg.base, version: page.version });
+  const known = new Set((await getMeta<string[]>("zoteroCollections")) ?? []);
+  for (const c of page.collections) known.add(c.key);
+  await setMeta("zoteroCollections", [...known]);
   await setMeta("zotero", { mode: local ? "local" : "web", kind: $<HTMLSelectElement>("z-kind").value, id, apiKey });
   status.textContent = `Son eşitleme: ${new Date().toLocaleString("tr-TR")}`;
-  setMessage(since ? `${page.items.length} değişen, ${page.deletedKeys.length} silinen kaynak işlendi.` : `${page.items.length} kaynak ve ${page.collections.length} koleksiyon Zotero'dan alındı.`, "success");
+  const msg = since ? `${page.items.length} değişen, ${page.deletedKeys.length} silinen kaynak işlendi.` : `${page.items.length} kaynak ve ${page.collections.length} koleksiyon Zotero'dan alındı.`;
+  setMessage(conflicts.length ? `${msg} ${conflicts.length} kaynak hem Derkenar'da hem Zotero'da değişmişti; Zotero'daki hâli alındı: ${conflicts.slice(0, 3).join("; ")}${conflicts.length > 3 ? "…" : ""}` : msg, conflicts.length ? "warning" : "success");
+  renderPushCount();
+}
+
+/** Sends Derkenar's changes (and, if asked, items entered here) to the Zotero library. */
+async function pushChanges(): Promise<void> {
+  const cfg = zoteroConfig();
+  if (!cfg.base && !cfg.apiKey) throw new Error("Göndermek için yazma izni olan bir API anahtarı gerekir.");
+  const source = `zotero:${cfg.library}`;
+  const includeNew = $<HTMLInputElement>("z-push-new").checked;
+  const items = S.items.filter((i) => !i.deleted && ((i.source === source && i.dirty) || (includeNew && !i.source.startsWith("zotero:") && i.source !== "belge")));
+  if (!items.length) {
+    setMessage("Zotero'ya gönderilecek değişiklik yok.", "info");
+    return;
+  }
+  const known = new Set((await getMeta<string[]>("zoteroCollections")) ?? []);
+  const res = await pushToZotero(cfg, items, known);
+  await putItems(res.saved);
+  const saved = await getMeta<{ library: string; base?: string; version: number }>("zoteroVersion");
+  if (saved && saved.library === cfg.library && res.version) await setMeta("zoteroVersion", { ...saved, version: Math.max(saved.version, res.version) });
+  renderPushCount();
+  setMessage(`${res.saved.length} kaynak Zotero'ya gönderildi.${res.failed.length ? ` ${res.failed.length} kaynak gönderilemedi: ${res.failed[0]!.message}` : ""}`, res.failed.length ? "warning" : "success");
+}
+
+export function renderPushCount(): void {
+  const n = S.items.filter((i) => i.dirty && !i.deleted).length;
+  $("z-push-count").textContent = n ? `${n} değişiklik gönderilmeyi bekliyor.` : "";
 }
 
 async function lookup(): Promise<void> {
   const lines = $<HTMLTextAreaElement>("lookup").value.split(/\n+/).map((l) => l.trim()).filter(Boolean);
-  if (!lines.length) throw new Error("DOI (10.xxxx/…) veya ISBN yazın.");
+  if (!lines.length) throw new Error("DOI (10.xxxx/…), ISBN, PMID veya arXiv numarası yazın.");
   const found: Item[] = [];
   const failed: string[] = [];
   for (const line of lines) {
     const doi = cleanDoi(line);
-    const isbn = doi ? null : cleanIsbn(line);
+    const arxiv = doi ? null : cleanArxiv(line);
+    const pmid = doi || arxiv ? null : cleanPmid(line);
+    const isbn = doi || arxiv || pmid ? null : cleanIsbn(line);
     try {
       if (doi) found.push(await lookupDoi(doi));
+      else if (arxiv) found.push(await lookupArxiv(arxiv));
+      else if (pmid) found.push(await lookupPmid(pmid));
       else if (isbn) found.push(await lookupIsbn(isbn));
       else failed.push(line);
     } catch {
@@ -107,7 +152,7 @@ async function lookup(): Promise<void> {
 
 function exportScope(): Item[] {
   const scope = $<HTMLSelectElement>("ex-scope").value;
-  if (scope === "collection") return S.items.filter((i) => inView(i, currentView(), S.collections));
+  if (scope === "collection") return S.items.filter(inCurrentView);
   if (scope === "selected") return [...S.selected].map((k) => S.byKey.get(k)).filter((x): x is Item => Boolean(x));
   if (scope === "document") return [...citedKeys()].map((k) => S.byKey.get(k) ?? doc().items[k]).filter((x): x is Item => Boolean(x));
   return S.items.filter((i) => !i.deleted);
@@ -122,6 +167,14 @@ async function exportText(): Promise<{ name: string; text: string; type: string 
       const keys = new Set(items.flatMap((i) => i.collections));
       return { name: `derkenar-yedek-${date}.json`, text: backup(items, S.collections.filter((c) => keys.has(c.key) || $<HTMLSelectElement>("ex-scope").value === "library")), type: "application/json" };
     }
+    case "rdf": {
+      const keys = new Set(items.flatMap((i) => i.collections));
+      return { name: `derkenar-${date}.rdf`, text: zoteroRdf(items, S.collections.filter((c) => keys.has(c.key))), type: "application/rdf+xml" };
+    }
+    case "csv":
+      return { name: `derkenar-${date}.csv`, text: zoteroCsv(items), type: "text/csv" };
+    case "report":
+      return { name: `derkenar-rapor-${date}.html`, text: report(items, S.collections), type: "text/html" };
     case "csl":
       return { name: `derkenar-${date}.json`, text: cslJson(items), type: "application/json" };
     case "ris":
@@ -145,7 +198,7 @@ export function renderSources(): void {
           class: "link",
           onclick: () =>
             void run("Çöpe taşınıyor", async () => {
-              await putItems(S.items.filter((i) => i.source === source).map((i) => ({ ...i, deleted: true, dateModified: now() })));
+              await putItems(S.items.filter((i) => i.source === source).map((i) => ({ ...i, deleted: true, dateModified: now() })), [], true);
               setMessage(`${sourceName(source)} kaynakları çöp kutusuna taşındı.`, "success");
             }),
         }, "Çöpe at"),
@@ -176,6 +229,7 @@ export function wireIo(): void {
     for (const el of document.querySelectorAll<HTMLElement>(".web-only")) el.hidden = mode.value === "local";
     for (const el of document.querySelectorAll<HTMLElement>(".local-only")) el.hidden = mode.value !== "local";
   };
+  $("z-push").onclick = () => void run("Zotero'ya gönderiliyor", pushChanges);
   $<HTMLFormElement>("zotero-form").onsubmit = (e) => {
     e.preventDefault();
     void run("Zotero eşitleniyor", syncFromZotero);

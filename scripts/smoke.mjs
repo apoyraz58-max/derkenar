@@ -138,6 +138,22 @@ const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
 await page.route("https://appsforoffice.microsoft.com/**", (r) => r.fulfill({ contentType: "text/javascript", body: FAKE }));
+const zoteroPosts = [];
+await page.route("https://api.zotero.org/**", async (r) => {
+  const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Expose-Headers": "Total-Results, Last-Modified-Version" };
+  if (r.request().method() === "OPTIONS") return r.fulfill({ status: 204, headers: cors });
+  if (r.request().method() === "POST") {
+    const body = JSON.parse(r.request().postData());
+    zoteroPosts.push(body);
+    const successful = Object.fromEntries(body.map((b, i) => [String(i), { key: b.key, version: 21 }]));
+    return r.fulfill({ contentType: "application/json", headers: { ...cors, "Last-Modified-Version": "21" }, body: JSON.stringify({ successful, unchanged: {}, failed: {} }) });
+  }
+  const url = r.request().url();
+  const body = url.includes("/collections")
+    ? []
+    : [{ key: "ZOTK2345", version: 20, data: { key: "ZOTK2345", itemType: "book", title: "Kitâbü't-Ta'arruf", creators: [{ creatorType: "author", lastName: "Kelâbâzî", firstName: "Ebû Bekir" }], publisher: "Matbaatü's-Saâde", place: "Kahire", date: "1933", tags: [{ tag: "tasavvuf" }], collections: [] } }];
+  return r.fulfill({ contentType: "application/json", headers: { ...cors, "Total-Results": String(body.length), "Last-Modified-Version": "20" }, body: JSON.stringify(body) });
+});
 const notes = () => page.evaluate(() => window.__notes());
 const waitNotes = (fn, label) => page.waitForFunction(fn, null, { timeout: 8000 }).catch(async () => fail(`${label}: ${JSON.stringify(await notes())}`));
 const cite = async (q, vol, loc) => {
@@ -174,7 +190,7 @@ try {
   await page.click("#lib-list li.item-row:has-text('Müstasfâ')");
   const roles = await page.locator("#ed-fields .creator select").evaluateAll((els) => els.map((e) => e.value));
   if (JSON.stringify(roles) !== JSON.stringify(["author", "muhakkik", "nasir"])) fail(`roles: ${roles}`);
-  if (!(await page.textContent("#ed-notes textarea")).includes("Önemli nüsha") && (await page.inputValue("#ed-notes textarea")) !== "Önemli nüsha") fail("note missing");
+  if (!(await page.textContent("#ed-notes .rich")).includes("Önemli nüsha")) fail("note missing");
   // Add a hazırlayan and a date, save by typing.
   await page.click("#ed-fields button:has-text('+ Kişi ekle')");
   await page.locator("#ed-fields .creator select").last().selectOption("hazirlayan");
@@ -201,7 +217,11 @@ try {
   await waitNotes(() => window.__notes().length === 1, "first note");
   let n = await notes();
   if (n[0] !== "Ebû Hâmid Muhammed b. Muhammed Gazzâlî, el-Müstasfâ min ʿilmi’l-uṣûl, nşr. Ali Nâşir, thk. Hamza b. Züheyr Hâfız, haz. Veli Hazır (Medine: el-Câmiʿatü’l-İslâmiyye, 1413/1993), 1/45.") fail(`note 1: ${n[0]}`);
-  await cite("gazzali", "2", "10");
+  // Quick format: "gazzali 2/10" fills cilt and sayfa.
+  await page.fill("#q", "gazzali 2/10");
+  await page.press("#q", "Enter");
+  if ((await page.inputValue("#basket .vol")) !== "2" || (await page.inputValue('#basket [data-f="locator"]')) !== "10") fail("quick format");
+  await page.press("#q", "Control+Enter");
   await waitNotes(() => window.__notes()[1] === "Gazzâlî, el-Müstasfâ min ʿilmi’l-uṣûl, 2/10.", "short form");
   await cite("yilmaz", undefined, "50");
   await cite("kemalpasazade", undefined, "12b");
@@ -261,12 +281,77 @@ try {
   if ((await page.locator("#doc-citations li").count()) !== 4) fail("document list should show 4 citations");
   if (shots) await page.screenshot({ path: `${shots}/belge.png`, fullPage: true });
 
+  // 7b. Zotero features in the library.
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-view", "all");
+  await page.click("#adv-box summary");
+  await page.selectOption("#adv-conds .cond select >> nth=0", "title");
+  await page.fill("#adv-conds .cond input", "kelam");
+  await page.click("#adv-run");
+  await page.waitForFunction(() => document.querySelectorAll("#lib-list li.item-row").length === 1);
+  await page.click("#adv-save");
+  await page.fill("#coll-name", "Kelâm kaynakları");
+  await page.press("#coll-name", "Enter");
+  await page.waitForSelector("#message:has-text('kayıtlı aramalara eklendi')");
+  if (!(await page.locator("#lib-view option").allTextContents()).some((o) => o.includes("Kelâm kaynakları"))) fail("saved search missing");
+  await page.selectOption("#lib-view", "all");
+  // Tags: rename and color.
+  await page.click("#tag-box summary");
+  await page.check("#tag-manage");
+  await page.waitForSelector(".tag-row");
+  const usulIndex = await page.evaluate(() => [...document.querySelectorAll(".tag-row input")].findIndex((i) => i.value === "usûl"));
+  if (usulIndex < 0) fail("tag usûl missing in manager");
+  const usul = page.locator(".tag-row").nth(usulIndex);
+  await usul.locator("select").selectOption({ index: 1 });
+  await page.waitForFunction(() => [...document.querySelectorAll(".tag-row select")].some((x) => x.value !== ""));
+  await usul.locator("input").fill("usûl-i fıkıh");
+  await usul.locator("input").press("Enter");
+  await page.waitForSelector("#message:has-text('usûl-i fıkıh')");
+  await page.uncheck("#tag-manage");
+  if (!(await page.locator("#lib-list .dot").count())) fail("tag color dot missing");
+  // Standalone rich note and a link attachment.
+  await page.selectOption("#lib-new", "note");
+  await page.waitForSelector("#view-kaynak:not([hidden]) .rich");
+  await page.click(".rich");
+  await page.keyboard.type("Tez planı: ");
+  await page.click(".rich-bar .b");
+  await page.keyboard.type("önemli");
+  await page.waitForTimeout(700);
+  await page.click("#ed-back");
+  await page.waitForSelector("#lib-list li.item-row:has-text('Tez planı')");
+  await page.click("#lib-list li.item-row:has-text('Müstasfâ')");
+  await page.fill("#ed-link", "https://islamansiklopedisi.org.tr/gazzali");
+  await page.press("#ed-link", "Enter");
+  await page.waitForSelector("#ed-attachments a:has-text('islamansiklopedisi')");
+  await page.click("#ed-back");
+  // Zotero: receive, edit, send back.
+  await page.click("#tab-aktar");
+  await page.fill("#z-id", "1234567");
+  await page.fill("#z-key", "x");
+  await page.click("#z-sync");
+  await page.waitForSelector("#message:has-text('1 kaynak ve 0 koleksiyon')");
+  await page.click("#tab-kutuphane");
+  await page.click("#lib-list li.item-row:has-text('Kelâbâzî')");
+  await page.fill('[data-field="title"]', "Kitâbü't-Taʿarruf li-mezhebi ehli't-tasavvuf");
+  await page.waitForTimeout(600);
+  await page.click("#tab-aktar");
+  await page.waitForSelector("#z-push-count:has-text('1 değişiklik')");
+  await page.click("#z-push");
+  await page.waitForSelector("#message:has-text('1 kaynak Zotero')");
+  if (zoteroPosts.length !== 1 || zoteroPosts[0][0].version !== 20 || !zoteroPosts[0][0].title.includes("li-mezhebi")) fail(`push: ${JSON.stringify(zoteroPosts)}`);
+  if (await page.textContent("#z-push-count")) fail("dirty mark not cleared");
+  // Zotero RDF export.
+  await page.selectOption("#ex-format", "rdf");
+  const [rdf] = await Promise.all([page.waitForEvent("download"), page.click("#ex-download")]);
+  const rdfText = await readFile(await rdf.path(), "utf8");
+  if (!rdfText.includes("<z:Collection") || !rdfText.includes("Tez planı")) fail("RDF export");
+
   // 8. Export (download) and the stored document state.
   await page.click("#tab-aktar");
   await page.selectOption("#ex-format", "csl");
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#ex-download")]);
   const exported = JSON.parse(await readFile(await dl.path(), "utf8"));
-  if (exported.length !== 4 || !exported.some((e) => e.note?.includes("editorial-director: Nâşir || Ali"))) fail("CSL export");
+  if (exported.length < 4 || !exported.some((e) => e.note?.includes("editorial-director: Nâşir || Ali"))) fail("CSL export");
   const stored = JSON.parse(await page.evaluate(() => window.__doc.settings.derkenar));
   if (stored.style !== "isnad-dipnotlu" || !stored.items[Object.keys(stored.items)[0]].itemType) fail("document state");
   if (!(await page.evaluate(() => window.__doc.settings["Office.AutoShowTaskpaneWithDocument"]))) fail("auto-open not set");

@@ -107,3 +107,20 @@ function startsWord(haystack: string, word: string): boolean {
 function compareItems(a: Item, b: Item): number {
   return creatorLine(a).localeCompare(creatorLine(b), "tr") || yearOf(a).localeCompare(yearOf(b));
 }
+
+/**
+ * Quick format, as in Zotero's citation bar: "gazzali 1/45", "gazzali s. 45",
+ * "kemalpaşazade vr. 12b" → search words + cilt/sayfa. A lone four-digit number
+ * stays a year ("gazzali 1982").
+ */
+export function parseQuick(q: string): { words: string; volume?: string; locator?: string; label?: string } {
+  const m = /^(.*?)[\s,]+(?:(s\.|ss\.|sayfa|vr\.|varak)\s*)?(\d+\/\d+[ab]?(?:-\d+[ab]?)?|\d{1,3}[ab]?(?:-\d+[ab]?)?|\d{4}[ab]?-\d+[ab]?)$/i.exec(q.trim());
+  const prefixed = /^(.*?)[\s,]+(s\.|ss\.|sayfa|vr\.|varak)\s*(\d+[ab]?(?:-\d+[ab]?)?)$/i.exec(q.trim());
+  const hit = prefixed ?? m;
+  if (!hit || !hit[1]!.trim()) return { words: q };
+  const label = /^v/i.test(hit[2] ?? "") ? "folio" : undefined;
+  const loc = hit[3]!;
+  const slash = /^(\d+)\/(.+)$/.exec(loc);
+  return { words: hit[1]!, ...(slash ? { volume: slash[1], locator: slash[2] } : { locator: loc }), ...(label ? { label } : {}) };
+}
+
