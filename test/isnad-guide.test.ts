@@ -153,6 +153,11 @@ describe("İSNAD 2 kılavuzu: kurum kısaltması, soru işareti", () => {
     expect(isAcronymOf("YILMAZ", "Ahmet")).toBe(false);
     expect(isAcronymOf("Kaya", "Adem")).toBe(false);
   });
+  it("patent: buluş sahibi ve veren kurum (s. 127)", () => {
+    const r = render(work("Eğitim Dokümanları"), {}, {});
+    expect(r.first).toBe("Adem Kaya, Eğitim Dokümanları İçin İçerik Sınıflandırma Sistemi ve Yöntemi (Patent, Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019).");
+    expect(r.bib).toBe("Kaya, Adem. Eğitim Dokümanları İçin İçerik Sınıflandırma Sistemi ve Yöntemi. Patent. Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019. https://www.turkpatent.gov.tr/TURKPATENT");
+  });
   it("gazete: soru işaretli başlıktan sonra nokta (s. 112)", () => {
     const r = render(work("15 Temmuz’u Farklı Kılan Nedir"), { locator: "8" }, { locator: "8" });
     expect(r.bib.startsWith("Hanioğlu, M. Şükrü. “15 Temmuz’u Farklı Kılan Nedir?”. Sabah (15 Temmuz 2018), 8.")).toBe(true);

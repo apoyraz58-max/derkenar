@@ -4,3 +4,6 @@ Creative Commons Attribution-ShareAlike 3.0 (https://creativecommons.org/license
 
 Derkenar change: in locales-tr-TR.xml the day of the text date form is "numeric"
 (İSNAD writes "9 Eylül 2019").
+
+Derkenar change: in isnad-dipnotlu.csl the inventor of a patent with an issuing
+authority is printed in notes (the guide, s. 127, shows "Adem Kaya, …").

@@ -217,6 +217,12 @@
                 </name>
               </names>
             </if>
+            <!-- Derkenar: the inventor of a patent is printed (guide s. 127: "Adem Kaya, …") -->
+            <else>
+              <names variable="author">
+                <name/>
+              </names>
+            </else>
           </choose>
         </if>
         <else>

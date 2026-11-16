@@ -338,6 +338,8 @@ function cslNameVar(creatorType: string, itemType?: string): string {
   if (creatorType.startsWith("csl:")) return creatorType.slice(4);
   if (ISNAD_ROLES[creatorType]) return ISNAD_ROLES[creatorType]!.csl;
   if (itemType && typeIndex.get(itemType)?.creatorTypes[0] === creatorType) return "author";
+  // Zotero's own primary creator of these types (the schema now lists "creator" first).
+  if (creatorType === "director" && itemType && ["film", "videoRecording", "tvBroadcast", "radioBroadcast"].includes(itemType)) return "author";
   return schema.csl.names[creatorType] ?? "contributor";
 }
 
@@ -398,6 +400,14 @@ export function toCsl(item: Item): CslItem {
   // ("Türk Standardları Enstitüsü (TSE)", guide s. 123), which İSNAD's style prints from "authority".
   const first = item.creators.find((c) => c.creatorType === "author" || cslNameVar(c.creatorType, item.itemType) === "author");
   if (!csl.authority && first?.lastName && first.firstName && isAcronymOf(first.lastName, first.firstName)) csl.authority = first.lastName;
+  // Album of a recording (İSNAD: “Parça”, Albüm (Yıl)); Zotero keeps it as the series.
+  if (item.itemType === "audioRecording" && !csl["container-title"]) {
+    const album = item.fields.seriesTitle ?? extra.csl.seriesText ?? /^seriesText:\s*(.+)$/m.exec(item.fields.extra ?? "")?.[1];
+    if (album) {
+      csl["container-title"] = album;
+      delete csl["collection-title"];
+    }
+  }
   // İSNAD's Zotero rule: the edited work's title in a tahkik/neşir article goes in "Series Text" (s. 109).
   if (["journalArticle", "magazineArticle", "newspaperArticle"].includes(item.itemType) && item.fields.seriesText && !csl["collection-title"]) csl["collection-title"] = item.fields.seriesText;
   if (extra.rest) csl.note = extra.rest;

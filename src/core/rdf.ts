@@ -289,7 +289,10 @@ export function parseZoteroRdf(xml: string, source: string): RdfResult {
     if (cls === "Series") {
       setBase(item, "series", text(child(el, NS.dc, "title")), extra);
       setBase(item, "seriesNumber", text(child(el, NS.dc, "identifier")), extra);
-      setBase(item, "seriesText", text(child(el, NS.dcterms, "alternative")), extra);
+      const alt = text(child(el, NS.dcterms, "alternative"));
+      if (typeField(item.itemType, "seriesText")) setBase(item, "seriesText", alt, extra);
+      else if (alt && typeField(item.itemType, "seriesTitle") && !item.fields.seriesTitle) item.fields.seriesTitle = alt;
+      else setBase(item, "seriesText", alt, extra);
       return;
     }
     for (const c of children(el)) {

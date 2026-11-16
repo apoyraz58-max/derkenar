@@ -121,7 +121,7 @@ export class Renderer {
  * İSNAD: no comma before a parenthesis ("…Defteri (1334-1336), 61a", guide s. 67).
  */
 export function isnadTidy(html: string): string {
-  return html.replace(/,(\s|&#160;)+\(/g, " (");
+  return html.replace(/,(\s|&#160;)+\(/g, " (").replace(/,(\s|&#160;)*\./g, ".");
 }
 
 /**
