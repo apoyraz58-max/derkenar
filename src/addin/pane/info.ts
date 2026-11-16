@@ -34,7 +34,7 @@ export async function renderInfo(): Promise<void> {
     ["Kayıtlı arama", n(S.searches.length)],
     ["Etiket", n(tags.size)],
     ["Çöp kutusunda", n(S.items.length - live.length)],
-    ["Zotero'ya gönderilmemiş değişiklik", n(dirty)],
+    ["Çevrimiçi kütüphaneye gönderilmemiş değişiklik", n(dirty)],
   ]);
 
   const byType = new Map<string, number>();
@@ -73,15 +73,15 @@ export async function renderInfo(): Promise<void> {
   }
   const z = await getMeta<{ mode: string; kind: string; id: string }>("zotero").catch(() => undefined);
   const zv = await getMeta<{ library: string; version: number }>("zoteroVersion").catch(() => undefined);
-  storage.push(["Zotero bağlantısı", z ? (z.mode === "local" ? "Bu bilgisayardaki Zotero" : `zotero.org, ${z.kind === "groups" ? "grup" : "kişisel"} ${z.id}`) : "Yok"]);
+  storage.push(["Çevrimiçi kütüphane", z ? (z.mode === "local" ? "Bu bilgisayardaki atıf programı" : `${z.kind === "groups" ? "grup" : "kişisel"} ${z.id}`) : "Yok"]);
   if (zv) storage.push(["Son eşitleme", `${zv.library}, sürüm ${zv.version}`]);
   facts("info-storage", storage);
 
   facts("info-components", [
     ["Derkenar", __VERSION__],
-    ["Biçimlendirici", "citeproc-js (Zotero'nun CSL motoru)"],
+    ["Biçimlendirici", "citeproc-js (CSL)"],
     ["Stiller", "İSNAD 2 dipnotlu, İSNAD 2 metin içi (resmî CSL, Derkenar düzeltmeleriyle)"],
-    ["Zotero şeması", `sürüm ${SCHEMA_VERSION}`],
+    ["Kaynak türleri şeması", `sürüm ${SCHEMA_VERSION}`],
     ["Word API", Office.context?.requirements?.isSetSupported?.("WordApi", "1.5") ? "1.5 ve üstü (dipnot, sonnot)" : "1.3 (dipnotlar sınırlı)"],
   ]);
 }

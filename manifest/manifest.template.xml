@@ -10,7 +10,7 @@
   <ProviderName>Derkenar</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
   <DisplayName DefaultValue="Derkenar"/>
-  <Description DefaultValue="Word için İSNAD temelli atıf ve kaynakça: Zotero kütüphanesi, otomatik dipnot güncelleme, İSNAD yazım denetimi."/>
+  <Description DefaultValue="Word için atıf ve kaynakça yöneticisi: kaynak kütüphanesi, otomatik dipnot güncelleme, atıf stili ve yazım denetimi."/>
   <IconUrl DefaultValue="{{BASE_URL}}assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="{{BASE_URL}}assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
@@ -428,20 +428,20 @@
         <bt:String id="Ctx.Insert" DefaultValue="Atıf ekle"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile Zotero kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
         <bt:String id="Insert.Tip" DefaultValue="İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır."/>
         <bt:String id="Bib.Tip" DefaultValue="İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir."/>
         <bt:String id="Prefs.Tip" DefaultValue="Atıf stili (İSNAD 2 dipnotlu / metin içi), dil, dipnot ya da sonnot, otomatik güncelleme."/>
         <bt:String id="Refresh.Tip" DefaultValue="Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez."/>
-        <bt:String id="Unlink.Tip" DefaultValue="Teslimden önce atıfları ve kaynakçayı düz metne çevirir (Zotero'daki Unlink Citations). Önce belgenin bir kopyasını alın."/>
-        <bt:String id="Library.Tip" DefaultValue="Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: Zotero'nun kütüphanesi bu pencerede."/>
-        <bt:String id="New.Tip" DefaultValue="Elle yeni kaynak girer: bütün Zotero türleri ve alanları, ayrıca muhakkik, nâşir, hazırlayan, sadeleştiren."/>
+        <bt:String id="Unlink.Tip" DefaultValue="Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın."/>
+        <bt:String id="Library.Tip" DefaultValue="Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede."/>
+        <bt:String id="New.Tip" DefaultValue="Elle yeni kaynak girer: bütün kaynak türleri ve alanları, ayrıca muhakkik, nâşir, hazırlayan, sadeleştiren."/>
         <bt:String id="Identifier.Tip" DefaultValue="DOI veya ISBN ile kaynak ekler."/>
-        <bt:String id="Import.Tip" DefaultValue="Zotero'dan dışa aktarılmış kütüphaneyi alır: Zotero RDF, CSL JSON, BibTeX, RIS. Ya da Zotero hesabıyla eşitler."/>
+        <bt:String id="Import.Tip" DefaultValue="Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler."/>
         <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>
         <bt:String id="CheckDoc.Tip" DefaultValue="Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir."/>
         <bt:String id="CheckLib.Tip" DefaultValue="Bütün kütüphaneyi İSNAD 2 yazım kurallarına göre denetler."/>
-        <bt:String id="Info.Tip" DefaultValue="Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, Zotero eşitlemesi, sürüm."/>
+        <bt:String id="Info.Tip" DefaultValue="Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, eşitleme, sürüm."/>
         <bt:String id="Help.Tip" DefaultValue="Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında."/>
         <bt:String id="Ctx.Insert.Tip" DefaultValue="Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
       </bt:LongStrings>

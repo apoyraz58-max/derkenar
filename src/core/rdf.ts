@@ -181,7 +181,7 @@ export interface RdfResult {
 export function parseZoteroRdf(xml: string, source: string): RdfResult {
   const doc = new DOMParser().parseFromString(xml, "text/xml");
   const root = doc.documentElement as unknown as El;
-  if (!root || local(root) !== "RDF") throw new Error("Bu dosya bir Zotero RDF dosyası değil.");
+  if (!root || local(root) !== "RDF") throw new Error("Bu dosya bir RDF kütüphane dosyası değil.");
   const nodes = children(root);
   const byAbout = new Map<string, El>();
   for (const n of nodes) {

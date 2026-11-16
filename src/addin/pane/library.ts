@@ -219,7 +219,7 @@ function row(item: Item): HTMLLIElement {
   const li = resultRow(item, { class: "item-row" });
   const dots = tagDots(item);
   if (dots) li.querySelector(".r-title")?.prepend(dots);
-  if (item.dirty) li.querySelector(".r-author")?.append(h("span", { class: "r-dirty", title: "Zotero'ya gönderilmedi" }, " ●"));
+  if (item.dirty) li.querySelector(".r-author")?.append(h("span", { class: "r-dirty", title: "Çevrimiçi kütüphaneye gönderilmedi" }, " ●"));
   li.prepend(cb);
   li.onclick = (e) => (e.detail === 2 ? (addToBasket(item), showView("atif")) : openEditor(item.key));
   return li;

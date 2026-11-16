@@ -59,7 +59,7 @@ function zoteroConfig(): ZoteroConfig {
   const local = $<HTMLSelectElement>("z-mode").value === "local";
   const id = $<HTMLInputElement>("z-id").value.trim();
   const apiKey = $<HTMLInputElement>("z-key").value.trim();
-  if (!local && !/^\d+$/.test(id)) throw new Error("Zotero kullanıcı veya grup numarasını yazın (yalnız rakam).");
+  if (!local && !/^\d+$/.test(id)) throw new Error("Kullanıcı veya grup numarasını yazın (yalnız rakam).");
   return local ? { library: "users/0", base: "http://localhost:23119/api" } : { library: `${$<HTMLSelectElement>("z-kind").value}/${id}`, apiKey: apiKey || undefined };
 }
 
@@ -72,7 +72,7 @@ async function syncFromZotero(): Promise<void> {
   const since = saved && saved.library === cfg.library && saved.base === cfg.base ? saved.version : 0;
   const status = $("z-status");
   const page = await syncZotero(cfg, since, fetch, (done, total) => (status.textContent = `${done} / ${total}`)).catch((e: unknown) => {
-    if (local && e instanceof TypeError) throw new Error("Yerel Zotero'ya ulaşılamadı: Zotero açık mı, yerel API izni verildi mi?");
+    if (local && e instanceof TypeError) throw new Error("Bu bilgisayardaki atıf programına ulaşılamadı: program açık mı, yerel API izni verildi mi?");
     throw e;
   });
   const source = `zotero:${cfg.library}`;
@@ -94,8 +94,8 @@ async function syncFromZotero(): Promise<void> {
   await setMeta("zoteroCollections", [...known]);
   await setMeta("zotero", { mode: local ? "local" : "web", kind: $<HTMLSelectElement>("z-kind").value, id, apiKey });
   status.textContent = `Son eşitleme: ${new Date().toLocaleString("tr-TR")}`;
-  const msg = since ? `${page.items.length} değişen, ${page.deletedKeys.length} silinen kaynak işlendi.` : `${page.items.length} kaynak ve ${page.collections.length} koleksiyon Zotero'dan alındı.`;
-  setMessage(conflicts.length ? `${msg} ${conflicts.length} kaynak hem Derkenar'da hem Zotero'da değişmişti; Zotero'daki hâli alındı: ${conflicts.slice(0, 3).join("; ")}${conflicts.length > 3 ? "…" : ""}` : msg, conflicts.length ? "warning" : "success");
+  const msg = since ? `${page.items.length} değişen, ${page.deletedKeys.length} silinen kaynak işlendi.` : `${page.items.length} kaynak ve ${page.collections.length} koleksiyon çevrimiçi kütüphaneden alındı.`;
+  setMessage(conflicts.length ? `${msg} ${conflicts.length} kaynak hem Derkenar'da hem çevrimiçi kütüphanede değişmişti; çevrimiçi hâli alındı: ${conflicts.slice(0, 3).join("; ")}${conflicts.length > 3 ? "…" : ""}` : msg, conflicts.length ? "warning" : "success");
   renderPushCount();
 }
 
@@ -107,7 +107,7 @@ async function pushChanges(): Promise<void> {
   const includeNew = $<HTMLInputElement>("z-push-new").checked;
   const items = S.items.filter((i) => !i.deleted && ((i.source === source && i.dirty) || (includeNew && !i.source.startsWith("zotero:") && i.source !== "belge")));
   if (!items.length) {
-    setMessage("Zotero'ya gönderilecek değişiklik yok.", "info");
+    setMessage("Çevrimiçi kütüphaneye gönderilecek değişiklik yok.", "info");
     return;
   }
   const known = new Set((await getMeta<string[]>("zoteroCollections")) ?? []);
@@ -116,7 +116,7 @@ async function pushChanges(): Promise<void> {
   const saved = await getMeta<{ library: string; base?: string; version: number }>("zoteroVersion");
   if (saved && saved.library === cfg.library && res.version) await setMeta("zoteroVersion", { ...saved, version: Math.max(saved.version, res.version) });
   renderPushCount();
-  setMessage(`${res.saved.length} kaynak Zotero'ya gönderildi.${res.failed.length ? ` ${res.failed.length} kaynak gönderilemedi: ${res.failed[0]!.message}` : ""}`, res.failed.length ? "warning" : "success");
+  setMessage(`${res.saved.length} kaynak çevrimiçi kütüphaneye gönderildi.${res.failed.length ? ` ${res.failed.length} kaynak gönderilemedi: ${res.failed[0]!.message}` : ""}`, res.failed.length ? "warning" : "success");
 }
 
 export function renderPushCount(): void {
@@ -237,7 +237,7 @@ export function renderSources(): void {
 }
 
 export function sourceName(source: string): string {
-  if (source.startsWith("zotero:")) return `Zotero (${source.slice(7)})`;
+  if (source.startsWith("zotero:")) return `Çevrimiçi kütüphane (${source.slice(7)})`;
   if (source.startsWith("file:")) return `Dosya: ${source.slice(5)}`;
   return ({ doi: "DOI ile eklenenler", isbn: "ISBN ile eklenenler", manual: "Elle girilenler", belge: "Belgelerden alınanlar" } as Record<string, string>)[source] ?? source;
 }
@@ -258,10 +258,10 @@ export function wireIo(): void {
     for (const el of document.querySelectorAll<HTMLElement>(".web-only")) el.hidden = mode.value === "local";
     for (const el of document.querySelectorAll<HTMLElement>(".local-only")) el.hidden = mode.value !== "local";
   };
-  $("z-push").onclick = () => void run("Zotero'ya gönderiliyor", pushChanges);
+  $("z-push").onclick = () => void run("Gönderiliyor", pushChanges);
   $<HTMLFormElement>("zotero-form").onsubmit = (e) => {
     e.preventDefault();
-    void run("Zotero eşitleniyor", syncFromZotero);
+    void run("Eşitleniyor", syncFromZotero);
   };
   $<HTMLInputElement>("file").onchange = () =>
     void run("İçe aktarılıyor", async () => {

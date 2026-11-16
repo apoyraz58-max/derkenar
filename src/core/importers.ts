@@ -71,7 +71,7 @@ export async function parseFile(text: string, fileName: string): Promise<ImportR
     await import("@citation-js/plugin-ris");
     raw = (await Cite.async(text)).data as Record<string, unknown>[];
   } else {
-    throw new Error("Dosya biçimi tanınmadı. Zotero RDF, CSL JSON, BibTeX (.bib) veya RIS (.ris) dosyası seçin.");
+    throw new Error("Dosya biçimi tanınmadı. RDF, CSL JSON, BibTeX (.bib) veya RIS (.ris) dosyası seçin.");
   }
   const items = raw.map((r) => {
     const csl = tidy(r);
@@ -180,8 +180,8 @@ export async function syncZotero(cfg: ZoteroConfig, since: number, fetchFn: Fetc
   if (cfg.apiKey) headers["Zotero-API-Key"] = cfg.apiKey;
   const get = async (path: string): Promise<Response> => {
     const r = await fetchFn(`${root}${path}`, { headers });
-    if (r.status === 403) throw new Error("Zotero erişimi reddetti: API anahtarını ve kütüphane numarasını denetleyin.");
-    if (!r.ok) throw new Error(`Zotero yanıt vermedi (${r.status}).`);
+    if (r.status === 403) throw new Error("Çevrimiçi kütüphane erişimi reddetti: API anahtarını ve kütüphane numarasını denetleyin.");
+    if (!r.ok) throw new Error(`Çevrimiçi kütüphane yanıt vermedi (${r.status}).`);
     return r;
   };
   const query = `format=json&include=data&limit=100&since=${since}`;
@@ -463,8 +463,8 @@ export async function pushToZotero(cfg: ZoteroConfig, items: readonly Item[], zo
       return data;
     });
     const r = await fetchFn(`${base}/${cfg.library}/items`, { method: "POST", headers, body: JSON.stringify(body) });
-    if (r.status === 403) throw new Error("Zotero yazmayı reddetti: API anahtarına yazma izni verin (zotero.org → Settings → Security → anahtarı düzenle → 'Allow write access').");
-    if (!r.ok) throw new Error(`Zotero yanıt vermedi (${r.status}).`);
+    if (r.status === 403) throw new Error("Çevrimiçi kütüphane yazmayı reddetti: API anahtarına yazma izni verin (hesap ayarları → Settings → Security → anahtarı düzenle → 'Allow write access').");
+    if (!r.ok) throw new Error(`Çevrimiçi kütüphane yanıt vermedi (${r.status}).`);
     version = Number(r.headers.get("Last-Modified-Version") ?? version);
     const res = (await r.json()) as { successful?: Record<string, { key: string; version: number }>; unchanged?: Record<string, string>; failed?: Record<string, { key?: string; code: number; message: string }> };
     batch.forEach((item, j) => {
@@ -475,7 +475,7 @@ export async function pushToZotero(cfg: ZoteroConfig, items: readonly Item[], zo
         const { dirty: _d, ...rest } = item;
         saved.push({ ...rest, version: ok?.version ?? version ?? item.version, source: `zotero:${cfg.library}` });
       } else if (bad) {
-        failed.push({ key: item.key, message: bad.code === 412 ? "Zotero'da da değişmiş; önce Eşitle, sonra yeniden gönderin." : bad.message });
+        failed.push({ key: item.key, message: bad.code === 412 ? "Çevrimiçi kütüphanede de değişmiş; önce alın, sonra yeniden gönderin." : bad.message });
       }
     });
   }

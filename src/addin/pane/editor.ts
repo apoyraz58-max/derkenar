@@ -52,7 +52,7 @@ const HINTS: Record<string, string> = {
   archive: "Yazma: kütüphane (ör. Süleymaniye Ktp.)",
   archiveLocation: "Yazma: koleksiyon ve no (ör. Fatih, 1234)",
   accessDate: "Web: erişim tarihi",
-  extra: "Zotero'daki Ekstra alanı; \"original-date: 1323\" gibi CSL satırları okunur",
+  extra: "Ekstra alanı; \"original-date: 1323\" gibi CSL satırları okunur",
 };
 
 export function openEditor(key: string, focusTitle = false): void {
@@ -290,7 +290,7 @@ function renderAttachments(): void {
           ? h("a", { href: att.url, target: "_blank", rel: "noopener noreferrer" }, att.title)
           : att.kind === "file"
             ? h("button", { type: "button", class: "link", onclick: () => void run("Dosya açılıyor", () => openFile(att.key, att.fileName ?? att.title, att.contentType)) }, att.title)
-            : h("span", { title: "Dosya Zotero'da duruyor" }, `${att.title} (Zotero'da)`),
+            : h("span", { title: "Dosya çevrimiçi kütüphanede duruyor" }, `${att.title} (çevrimiçi)`),
         att.size ? h("small", { class: "muted" }, ` ${(att.size / 1024 / 1024).toFixed(1)} MB`) : null,
         h("button", {
           type: "button",

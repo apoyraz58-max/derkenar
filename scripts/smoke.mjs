@@ -432,7 +432,7 @@ try {
   await page.click("#tab-aktar");
   await page.waitForSelector("#z-push-count:has-text('1 değişiklik')");
   await page.click("#z-push");
-  await page.waitForSelector("#message:has-text('1 kaynak Zotero')");
+  await page.waitForSelector("#message:has-text('1 kaynak çevrimiçi kütüphaneye')");
   if (zoteroPosts.length !== 1 || zoteroPosts[0][0].version !== 20 || !zoteroPosts[0][0].title.includes("li-mezhebi")) fail(`push: ${JSON.stringify(zoteroPosts)}`);
   if (await page.textContent("#z-push-count")) fail("dirty mark not cleared");
   // Zotero RDF export.

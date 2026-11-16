@@ -376,7 +376,7 @@ describe("0.3: Zotero features", () => {
     expect(res.saved).toHaveLength(1);
     expect(res.saved[0]!.version).toBe(12);
     expect(res.saved[0]!.dirty).toBeUndefined();
-    expect(res.failed[0]!.message).toContain("Zotero'da da değişmiş");
+    expect(res.failed[0]!.message).toContain("Çevrimiçi kütüphanede de değişmiş");
   });
   it("PMID and arXiv lookups", async () => {
     const { lookupPmid, lookupArxiv, cleanArxiv, cleanPmid } = await import("../src/core/importers.js");

@@ -38,7 +38,7 @@
       <ol id="results" class="results" role="listbox" aria-label="Sonuçlar"></ol>
       <p id="empty-library" class="notice" hidden>
         <span>Kütüphane boş.</span>
-        <span><button id="go-new" type="button" class="link">Yeni kaynak</button> · <button id="go-import" type="button" class="link">Zotero'dan aktar</button></span>
+        <span><button id="go-new" type="button" class="link">Yeni kaynak</button> · <button id="go-import" type="button" class="link">Kütüphane aktar</button></span>
       </p>
       <section id="basket-section" hidden aria-labelledby="basket-heading">
         <h2 id="basket-heading">Bu atıftaki kaynaklar</h2>
@@ -235,17 +235,17 @@
     <!-- ============================== Aktar -->
     <div id="view-aktar" class="view" role="tabpanel" hidden>
       <section>
-        <h2>Zotero'dan dışa aktarılmış dosya</h2>
-        <p class="muted">Zotero → Dosya → Kütüphaneyi dışa aktar. En eksiksizi <b>Zotero RDF</b> (koleksiyonlar, notlar, etiketler dahil); CSL JSON, BibTeX ve RIS de olur. Derkenar yedeği de buradan geri yüklenir.</p>
+        <h2>Dışa aktarılmış kütüphane dosyası</h2>
+        <p class="muted">Atıf programınızda Dosya → Kütüphaneyi dışa aktar. En eksiksizi <b>RDF</b> (koleksiyonlar, notlar, etiketler dahil); CSL JSON, BibTeX ve RIS de olur. Derkenar yedeği de buradan geri yüklenir.</p>
         <input id="file" type="file" accept=".rdf,.json,.bib,.bibtex,.ris,.txt" multiple />
       </section>
       <section>
-        <h2>Zotero'ya bağlan</h2>
+        <h2>Çevrimiçi kütüphaneyle eşitle</h2>
         <form id="zotero-form" class="grid">
           <label>Kaynak
             <select id="z-mode">
-              <option value="web">Zotero web kütüphanesi</option>
-              <option value="local">Bu bilgisayardaki Zotero 7 (yerel API)</option>
+              <option value="web">Çevrimiçi kütüphane</option>
+              <option value="local">Bu bilgisayardaki atıf programı (yerel API)</option>
             </select>
           </label>
           <label class="web-only">Kütüphane
@@ -253,11 +253,11 @@
           </label>
           <label class="web-only">Kullanıcı / grup no <input id="z-id" inputmode="numeric" autocomplete="off" placeholder="1234567" /></label>
           <label class="web-only">API anahtarı <input id="z-key" type="password" autocomplete="off" placeholder="Yalnız okuma izni yeterli" /></label>
-          <p class="muted web-only">Numara ve anahtar: zotero.org → Settings → Security → Applications. Anahtar yalnız bu bilgisayarda saklanır.</p>
-          <p class="muted local-only" hidden>Zotero 7 → Ayarlar → Gelişmiş → "Bu bilgisayardaki diğer uygulamaların Zotero ile iletişim kurmasına izin ver" açık olmalı.</p>
-          <div class="actions"><button id="z-sync" type="submit" class="primary">Zotero'dan al</button><button id="z-push" type="button">Zotero'ya gönder</button></div>
-          <label class="inline small"><input type="checkbox" id="z-push-new" /> Derkenar'da girdiğim ve dosyadan aldığım kaynakları da Zotero'ya ekle</label>
-          <p class="muted small">Göndermek için anahtara yazma izni verin. Zotero'da da değişmiş bir kaynağın üzerine yazılmaz; önce "Zotero'dan al". Notlar ve dosyalar gönderilmez.</p>
+          <p class="muted web-only">Numara ve anahtar: çevrimiçi hesabınızda Settings → Security → Applications. Anahtar yalnız bu bilgisayarda saklanır.</p>
+          <p class="muted local-only" hidden>Programın Ayarlar → Gelişmiş bölümünde "Bu bilgisayardaki diğer uygulamaların iletişim kurmasına izin ver" açık olmalı.</p>
+          <div class="actions"><button id="z-sync" type="submit" class="primary">Kütüphaneden al</button><button id="z-push" type="button">Kütüphaneye gönder</button></div>
+          <label class="inline small"><input type="checkbox" id="z-push-new" /> Derkenar'da girdiğim ve dosyadan aldığım kaynakları da çevrimiçi kütüphaneye ekle</label>
+          <p class="muted small">Göndermek için anahtara yazma izni verin. Çevrimiçi kütüphanede de değişmiş bir kaynağın üzerine yazılmaz; önce "Kütüphaneden al". Notlar ve dosyalar gönderilmez.</p>
           <p class="small"><span id="z-status" class="muted"></span> <span id="z-push-count"></span></p>
         </form>
       </section>
@@ -282,9 +282,9 @@
           <label>Biçim
             <select id="ex-format">
               <option value="backup">Derkenar yedeği (kayıpsız)</option>
-              <option value="rdf">Zotero RDF (koleksiyon ve notlarla Zotero'ya döner)</option>
-              <option value="csl">CSL JSON (Zotero'ya alınır)</option>
-              <option value="csv">CSV (Zotero sütunları)</option>
+              <option value="rdf">RDF (koleksiyon ve notlarla, atıf programlarına geri alınır)</option>
+              <option value="csl">CSL JSON</option>
+              <option value="csv">CSV</option>
               <option value="report">Rapor (HTML)</option>
               <option value="ris">RIS</option>
               <option value="bibtex">BibTeX</option>
@@ -323,7 +323,7 @@
       </section>
       <section>
         <h2>Ağ bağlantıları</h2>
-        <p class="muted small">Derkenar yalnız siz istediğinizde dışarıya bağlanır: DOI için Crossref, doi.org ve DataCite; ISBN için Open Library ve Google Books; PMID için PubMed; arXiv; Zotero eşitlemesi için api.zotero.org ya da bilgisayarınızdaki Zotero. Belge metni hiçbir yere gönderilmez.</p>
+        <p class="muted small">Derkenar yalnız siz istediğinizde dışarıya bağlanır: DOI için Crossref, doi.org ve DataCite; ISBN için Open Library ve Google Books; PMID için PubMed; arXiv; eşitleme için çevrimiçi kütüphanenin sunucusu ya da bilgisayarınızdaki atıf programı. Belge metni hiçbir yere gönderilmez.</p>
       </section>
       <section>
         <h2>Bileşenler</h2>
@@ -336,7 +336,7 @@
       <section>
         <h2>Başlarken</h2>
         <ol class="guide">
-          <li><strong>Kütüphaneyi alın:</strong> Zotero → Dosya → Kütüphaneyi Dışa Aktar → <b>Zotero RDF</b>; sonra Derkenar → <strong>İçe Aktar</strong>. Koleksiyonlar, notlar ve etiketler de gelir. Ya da Zotero numaranız ve API anahtarınızla eşitleyin.</li>
+          <li><strong>Kütüphaneyi alın:</strong> Atıf programınızda Dosya → Kütüphaneyi Dışa Aktar → <b>RDF</b>; sonra Derkenar → <strong>İçe Aktar</strong>. Koleksiyonlar, notlar ve etiketler de gelir. Ya da çevrimiçi kütüphane numaranız ve API anahtarınızla eşitleyin.</li>
           <li><strong>Atıf ekleyin:</strong> İmleci yerleştirin, <strong>Atıf Ekle/Düzenle</strong>. Yazar, başlık ya da yıl yazın; sayfayı da aynı kutuya yazabilirsiniz: <code>gazzali 1/45</code>. Enter sepete ekler, Ctrl+Enter atıfı belgeye koyar.</li>
           <li><strong>Kaynakça:</strong> Tezin sonunda <strong>Kaynakça Ekle/Düzenle</strong>. Başlığıyla eklenir, atıflarla birlikte kendiliğinden güncellenir.</li>
           <li><strong>Teslimden önce</strong>, bir kopyada: <strong>Düz Metne Çevir</strong>.</li>
@@ -385,7 +385,7 @@
         <p>Sürüm <span id="about-version"></span></p>
         <p>Geliştiren: <strong>Abdurrahman Poyraz</strong><br>
           Sivas Cumhuriyet Üniversitesi İlahiyat Fakültesi</p>
-        <p class="muted small">Atıflar Zotero'nun da kullandığı citeproc-js ile, İSNAD Atıf Sistemi'nin resmî CSL stilleriyle biçimlenir. Kaynak türleri ve alanlar Zotero şemasındandır. Lisans: AGPL-3.0. Simgeler: Fluent UI System Icons (MIT).</p>
+        <p class="muted small">Atıflar citeproc-js ile, CSL stilleriyle biçimlenir; İSNAD için İSNAD Atıf Sistemi'nin resmî stilleri kullanılır. Lisans: AGPL-3.0. Simgeler: Fluent UI System Icons (MIT).</p>
       </section>
     </div>
 

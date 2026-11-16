@@ -30,14 +30,14 @@ Vefeyât ile aynı anda kurulu olabilir; ikisinin sekmeleri ayrıdır.
 | Atıf | **Atıf Ekle/Düzenle**, **Kaynakça Ekle/Düzenle**, **Belge Tercihleri**, **Güncelle**, **Düz Metne Çevir** |
 | Kütüphane | **Kütüphane**, **Yeni Kaynak**, **Tanımlayıcıyla Ekle**, **İçe Aktar**, **Dışa Aktar** |
 | İSNAD | **Belgeyi Denetle**, **Kütüphaneyi Denetle** |
-| Veri ve yardım | **Veri bilgisi** (kaynak sayıları, saklama, belgedeki kopya, Zotero eşitlemesi, sürüm), **Kullanım kılavuzu** (kısa kılavuz ve Hakkında) |
+| Veri ve yardım | **Veri bilgisi** (kaynak sayıları, saklama, belgedeki kopya, eşitleme, sürüm), **Kullanım kılavuzu** (kısa kılavuz ve Hakkında) |
 
 Sağ tık → **Derkenar → Atıf ekle**.
 
-1. **Zotero kütüphanesini alın:** Zotero → Dosya → Kütüphaneyi Dışa Aktar → **Zotero RDF**
+1. **Kütüphanenizi alın:** atıf programınızda Dosya → Kütüphaneyi Dışa Aktar → **RDF**
    → Derkenar → **İçe Aktar** → dosyayı seçin. Koleksiyonlar, notlar ve etiketler gelir.
-   Ya da Zotero numaranız ve API anahtarınızla **Eşitle**.
-2. **Elle kaynak:** **Yeni Kaynak** → türü seçin; alanlar Zotero'daki gibidir. Kişiler'de rol
+   Ya da çevrimiçi kütüphane numaranız ve API anahtarınızla eşitleyin.
+2. **Elle kaynak:** **Yeni Kaynak** → türü seçin; bütün kaynak türleri ve alanları vardır. Kişiler'de rol
    olarak Muhakkik (thk.), Nâşir (nşr.), Hazırlayan (haz.), Sadeleştiren (sad.) da vardır.
    Tarih alanına hicrî/milâdî (1413/1993) yazılabilir. Yazdıkça kaydedilir; üstte İSNAD
    uyarıları görünür.
@@ -62,4 +62,4 @@ Sağ tık → **Derkenar → Atıf ekle**.
 - Dipnotlu stilden metin içi stile geçişte yalnız atıf içeren dipnotlar metne taşınır; içinde açıklama da
   olan dipnotlar yerinde kalır (sayısı bildirilir).
 - Atıf metnini elle değiştirirseniz bir sonraki güncellemede üzerine yazılır.
-- PDF ve ek dosyalar, tarayıcı eklentisi, zotero.org'a geri yazma yok.
+- PDF okuyucu ve tarayıcı eklentisi yok.

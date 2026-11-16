@@ -39,13 +39,13 @@ const tab = [
     button("Bib", "Kaynakça Ekle/Düzenle", "İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir.", "index", "bib"),
     button("Prefs", "Belge Tercihleri", "Atıf stili (İSNAD 2 dipnotlu / metin içi), dil, dipnot ya da sonnot, otomatik güncelleme.", "settings", "prefs"),
     button("Refresh", "Güncelle", "Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez.", "consistency", "refresh"),
-    button("Unlink", "Düz Metne Çevir", "Teslimden önce atıfları ve kaynakçayı düz metne çevirir (Zotero'daki Unlink Citations). Önce belgenin bir kopyasını alın.", "finalize", "unlink"),
+    button("Unlink", "Düz Metne Çevir", "Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın.", "finalize", "unlink"),
   ]),
   group("Library", "Kütüphane", "catalog", [
-    button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: Zotero'nun kütüphanesi bu pencerede.", "catalog", "library"),
-    button("New", "Yeni Kaynak", "Elle yeni kaynak girer: bütün Zotero türleri ve alanları, ayrıca muhakkik, nâşir, hazırlayan, sadeleştiren.", "bulk", "new"),
+    button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede.", "catalog", "library"),
+    button("New", "Yeni Kaynak", "Elle yeni kaynak girer: bütün kaynak türleri ve alanları, ayrıca muhakkik, nâşir, hazırlayan, sadeleştiren.", "bulk", "new"),
     button("Identifier", "Tanımlayıcıyla Ekle", "DOI veya ISBN ile kaynak ekler.", "search", "identifier"),
-    button("Import", "İçe Aktar", "Zotero'dan dışa aktarılmış kütüphaneyi alır: Zotero RDF, CSL JSON, BibTeX, RIS. Ya da Zotero hesabıyla eşitler.", "csv", "import"),
+    button("Import", "İçe Aktar", "Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler.", "csv", "import"),
     button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "source", "export"),
   ]),
   group("Isnad", "İSNAD", "audit", [
@@ -53,7 +53,7 @@ const tab = [
     button("CheckLib", "Kütüphaneyi Denetle", "Bütün kütüphaneyi İSNAD 2 yazım kurallarına göre denetler.", "health", "check-lib"),
   ]),
   group("Data", "Veri ve yardım", "info", [
-    button("Info", "Veri bilgisi", "Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, Zotero eşitlemesi, sürüm.", "info", "info"),
+    button("Info", "Veri bilgisi", "Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, eşitleme, sürüm.", "info", "info"),
     button("Help", "Kullanım kılavuzu", "Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında.", "brand", "help"),
   ]),
 ];
@@ -82,7 +82,7 @@ ${u.join("\n")}
 ${[...short].map(([k, v]) => `        <bt:String id="${k}" DefaultValue="${esc(v)}"/>`).join("\n")}
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile Zotero kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
 ${[...long].map(([k, v]) => `        <bt:String id="${k}" DefaultValue="${esc(v)}"/>`).join("\n")}
       </bt:LongStrings>
     </Resources>
@@ -103,7 +103,7 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <ProviderName>Derkenar</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
   <DisplayName DefaultValue="Derkenar"/>
-  <Description DefaultValue="Word için İSNAD temelli atıf ve kaynakça: Zotero kütüphanesi, otomatik dipnot güncelleme, İSNAD yazım denetimi."/>
+  <Description DefaultValue="Word için atıf ve kaynakça yöneticisi: kaynak kütüphanesi, otomatik dipnot güncelleme, atıf stili ve yazım denetimi."/>
   <IconUrl DefaultValue="${B}assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="${B}assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
