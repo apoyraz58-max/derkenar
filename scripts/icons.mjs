@@ -42,5 +42,12 @@ await browser.close();
     await p.setContent(`<html><body style="margin:0;background:transparent">${svg.replace("<svg", `<svg width="${size}" height="${size}"`)}</body></html>`);
     await p.locator("svg").screenshot({ path: new URL(`../assets/icons/brand-${size}.png`, import.meta.url).pathname, omitBackground: true });
   }
+  // Atıf Ekle/Düzenle: the logo with a plus badge.
+  const add = await readFile(new URL("../assets/logo/derkenar-ekle.svg", import.meta.url), "utf8");
+  for (const size of [16, 32, 80]) {
+    await p.setViewportSize({ width: size, height: size });
+    await p.setContent(`<html><body style="margin:0;background:transparent">${add.replace("<svg", `<svg width="${size}" height="${size}"`)}</body></html>`);
+    await p.locator("svg").screenshot({ path: new URL(`../assets/icons/brand-add-${size}.png`, import.meta.url).pathname, omitBackground: true });
+  }
   await browser2.close();
 }

@@ -35,7 +35,7 @@ function group(id, label, ic, controls) {
 
 const tab = [
   group("Cite", "Atıf", "insert", [
-    button("Insert", "Atıf Ekle/Düzenle", "İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır.", "brand", "insert"),
+    button("Insert", "Atıf Ekle/Düzenle", "İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır.", "brand-add", "insert"),
     button("Bib", "Kaynakça Ekle/Düzenle", "İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir.", "index", "bib"),
     button("Prefs", "Belge Tercihleri", "Atıf stili (İSNAD 2 dipnotlu / metin içi), dil, dipnot ya da sonnot, otomatik güncelleme.", "settings", "prefs"),
     button("Refresh", "Güncelle", "Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez.", "consistency", "refresh"),
@@ -59,7 +59,7 @@ const tab = [
 ];
 
 const contextMenu = [
-  button("Ctx.Insert", "Atıf ekle", "Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler.", "brand", "insert", " ".repeat(16), "Control"),
+  button("Ctx.Insert", "Atıf ekle", "Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler.", "brand-add", "insert", " ".repeat(16), "Control"),
 ];
 
 const resources = () => {

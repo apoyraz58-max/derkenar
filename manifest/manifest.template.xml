@@ -57,9 +57,9 @@
                     <Description resid="Insert.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.brand.16"/>
-                    <bt:Image size="32" resid="Ic.brand.32"/>
-                    <bt:Image size="80" resid="Ic.brand.80"/>
+                    <bt:Image size="16" resid="Ic.brand-add.16"/>
+                    <bt:Image size="32" resid="Ic.brand-add.32"/>
+                    <bt:Image size="80" resid="Ic.brand-add.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
@@ -323,9 +323,9 @@
                       <Description resid="Ctx.Insert.Tip"/>
                     </Supertip>
                     <Icon>
-                      <bt:Image size="16" resid="Ic.brand.16"/>
-                      <bt:Image size="32" resid="Ic.brand.32"/>
-                      <bt:Image size="80" resid="Ic.brand.80"/>
+                      <bt:Image size="16" resid="Ic.brand-add.16"/>
+                      <bt:Image size="32" resid="Ic.brand-add.32"/>
+                      <bt:Image size="80" resid="Ic.brand-add.80"/>
                     </Icon>
                     <Action xsi:type="ShowTaskpane">
                       <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
@@ -341,9 +341,9 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Ic.brand.16" DefaultValue="{{BASE_URL}}assets/icons/brand-16.png"/>
-        <bt:Image id="Ic.brand.32" DefaultValue="{{BASE_URL}}assets/icons/brand-32.png"/>
-        <bt:Image id="Ic.brand.80" DefaultValue="{{BASE_URL}}assets/icons/brand-80.png"/>
+        <bt:Image id="Ic.brand-add.16" DefaultValue="{{BASE_URL}}assets/icons/brand-add-16.png"/>
+        <bt:Image id="Ic.brand-add.32" DefaultValue="{{BASE_URL}}assets/icons/brand-add-32.png"/>
+        <bt:Image id="Ic.brand-add.80" DefaultValue="{{BASE_URL}}assets/icons/brand-add-80.png"/>
         <bt:Image id="Ic.index.16" DefaultValue="{{BASE_URL}}assets/icons/index-16.png"/>
         <bt:Image id="Ic.index.32" DefaultValue="{{BASE_URL}}assets/icons/index-32.png"/>
         <bt:Image id="Ic.index.80" DefaultValue="{{BASE_URL}}assets/icons/index-80.png"/>
@@ -383,6 +383,9 @@
         <bt:Image id="Ic.info.16" DefaultValue="{{BASE_URL}}assets/icons/info-16.png"/>
         <bt:Image id="Ic.info.32" DefaultValue="{{BASE_URL}}assets/icons/info-32.png"/>
         <bt:Image id="Ic.info.80" DefaultValue="{{BASE_URL}}assets/icons/info-80.png"/>
+        <bt:Image id="Ic.brand.16" DefaultValue="{{BASE_URL}}assets/icons/brand-16.png"/>
+        <bt:Image id="Ic.brand.32" DefaultValue="{{BASE_URL}}assets/icons/brand-32.png"/>
+        <bt:Image id="Ic.brand.80" DefaultValue="{{BASE_URL}}assets/icons/brand-80.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="U.Insert" DefaultValue="{{BASE_URL}}taskpane.html?action=insert"/>
