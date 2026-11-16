@@ -469,6 +469,16 @@ try {
   if ((await notes()).length !== notesBefore) fail(`back to notes: ${(await notes()).length} vs ${notesBefore}`);
   if (!(await notes()).some((n) => n.startsWith("Ebû Hâmid") || n.startsWith("Ahmet Yılmaz"))) fail("notes not re-rendered");
 
+  // 9a. Yeni kaynak: ekleme yolları; RIS metni yapıştırarak ekleme.
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-new", "__ways");
+  if (!(await page.isVisible("#view-yeni")) || (await page.locator("#new-types button").count()) < 8) fail("new-source view");
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/yeni.png`, fullPage: true });
+  await page.fill("#new-paste", "TY  - BOOK\nAU  - Kara, Mustafa\nTI  - Tasavvuf ve tarikatlar tarihi\nCY  - İstanbul\nPB  - Dergâh Yayınları\nPY  - 1985\nER  - \n");
+  await page.click("#new-paste-form button[type=submit]");
+  await page.waitForSelector("#message:has-text('1 kaynak eklendi')");
+  if (!(await page.isVisible("#view-kaynak"))) fail("pasted record not opened");
+
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");
   await page.waitForSelector("#info-document dd:has-text('kaynak,')");

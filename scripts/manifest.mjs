@@ -34,8 +34,8 @@ function group(id, label, ic, controls) {
 }
 
 const tab = [
-  group("Cite", "Atıf", "brand", [
-    button("Insert", "Atıf Ekle/Düzenle", "İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır.", "insert", "insert"),
+  group("Cite", "Atıf", "insert", [
+    button("Insert", "Atıf Ekle/Düzenle", "İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır.", "brand", "insert"),
     button("Bib", "Kaynakça Ekle/Düzenle", "İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir.", "index", "bib"),
     button("Prefs", "Belge Tercihleri", "Atıf stili (İSNAD 2 dipnotlu / metin içi), dil, dipnot ya da sonnot, otomatik güncelleme.", "settings", "prefs"),
     button("Refresh", "Güncelle", "Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez.", "consistency", "refresh"),
@@ -43,7 +43,7 @@ const tab = [
   ]),
   group("Library", "Kütüphane", "catalog", [
     button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede.", "catalog", "library"),
-    button("New", "Yeni Kaynak", "Elle yeni kaynak girer: bütün kaynak türleri ve alanları, ayrıca muhakkik, nâşir, hazırlayan, sadeleştiren.", "bulk", "new"),
+    button("New", "Yeni Kaynak", "Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar).", "bulk", "new"),
     button("Identifier", "Tanımlayıcıyla Ekle", "DOI veya ISBN ile kaynak ekler.", "search", "identifier"),
     button("Import", "İçe Aktar", "Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler.", "csv", "import"),
     button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "source", "export"),
@@ -59,7 +59,7 @@ const tab = [
 ];
 
 const contextMenu = [
-  button("Ctx.Insert", "Atıf ekle", "Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler.", "insert", "insert", " ".repeat(16), "Control"),
+  button("Ctx.Insert", "Atıf ekle", "Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler.", "brand", "insert", " ".repeat(16), "Control"),
 ];
 
 const resources = () => {

@@ -3,7 +3,7 @@
  * and the list of where the library's items came from.
  */
 import { backup, cslJson, formatAs, isBackup, parseBackup } from "../../core/exporters.js";
-import { type ZoteroConfig, cleanArxiv, cleanDoi, cleanIsbn, cleanPmid, lookupArxiv, lookupDoi, lookupIsbn, lookupPmid, parseFile, pushToZotero, syncZotero } from "../../core/importers.js";
+import { type ZoteroConfig, cleanArxiv, cleanDoi, cleanIsbn, cleanPmid, detectFormat, lookupArxiv, lookupDoi, lookupIsbn, lookupPmid, parseFile, pushToZotero, syncZotero } from "../../core/importers.js";
 import { report, zoteroCsv, zoteroRdf } from "../../core/zoteroexport.js";
 import { type Collection, type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import { citedKeys } from "./document.js";
@@ -53,6 +53,22 @@ async function importFiles(files: File[]): Promise<void> {
     colls += r.collections.length;
   }
   setMessage(`${added} kaynak eklendi${updated ? `, ${updated} kaynak güncellendi` : ""}${colls ? `, ${colls} koleksiyon alındı` : ""}.`, "success");
+}
+
+/** Adds records pasted as RIS, BibTeX or CSL JSON text. */
+async function pasteRecords(): Promise<void> {
+  const box = $<HTMLTextAreaElement>("new-paste");
+  const text = box.value.trim();
+  if (!text) throw new Error("RIS, BibTeX ya da CSL JSON metnini yapıştırın.");
+  if (detectFormat(text) === "unknown") throw new Error("Metin tanınmadı. RIS satırları \"TY  - \" ile, BibTeX kayıtları \"@book{\" gibi, CSL JSON \"[\" ya da \"{\" ile başlar.");
+  const r = await parseFile(text, "yapıştırılan");
+  if (!r.items.length) throw new Error("Metinde kaynak bulunamadı.");
+  const v = currentView();
+  const items = r.items.map((i) => ({ ...i, source: "manual", collections: v.kind === "collection" ? [v.key] : i.collections }));
+  await putItems(items);
+  box.value = "";
+  setMessage(`${items.length} kaynak eklendi${items.length === 1 ? `: ${creatorLine(items[0]!)}, ${titleOf(items[0]!)}` : ""}.`, "success");
+  if (items.length === 1) openEditor(items[0]!.key);
 }
 
 function zoteroConfig(): ZoteroConfig {
@@ -144,8 +160,8 @@ async function lookupDoiOrIsbn(doi: string): Promise<Item> {
   }
 }
 
-async function lookup(): Promise<void> {
-  const lines = $<HTMLTextAreaElement>("lookup").value.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+async function lookup(box = "lookup"): Promise<void> {
+  const lines = $<HTMLTextAreaElement>(box).value.split(/\n+/).map((l) => l.trim()).filter(Boolean);
   if (!lines.length) throw new Error("DOI (10.xxxx/…), ISBN, PMID veya arXiv numarası yazın.");
   const found: Item[] = [];
   const failed: string[] = [];
@@ -172,7 +188,7 @@ async function lookup(): Promise<void> {
   const v = currentView();
   if (v.kind === "collection") for (const f of found) f.collections = [v.key];
   await putItems(found);
-  $<HTMLTextAreaElement>("lookup").value = failed.join("\n");
+  $<HTMLTextAreaElement>(box).value = failed.join("\n");
   if (!found.length) throw new Error(reasons.join(" "));
   setMessage(`${found.length} kaynak eklendi${found.length === 1 ? `: ${creatorLine(found[0]!)}, ${titleOf(found[0]!)}` : ""}.${failed.length ? ` Eklenemeyen ${failed.length} satır kutuda bırakıldı: ${reasons.join(" ")}` : ""}`, failed.length ? "warning" : "success");
   // One work found: open it, so it can be checked and completed at once.
@@ -272,6 +288,20 @@ export function wireIo(): void {
     e.preventDefault();
     void run("Aranıyor", lookup);
   };
+  // Yeni kaynak: the same ways of adding, in one place.
+  $<HTMLFormElement>("new-lookup-form").onsubmit = (e) => {
+    e.preventDefault();
+    void run("Aranıyor", () => lookup("new-lookup"));
+  };
+  $<HTMLFormElement>("new-paste-form").onsubmit = (e) => {
+    e.preventDefault();
+    void run("Ekleniyor", pasteRecords);
+  };
+  $<HTMLInputElement>("new-file").onchange = () =>
+    void run("İçe aktarılıyor", async () => {
+      await importFiles([...($<HTMLInputElement>("new-file").files ?? [])]);
+      $<HTMLInputElement>("new-file").value = "";
+    });
   $("ex-download").onclick = () =>
     void run("Hazırlanıyor", async () => {
       const x = await exportText();

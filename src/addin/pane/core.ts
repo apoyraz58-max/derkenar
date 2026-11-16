@@ -102,10 +102,10 @@ export function showView(name: string): void {
     scrolls.set(current, window.scrollY);
     current = name;
   }
-  for (const v of ["atif", "kutuphane", "kaynak", "belge", "denetim", "aktar", "veri", "yardim"]) {
+  for (const v of ["atif", "kutuphane", "kaynak", "yeni", "belge", "denetim", "aktar", "veri", "yardim"]) {
     $(`view-${v}`).hidden = v !== name;
     const tab = document.getElementById(`tab-${v}`);
-    tab?.setAttribute("aria-selected", String(v === name || (name === "kaynak" && v === "kutuphane")));
+    tab?.setAttribute("aria-selected", String(v === name || ((name === "kaynak" || name === "yeni") && v === "kutuphane")));
   }
   for (const fn of listeners.get(name) ?? []) fn();
   window.scrollTo(0, scrolls.get(name) ?? 0);

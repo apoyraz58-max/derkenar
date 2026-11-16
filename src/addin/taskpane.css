@@ -88,8 +88,8 @@ footer { font-size: 12px; margin-top: 8px; }
 
 /* Tabs stay on screen while scrolling and always fit the pane's width. */
 .tabs { display: flex; gap: 0; margin: 0 -12px 10px; padding: 0 8px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; background: var(--page); }
-.tabs button { flex: 1 1 0; min-width: 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 8px 2px; min-height: 36px; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tabs button:hover { color: var(--text); background: var(--surface); }
+.tabs button { flex: 1 1 auto; min-width: 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 8px 4px; min-height: 36px; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tabs button:hover { color: var(--text); }
 .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
 
 input[type="search"] { width: 100%; font-size: 15px; padding: 7px 10px; }
@@ -124,8 +124,6 @@ input[type="search"]:focus, input:focus, select:focus, textarea:focus { outline:
 .local-only[hidden], .web-only[hidden] { display: none; }
 
 /* ---------- Derkenar 0.2: library, editor, check ---------- */
-.tabs { overflow-x: auto; scrollbar-width: none; }
-.tabs button { padding: 6px 7px; white-space: nowrap; }
 .grow { flex: 1; }
 .small { font-size: 12px; }
 .row { align-items: center; margin-bottom: 6px; }
@@ -236,3 +234,8 @@ ol.guide li, ul.guide li { margin-bottom: 6px; }
 .brand-row { display: flex; align-items: center; gap: 8px; }
 .brand { flex: none; border-radius: 5px; }
 code { font-size: 12px; background: rgba(127,127,127,.15); padding: 0 3px; border-radius: 3px; }
+
+/* Yeni kaynak: türler */
+.type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; margin-bottom: 8px; }
+.type-grid button { text-align: left; }
+@media (max-width: 310px) { .tabs button { font-size: 12px; padding: 8px 2px; } }

@@ -10,7 +10,7 @@ import { bibliography, changeStyle, nudge, refresh, renderDocList, startWatcher,
 import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
 import { renderInfo } from "./pane/info.js";
-import { newItem, refreshLibraryView, wireLibrary } from "./pane/library.js";
+import { refreshLibraryView, wireLibrary } from "./pane/library.js";
 import { wireTranslit } from "./pane/translit.js";
 
 declare const __VERSION__: string;
@@ -44,13 +44,13 @@ async function launch(action: string): Promise<void> {
     case "library":
       return showView("kutuphane");
     case "new":
-      return newItem("book");
+      return showView("yeni");
     case "import":
       showView("aktar");
       return void $("file").focus();
     case "identifier":
-      showView("aktar");
-      return void $("lookup").focus();
+      showView("yeni");
+      return void $("new-lookup").focus();
     case "export":
       showView("aktar");
       return void $("ex-format").focus();
@@ -92,7 +92,7 @@ Office.onReady(async () => {
   $("version").textContent = `Derkenar ${__VERSION__}`;
   void checkForUpdate();
   for (const b of document.querySelectorAll<HTMLButtonElement>(".tabs button")) b.onclick = () => showView(b.dataset.view!);
-  $("go-new").onclick = () => newItem("book");
+  $("go-new").onclick = () => showView("yeni");
   $("go-import").onclick = () => showView("aktar");
   $("go-info").onclick = () => showView("veri");
   $("go-help").onclick = () => showView("yardim");

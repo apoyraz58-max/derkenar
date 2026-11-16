@@ -442,8 +442,19 @@ export function wireLibrary(): void {
   $<HTMLSelectElement>("lib-new").onchange = () => {
     const t = $<HTMLSelectElement>("lib-new").value;
     $<HTMLSelectElement>("lib-new").value = "";
+    if (t === "__ways") showView("yeni");
+    else if (t) newItem(t);
+  };
+  // Yeni kaynak → Elle gir: the common types as buttons, the rest in a list.
+  const manual = ["book", "bookSection", "journalArticle", "encyclopediaArticle", "dictionaryEntry", "thesis", "manuscript", "conferencePaper", "newspaperArticle", "webpage"];
+  $("new-types").replaceChildren(...manual.map((t) => h("button", { type: "button", onclick: () => newItem(t) }, itemTypeLabel(t))));
+  $<HTMLSelectElement>("new-other").append(...types.filter(([t]) => !manual.includes(t)).map(([t, l]) => h("option", { value: t }, l)));
+  $<HTMLSelectElement>("new-other").onchange = () => {
+    const t = $<HTMLSelectElement>("new-other").value;
+    $<HTMLSelectElement>("new-other").value = "";
     if (t) newItem(t);
   };
+  $("new-note").onclick = () => newItem("note");
   $<HTMLSelectElement>("lib-view").onchange = () => {
     S.libView = $<HTMLSelectElement>("lib-view").value;
     const saved = S.libView.startsWith("s:") ? activeSearch() : null;

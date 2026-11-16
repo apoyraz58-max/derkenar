@@ -75,7 +75,7 @@
       </form>
       <div class="row">
         <input id="lib-q" type="search" autocomplete="off" placeholder="Bütün alanlarda ara" aria-label="Kütüphanede ara" />
-        <select id="lib-new" aria-label="Yeni kaynak"><option value="">+ Yeni</option></select>
+        <select id="lib-new" aria-label="Yeni kaynak"><option value="">+ Yeni</option><option value="__ways">DOI, ISBN, RIS, dosya…</option></select>
       </div>
       <details id="adv-box">
         <summary>Gelişmiş arama</summary>
@@ -178,6 +178,39 @@
         <div id="ed-collections"></div>
       </section>
       <p id="ed-meta" class="muted small"></p>
+    </div>
+
+    <!-- ============================== Yeni kaynak -->
+    <div id="view-yeni" class="view" role="tabpanel" hidden>
+      <section>
+        <h2>Tanımlayıcıyla ekle</h2>
+        <form id="new-lookup-form" class="grid">
+          <textarea id="new-lookup" rows="2" placeholder="DOI, ISBN, PMID veya arXiv; birden çoksa her satıra bir tane"></textarea>
+          <div class="actions"><button type="submit" class="primary">Bul ve ekle</button></div>
+        </form>
+        <p class="muted small">Künye çevrimiçi kataloglardan (Crossref, DataCite, Open Library, Google Books, PubMed, arXiv) alınır; tek kaynak bulunursa düzenlemek için açılır.</p>
+      </section>
+      <section>
+        <h2>Künye yapıştır</h2>
+        <form id="new-paste-form" class="grid">
+          <textarea id="new-paste" rows="4" spellcheck="false" placeholder="RIS (TY  - BOOK …), BibTeX (@book{…}) ya da CSL JSON metni"></textarea>
+          <div class="actions"><button type="submit">Ekle</button></div>
+        </form>
+        <p class="muted small">Kütüphane kataloglarının, Google Akademik'in ve yayıncı sitelerinin "Atıf al / Cite / Export" düğmesindeki metni buraya yapıştırın.</p>
+      </section>
+      <section>
+        <h2>Dosyadan ekle</h2>
+        <input id="new-file" type="file" accept=".rdf,.json,.bib,.bibtex,.ris,.txt" multiple />
+        <p class="muted small">RIS, BibTeX, RDF, CSL JSON ya da Derkenar yedeği.</p>
+      </section>
+      <section>
+        <h2>Elle gir</h2>
+        <div id="new-types" class="type-grid"></div>
+        <div class="row">
+          <select id="new-other" aria-label="Diğer türler"><option value="">Diğer türler…</option></select>
+          <button id="new-note" type="button" class="link">Bağımsız not</button>
+        </div>
+      </section>
     </div>
 
     <!-- ============================== Belge -->
@@ -368,6 +401,8 @@
       <section>
         <h2>İpuçları</h2>
         <ul class="guide">
+          <li>Kaynak eklemenin bütün yolları (DOI, ISBN, RIS/BibTeX yapıştırma, dosya, elle) tek yerde: <strong>Yeni Kaynak</strong> ya da Kütüphane'de <strong>+ Yeni → DOI, ISBN, RIS, dosya…</strong></li>
+          <li>Sekmeler arasında klavyeyle: <strong>Alt+1</strong> Atıf … <strong>Alt+5</strong> Aktar.</li>
           <li>Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …) için pencerenin üstündeki <strong>ʿâ</strong> düğmesi.</li>
           <li>Başka bir belgeden kopyalanan atıfın verisi yoksa: <strong>Belge → Belgedeki kaynakları kütüphaneye al</strong>.</li>
           <li>Word eski sürümü açıyorsa: Dosya → Seçenekler → Güven Merkezi → Güvenilen Eklenti Katalogları → "önbelleği temizle", sonra Word'ü yeniden başlatın.</li>

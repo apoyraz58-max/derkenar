@@ -46,9 +46,9 @@
               <Group id="Derkenar.G.Cite">
                 <Label resid="G.Cite"/>
                 <Icon>
-                  <bt:Image size="16" resid="Ic.brand.16"/>
-                  <bt:Image size="32" resid="Ic.brand.32"/>
-                  <bt:Image size="80" resid="Ic.brand.80"/>
+                  <bt:Image size="16" resid="Ic.insert.16"/>
+                  <bt:Image size="32" resid="Ic.insert.32"/>
+                  <bt:Image size="80" resid="Ic.insert.80"/>
                 </Icon>
                 <Control xsi:type="Button" id="Derkenar.Insert">
                   <Label resid="Insert"/>
@@ -57,9 +57,9 @@
                     <Description resid="Insert.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.insert.16"/>
-                    <bt:Image size="32" resid="Ic.insert.32"/>
-                    <bt:Image size="80" resid="Ic.insert.80"/>
+                    <bt:Image size="16" resid="Ic.brand.16"/>
+                    <bt:Image size="32" resid="Ic.brand.32"/>
+                    <bt:Image size="80" resid="Ic.brand.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
@@ -323,9 +323,9 @@
                       <Description resid="Ctx.Insert.Tip"/>
                     </Supertip>
                     <Icon>
-                      <bt:Image size="16" resid="Ic.insert.16"/>
-                      <bt:Image size="32" resid="Ic.insert.32"/>
-                      <bt:Image size="80" resid="Ic.insert.80"/>
+                      <bt:Image size="16" resid="Ic.brand.16"/>
+                      <bt:Image size="32" resid="Ic.brand.32"/>
+                      <bt:Image size="80" resid="Ic.brand.80"/>
                     </Icon>
                     <Action xsi:type="ShowTaskpane">
                       <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
@@ -341,9 +341,9 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Ic.insert.16" DefaultValue="{{BASE_URL}}assets/icons/insert-16.png"/>
-        <bt:Image id="Ic.insert.32" DefaultValue="{{BASE_URL}}assets/icons/insert-32.png"/>
-        <bt:Image id="Ic.insert.80" DefaultValue="{{BASE_URL}}assets/icons/insert-80.png"/>
+        <bt:Image id="Ic.brand.16" DefaultValue="{{BASE_URL}}assets/icons/brand-16.png"/>
+        <bt:Image id="Ic.brand.32" DefaultValue="{{BASE_URL}}assets/icons/brand-32.png"/>
+        <bt:Image id="Ic.brand.80" DefaultValue="{{BASE_URL}}assets/icons/brand-80.png"/>
         <bt:Image id="Ic.index.16" DefaultValue="{{BASE_URL}}assets/icons/index-16.png"/>
         <bt:Image id="Ic.index.32" DefaultValue="{{BASE_URL}}assets/icons/index-32.png"/>
         <bt:Image id="Ic.index.80" DefaultValue="{{BASE_URL}}assets/icons/index-80.png"/>
@@ -356,9 +356,9 @@
         <bt:Image id="Ic.finalize.16" DefaultValue="{{BASE_URL}}assets/icons/finalize-16.png"/>
         <bt:Image id="Ic.finalize.32" DefaultValue="{{BASE_URL}}assets/icons/finalize-32.png"/>
         <bt:Image id="Ic.finalize.80" DefaultValue="{{BASE_URL}}assets/icons/finalize-80.png"/>
-        <bt:Image id="Ic.brand.16" DefaultValue="{{BASE_URL}}assets/icons/brand-16.png"/>
-        <bt:Image id="Ic.brand.32" DefaultValue="{{BASE_URL}}assets/icons/brand-32.png"/>
-        <bt:Image id="Ic.brand.80" DefaultValue="{{BASE_URL}}assets/icons/brand-80.png"/>
+        <bt:Image id="Ic.insert.16" DefaultValue="{{BASE_URL}}assets/icons/insert-16.png"/>
+        <bt:Image id="Ic.insert.32" DefaultValue="{{BASE_URL}}assets/icons/insert-32.png"/>
+        <bt:Image id="Ic.insert.80" DefaultValue="{{BASE_URL}}assets/icons/insert-80.png"/>
         <bt:Image id="Ic.catalog.16" DefaultValue="{{BASE_URL}}assets/icons/catalog-16.png"/>
         <bt:Image id="Ic.catalog.32" DefaultValue="{{BASE_URL}}assets/icons/catalog-32.png"/>
         <bt:Image id="Ic.catalog.80" DefaultValue="{{BASE_URL}}assets/icons/catalog-80.png"/>
@@ -435,7 +435,7 @@
         <bt:String id="Refresh.Tip" DefaultValue="Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez."/>
         <bt:String id="Unlink.Tip" DefaultValue="Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın."/>
         <bt:String id="Library.Tip" DefaultValue="Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede."/>
-        <bt:String id="New.Tip" DefaultValue="Elle yeni kaynak girer: bütün kaynak türleri ve alanları, ayrıca muhakkik, nâşir, hazırlayan, sadeleştiren."/>
+        <bt:String id="New.Tip" DefaultValue="Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar)."/>
         <bt:String id="Identifier.Tip" DefaultValue="DOI veya ISBN ile kaynak ekler."/>
         <bt:String id="Import.Tip" DefaultValue="Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler."/>
         <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>

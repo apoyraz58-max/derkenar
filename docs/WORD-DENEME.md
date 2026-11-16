@@ -37,7 +37,7 @@ Sağ tık → **Derkenar → Atıf ekle**.
 1. **Kütüphanenizi alın:** atıf programınızda Dosya → Kütüphaneyi Dışa Aktar → **RDF**
    → Derkenar → **İçe Aktar** → dosyayı seçin. Koleksiyonlar, notlar ve etiketler gelir.
    Ya da çevrimiçi kütüphane numaranız ve API anahtarınızla eşitleyin.
-2. **Elle kaynak:** **Yeni Kaynak** → türü seçin; bütün kaynak türleri ve alanları vardır. Kişiler'de rol
+2. **Yeni kaynak:** **Yeni Kaynak** düğmesi ekleme yollarını gösterir: DOI/ISBN/PMID/arXiv, RIS ya da BibTeX metni yapıştırma, dosya, elle giriş. Elle girişte türü seçin; bütün kaynak türleri ve alanları vardır. Kişiler'de rol
    olarak Muhakkik (thk.), Nâşir (nşr.), Hazırlayan (haz.), Sadeleştiren (sad.) da vardır.
    Tarih alanına hicrî/milâdî (1413/1993) yazılabilir. Yazdıkça kaydedilir; üstte İSNAD
    uyarıları görünür.
