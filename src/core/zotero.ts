@@ -372,6 +372,8 @@ export function toCsl(item: Item): CslItem {
       if (d) csl[k] = d;
     } else csl[k] = v;
   }
+  // İSNAD's Zotero rule: the edited work's title in a tahkik/neşir article goes in "Series Text" (s. 109).
+  if (["journalArticle", "magazineArticle", "newspaperArticle"].includes(item.itemType) && item.fields.seriesText && !csl["collection-title"]) csl["collection-title"] = item.fields.seriesText;
   if (extra.rest) csl.note = extra.rest;
   else delete csl.note;
   return csl;

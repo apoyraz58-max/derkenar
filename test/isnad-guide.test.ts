@@ -121,6 +121,24 @@ describe("İSNAD 2 kılavuzu: Kur’ân ve Kitâb-ı Mukaddes (s. 79-86)", () =>
   });
 });
 
+describe("İSNAD 2 kılavuzu: virgül, makalede neşir", () => {
+  it("kadı sicili-arşivde: kısa başlıkta yıl (s. 94)", () => {
+    const item = work("Kayseri Sancağı");
+    const withYear = { ...item, fields: { ...item.fields, shortTitle: "Kayseri Sancağı Şer'îye Sicil Defteri (1334-1336)" } };
+    const r = render(withYear, { locator: "68-90" }, { locator: "61a-61b" });
+    expect(r.later).toBe("Kayseri Sancağı Şer’îye Sicil Defteri (1334-1336), 61a-61b.");
+  });
+  it("parantezden önce virgül kullanılmaz (s. 67)", async () => {
+    const { isnadTidy } = await import("../src/core/engine.js");
+    expect(isnadTidy("Defteri, (1334-1336), 61a.")).toBe("Defteri (1334-1336), 61a.");
+  });
+  it("makale-tahkik/neşir: neşredilen eserin adı (s. 109)", () => {
+    const r = render(work("Tırâzu’l-müzheb Adlı"), { locator: "229" }, { locator: "230" });
+    expect(r.first).toContain("et-Tırâzu’l-müzheb, “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”, thk. Osman Bayder, Tahkik İslami İlimler Araştırma ve Neşir Dergisi 2/1 (Haziran 2019), 229.");
+    expect(r.bib).toContain("Şuhâvî, Bedreddin. et-Tırâzu’l-müzheb. “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”. thk. Osman Bayder. Tahkik İslami İlimler Araştırma ve Neşir Dergisi 2/1 (Haziran 2019), 211-257.");
+  });
+});
+
 describe("İSNAD 2 kılavuzu: türler", () => {
   it("kitap-elektronik: yayın formatı, b.y. eklenmez (s. 72)", () => {
     const r = render(work("Amisos Mozaiği"), { locator: "44" }, { locator: "98" });
@@ -147,7 +165,7 @@ describe("İSNAD 2 kılavuzu: türler", () => {
     const r = render(item, { kitab: "Menâḳıb", bab: "24", hadisNo: "3437" }, { kitab: "Menâḳıb", bab: "24", hadisNo: "3437" });
     expect(r.first).toBe("Ebû Abdillâh Muhammed b. İsmail el-Buhârî, el-Câmiʿu’ṣ-ṣaḥîḥ, nşr. Muhammed Züheyr b. Nasr (b.y.: Dâru Tavki’n-Necât, 1422/2001), “Menâḳıb”, 24 (No. 3437).");
     expect(r.later).toBe("Buhârî, “Menâḳıb”, 24 (No. 3437).");
-    expect(r.bib).toBe("Buhârî, Ebû Abdillâh Muhammed b. İsmail el-. el-Câmiʿu’ṣ-ṣaḥîḥ. nşr. Muhammed Züheyr b. Nasr. 8 Cilt. b.y.: Dâru Tavki’n-Necât, 2. Basım, 1422/2001.");
+    expect(r.bib).toBe("Buhârî, Ebû Abdillâh Muhammed b. İsmail. el-Câmiʿu’ṣ-ṣaḥîḥ. nşr. Muhammed Züheyr b. Nasr. 8 Cilt. b.y.: Dâru Tavki’n-Necât, 2. Basım, 1422/2001.");
   });
   it("hadis: “Kitâb”, Hadis no sistemi (s. 88)", () => {
     const item = work("el-Muvaṭṭaʾ");

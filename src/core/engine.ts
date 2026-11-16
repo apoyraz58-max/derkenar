@@ -80,14 +80,14 @@ export class Renderer {
       properties: { noteIndex: c.noteIndex },
     }));
     const out = new Map<string, string>();
-    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html")) out.set(id, html);
+    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html")) out.set(id, isnadTidy(html));
     return out;
   }
 
   /** What a new citation would look like (does not change the processor state). */
   preview(refs: readonly CiteRef[], noteIndex = 1): string {
     const citation = { citationItems: refs.map(toCiteItem), properties: { noteIndex } };
-    return this.engine.previewCitationCluster(citation, [], [], "html");
+    return isnadTidy(this.engine.previewCitationCluster(citation, [], [], "html"));
   }
 
   /** Bibliography of the works cited by the last renderCitations; null when the style has none. */
@@ -99,7 +99,7 @@ export class Renderer {
     const ids = (params.entry_ids as string[][]) ?? [];
     // İSNAD: several entries of one dictionary are one bibliography line (madde names are not listed).
     const seen = new Set<string>();
-    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html })).filter((e) => {
+    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html: isnadTidy(stripArticle(html)) })).filter((e) => {
       const k = e.html.replace(/\s+/g, " ").trim();
       if (seen.has(k)) return false;
       seen.add(k);
@@ -113,6 +113,22 @@ export class Renderer {
       secondFieldAlign: Boolean(params["second-field-align"]),
     };
   }
+}
+
+/**
+ * İSNAD: no comma before a parenthesis ("…Defteri (1334-1336), 61a", guide s. 67).
+ */
+export function isnadTidy(html: string): string {
+  return html.replace(/,(\s|&#160;)+\(/g, " (");
+}
+
+/**
+ * In the bibliography the Arabic article written at the end of the given
+ * name (İSNAD's Zotero rule: "Buhârî, Ebû Abdillâh Muhammed b. İsmail el-")
+ * is dropped: "Buhârî, Ebû Abdillâh Muhammed b. İsmail." (guide s. 87).
+ */
+export function stripArticle(html: string): string {
+  return html.replace(/\s(?:[ae][lrsztdnş]|eş|ed|el)-(?=\.)/gu, "");
 }
 
 function toCiteItem(r: CiteRef): Record<string, unknown> {
