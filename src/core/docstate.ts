@@ -127,8 +127,12 @@ export function volumesCited(refs: readonly CiteRef[]): Set<string> {
 export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set()): Record<string, CslItem> {
   const out: Record<string, CslItem> = {};
   for (const [k, v] of Object.entries(items)) {
-    const csl = { ...toCsl(v), id: k };
-    if (citedWithVolume.has(k) && !CONTAINER_VOLUME.has(csl.type)) delete csl.volume;
+    const csl: CslItem = { ...toCsl(v), id: k };
+    if (citedWithVolume.has(k) && !CONTAINER_VOLUME.has(csl.type) && csl.volume !== undefined) {
+      // The record's Cilt was really the number of volumes: the bibliography says "6 Cilt".
+      if (csl["number-of-volumes"] === undefined) csl["number-of-volumes"] = csl.volume;
+      delete csl.volume;
+    }
     out[k] = csl;
   }
   return out;

@@ -69,6 +69,8 @@ export interface DocState {
   notes?: "footnote" | "endnote";
   /** Re-render automatically when citations move, appear or disappear (default on). */
   auto?: boolean;
+  /** Heading put above a new bibliography ("Kaynakça"); empty string: no heading. */
+  bibTitle?: string;
 }
 
 /** Formatted run of text produced from citeproc HTML. */

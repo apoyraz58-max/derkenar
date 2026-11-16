@@ -80,7 +80,19 @@ const FAKE = String.raw`
       return cc ? Object.assign(cc, { isNullObject: false }) : { isNullObject: true, load() { return this; } };
     },
     get paragraphs() {
-      return { getLast: () => ({ insertParagraph(t) { return { insertContentControl() { const cc = makeCC("block"); cc.paras = [[{ text: t, font: {} }]]; insertAtCursor({ cc }); return cc; } }; } }) };
+      const paragraph = () => ({
+        styleBuiltIn: "",
+        insertParagraph(t) {
+          const p = paragraph();
+          p.text = t;
+          p.insertContentControl = () => { const cc = makeCC("block"); cc.paras = [[{ text: t, font: {} }]]; insertAtCursor({ cc }); return cc; };
+          Promise.resolve().then(() => { if (!p.wrapped && p.styleBuiltIn !== "Normal") insertAtCursor({ kind: "text", text: "\n# " + t + "\n" }); });
+          const orig = p.insertContentControl;
+          p.insertContentControl = () => { p.wrapped = true; return orig(); };
+          return p;
+        },
+      });
+      return { getLast: () => paragraph() };
     },
   };
   const body = {
@@ -93,7 +105,7 @@ const FAKE = String.raw`
     get endnotes() { return collection([]); },
   };
   const context = { document: { body, getSelection: () => selection }, sync: async () => undefined };
-  window.Word = { run: async (fn) => fn(context) };
+  window.Word = { run: async (fn) => fn(context), Style: { heading1: "Heading1", normal: "Normal" } };
   let selHandler = null;
   window.Office = {
     onReady: (cb) => Promise.resolve().then(() => cb({ host: "Word" })),
@@ -245,6 +257,7 @@ try {
   await page.click("#bibliography");
   await page.waitForSelector("#message:has-text('Kaynakça eklendi')");
   const text = await page.evaluate(() => window.__text());
+  if (!text.includes("# Kaynakça\n")) fail(`bibliography heading: ${text}`);
   if (!text.includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ min ʿilmi’l-uṣûl. nşr. Ali Nâşir. thk. Hamza b. Züheyr Hâfız.")) fail(`bibliography: ${text}`);
   if ((await page.locator("#doc-citations li").count()) !== 4) fail("document list should show 4 citations");
   if (shots) await page.screenshot({ path: `${shots}/belge.png`, fullPage: true });

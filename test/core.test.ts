@@ -124,6 +124,8 @@ describe("İSNAD rendering", () => {
     putCitation(st, "m", [{ id: "MAH", volume: "1", locator: "80-81" }], { MAH: mahsul });
     let plan = planRefresh(st, [{ id: "m", noteIndex: 1, text: "" }], r);
     expect(htmlToText(plan.updates.get("m")!)).toMatch(/1997\), 1\/80-81\.$/);
+    // Even before the record is fixed, the bibliography gives the number of volumes.
+    expect(htmlToText(plan.bibliography!.entries[0]!.html)).toContain("el-ʿAlvânî. 6 Cilt. Riyaḍ");
     const fix = checkItem(mahsul).find((i) => i.code === "volume-count")!;
     const moved = applyFix(mahsul, fix.fix!);
     expect(moved.fields).toMatchObject({ numberOfVolumes: "6" });

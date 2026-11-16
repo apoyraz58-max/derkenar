@@ -129,6 +129,7 @@ function renderPrefs(): void {
   $<HTMLSelectElement>("locale").value = d.locale;
   $<HTMLSelectElement>("notes-kind").value = d.notes ?? "footnote";
   $<HTMLInputElement>("auto").checked = d.auto !== false;
+  $<HTMLInputElement>("bib-title").value = d.bibTitle ?? "Kaynakça";
 }
 
 async function changeStyle(id: string): Promise<void> {
@@ -149,7 +150,7 @@ async function changeStyle(id: string): Promise<void> {
 export async function bibliography(): Promise<void> {
   const r = await getRenderer();
   if (!r.meta.hasBibliography) throw new Error("Bu stilin kaynakçası yok.");
-  const made = await serial(() => word.ensureBibliography());
+  const made = await serial(() => word.ensureBibliography(doc().bibTitle ?? "Kaynakça"));
   doc().bibliographyHtml = undefined;
   await refresh(false, true);
   setMessage(made === "created" ? "Kaynakça eklendi; atıflarla birlikte kendiliğinden güncellenir." : "Kaynakça güncellendi.", "success");
@@ -199,6 +200,11 @@ export function wireDocument(): void {
       doc().auto = $<HTMLInputElement>("auto").checked;
       await word.saveState(doc());
       if (doc().auto) nudge();
+    });
+  $<HTMLInputElement>("bib-title").onchange = () =>
+    void run("Kaydediliyor", async () => {
+      doc().bibTitle = $<HTMLInputElement>("bib-title").value.trim();
+      await word.saveState(doc());
     });
   $("refresh").onclick = () => void run("Belge güncelleniyor", () => refresh(true));
   $("bibliography").onclick = () => void run("Kaynakça hazırlanıyor", bibliography);

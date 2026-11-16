@@ -206,8 +206,11 @@ function fillBibliography(cc: Word.ContentControl, entries: readonly Segment[][]
   });
 }
 
-/** Places an empty bibliography after the paragraph with the cursor (unless one exists). */
-export async function ensureBibliography(): Promise<"created" | "exists"> {
+/**
+ * Places an empty bibliography after the paragraph with the cursor (unless
+ * one exists), under a "Başlık 1" heading when a title is given.
+ */
+export async function ensureBibliography(title = "Kaynakça"): Promise<"created" | "exists"> {
   return Word.run(async (context) => {
     const existing = context.document.body.contentControls.getByTag(TAG_BIBLIOGRAPHY);
     existing.load("items");
@@ -217,8 +220,13 @@ export async function ensureBibliography(): Promise<"created" | "exists"> {
       await context.sync();
       return "exists";
     }
-    const para = context.document.getSelection().paragraphs.getLast();
+    let para: Word.Paragraph = context.document.getSelection().paragraphs.getLast();
+    if (title.trim()) {
+      para = para.insertParagraph(title.trim(), "After");
+      para.styleBuiltIn = "Heading1" as Word.BuiltInStyleName;
+    }
     const p = para.insertParagraph("Kaynakça hazırlanıyor…", "After");
+    p.styleBuiltIn = "Normal" as Word.BuiltInStyleName;
     const cc = p.insertContentControl();
     cc.tag = TAG_BIBLIOGRAPHY;
     cc.title = "Kaynakça";
