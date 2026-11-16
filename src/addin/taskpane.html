@@ -188,7 +188,12 @@
           <textarea id="new-lookup" rows="2" placeholder="DOI, ISBN, PMID veya arXiv; birden çoksa her satıra bir tane"></textarea>
           <div class="actions"><button type="submit" class="primary">Bul ve ekle</button></div>
         </form>
-        <p class="muted small">Künye çevrimiçi kataloglardan (Crossref, DataCite, Open Library, Google Books, PubMed, arXiv) alınır; tek kaynak bulunursa düzenlemek için açılır.</p>
+        <p class="muted small">DOI: Crossref, DataCite. ISBN: K10plus (Türkçe, Arapça, Farsça yayınlarda en zengini), Alman Millî Kütüphanesi, Crossref, Google Books, Open Library; hepsine birden sorulur, en dolu kayıt alınır. Tek kaynak bulunursa düzenlemek için açılır; ISBN hiçbir katalogda yoksa ISBN'i yazılı boş bir Kitap kaydı açılır.</p>
+        <details>
+          <summary class="small">Google Books anahtarı (isteğe bağlı)</summary>
+          <label class="small">Anahtarsız isteklerde Google sık sık "günlük kota doldu" der. Ücretsiz anahtar: console.cloud.google.com → Books API'yi etkinleştir → Kimlik bilgileri → API anahtarı.
+            <input id="google-key" type="password" autocomplete="off" placeholder="AIza…" /></label>
+        </details>
       </section>
       <section>
         <h2>Künye yapıştır</h2>
@@ -356,7 +361,7 @@
       </section>
       <section>
         <h2>Ağ bağlantıları</h2>
-        <p class="muted small">Derkenar yalnız siz istediğinizde dışarıya bağlanır: DOI için Crossref, doi.org ve DataCite; ISBN için Open Library ve Google Books; PMID için PubMed; arXiv; eşitleme için çevrimiçi kütüphanenin sunucusu ya da bilgisayarınızdaki atıf programı. Belge metni hiçbir yere gönderilmez.</p>
+        <p class="muted small">Derkenar yalnız siz istediğinizde dışarıya bağlanır: DOI için Crossref, doi.org ve DataCite; ISBN için K10plus, Alman Millî Kütüphanesi, Crossref, Google Books ve Open Library; PMID için PubMed; arXiv; eşitleme için çevrimiçi kütüphanenin sunucusu ya da bilgisayarınızdaki atıf programı. Belge metni hiçbir yere gönderilmez.</p>
       </section>
       <section>
         <h2>Bileşenler</h2>

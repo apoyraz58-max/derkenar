@@ -293,50 +293,10 @@ export async function lookupDoi(doi: string, fetchFn: Fetch = fetch): Promise<It
 }
 
 /** ISBN: Open Library first, Google Books when Open Library does not know the book (common for Turkish books). */
-export async function lookupIsbn(isbn: string, fetchFn: Fetch = fetch): Promise<Item> {
-  let data: OpenLibraryBook | undefined;
-  try {
-    const r = await fetchFn(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
-    if (r.ok) data = ((await r.json()) as Record<string, OpenLibraryBook>)[`ISBN:${isbn}`];
-  } catch {
-    /* try Google Books */
-  }
-  if (!data) return lookupGoogleBooks(isbn, fetchFn);
-  const item = emptyItem("book", "isbn");
-  item.fields.title = [data.title, data.subtitle].filter(Boolean).join(": ");
-  item.creators = (data.authors ?? []).map((a) => ({ creatorType: "author", ...splitName(a.name) }));
-  if (data.publishers?.[0]) item.fields.publisher = data.publishers[0].name;
-  if (data.publish_places?.[0]) item.fields.place = data.publish_places[0].name;
-  const y = /\d{4}/.exec(data.publish_date ?? "")?.[0];
-  if (y) item.fields.date = y;
-  if (data.number_of_pages) item.fields.numPages = String(data.number_of_pages);
-  item.fields.ISBN = isbn;
-  return item;
-}
-
-async function lookupGoogleBooks(isbn: string, fetchFn: Fetch): Promise<Item> {
-  const r = await fetchFn(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
-  const v = r.ok ? ((await r.json()) as { items?: { volumeInfo: GoogleVolume }[] }).items?.[0]?.volumeInfo : undefined;
-  if (!v) throw new Error(`ISBN bulunamadı (${isbn}).`);
-  const item = emptyItem("book", "isbn");
-  item.fields.title = [v.title, v.subtitle].filter(Boolean).join(": ");
-  item.creators = (v.authors ?? []).map((a) => ({ creatorType: "author", ...splitName(a) }));
-  if (v.publisher) item.fields.publisher = v.publisher;
-  if (v.publishedDate) item.fields.date = v.publishedDate.slice(0, 4);
-  if (v.pageCount) item.fields.numPages = String(v.pageCount);
-  if (v.language) item.fields.language = v.language;
-  item.fields.ISBN = isbn;
-  return item;
-}
-
-interface GoogleVolume {
-  title?: string;
-  subtitle?: string;
-  authors?: string[];
-  publisher?: string;
-  publishedDate?: string;
-  pageCount?: number;
-  language?: string;
+/** ISBN → book: several catalogues at once (see isbn.ts). */
+export async function lookupIsbn(isbn: string, fetchFn: Fetch = fetch, googleKey?: string): Promise<Item> {
+  const { lookupIsbnAll } = await import("./isbn.js");
+  return lookupIsbnAll(isbn, { fetchFn, googleKey });
 }
 
 /** PubMed id → item (NCBI E-utilities). */

@@ -5,7 +5,7 @@
 import { backup, cslJson, formatAs, isBackup, parseBackup } from "../../core/exporters.js";
 import { type ZoteroConfig, cleanArxiv, cleanDoi, cleanIsbn, cleanPmid, detectFormat, lookupArxiv, lookupDoi, lookupIsbn, lookupPmid, parseFile, pushToZotero, syncZotero } from "../../core/importers.js";
 import { report, zoteroCsv, zoteroRdf } from "../../core/zoteroexport.js";
-import { type Collection, type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
+import { type Collection, type Item, creatorLine, emptyItem, now, titleOf } from "../../core/zotero.js";
 import { citedKeys } from "./document.js";
 import { getMeta, setMeta } from "../store.js";
 import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMessage } from "./core.js";
@@ -166,6 +166,7 @@ async function lookup(box = "lookup"): Promise<void> {
   const found: Item[] = [];
   const failed: string[] = [];
   const reasons: string[] = [];
+  const googleKey = (await getMeta<string>("googleBooksKey").catch(() => undefined)) || undefined;
   for (const line of lines) {
     const doi = cleanDoi(line);
     const arxiv = doi ? null : cleanArxiv(line);
@@ -175,7 +176,7 @@ async function lookup(box = "lookup"): Promise<void> {
       if (doi) found.push(await lookupDoiOrIsbn(doi));
       else if (arxiv) found.push(await lookupArxiv(arxiv));
       else if (pmid) found.push(await lookupPmid(pmid));
-      else if (isbn) found.push(await lookupIsbn(isbn));
+      else if (isbn) found.push(await lookupIsbn(isbn, fetch, googleKey));
       else {
         failed.push(line);
         reasons.push(`"${line}" DOI, ISBN, PMID ya da arXiv numarası olarak tanınmadı.`);
@@ -189,6 +190,17 @@ async function lookup(box = "lookup"): Promise<void> {
   if (v.kind === "collection") for (const f of found) f.collections = [v.key];
   await putItems(found);
   $<HTMLTextAreaElement>(box).value = failed.join("\n");
+  // A single ISBN no catalogue knows: open a book record with the ISBN in it.
+  if (!found.length && lines.length === 1 && cleanIsbn(lines[0]!) && !cleanDoi(lines[0]!)) {
+    const book = emptyItem("book", "manual");
+    book.fields.ISBN = cleanIsbn(lines[0]!)!;
+    if (v.kind === "collection") book.collections = [v.key];
+    await putItems([book]);
+    $<HTMLTextAreaElement>(box).value = "";
+    openEditor(book.key, true);
+    setMessage(`${reasons.join(" ")} ISBN'i yazılı bir Kitap kaydı açıldı; künyeyi kitaptan girin.`, "warning");
+    return;
+  }
   if (!found.length) throw new Error(reasons.join(" "));
   setMessage(`${found.length} kaynak eklendi${found.length === 1 ? `: ${creatorLine(found[0]!)}, ${titleOf(found[0]!)}` : ""}.${failed.length ? ` Eklenemeyen ${failed.length} satır kutuda bırakıldı: ${reasons.join(" ")}` : ""}`, failed.length ? "warning" : "success");
   // One work found: open it, so it can be checked and completed at once.
@@ -293,6 +305,12 @@ export function wireIo(): void {
     e.preventDefault();
     void run("Aranıyor", () => lookup("new-lookup"));
   };
+  void getMeta<string>("googleBooksKey").then((k) => ($<HTMLInputElement>("google-key").value = k ?? "")).catch(() => undefined);
+  $<HTMLInputElement>("google-key").onchange = () =>
+    void run("Kaydediliyor", async () => {
+      await setMeta("googleBooksKey", $<HTMLInputElement>("google-key").value.trim());
+      setMessage("Google Books anahtarı bu bilgisayarda saklandı.", "success");
+    });
   $<HTMLFormElement>("new-paste-form").onsubmit = (e) => {
     e.preventDefault();
     void run("Ekleniyor", pasteRecords);

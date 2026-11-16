@@ -111,6 +111,8 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
     <AppDomain>https://api.zotero.org</AppDomain>
     <AppDomain>https://api.crossref.org</AppDomain>
     <AppDomain>https://openlibrary.org</AppDomain>
+    <AppDomain>https://sru.k10plus.de</AppDomain>
+    <AppDomain>https://services.dnb.de</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Document"/>

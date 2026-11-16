@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zs:searchRetrieveResponse xmlns:zs="http://www.loc.gov/zing/srw/"><zs:version>1.1</zs:version><zs:numberOfRecords>1</zs:numberOfRecords><zs:records><zs:record><zs:recordSchema>marcxml</zs:recordSchema><zs:recordPacking>xml</zs:recordPacking><zs:recordData><record xmlns="http://www.loc.gov/MARC21/slim">
+  <leader>     cam a22      c 4500</leader>
+  <controlfield tag="001">1985218720</controlfield>
+  <controlfield tag="003">DE-627</controlfield>
+  <controlfield tag="005">20261104091101.0</controlfield>
+  <controlfield tag="007">tu</controlfield>
+  <controlfield tag="008">260928s2026    tu |||||      00| ||tur c</controlfield>
+  <datafield tag="020" ind1=" " ind2=" ">
+    <subfield code="a">9786054791712</subfield>
+    <subfield code="q">Paperback</subfield>
+    <subfield code="9">978-605-4791-71-2</subfield>
+  </datafield>
+  <datafield tag="035" ind1=" " ind2=" ">
+    <subfield code="a">(DE-627)1985218720</subfield>
+  </datafield>
+  <datafield tag="035" ind1=" " ind2=" ">
+    <subfield code="a">(DE-599)KXP1985218720</subfield>
+  </datafield>
+  <datafield tag="035" ind1=" " ind2=" ">
+    <subfield code="a">(OCoLC)1618879725</subfield>
+  </datafield>
+  <datafield tag="040" ind1=" " ind2=" ">
+    <subfield code="a">DE-627</subfield>
+    <subfield code="b">ger</subfield>
+    <subfield code="c">DE-627</subfield>
+    <subfield code="e">rda</subfield>
+  </datafield>
+  <datafield tag="041" ind1=" " ind2=" ">
+    <subfield code="a">tur</subfield>
+  </datafield>
+  <datafield tag="044" ind1=" " ind2=" ">
+    <subfield code="c">XB-TR</subfield>
+  </datafield>
+  <datafield tag="084" ind1=" " ind2=" ">
+    <subfield code="a">NAHOST</subfield>
+    <subfield code="q">DE-3</subfield>
+    <subfield code="2">fid</subfield>
+  </datafield>
+  <datafield tag="084" ind1=" " ind2=" ">
+    <subfield code="a">11.84</subfield>
+    <subfield code="2">bkl</subfield>
+  </datafield>
+  <datafield tag="100" ind1="0" ind2=" ">
+    <subfield code="a">Kemalpaşazade</subfield>
+    <subfield code="d">1469-1534</subfield>
+    <subfield code="e">VerfasserIn</subfield>
+    <subfield code="0">(DE-588)123063523</subfield>
+    <subfield code="0">(DE-627)08232476X</subfield>
+    <subfield code="0">(DE-576)170630773</subfield>
+    <subfield code="4">aut</subfield>
+  </datafield>
+  <datafield tag="245" ind1="1" ind2="0">
+    <subfield code="a">Kelam ve akaid risaleleri</subfield>
+    <subfield code="c">Kemalpaşazade(İbn Kemal) ; çeviren Muhammed Çıbar ; editör Osman Bayder</subfield>
+  </datafield>
+  <datafield tag="250" ind1=" " ind2=" ">
+    <subfield code="a">1. baskı</subfield>
+  </datafield>
+  <datafield tag="264" ind1=" " ind2="1">
+    <subfield code="a">İstanbul</subfield>
+    <subfield code="b">Misvak Neşriyat</subfield>
+    <subfield code="c">2026</subfield>
+  </datafield>
+  <datafield tag="300" ind1=" " ind2=" ">
+    <subfield code="a">133 Seitten</subfield>
+  </datafield>
+  <datafield tag="336" ind1=" " ind2=" ">
+    <subfield code="a">Text</subfield>
+    <subfield code="b">txt</subfield>
+    <subfield code="2">rdacontent</subfield>
+  </datafield>
+  <datafield tag="337" ind1=" " ind2=" ">
+    <subfield code="a">ohne Hilfsmittel zu benutzen</subfield>
+    <subfield code="b">n</subfield>
+    <subfield code="2">rdamedia</subfield>
+  </datafield>
+  <datafield tag="338" ind1=" " ind2=" ">
+    <subfield code="a">Band</subfield>
+    <subfield code="b">nc</subfield>
+    <subfield code="2">rdacarrier</subfield>
+  </datafield>
+  <datafield tag="490" ind1="1" ind2=" ">
+    <subfield code="a">Misvak Neşriyat</subfield>
+    <subfield code="v">Yayın No: 53</subfield>
+    <subfield code="a">Resâil-i Kemalpaşazâde</subfield>
+    <subfield code="v">3</subfield>
+  </datafield>
+  <datafield tag="520" ind1=" " ind2=" ">
+    <subfield code="a">Resail-i Kemalpaşazade projesi kapsamında yayınladığımız bu eserde İbn Kemal'in kelam ve akaid konularındaki risalelerini bir araya getirdik. Kitap ilahiyat alanındakilere hitap ettiği kadar  Ehli Sünnet akaidini öğrenmek ve dini kültürünü artırmak isteyen herkesin okuyabileceği bir eserdir. "Türkçe dilinde açıklanmış, saklı bir inci gibi bir risale yazayım ki, onu okumanın bereketiyle inanılması vacip olan şeylere ayrıntısıyla kesin bilgi (yakîn) hasıl olsun; taklit çukurundan kurtulup düze ulaşılsın ve nice ince faydalar da bilinsin... Kelâmcılar topluluğundan, zahiri inanç ile sünnet üzere yürüyüp Allah Resûlü’nün (sas)  ashabının cemaatinin yolundan gidenlere Ehl-i Hak ve Ehl-i Sünnet ve’l Cemaat derler. Bu yola muhalefet edip zahiri terk edenlere “muhalifler topluluğu”, “bidat ve dalalet ehli” de derler..."  (İbn Kemal, Akaid-i Muhtasara Risalesi Girişi)</subfield>
+  </datafield>
+  <datafield tag="689" ind1="0" ind2="0">
+    <subfield code="D">s</subfield>
+    <subfield code="0">(DE-588)4338653-2</subfield>
+    <subfield code="0">(DE-627)152412743</subfield>
+    <subfield code="0">(DE-576)211390364</subfield>
+    <subfield code="a">Kalam</subfield>
+    <subfield code="2">gnd</subfield>
+  </datafield>
+  <datafield tag="689" ind1="0" ind2="1">
+    <subfield code="D">s</subfield>
+    <subfield code="0">(DE-588)4900632-0</subfield>
+    <subfield code="0">(DE-627)503315842</subfield>
+    <subfield code="0">(DE-576)217180396</subfield>
+    <subfield code="a">ʿAqīda</subfield>
+    <subfield code="2">gnd</subfield>
+  </datafield>
+  <datafield tag="689" ind1="0" ind2=" ">
+    <subfield code="5">(DE-627)</subfield>
+  </datafield>
+  <datafield tag="700" ind1="1" ind2=" ">
+    <subfield code="a">Çınar, Muhammed</subfield>
+    <subfield code="e">ÜbersetzerIn</subfield>
+    <subfield code="4">trl</subfield>
+  </datafield>
+  <datafield tag="700" ind1="1" ind2=" ">
+    <subfield code="a">Bayder, Osman</subfield>
+    <subfield code="e">HerausgeberIn</subfield>
+    <subfield code="4">edt</subfield>
+  </datafield>
+  <datafield tag="830" ind1=" " ind2="0">
+    <subfield code="a">Misvâk Neşriyat</subfield>
+    <subfield code="v">Yayın No: 53</subfield>
+    <subfield code="9">53</subfield>
+    <subfield code="w">(DE-627)1946496073</subfield>
+    <subfield code="w">(DE-600)3231771-2</subfield>
+    <subfield code="7">am</subfield>
+  </datafield>
+  <datafield tag="912" ind1=" " ind2=" ">
+    <subfield code="a">SSG-OPC-vor</subfield>
+  </datafield>
+  <datafield tag="924" ind1="0" ind2=" ">
+    <subfield code="a">5038981240</subfield>
+    <subfield code="b">DE-3</subfield>
+    <subfield code="9">3</subfield>
+    <subfield code="c">GBV</subfield>
+    <subfield code="d">c</subfield>
+    <subfield code="g">2026 SA 2536</subfield>
+    <subfield code="h">Ha 1</subfield>
+  </datafield>
+  <datafield tag="935" ind1=" " ind2=" ">
+    <subfield code="i">IMPORT_0003_FID</subfield>
+  </datafield>
+  <datafield tag="936" ind1="b" ind2="k">
+    <subfield code="a">11.84</subfield>
+    <subfield code="j">Islam: Sonstiges</subfield>
+    <subfield code="0">(DE-627)106404075</subfield>
+  </datafield>
+  <datafield tag="951" ind1=" " ind2=" ">
+    <subfield code="a">BO</subfield>
+  </datafield>
+</record></zs:recordData><zs:recordPosition>1</zs:recordPosition></zs:record></zs:records><zs:echoedSearchRetrieveRequest><zs:version>1.1</zs:version><zs:query>pica.isb=9786054791712</zs:query><zs:maximumRecords>1</zs:maximumRecords><zs:recordPacking>xml</zs:recordPacking><zs:recordSchema>marcxml</zs:recordSchema></zs:echoedSearchRetrieveRequest></zs:searchRetrieveResponse>

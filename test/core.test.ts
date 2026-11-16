@@ -434,3 +434,42 @@ describe("library copy in the document", () => {
     expect(unpackLibrary("<x/>")).toBeNull();
   });
 });
+
+describe("ISBN: several catalogues", async () => {
+  const { isbnForms, lookupIsbnAll, marcToItem } = await import("../src/core/isbn.js");
+  const marc = readFileSync(new URL("./fixtures/k10plus-9786054791712.xml", import.meta.url), "utf8");
+
+  it("ISBN-10 and ISBN-13 forms", () => {
+    expect(isbnForms("975-437-076-1")).toEqual(["9789754370768", "9754370761"]);
+    expect(isbnForms("9789754370768")).toEqual(["9789754370768", "9754370761"]);
+  });
+
+  it("reads a K10plus MARC record: roles, place, publisher; no publisher series, no first edition", () => {
+    const it = marcToItem(marc)!;
+    expect(it.fields.title).toBe("Kelam ve akaid risaleleri");
+    expect(it.fields.place).toBe("İstanbul");
+    expect(it.fields.publisher).toBe("Misvak Neşriyat");
+    expect(it.fields.series).toBeUndefined();
+    expect(it.fields.edition).toBeUndefined();
+    expect(it.creators.map((c) => c.creatorType)).toEqual(["author", "translator", "editor"]);
+  });
+
+  it("asks all catalogues, keeps the fullest record and fills gaps from the others", async () => {
+    const fetchFn = async (url: string) => {
+      if (url.includes("k10plus")) return new Response(marc);
+      if (url.includes("openlibrary")) return new Response(JSON.stringify({ "ISBN:9786054791712": { title: "Kelam ve Akaid Risaleleri", number_of_pages: 240 } }));
+      if (url.includes("googleapis")) return new Response("{}", { status: 429 });
+      if (url.includes("crossref")) return new Response(JSON.stringify({ message: { items: [] } }));
+      return new Response("<x/>");
+    };
+    const it = await lookupIsbnAll("978-605-4791-71-2", { fetchFn });
+    expect(it.fields.publisher).toBe("Misvak Neşriyat");
+    expect(it.fields.numPages).toBe("240");
+    expect(it.fields.ISBN).toBe("9786054791712");
+  });
+
+  it("says when nothing is found and when Google's quota is the reason", async () => {
+    const fetchFn = async (url: string) => (url.includes("googleapis") ? new Response("{}", { status: 429 }) : url.includes("openlibrary") || url.includes("crossref") ? new Response("{}") : new Response("<x/>"));
+    await expect(lookupIsbnAll("9786258910605", { fetchFn })).rejects.toThrow(/bulunamadı.*kota/);
+  });
+});
