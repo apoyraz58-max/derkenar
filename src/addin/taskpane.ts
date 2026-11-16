@@ -5,13 +5,37 @@ import { BUILTIN_STYLES } from "../core/styles.js";
 import * as word from "./word.js";
 import { clearBasket, onSelection, search, wireCite } from "./pane/cite.js";
 import { runCheck, wireCheck } from "./pane/check.js";
-import { $, doc, loadLibrary, onLibraryChange, onShow, renderSummary, run, showView } from "./pane/core.js";
+import { $, doc, loadLibrary, setMessage, onLibraryChange, onShow, renderSummary, run, showView } from "./pane/core.js";
 import { bibliography, changeStyle, nudge, refresh, renderDocList, startWatcher, wireDocument } from "./pane/document.js";
 import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
 import { newItem, refreshLibraryView, wireLibrary } from "./pane/library.js";
 
 declare const __VERSION__: string;
+
+/**
+ * Word keeps add-in files in its own cache and may open an old copy long
+ * after an update. The published version.json is read past every cache; when
+ * it names a newer build, the pane reloads itself once with that version in
+ * the address, which also fetches the new script (its URL carries it).
+ */
+async function checkForUpdate(): Promise<void> {
+  try {
+    const response = await fetch(`version.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return;
+    const { version } = (await response.json()) as { version?: string };
+    if (!version || version === __VERSION__) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("_v") === version) {
+      setMessage(`Yeni sürüm (${version}) yayında ama Word eski kopyayı açtı (${__VERSION__}). Word'ü kapatıp açın; düzelmezse Office önbelleğini temizleyin (Dosya → Seçenekler → Güven Merkezi → Güvenilen Eklenti Katalogları → "önbelleği temizle" kutusu).`, "warning");
+      return;
+    }
+    url.searchParams.set("_v", version);
+    window.location.replace(url.toString());
+  } catch {
+    /* offline or blocked: keep the running copy */
+  }
+}
 
 async function launch(action: string): Promise<void> {
   switch (action) {
@@ -60,6 +84,7 @@ async function launch(action: string): Promise<void> {
 
 Office.onReady(async () => {
   $("version").textContent = `Derkenar ${__VERSION__}`;
+  void checkForUpdate();
   for (const b of document.querySelectorAll<HTMLButtonElement>(".tabs button")) b.onclick = () => showView(b.dataset.view!);
   $("go-new").onclick = () => newItem("book");
   $("go-import").onclick = () => showView("aktar");
