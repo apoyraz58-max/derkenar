@@ -17,6 +17,7 @@ export function familyKey(c: Creator): string {
     .join(" ")
     .replace(/\bibn-?i\b/g, "ibn")
     .replace(/[^\p{L}\p{N} ]+/gu, "")
+    .replace(/(\p{L})\1+/gu, "$1")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -24,6 +25,7 @@ export function familyKey(c: Creator): string {
 function givenTokens(c: Creator): string[] {
   if (c.name !== undefined) return [];
   return fold(c.firstName ?? "")
+    .replace(/(\p{L})\1+/gu, "$1")
     .replace(/[^\p{L}\p{N}. -]+/gu, " ")
     .split(/[\s-]+/)
     .map((w) => w.replace(ARTICLE, "").replace(/\.$/, ""))
@@ -38,7 +40,12 @@ function tokenMatch(a: string, b: string): boolean {
   return false;
 }
 
-/** One given name is the start of the other ("Ebû Hâmid" ⊂ "Ebû Hâmid Muhammed"), or one is missing. */
+/**
+ * The words of the shorter given name appear in the longer one in the same
+ * order: titles, künye, lakab or nisbe added anywhere do not matter
+ * ("Ebû Hâmid Muhammed" ~ "Huccetü’l-İslâm Ebû Hâmid Muhammed b. Muhammed").
+ * A missing given name matches any.
+ */
 export function sameAuthor(a: Creator, b: Creator): boolean {
   const fa = familyKey(a);
   if (!fa || fa !== familyKey(b)) return false;
@@ -46,7 +53,13 @@ export function sameAuthor(a: Creator, b: Creator): boolean {
   const gb = givenTokens(b);
   if (!ga.length || !gb.length) return true;
   const [short, long] = ga.length <= gb.length ? [ga, gb] : [gb, ga];
-  return short.every((t, i) => tokenMatch(t, long[i]!));
+  let j = 0;
+  for (const t of short) {
+    while (j < long.length && !tokenMatch(t, long[j]!)) j++;
+    if (j === long.length) return false;
+    j++;
+  }
+  return true;
 }
 
 export function sameAuthors(a: readonly Creator[], b: readonly Creator[]): boolean {

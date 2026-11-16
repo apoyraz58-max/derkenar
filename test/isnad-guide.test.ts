@@ -77,6 +77,9 @@ describe("a.mlf.: müellif adı farklı yazılmış olsa da", () => {
     ["Yılmaz", "A.", "Yilmaz", "Ahmet", true],
     ["Yılmaz", "Ahmet", "Yılmaz", "Mehmet", false],
     ["Gazzâlî", "Ebû Hâmid", "Râzî", "Fahreddîn", false],
+    ["Gazzâlî", "Ebû Hâmid Muhammed b. Muhammed el-", "Gazzâlî", "Huccetuʾl-İslâm Ebû Ḥâmid Muḥammed b. Muḥammed el-", true],
+    ["Gazâlî", "Ebû Hâmid", "el-Ġazzâlî", "Ebû Ḥâmid Muḥammed", true],
+    ["Yılmaz", "Ahmet", "Yılmaz", "Mehmet Ali", false],
   ];
   for (const [l1, f1, l2, f2, same] of cases) {
     it(`${l1}, ${f1} / ${l2}, ${f2} → ${same ? "a.mlf." : "ayrı müellif"}`, () => {
