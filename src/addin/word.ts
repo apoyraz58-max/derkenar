@@ -90,6 +90,51 @@ export function enableAutoOpen(): void {
   }
 }
 
+export interface InsertionPoint {
+  /** The cursor is in a footnote or endnote: insert in place, never a new note (Word refuses one there). */
+  readonly inNote: boolean;
+  /** A citation right before the cursor in the same note (only spaces or ; between): add to it, "…; …". */
+  readonly joinWith: string | null;
+}
+
+/** Where a new citation goes, decided from the cursor before inserting. */
+export async function insertionPoint(): Promise<InsertionPoint> {
+  return Word.run(async (context) => {
+    const sel = context.document.getSelection();
+    const inside = sel.parentContentControlOrNullObject;
+    inside.load("tag");
+    const body = sel.parentBody;
+    body.load("type");
+    await context.sync();
+    const insideId = inside.isNullObject ? null : citationIdFromTag(inside.tag);
+    const inNote = body.type === "Footnote" || body.type === "Endnote";
+    if (insideId) return { inNote, joinWith: insideId };
+    if (!inNote) return { inNote, joinWith: null };
+    const controls = body.contentControls;
+    controls.load("items/tag");
+    await context.sync();
+    const start = sel.getRange("Start");
+    const checks = controls.items
+      .filter((cc) => citationIdFromTag(cc.tag))
+      .map((cc) => {
+        const end = cc.getRange("End");
+        const where = end.compareLocationWith(start);
+        return { cc, where, between: null as Word.Range | null };
+      });
+    await context.sync();
+    for (const c of checks) {
+      if (["Before", "AdjacentBefore", "Equal"].includes(c.where.value)) {
+        c.between = c.cc.getRange("End").expandTo(start);
+        c.between.load("text");
+      }
+    }
+    await context.sync();
+    let joinWith: string | null = null;
+    for (const c of checks) if (c.between && /^[\s;,.]*$/.test(c.between.text)) joinWith = citationIdFromTag(c.cc.tag);
+    return { inNote, joinWith };
+  });
+}
+
 /** The citation the cursor is in, if any. */
 export async function citationAtSelection(): Promise<string | null> {
   return Word.run(async (context) => {

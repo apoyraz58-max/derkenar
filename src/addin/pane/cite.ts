@@ -208,15 +208,31 @@ export async function insert(): Promise<void> {
       await refresh(false, true);
       setMessage("Atıf güncellendi.", "success");
     } else {
+      // In a footnote next to a citation: the new works join it ("…; …"), as İSNAD separates works in one note.
+      const point = await serial(() => word.insertionPoint()).catch(() => ({ inNote: false, joinWith: null }));
+      const target = point.joinWith && d.citations[point.joinWith] ? point.joinWith : null;
+      if (target) {
+        const existing = d.citations[target]!.items;
+        putCitation(d, target, [...existing, ...refs.filter((x) => !existing.some((e) => e.id === x.id && !x.locator && !x.kitab && !x.madde))], { ...works });
+        await refresh(false, true);
+        setMessage("Atıf aynı dipnottaki atıfa eklendi (; ile).", "success");
+        clearBasket();
+        $<HTMLInputElement>("q").value = "";
+        search();
+        $<HTMLInputElement>("q").focus();
+        return;
+      }
       const id = newCitationId();
       putCitation(d, id, refs, works);
       const { cslMap, volumesCited } = await import("../../core/docstate.js");
       r.setItems(cslMap(d.items, volumesCited(Object.values(d.citations).flatMap((c) => c.items))));
-      const want = r.meta.note ? (d.notes ?? "footnote") : "text";
+      // Inside a note Word allows no new note: the citation is written in place.
+      const want = r.meta.note && !point.inNote ? (d.notes ?? "footnote") : "text";
       const where = await serial(() => word.insertCitation(id, htmlToSegments(r.preview(refs)), want));
       word.enableAutoOpen();
       await refresh(false, true);
-      if (want !== "text" && where === "text") setMessage("Bu Word sürümü dipnot eklemeye izin vermiyor; atıf metne eklendi.", "warning");
+      if (point.inNote) setMessage("Atıf imlecin bulunduğu dipnota eklendi.", "success");
+      else if (want !== "text" && where === "text") setMessage("Bu Word sürümü dipnot eklemeye izin vermiyor; atıf metne eklendi.", "warning");
       else setMessage("", "info");
     }
     clearBasket();

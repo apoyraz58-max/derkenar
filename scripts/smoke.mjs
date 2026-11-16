@@ -41,7 +41,11 @@ const FAKE = String.raw`
         else { if (where === "Replace") cc.runs = []; cc.runs.push(run); }
         return { font: run.font };
       },
-      getRange(loc) { return { select() { doc.selected = null; const i = doc.flow.findIndex((x) => x.cc === cc || (x.fn && x.fn.controls.includes(cc))); doc.cursor = i + 1; } }; },
+      getRange(loc) { return {
+        select() { doc.selected = null; const i = doc.flow.findIndex((x) => x.cc === cc || (x.fn && x.fn.controls.includes(cc))); doc.cursor = i + 1; },
+        compareLocationWith() { return { value: "Before" }; },
+        expandTo() { return { text: doc.noteGap ?? "", load() { return this; } }; },
+      }; },
       select() { doc.selected = cc; },
       clear() { cc.paras = [[]]; cc.runs = []; },
       get paragraphs() { return { getFirst: () => para(cc, 0) }; },
@@ -62,10 +66,17 @@ const FAKE = String.raw`
   const collection = (items) => ({ items, load() { return this; } });
   const bodyControls = () => doc.flow.filter((x) => x.cc).map((x) => x.cc);
   function insertAtCursor(entry) { doc.flow.splice(doc.cursor, 0, entry); doc.cursor++; }
+  const noteAtCursor = () => (doc.noteCursor == null ? null : doc.flow.filter((x) => x.fn)[doc.noteCursor].fn);
   const selection = {
+    get parentBody() {
+      const fn = noteAtCursor();
+      return { type: fn ? "Footnote" : "MainDoc", load() { return this; }, contentControls: collection(fn ? fn.controls : []) };
+    },
     getRange() {
       return {
         insertText(t) {
+          const fn = noteAtCursor();
+          if (fn) return { insertContentControl() { const cc = makeCC("inline"); cc.runs = [{ text: t, font: {} }]; fn.text += doc.noteGap ?? ""; fn.controls.push(cc); return cc; } };
           return { insertContentControl() { const cc = makeCC("inline"); cc.runs = [{ text: t, font: {} }]; insertAtCursor({ cc }); return cc; } };
         },
         insertFootnote() {
@@ -122,7 +133,7 @@ const FAKE = String.raw`
   window.__makeCC = makeCC;
   window.__select = (cc) => { doc.selected = cc; selHandler && selHandler(); };
   window.__text = () => doc.flow.map((x) => x.cc ? (x.cc.kind === "block" ? "\n[KAYNAKÇA]\n" + x.cc.paras.map(runText).join("\n") + "\n" : "{" + x.cc.text + "}") : x.fn ? "[^" + x.fn.controls.map((c) => c.text).join("") + x.fn.text + "]" : x.text).join("");
-  window.__notes = () => doc.flow.filter((x) => x.fn).map((x) => x.fn.controls.map((c) => c.text).join("") + x.fn.text);
+  window.__notes = () => doc.flow.filter((x) => x.fn).map((x) => x.fn.controls.map((c) => c.text).join(" | ") + x.fn.text);
 })();
 `;
 
@@ -264,6 +275,19 @@ try {
   await waitNotes(() => window.__notes()[2] === "Gazzâlî, el-Müstasfâ min ʿilmi’l-uṣûl, 2/99.", "edit");
   await page.evaluate(() => window.__select(null));
 
+  // 5b. Cursor in a footnote right after a citation: the new work joins it with "; " (no new note).
+  const before = (await notes()).length;
+  await page.evaluate(() => { window.__doc.noteCursor = 0; window.__doc.noteGap = " "; });
+  await cite("kemalpasazade", undefined, "3a");
+  await waitNotes(() => window.__notes()[0].includes("; Kemalpaşazâde"), "join with ;");
+  if ((await notes()).length !== before) fail("a new footnote was opened inside a footnote");
+  // After own text in the note ("Ayrıca bk. "): a second citation in the same note.
+  await page.evaluate(() => { window.__doc.noteGap = " Ayrıca bk. "; });
+  await cite("mustasfa", undefined, "9");
+  await waitNotes(() => window.__notes()[0].split(" | ").length === 2, "second citation in the same note");
+  if ((await notes()).length !== before) fail("a new footnote was opened (2)");
+  await page.evaluate(() => { window.__doc.noteCursor = null; window.__doc.noteGap = undefined; });
+
   // 6. İSNAD check of the document.
   await page.click("#tab-denetim");
   await page.click("#chk-run");
@@ -278,7 +302,7 @@ try {
   const text = await page.evaluate(() => window.__text());
   if (!text.includes("# Kaynakça\n")) fail(`bibliography heading: ${text}`);
   if (!text.includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ min ʿilmi’l-uṣûl. nşr. Ali Nâşir. thk. Hamza b. Züheyr Hâfız.")) fail(`bibliography: ${text}`);
-  if ((await page.locator("#doc-citations li").count()) !== 4) fail("document list should show 4 citations");
+  if ((await page.locator("#doc-citations li").count()) !== 5) fail("document list should show 5 citations");
   if (shots) await page.screenshot({ path: `${shots}/belge.png`, fullPage: true });
 
   // 7b. Zotero features in the library.
