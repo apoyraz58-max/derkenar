@@ -143,12 +143,14 @@ function authorKey(item: Item | undefined): string {
 }
 
 /**
- * İSNAD: in one footnote, a second consecutive work by the same author gets
- * "a.mlf." (aynı müellif) instead of the name: "…, 56; a.mlf., “İlk Mürciî…”".
+ * İSNAD: in one footnote, a consecutive *different* work by the same author
+ * gets "a.mlf." (aynı müellif) instead of the name: "…, 56; a.mlf., “İlk
+ * Mürciî…”". A second place in the same work is not a.mlf. (guide, s. 65;
+ * changes list: "aynı yazara ait farklı eserlere").
  */
 export function withSameAuthor(refs: readonly CiteRef[], items: Record<string, Item>): CiteRef[] {
   return refs.map((r, i) => {
-    if (i === 0 || r["suppress-author"] || r.prefix) return r;
+    if (i === 0 || r["suppress-author"] || r.prefix || r.id === refs[i - 1]!.id) return r;
     const key = authorKey(items[r.id]);
     if (!key || key !== authorKey(items[refs[i - 1]!.id])) return r;
     return { ...r, "suppress-author": true, prefix: "a.mlf., " };

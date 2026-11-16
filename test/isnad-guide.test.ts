@@ -68,6 +68,20 @@ describe("İSNAD 2 kılavuzu: genel ilkeler (s. 65-67)", () => {
   });
 });
 
+describe("a.mlf. yalnız farklı eserlerde", () => {
+  it("aynı eserden iki yer: a.mlf. değil, kısa atıf", () => {
+    const item = work("el-Câmiʿu’ṣ-ṣaḥîḥ", "Buhârî");
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales);
+    const st = emptyState();
+    putCitation(st, "a", [{ id: item.key, kitab: "Menâḳıb", bab: "24" }], { [item.key]: item });
+    putCitation(st, "b", [{ id: item.key, kitab: "Zekât", bab: "2", hadisNo: "36" }, { id: item.key, kitab: "Savm", bab: "34" }], {});
+    const plan = planRefresh(st, [{ id: "a", noteIndex: 1, text: "" }, { id: "b", noteIndex: 2, text: "" }], r);
+    const text = htmlToText(plan.updates.get("b")!);
+    expect(text).not.toContain("a.mlf.");
+    expect(text).toBe("Buhârî, “Zekât”, 2 (No. 36); Buhârî, “Savm”, 34.");
+  });
+});
+
 describe("İSNAD 2 kılavuzu: türler", () => {
   it("kitap-elektronik: yayın formatı, b.y. eklenmez (s. 72)", () => {
     const r = render(work("Amisos Mozaiği"), { locator: "44" }, { locator: "98" });
