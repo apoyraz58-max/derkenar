@@ -321,8 +321,12 @@ try {
   await waitNotes(() => window.__notes()[0].includes("“Kelâm ilminin doğuşu”"), "library edit flows into note");
   if (shots) await page.screenshot({ path: `${shots}/atif.png`, fullPage: true });
 
-  // 5. Edit a citation from the cursor.
+  // 5. Edit a citation from the cursor. The cursor never pulls the user away from another tab.
+  await page.click("#tab-kutuphane");
   await page.evaluate(() => window.__select(window.__doc.flow.filter((x) => x.fn)[2].fn.controls[0]));
+  await page.waitForTimeout(600);
+  if (await page.isHidden("#view-kutuphane")) fail("cursor in a citation switched away from Kütüphane");
+  await page.keyboard.press("Alt+1");
   await page.waitForSelector("#edit-bar:not([hidden])");
   await page.fill('#basket [data-f="locator"]', "99");
   await page.click("#insert");

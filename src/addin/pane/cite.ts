@@ -278,15 +278,22 @@ export async function insert(): Promise<void> {
 }
 
 /** Cursor moved: inside a Derkenar citation → edit it. */
-export async function onSelection(): Promise<void> {
+/**
+ * Follows the Word cursor: inside a citation, the Atıf tab edits it. Only
+ * while the Atıf tab is showing (or `open`: the ribbon's Atıf Ekle/Düzenle) —
+ * the cursor never pulls the user away from another tab they chose.
+ */
+export async function onSelection(open = false): Promise<void> {
+  if (!open && $("view-atif").hidden) return;
   const id = await serial(() => word.citationAtSelection()).catch(() => null);
+  if (!open && $("view-atif").hidden) return;
   const d = doc();
   if (id && d.citations[id]) {
     if (S.editing === id) return;
     S.editing = id;
     S.basket = d.citations[id]!.items.map((r) => ({ ...r }));
     S.basketDirty = false;
-    showView("atif");
+    if (open) showView("atif");
     renderBasket();
     renderResults();
   } else if (S.editing && !S.basketDirty) {

@@ -104,7 +104,16 @@ Office.onReady(async () => {
   wireCheck();
   wireIo();
   wireTranslit();
-  onShow("atif", () => $<HTMLInputElement>("q").focus());
+  onShow("atif", () => ($<HTMLInputElement>("q").focus({ preventScroll: true }), void onSelection()));
+  // Alt+1 … Alt+5: Atıf, Kütüphane, Belge, Denetim, Aktar.
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>(".tabs button")];
+  document.addEventListener("keydown", (e) => {
+    const n = Number(e.key);
+    if (e.altKey && !e.ctrlKey && !e.metaKey && n >= 1 && n <= tabs.length) {
+      e.preventDefault();
+      showView(tabs[n - 1]!.dataset.view!);
+    }
+  });
   onShow("kutuphane", refreshLibraryView);
   onShow("belge", renderDocList);
   onShow("veri", () => void renderInfo());
@@ -124,9 +133,10 @@ Office.onReady(async () => {
     selTimer = window.setTimeout(() => void onSelection(), 150);
     nudge();
   });
-  await launch(new URLSearchParams(location.search).get("action") ?? "insert");
+  const action = new URLSearchParams(location.search).get("action") ?? "insert";
+  await launch(action);
   search();
   startWatcher();
-  void onSelection();
+  void onSelection(action === "insert");
 });
 let selTimer = 0;

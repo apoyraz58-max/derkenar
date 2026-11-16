@@ -93,13 +93,22 @@ export function onShow(view: string, fn: () => void): void {
   listeners.set(view, [...(listeners.get(view) ?? []), fn]);
 }
 
+const scrolls = new Map<string, number>();
+let current = "atif";
+
+/** Switches the pane to a view; each view keeps its own scroll position. */
 export function showView(name: string): void {
+  if (name !== current) {
+    scrolls.set(current, window.scrollY);
+    current = name;
+  }
   for (const v of ["atif", "kutuphane", "kaynak", "belge", "denetim", "aktar", "veri", "yardim"]) {
     $(`view-${v}`).hidden = v !== name;
     const tab = document.getElementById(`tab-${v}`);
     tab?.setAttribute("aria-selected", String(v === name || (name === "kaynak" && v === "kutuphane")));
   }
   for (const fn of listeners.get(name) ?? []) fn();
+  window.scrollTo(0, scrolls.get(name) ?? 0);
 }
 
 // ---------------------------------------------------------------- library
