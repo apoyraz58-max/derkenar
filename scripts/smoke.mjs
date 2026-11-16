@@ -70,7 +70,12 @@ const FAKE = String.raw`
   const selection = {
     get parentBody() {
       const fn = noteAtCursor();
-      return { type: fn ? "Footnote" : "MainDoc", load() { return this; }, contentControls: collection(fn ? fn.controls : []) };
+      return {
+        type: doc.bodyType ?? (fn ? "Footnote" : "MainDoc"),
+        load() { return this; },
+        contentControls: collection(fn ? fn.controls : []),
+        getRange() { return { expandTo() { return { text: fn ? fn.controls.map((c) => c.text).join("") + fn.text + (doc.noteGap ?? "") : "", load() { return this; } }; } }; },
+      };
     },
     getRange() {
       return {
@@ -80,6 +85,7 @@ const FAKE = String.raw`
           return { insertContentControl() { const cc = makeCC("inline"); cc.runs = [{ text: t, font: {} }]; insertAtCursor({ cc }); return cc; } };
         },
         insertFootnote() {
+          if (noteAtCursor()) throw Object.assign(new Error("Word: NotAllowed"), { code: "NotAllowed" });
           const fn = { controls: [], text: "" };
           insertAtCursor({ fn });
           return { body: { getRange() { return { insertText(t) { return { insertContentControl() { const cc = makeCC("inline"); cc.runs = [{ text: t, font: {} }]; fn.controls.push(cc); return cc; } }; } }; } } };
@@ -286,7 +292,12 @@ try {
   await cite("mustasfa", undefined, "9");
   await waitNotes(() => window.__notes()[0].split(" | ").length === 2, "second citation in the same note");
   if ((await notes()).length !== before) fail("a new footnote was opened (2)");
-  await page.evaluate(() => { window.__doc.noteCursor = null; window.__doc.noteGap = undefined; });
+  // Word does not say the cursor is in a note: the refused footnote falls back to writing in place.
+  await page.evaluate(() => { window.__doc.bodyType = "Unknown"; window.__doc.noteGap = " Krş. "; });
+  await cite("yilmaz", undefined, "60");
+  await waitNotes(() => window.__notes()[0].split(" | ").length === 3, "fallback after NotAllowed");
+  if ((await notes()).length !== before) fail("a new footnote was opened (3)");
+  await page.evaluate(() => { window.__doc.noteCursor = null; window.__doc.noteGap = undefined; window.__doc.bodyType = undefined; });
 
   // 6. İSNAD check of the document.
   await page.click("#tab-denetim");
@@ -302,7 +313,7 @@ try {
   const text = await page.evaluate(() => window.__text());
   if (!text.includes("# Kaynakça\n")) fail(`bibliography heading: ${text}`);
   if (!text.includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ min ʿilmi’l-uṣûl. nşr. Ali Nâşir. thk. Hamza b. Züheyr Hâfız.")) fail(`bibliography: ${text}`);
-  if ((await page.locator("#doc-citations li").count()) !== 5) fail("document list should show 5 citations");
+  if ((await page.locator("#doc-citations li").count()) !== 6) fail("document list should show 6 citations");
   if (shots) await page.screenshot({ path: `${shots}/belge.png`, fullPage: true });
 
   // 7b. Zotero features in the library.

@@ -61,6 +61,17 @@ export type Placement = "footnote" | "endnote" | "text";
  * the citation goes after it and the selected text stays.
  */
 export async function insertCitation(id: string, segments: readonly Segment[], want: Placement): Promise<Placement> {
+  if (want === "text") return insertCitationAt(id, segments, "text");
+  try {
+    return await insertCitationAt(id, segments, want);
+  } catch (e) {
+    // Word refuses a note inside a note, a comment or a text box: write the citation where the cursor is.
+    if (/NotAllowed|InvalidArgument|GeneralException|notAllowed/i.test(String((e as { code?: string }).code ?? e))) return insertCitationAt(id, segments, "text");
+    throw e;
+  }
+}
+
+async function insertCitationAt(id: string, segments: readonly Segment[], want: Placement): Promise<Placement> {
   return Word.run(async (context) => {
     const end = context.document.getSelection().getRange("End");
     const text = segments.map((s) => s.text).join("") || "…";
@@ -97,7 +108,14 @@ export interface InsertionPoint {
   readonly joinWith: string | null;
 }
 
-/** Where a new citation goes, decided from the cursor before inserting. */
+const NOTE_BODIES = new Set(["Footnote", "Endnote", "NoteItem"]);
+
+/**
+ * Where a new citation goes, decided from the cursor before inserting. Uses
+ * only text and ranges (WordApi 1.3), no location comparison: the text from
+ * the start of the note to the cursor is read, and if it ends with a citation
+ * (only spaces, ";" or "," after it), the new works join that citation.
+ */
 export async function insertionPoint(): Promise<InsertionPoint> {
   return Word.run(async (context) => {
     const sel = context.document.getSelection();
@@ -107,30 +125,21 @@ export async function insertionPoint(): Promise<InsertionPoint> {
     body.load("type");
     await context.sync();
     const insideId = inside.isNullObject ? null : citationIdFromTag(inside.tag);
-    const inNote = body.type === "Footnote" || body.type === "Endnote";
+    const inNote = NOTE_BODIES.has(body.type);
     if (insideId) return { inNote, joinWith: insideId };
     if (!inNote) return { inNote, joinWith: null };
     const controls = body.contentControls;
-    controls.load("items/tag");
+    controls.load("items/tag,items/text");
+    const before = body.getRange("Start").expandTo(sel.getRange("Start"));
+    before.load("text");
     await context.sync();
-    const start = sel.getRange("Start");
-    const checks = controls.items
-      .filter((cc) => citationIdFromTag(cc.tag))
-      .map((cc) => {
-        const end = cc.getRange("End");
-        const where = end.compareLocationWith(start);
-        return { cc, where, between: null as Word.Range | null };
-      });
-    await context.sync();
-    for (const c of checks) {
-      if (["Before", "AdjacentBefore", "Equal"].includes(c.where.value)) {
-        c.between = c.cc.getRange("End").expandTo(start);
-        c.between.load("text");
-      }
-    }
-    await context.sync();
+    const tail = before.text.replace(/[\s;,\u200b]+$/, "");
     let joinWith: string | null = null;
-    for (const c of checks) if (c.between && /^[\s;,.]*$/.test(c.between.text)) joinWith = citationIdFromTag(c.cc.tag);
+    for (const cc of controls.items) {
+      const id = citationIdFromTag(cc.tag);
+      const text = cc.text.trim();
+      if (id && text && tail.endsWith(text)) joinWith = id;
+    }
     return { inNote, joinWith };
   });
 }
