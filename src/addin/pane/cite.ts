@@ -81,10 +81,9 @@ export function renderBasket(): void {
   ol.replaceChildren();
   S.basket.forEach((ref, i) => {
     const w = work(ref.id);
-    // The record's own Cilt (a single volume of a set, a journal volume) is printed by the style: "6/45".
+    // Journals and encyclopedias: the record's Cilt is the container's, printed by the style ("13/490").
     const recordVolume = w?.fields.volume?.trim();
-    const showVolume = !recordVolume;
-    if (recordVolume && ref.volume) delete ref.volume;
+    const showVolume = !(recordVolume && OWN_VOLUME.has(w!.itemType));
     const set = (field: keyof CiteRef, value: string | boolean) => {
       const r = ref as unknown as Record<string, unknown>;
       if (value) r[field] = value;
@@ -99,7 +98,7 @@ export function renderBasket(): void {
       }
     };
     const label = h("select", { "aria-label": "Yer türü", onchange: () => set("label", label.value === "page" ? "" : label.value) }, ...LOCATOR_LABELS.map(([v, t]) => h("option", { value: v, selected: (ref.label ?? "page") === v }, t)));
-    const vol = h("input", { placeholder: "Cilt", value: ref.volume ?? "", class: "vol", "aria-label": "Cilt", oninput: () => set("volume", vol.value.trim()), onkeydown: enter });
+    const vol = h("input", { placeholder: recordVolume ?? "Cilt", value: ref.volume ?? "", class: "vol", "aria-label": "Cilt", oninput: () => set("volume", vol.value.trim()), onkeydown: enter });
     const loc = h("input", { placeholder: "Sayfa, ör. 45 veya 45-47", value: ref.locator ?? "", "aria-label": "Sayfa", "data-f": "locator", oninput: () => set("locator", loc.value.trim()), onkeydown: enter });
     const prefix = h("input", { placeholder: "Ön ek (ör. bk.)", value: ref.prefix ?? "", oninput: () => set("prefix", prefix.value) });
     const suffix = h("input", { placeholder: "Arka ek", value: ref.suffix ?? "", oninput: () => set("suffix", suffix.value) });
@@ -120,7 +119,7 @@ export function renderBasket(): void {
           ),
         ),
         h("div", { class: showVolume ? "b-loc three" : "b-loc" }, label, showVolume ? vol : null, loc),
-        recordVolume && !OWN_VOLUME.has(w!.itemType) ? h("p", { class: "muted small" }, `Kaynağın kaydında cilt ${recordVolume}; atıfta "${recordVolume}/sayfa" yazılır. Başka cilde atıf için kayıttaki Cilt alanını boşaltın.`) : null,
+        recordVolume && showVolume ? h("p", { class: "muted small" }, ref.volume ? `Atıftaki cilt (${ref.volume}) kullanılır; kayıttaki cilt (${recordVolume}) bu eserin atıflarında yazılmaz.` : `Kayıtta Cilt: ${recordVolume}. Cilt kutusu boş kalırsa atıfta "${recordVolume}/sayfa" yazılır.`) : null,
         h("details", {}, h("summary", { class: "muted" }, "Ön ek, arka ek, yazar"), h("div", { class: "b-extra" }, prefix, suffix), h("div", { class: "b-flags" }, h("label", {}, hide, " Yazarı gizle"))),
       ),
     );
@@ -143,8 +142,8 @@ async function preview(): Promise<void> {
       const w = work(b.id);
       if (w) items[b.id] = w;
     }
-    const { cslMap } = await import("../../core/docstate.js");
-    r.setItems(cslMap(items));
+    const { cslMap, volumesCited } = await import("../../core/docstate.js");
+    r.setItems(cslMap(items, volumesCited([...S.basket, ...Object.values(doc().citations).flatMap((c) => c.items)])));
     const p = $("preview");
     p.replaceChildren(...htmlToSegments(r.preview(S.basket)).map((seg) => h(seg.italic ? "i" : "span", { style: seg.bold ? "font-weight:bold" : undefined }, seg.text)));
   } catch (e) {
@@ -182,8 +181,8 @@ export async function insert(): Promise<void> {
     } else {
       const id = newCitationId();
       putCitation(d, id, refs, works);
-      const { cslMap } = await import("../../core/docstate.js");
-      r.setItems(cslMap(d.items));
+      const { cslMap, volumesCited } = await import("../../core/docstate.js");
+      r.setItems(cslMap(d.items, volumesCited(Object.values(d.citations).flatMap((c) => c.items))));
       const want = r.meta.note ? (d.notes ?? "footnote") : "text";
       const where = await serial(() => word.insertCitation(id, htmlToSegments(r.preview(refs)), want));
       word.enableAutoOpen();

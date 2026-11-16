@@ -10,6 +10,8 @@ export type Level = "error" | "warning" | "info";
 export interface Patch {
   readonly field?: string;
   readonly value?: string;
+  /** Move the field's current value to this field (then `value` is what stays behind). */
+  readonly moveTo?: string;
   readonly creatorIndex?: number;
   readonly creator?: Creator;
 }
@@ -220,6 +222,20 @@ export function checkItem(item: Item): Issue[] {
     if (c.name === undefined && !c.lastName?.trim() && c.firstName?.trim()) add({ code: "name-last", level: "warning", message: `Soyad / şöhret kutusu boş (${c.firstName}).`, creatorIndex: i });
   });
 
+  // Cilt sayısı written into Cilt (a 6-volume work entered as "Cilt: 6").
+  const volField = typeField(item.itemType, "volume");
+  const nvolField = typeField(item.itemType, "numberOfVolumes");
+  if ((item.itemType === "book" || item.itemType === "bookSection") && volField && nvolField && f[volField]?.trim() && !f[nvolField]?.trim() && /^\d+$/.test(f[volField]!.trim())) {
+    add({
+      code: "volume-count",
+      level: "warning",
+      message: `Cilt alanında "${f[volField]}" yazıyor. Bu, kaydın tek bir cildiyse doğru; eserin toplam cilt sayısıysa Cilt Sayısı alanına yazılmalı (kaynakçada "${f[volField]} Cilt" olarak çıkar, dipnotta çıkmaz).`,
+      field: volField,
+      fix: { field: volField, value: "", moveTo: nvolField },
+      fixLabel: "Cilt Sayısı'na taşı",
+    });
+  }
+
   // Container wrongly in the title.
   if (item.itemType === "journalArticle" && f.title && containerOf(item) && f.title.includes(containerOf(item))) {
     add({ code: "title-container", level: "info", message: "Başlıkta dergi adı geçiyor; dergi adı kendi alanında olmalı.", field: "title" });
@@ -233,7 +249,11 @@ function mapCreator(c: Creator, fn: (s: string) => string): Creator {
 
 export function applyFix(item: Item, patch: Patch): Item {
   const next: Item = { ...item, fields: { ...item.fields }, creators: [...item.creators] };
-  if (patch.field !== undefined && patch.value !== undefined) next.fields[patch.field] = patch.value;
+  if (patch.field !== undefined && patch.moveTo) next.fields[patch.moveTo] = item.fields[patch.field] ?? "";
+  if (patch.field !== undefined && patch.value !== undefined) {
+    if (patch.value === "") delete next.fields[patch.field];
+    else next.fields[patch.field] = patch.value;
+  }
   if (patch.creatorIndex !== undefined && patch.creator) next.creators[patch.creatorIndex] = patch.creator;
   return next;
 }

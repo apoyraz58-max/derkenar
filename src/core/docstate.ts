@@ -84,7 +84,7 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
     seen.add(f.id);
     ordered.push({ id: f.id, items: c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
   }
-  renderer.setItems(cslMap(state.items));
+  renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items))));
   const html = renderer.renderCitations(ordered);
   const updates = new Map<string, string>();
   const texts = new Map(found.map((f) => [f.id, f.text]));
@@ -112,9 +112,25 @@ function structuredCloneItem(item: Item): Item {
   return JSON.parse(JSON.stringify(item)) as Item;
 }
 
-export function cslMap(items: Record<string, Item>): Record<string, CslItem> {
+/** Types whose Cilt belongs to the container (journal, encyclopedia): never replaced by the citation's cilt. */
+const CONTAINER_VOLUME = new Set(["article-journal", "article-magazine", "article-newspaper", "entry-encyclopedia", "entry-dictionary"]);
+
+/** Works cited somewhere with a cilt of their own ("1/80"). */
+export function volumesCited(refs: readonly CiteRef[]): Set<string> {
+  return new Set(refs.filter((r) => r.volume?.trim()).map((r) => r.id));
+}
+
+/**
+ * Items as CSL. A book cited with its own cilt ("1/80") must not also print
+ * the record's Cilt ("6/1/80"): for those works the record's volume is left out.
+ */
+export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set()): Record<string, CslItem> {
   const out: Record<string, CslItem> = {};
-  for (const [k, v] of Object.entries(items)) out[k] = { ...toCsl(v), id: k };
+  for (const [k, v] of Object.entries(items)) {
+    const csl = { ...toCsl(v), id: k };
+    if (citedWithVolume.has(k) && !CONTAINER_VOLUME.has(csl.type)) delete csl.volume;
+    out[k] = csl;
+  }
   return out;
 }
 

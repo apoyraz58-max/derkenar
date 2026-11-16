@@ -114,6 +114,25 @@ describe("İSNAD rendering", () => {
     plan = planRefresh(st, [{ id: "a", noteIndex: 1, text: "x" }], r);
     expect(htmlToText(plan.updates.get("a")!)).toContain("Ahmet Yılmaz, “Kelâm");
   });
+  it("cilt sayısı in the Cilt field: the citation's cilt wins, the check moves it", () => {
+    const mahsul = item("MAH", "book", { title: "el-Maḥsûl", publisher: "Müʾessesetüʾr-Risâle", place: "Riyaḍ", date: "1997", volume: "6" }, [
+      { creatorType: "author", lastName: "Râzî", firstName: "Ebû ʿAbdillâh Muḥammed b. ʿÖmer b. Ḥuseyn Faḫreddîn er-" },
+      { creatorType: "muhakkik", lastName: "el-ʿAlvânî", firstName: "Tâhâ Câbir Feyyâż" },
+    ]);
+    const r = isnad();
+    const st = emptyState();
+    putCitation(st, "m", [{ id: "MAH", volume: "1", locator: "80-81" }], { MAH: mahsul });
+    let plan = planRefresh(st, [{ id: "m", noteIndex: 1, text: "" }], r);
+    expect(htmlToText(plan.updates.get("m")!)).toMatch(/1997\), 1\/80-81\.$/);
+    const fix = checkItem(mahsul).find((i) => i.code === "volume-count")!;
+    const moved = applyFix(mahsul, fix.fix!);
+    expect(moved.fields).toMatchObject({ numberOfVolumes: "6" });
+    expect(moved.fields.volume).toBeUndefined();
+    st.items.MAH = moved;
+    plan = planRefresh(st, [{ id: "m", noteIndex: 1, text: "" }], r, true);
+    expect(htmlToText(plan.updates.get("m")!)).toMatch(/1997\), 1\/80-81\.$/);
+    expect(htmlToText(plan.bibliography!.entries[0]!.html)).toContain("6 Cilt");
+  });
   it("signature changes only when order changes", () => {
     expect(signature([{ id: "a", noteIndex: 1 }, { id: "b", noteIndex: 2 }])).not.toBe(signature([{ id: "b", noteIndex: 1 }, { id: "a", noteIndex: 2 }]));
   });
