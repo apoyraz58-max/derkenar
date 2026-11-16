@@ -124,6 +124,26 @@ export function renderPushCount(): void {
   $("z-push-count").textContent = n ? `${n} değişiklik gönderilmeyi bekliyor.` : "";
 }
 
+/**
+ * Turkish publishers often put the ISBN into the DOI (10.70458/fcr.9786258910605)
+ * and do not always register it. When the DOI is not found, the ISBN inside it is tried.
+ */
+async function lookupDoiOrIsbn(doi: string): Promise<Item> {
+  try {
+    return await lookupDoi(doi);
+  } catch (e) {
+    const isbn = /97[89]\d{10}/.exec(doi.replace(/-/g, ""))?.[0];
+    if (!isbn) throw e;
+    try {
+      const item = await lookupIsbn(isbn);
+      item.fields.DOI = doi;
+      return item;
+    } catch {
+      throw new Error(`${e instanceof Error ? e.message : String(e)} DOI'deki ISBN (${isbn}) ile de bulunamadı; kitabı elle girin (Yeni Kaynak → Kitap).`);
+    }
+  }
+}
+
 async function lookup(): Promise<void> {
   const lines = $<HTMLTextAreaElement>("lookup").value.split(/\n+/).map((l) => l.trim()).filter(Boolean);
   if (!lines.length) throw new Error("DOI (10.xxxx/…), ISBN, PMID veya arXiv numarası yazın.");
@@ -136,7 +156,7 @@ async function lookup(): Promise<void> {
     const pmid = doi || arxiv ? null : cleanPmid(line);
     const isbn = doi || arxiv || pmid ? null : cleanIsbn(line);
     try {
-      if (doi) found.push(await lookupDoi(doi));
+      if (doi) found.push(await lookupDoiOrIsbn(doi));
       else if (arxiv) found.push(await lookupArxiv(arxiv));
       else if (pmid) found.push(await lookupPmid(pmid));
       else if (isbn) found.push(await lookupIsbn(isbn));
