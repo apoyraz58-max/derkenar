@@ -4,7 +4,7 @@
  */
 import type { LibraryItem } from "../core/types.js";
 
-const DB = "kunye";
+const DB = "derkenar";
 const ITEMS = "items";
 const META = "meta";
 

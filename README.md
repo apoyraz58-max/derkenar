@@ -1,7 +1,7 @@
-# Künye
+# Derkenar
 
 Word için hızlı atıf ve kaynakça eklentisi. Masaüstü programı değildir: Word'ün
-içinde bir **Künye sekmesi** ve sağda bir **pencere** olarak çalışır (Vefeyât ile
+içinde bir **Derkenar sekmesi** ve sağda bir **pencere** olarak çalışır (Vefeyât ile
 aynı Office.js mimarisi). Windows, Mac ve Word Online'da aynı kod çalışır; VBA yok.
 
 Atıfları Zotero'nun kullandığı açık kaynak CSL işlemcisi
@@ -11,7 +11,7 @@ Yani çıktı Zotero'nunkiyle aynıdır, ama Zotero masaüstü programına gerek
 
 ## Neden daha hızlı
 
-| Zotero Word eklentisi | Künye |
+| Zotero Word eklentisi | Derkenar |
 | --- | --- |
 | Her işlemde Word ↔ Zotero programı arasında gidip gelir | Her şey Word'ün içindeki pencerede olur |
 | Güncellemede her alanı tek tek yeniden yazar | Belgeyi tek seferde okur, yalnız **değişen** atıfları yazar (2–3 Word çağrısı) |
@@ -71,7 +71,7 @@ npm run smoke
 ```
 
 `npm run build` eklentiyi `dist/addin/` klasörüne derler (varsayılan adres GitHub Pages:
-`https://apoyraz58-max.github.io/kunye/`; başka adres için `BASE_URL=... npm run build`).
+`https://apoyraz58-max.github.io/derkenar/`; başka adres için `BASE_URL=... npm run build`).
 `npm run smoke` derlenmiş pencereyi Chromium'da sahte bir Word belgesiyle baştan sona
 çalıştırır (içe aktarma, Zotero eşitleme, dipnot atfı, düzenleme, kaynakça, stil değişimi,
 düz metne çevirme). Word'de denemek için `docs/WORD-DENEME.md`.

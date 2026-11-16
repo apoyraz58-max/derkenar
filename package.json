@@ -1,8 +1,8 @@
 {
-  "name": "kunye",
+  "name": "derkenar",
   "version": "0.1.0-dev",
   "private": true,
-  "description": "Künye: Word için hızlı atıf ve kaynakça eklentisi (Office.js, citeproc-js, CSL)",
+  "description": "Derkenar: Word için hızlı atıf ve kaynakça eklentisi (Office.js, citeproc-js, CSL)",
   "type": "module",
   "license": "AGPL-3.0-or-later",
   "engines": {

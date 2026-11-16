@@ -5,15 +5,15 @@
            xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
-  <Id>3d0f8a52-6c1e-4b7d-a9f4-58e2c71b04ad</Id>
+  <Id>8b2e4f17-3a9c-4d65-b0e1-7c54d29a6f38</Id>
   <Version>{{VERSION}}</Version>
-  <ProviderName>Künye</ProviderName>
+  <ProviderName>Derkenar</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
-  <DisplayName DefaultValue="Künye"/>
+  <DisplayName DefaultValue="Derkenar"/>
   <Description DefaultValue="Word için hızlı atıf ve kaynakça: Zotero kütüphanesi, İSNAD, APA, Chicago ve diğer CSL stilleri."/>
   <IconUrl DefaultValue="{{BASE_URL}}assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="{{BASE_URL}}assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://github.com/apoyraz58-max/kunye"/>
+  <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
   <AppDomains>
     <AppDomain>https://api.zotero.org</AppDomain>
     <AppDomain>https://api.crossref.org</AppDomain>
@@ -42,15 +42,15 @@
           </GetStarted>
           <FunctionFile resid="Commands.Url"/>
           <ExtensionPoint xsi:type="PrimaryCommandSurface">
-            <CustomTab id="Kunye.Tab">
-              <Group id="Kunye.G.Cite">
+            <CustomTab id="Derkenar.Tab">
+              <Group id="Derkenar.G.Cite">
                 <Label resid="G.Cite"/>
                 <Icon>
                   <bt:Image size="16" resid="Ic.insert.16"/>
                   <bt:Image size="32" resid="Ic.insert.32"/>
                   <bt:Image size="80" resid="Ic.insert.80"/>
                 </Icon>
-                <Control xsi:type="Button" id="Kunye.Insert">
+                <Control xsi:type="Button" id="Derkenar.Insert">
                   <Label resid="Insert"/>
                   <Supertip>
                     <Title resid="Insert"/>
@@ -62,11 +62,11 @@
                     <bt:Image size="80" resid="Ic.insert.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>KunyePane</TaskpaneId>
+                    <TaskpaneId>DerkenarPane</TaskpaneId>
                     <SourceLocation resid="U.Insert"/>
                   </Action>
                 </Control>
-                <Control xsi:type="Button" id="Kunye.Bib">
+                <Control xsi:type="Button" id="Derkenar.Bib">
                   <Label resid="Bib"/>
                   <Supertip>
                     <Title resid="Bib"/>
@@ -78,11 +78,11 @@
                     <bt:Image size="80" resid="Ic.index.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>KunyePane</TaskpaneId>
+                    <TaskpaneId>DerkenarPane</TaskpaneId>
                     <SourceLocation resid="U.Bib"/>
                   </Action>
                 </Control>
-                <Control xsi:type="Button" id="Kunye.Refresh">
+                <Control xsi:type="Button" id="Derkenar.Refresh">
                   <Label resid="Refresh"/>
                   <Supertip>
                     <Title resid="Refresh"/>
@@ -94,19 +94,19 @@
                     <bt:Image size="80" resid="Ic.consistency.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>KunyePane</TaskpaneId>
+                    <TaskpaneId>DerkenarPane</TaskpaneId>
                     <SourceLocation resid="U.Refresh"/>
                   </Action>
                 </Control>
               </Group>
-              <Group id="Kunye.G.Style">
+              <Group id="Derkenar.G.Style">
                 <Label resid="G.Style"/>
                 <Icon>
                   <bt:Image size="16" resid="Ic.settings.16"/>
                   <bt:Image size="32" resid="Ic.settings.32"/>
                   <bt:Image size="80" resid="Ic.settings.80"/>
                 </Icon>
-                <Control xsi:type="Menu" id="Kunye.Style">
+                <Control xsi:type="Menu" id="Derkenar.Style">
                   <Label resid="Style"/>
                   <Supertip>
                     <Title resid="Style"/>
@@ -118,7 +118,7 @@
                     <bt:Image size="80" resid="Ic.settings.80"/>
                   </Icon>
                   <Items>
-                    <Item id="Kunye.Style.0">
+                    <Item id="Derkenar.Style.0">
                       <Label resid="Style.0"/>
                       <Supertip>
                         <Title resid="Style.0"/>
@@ -130,11 +130,11 @@
                         <bt:Image size="80" resid="Ic.settings.80"/>
                       </Icon>
                       <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>KunyePane</TaskpaneId>
+                        <TaskpaneId>DerkenarPane</TaskpaneId>
                         <SourceLocation resid="U.Style.0"/>
                       </Action>
                     </Item>
-                    <Item id="Kunye.Style.1">
+                    <Item id="Derkenar.Style.1">
                       <Label resid="Style.1"/>
                       <Supertip>
                         <Title resid="Style.1"/>
@@ -146,11 +146,11 @@
                         <bt:Image size="80" resid="Ic.settings.80"/>
                       </Icon>
                       <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>KunyePane</TaskpaneId>
+                        <TaskpaneId>DerkenarPane</TaskpaneId>
                         <SourceLocation resid="U.Style.1"/>
                       </Action>
                     </Item>
-                    <Item id="Kunye.Style.2">
+                    <Item id="Derkenar.Style.2">
                       <Label resid="Style.2"/>
                       <Supertip>
                         <Title resid="Style.2"/>
@@ -162,11 +162,11 @@
                         <bt:Image size="80" resid="Ic.settings.80"/>
                       </Icon>
                       <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>KunyePane</TaskpaneId>
+                        <TaskpaneId>DerkenarPane</TaskpaneId>
                         <SourceLocation resid="U.Style.2"/>
                       </Action>
                     </Item>
-                    <Item id="Kunye.Style.3">
+                    <Item id="Derkenar.Style.3">
                       <Label resid="Style.3"/>
                       <Supertip>
                         <Title resid="Style.3"/>
@@ -178,11 +178,11 @@
                         <bt:Image size="80" resid="Ic.settings.80"/>
                       </Icon>
                       <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>KunyePane</TaskpaneId>
+                        <TaskpaneId>DerkenarPane</TaskpaneId>
                         <SourceLocation resid="U.Style.3"/>
                       </Action>
                     </Item>
-                    <Item id="Kunye.Style.4">
+                    <Item id="Derkenar.Style.4">
                       <Label resid="Style.4"/>
                       <Supertip>
                         <Title resid="Style.4"/>
@@ -194,11 +194,11 @@
                         <bt:Image size="80" resid="Ic.settings.80"/>
                       </Icon>
                       <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>KunyePane</TaskpaneId>
+                        <TaskpaneId>DerkenarPane</TaskpaneId>
                         <SourceLocation resid="U.Style.4"/>
                       </Action>
                     </Item>
-                    <Item id="Kunye.Style.5">
+                    <Item id="Derkenar.Style.5">
                       <Label resid="Style.5"/>
                       <Supertip>
                         <Title resid="Style.5"/>
@@ -210,11 +210,11 @@
                         <bt:Image size="80" resid="Ic.settings.80"/>
                       </Icon>
                       <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>KunyePane</TaskpaneId>
+                        <TaskpaneId>DerkenarPane</TaskpaneId>
                         <SourceLocation resid="U.Style.5"/>
                       </Action>
                     </Item>
-                    <Item id="Kunye.Style.6">
+                    <Item id="Derkenar.Style.6">
                       <Label resid="Style.6"/>
                       <Supertip>
                         <Title resid="Style.6"/>
@@ -226,11 +226,11 @@
                         <bt:Image size="80" resid="Ic.settings.80"/>
                       </Icon>
                       <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>KunyePane</TaskpaneId>
+                        <TaskpaneId>DerkenarPane</TaskpaneId>
                         <SourceLocation resid="U.Style.6"/>
                       </Action>
                     </Item>
-                    <Item id="Kunye.Style.7">
+                    <Item id="Derkenar.Style.7">
                       <Label resid="Style.7"/>
                       <Supertip>
                         <Title resid="Style.7"/>
@@ -242,21 +242,21 @@
                         <bt:Image size="80" resid="Ic.settings.80"/>
                       </Icon>
                       <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>KunyePane</TaskpaneId>
+                        <TaskpaneId>DerkenarPane</TaskpaneId>
                         <SourceLocation resid="U.Style.7"/>
                       </Action>
                     </Item>
                   </Items>
                 </Control>
               </Group>
-              <Group id="Kunye.G.Library">
+              <Group id="Derkenar.G.Library">
                 <Label resid="G.Library"/>
                 <Icon>
                   <bt:Image size="16" resid="Ic.catalog.16"/>
                   <bt:Image size="32" resid="Ic.catalog.32"/>
                   <bt:Image size="80" resid="Ic.catalog.80"/>
                 </Icon>
-                <Control xsi:type="Button" id="Kunye.Library">
+                <Control xsi:type="Button" id="Derkenar.Library">
                   <Label resid="Library"/>
                   <Supertip>
                     <Title resid="Library"/>
@@ -268,11 +268,11 @@
                     <bt:Image size="80" resid="Ic.catalog.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>KunyePane</TaskpaneId>
+                    <TaskpaneId>DerkenarPane</TaskpaneId>
                     <SourceLocation resid="U.Library"/>
                   </Action>
                 </Control>
-                <Control xsi:type="Button" id="Kunye.Document">
+                <Control xsi:type="Button" id="Derkenar.Document">
                   <Label resid="Document"/>
                   <Supertip>
                     <Title resid="Document"/>
@@ -284,19 +284,19 @@
                     <bt:Image size="80" resid="Ic.report.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>KunyePane</TaskpaneId>
+                    <TaskpaneId>DerkenarPane</TaskpaneId>
                     <SourceLocation resid="U.Document"/>
                   </Action>
                 </Control>
               </Group>
-              <Group id="Kunye.G.Final">
+              <Group id="Derkenar.G.Final">
                 <Label resid="G.Final"/>
                 <Icon>
                   <bt:Image size="16" resid="Ic.finalize.16"/>
                   <bt:Image size="32" resid="Ic.finalize.32"/>
                   <bt:Image size="80" resid="Ic.finalize.80"/>
                 </Icon>
-                <Control xsi:type="Button" id="Kunye.Unlink">
+                <Control xsi:type="Button" id="Derkenar.Unlink">
                   <Label resid="Unlink"/>
                   <Supertip>
                     <Title resid="Unlink"/>
@@ -308,7 +308,7 @@
                     <bt:Image size="80" resid="Ic.finalize.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>KunyePane</TaskpaneId>
+                    <TaskpaneId>DerkenarPane</TaskpaneId>
                     <SourceLocation resid="U.Unlink"/>
                   </Action>
                 </Control>
@@ -318,7 +318,7 @@
           </ExtensionPoint>
           <ExtensionPoint xsi:type="ContextMenu">
             <OfficeMenu id="ContextMenuText">
-              <Control xsi:type="Menu" id="Kunye.Ctx">
+              <Control xsi:type="Menu" id="Derkenar.Ctx">
                 <Label resid="Ctx"/>
                 <Supertip>
                   <Title resid="Ctx"/>
@@ -330,7 +330,7 @@
                   <bt:Image size="80" resid="Icon.80"/>
                 </Icon>
                 <Items>
-                  <Item id="Kunye.Ctx.Insert">
+                  <Item id="Derkenar.Ctx.Insert">
                     <Label resid="Ctx.Insert"/>
                     <Supertip>
                       <Title resid="Ctx.Insert"/>
@@ -342,7 +342,7 @@
                       <bt:Image size="80" resid="Ic.insert.80"/>
                     </Icon>
                     <Action xsi:type="ShowTaskpane">
-                      <TaskpaneId>KunyePane</TaskpaneId>
+                      <TaskpaneId>DerkenarPane</TaskpaneId>
                       <SourceLocation resid="U.Ctx.Insert"/>
                     </Action>
                   </Item>
@@ -397,12 +397,12 @@
         <bt:Url id="U.Unlink" DefaultValue="{{BASE_URL}}taskpane.html?action=unlink"/>
         <bt:Url id="U.Ctx.Insert" DefaultValue="{{BASE_URL}}taskpane.html?action=insert"/>
         <bt:Url id="Commands.Url" DefaultValue="{{BASE_URL}}commands.html"/>
-        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/kunye"/>
+        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Künye hazır"/>
-        <bt:String id="Tab" DefaultValue="Künye"/>
-        <bt:String id="Ctx" DefaultValue="Künye"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Derkenar hazır"/>
+        <bt:String id="Tab" DefaultValue="Derkenar"/>
+        <bt:String id="Ctx" DefaultValue="Derkenar"/>
         <bt:String id="Style" DefaultValue="Stil"/>
         <bt:String id="Style.0" DefaultValue="İSNAD 2 (dipnotlu)"/>
         <bt:String id="Style.1" DefaultValue="İSNAD 2 (metin içi)"/>
@@ -425,15 +425,15 @@
         <bt:String id="Ctx.Insert" DefaultValue="Atıf ekle"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Künye sekmesinden Atıf ekle düğmesine basın; önce Kütüphane'den Zotero'yu bağlayın veya bir dosya içe aktarın."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinden Atıf ekle düğmesine basın; önce Kütüphane'den Zotero'yu bağlayın veya bir dosya içe aktarın."/>
         <bt:String id="Style.Tip" DefaultValue="Belgenin atıf stilini değiştirir; bütün atıflar ve kaynakça yeni stile göre yeniden yazılır."/>
-        <bt:String id="Insert.Tip" DefaultValue="Künye penceresini açar: kaynağı arayın, sayfayı yazın, Ctrl+Enter ile atıfı ekleyin. Dipnotlu stillerde atıf yeni bir dipnota girer."/>
+        <bt:String id="Insert.Tip" DefaultValue="Derkenar penceresini açar: kaynağı arayın, sayfayı yazın, Ctrl+Enter ile atıfı ekleyin. Dipnotlu stillerde atıf yeni bir dipnota girer."/>
         <bt:String id="Bib.Tip" DefaultValue="İmlecin bulunduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir."/>
         <bt:String id="Refresh.Tip" DefaultValue="Bütün atıfları ve kaynakçayı seçili stile göre yeniden yazar (ilk atıf tam, sonrakiler kısa)."/>
         <bt:String id="Library.Tip" DefaultValue="Zotero kütüphanenizi eşitleyin; BibTeX, RIS, CSL JSON dosyası içe aktarın; DOI/ISBN ile ya da elle kaynak ekleyin."/>
         <bt:String id="Document.Tip" DefaultValue="Belgedeki atıfların listesi, stil ve dil seçimi."/>
         <bt:String id="Unlink.Tip" DefaultValue="Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın."/>
-        <bt:String id="Ctx.Insert.Tip" DefaultValue="Künye penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
+        <bt:String id="Ctx.Insert.Tip" DefaultValue="Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

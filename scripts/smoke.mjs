@@ -241,7 +241,7 @@ try {
   if (new Set(tags).size !== tags.length) fail(`copied citation kept the same tag: ${tags}`);
 
   // Settings survive: the stored state holds style and works.
-  const stored = JSON.parse(await page.evaluate(() => window.__doc.settings.kunye));
+  const stored = JSON.parse(await page.evaluate(() => window.__doc.settings.derkenar));
   if (stored.style !== "apa" || Object.keys(stored.items).length !== 3) fail("document state not saved");
 
   // Unlink needs two clicks.

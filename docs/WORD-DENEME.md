@@ -1,12 +1,12 @@
-# Künye'yi Word'de deneme
+# Derkenar'ı Word'de deneme
 
 Önce bir tez **kopyasında** deneyin.
 
 ## 1. Yayını açın (bir kez)
 
 GitHub'da depo → **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-`main` dalına her birleştirmede eklenti `https://apoyraz58-max.github.io/kunye/`
-adresine yayımlanır; manifest `https://apoyraz58-max.github.io/kunye/manifest.xml`.
+`main` dalına her birleştirmede eklenti `https://apoyraz58-max.github.io/derkenar/`
+adresine yayımlanır; manifest `https://apoyraz58-max.github.io/derkenar/manifest.xml`.
 
 ## 2. Manifesti Word'e yükleyin
 
@@ -16,7 +16,7 @@ Karşıya Yükle** → `manifest.xml`.
 **Windows masaüstü:** Manifesti paylaşılan bir klasöre koyun. Word → **Dosya → Seçenekler →
 Güven Merkezi → Güven Merkezi Ayarları → Güvenilen Eklenti Katalogları** → `\\BILGISAYAR\klasor`
 yolunu ekleyin, "Menüde göster"i işaretleyin, Word'ü yeniden başlatın → **Ekle → Eklentilerim →
-Paylaşılan Klasör → Künye**.
+Paylaşılan Klasör → Derkenar**.
 
 **Mac:** Manifesti `~/Library/Containers/com.microsoft.Word/Data/Documents/wef` klasörüne
 kopyalayın, Word'ü yeniden başlatın → **Ekle → Eklentilerim**.
@@ -32,7 +32,7 @@ Vefeyât ile aynı anda kurulu olabilir; ikisinin sekmeleri ayrıdır.
 | Kaynaklar | **Kütüphane**, **Belgedeki atıflar** |
 | Teslim | **Düz metne çevir** |
 
-Sağ tık → **Künye → Atıf ekle**.
+Sağ tık → **Derkenar → Atıf ekle**.
 
 1. **Kütüphane:** Zotero numaranızı ve yalnız okuma izinli API anahtarınızı yazıp **Eşitle**
    (zotero.org → Settings → Security → Applications). Ya da BibTeX/RIS/CSL JSON dosyası seçin.

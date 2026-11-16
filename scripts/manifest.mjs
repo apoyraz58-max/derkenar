@@ -1,4 +1,4 @@
-// Generates manifest/manifest.template.xml (the Künye ribbon tab and context menu).
+// Generates manifest/manifest.template.xml (the Derkenar ribbon tab and context menu).
 // Run after changing the ribbon:  node scripts/manifest.mjs
 // build.mjs fills in {{BASE_URL}} and {{VERSION}}.
 import { writeFile } from "node:fs/promises";
@@ -30,30 +30,30 @@ const icon = (name, ind) => {
   return `${ind}<Icon>\n${[16, 32, 80].map((s) => `${ind}  <bt:Image size="${s}" resid="Ic.${name}.${s}"/>\n`).join("")}${ind}</Icon>\n`;
 };
 const head = (label, tip, ind) => `${ind}<Label resid="${label}"/>\n${ind}<Supertip>\n${ind}  <Title resid="${label}"/>\n${ind}  <Description resid="${tip}"/>\n${ind}</Supertip>\n`;
-const pane = (url, ind) => `${ind}<Action xsi:type="ShowTaskpane">\n${ind}  <TaskpaneId>KunyePane</TaskpaneId>\n${ind}  <SourceLocation resid="${url}"/>\n${ind}</Action>\n`;
+const pane = (url, ind) => `${ind}<Action xsi:type="ShowTaskpane">\n${ind}  <TaskpaneId>DerkenarPane</TaskpaneId>\n${ind}  <SourceLocation resid="${url}"/>\n${ind}</Action>\n`;
 
 function button(id, label, tip, ic, action, ind = " ".repeat(16), tag = "Control") {
   const kind = tag === "Control" ? ' xsi:type="Button"' : "";
-  return `${ind}<${tag}${kind} id="Kunye.${id}">\n${head(S(id, label), L(`${id}.Tip`, tip), ind + "  ")}${icon(ic, ind + "  ")}${pane(U(`U.${id}`, action), ind + "  ")}${ind}</${tag}>\n`;
+  return `${ind}<${tag}${kind} id="Derkenar.${id}">\n${head(S(id, label), L(`${id}.Tip`, tip), ind + "  ")}${icon(ic, ind + "  ")}${pane(U(`U.${id}`, action), ind + "  ")}${ind}</${tag}>\n`;
 }
 
 function group(id, label, ic, controls) {
   const ind = " ".repeat(14);
-  return `${ind}<Group id="Kunye.G.${id}">\n${ind}  <Label resid="${S(`G.${id}`, label)}"/>\n${icon(ic, ind + "  ")}${controls.join("")}${ind}</Group>\n`;
+  return `${ind}<Group id="Derkenar.G.${id}">\n${ind}  <Label resid="${S(`G.${id}`, label)}"/>\n${icon(ic, ind + "  ")}${controls.join("")}${ind}</Group>\n`;
 }
 
 const styleTip = L("Style.Tip", "Belgenin atıf stilini değiştirir; bütün atıflar ve kaynakça yeni stile göre yeniden yazılır.");
 const styleMenu =
-  `                <Control xsi:type="Menu" id="Kunye.Style">\n${head(S("Style", "Stil"), styleTip, " ".repeat(18))}${icon("settings", " ".repeat(18))}                  <Items>\n` +
+  `                <Control xsi:type="Menu" id="Derkenar.Style">\n${head(S("Style", "Stil"), styleTip, " ".repeat(18))}${icon("settings", " ".repeat(18))}                  <Items>\n` +
   STYLES.map(([id, title], i) => {
     const ind = " ".repeat(20);
-    return `${ind}<Item id="Kunye.Style.${i}">\n${head(S(`Style.${i}`, title), styleTip, ind + "  ")}${icon("settings", ind + "  ")}${pane(U(`U.Style.${i}`, `style:${id}`), ind + "  ")}${ind}</Item>\n`;
+    return `${ind}<Item id="Derkenar.Style.${i}">\n${head(S(`Style.${i}`, title), styleTip, ind + "  ")}${icon("settings", ind + "  ")}${pane(U(`U.Style.${i}`, `style:${id}`), ind + "  ")}${ind}</Item>\n`;
   }).join("") +
   `                  </Items>\n                </Control>\n`;
 
 const tab = [
   group("Cite", "Atıf", "insert", [
-    button("Insert", "Atıf ekle", "Künye penceresini açar: kaynağı arayın, sayfayı yazın, Ctrl+Enter ile atıfı ekleyin. Dipnotlu stillerde atıf yeni bir dipnota girer.", "insert", "insert"),
+    button("Insert", "Atıf ekle", "Derkenar penceresini açar: kaynağı arayın, sayfayı yazın, Ctrl+Enter ile atıfı ekleyin. Dipnotlu stillerde atıf yeni bir dipnota girer.", "insert", "insert"),
     button("Bib", "Kaynakça", "İmlecin bulunduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir.", "index", "bib"),
     button("Refresh", "Güncelle", "Bütün atıfları ve kaynakçayı seçili stile göre yeniden yazar (ilk atıf tam, sonrakiler kısa).", "consistency", "refresh"),
   ]),
@@ -66,14 +66,14 @@ const tab = [
 ];
 
 const contextMenu = [
-  button("Ctx.Insert", "Atıf ekle", "Künye penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler.", "insert", "insert", " ".repeat(16), "Control"),
+  button("Ctx.Insert", "Atıf ekle", "Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler.", "insert", "insert", " ".repeat(16), "Control"),
 ];
 
 const resources = () => {
   const imgs = [...icons].flatMap((n) => [16, 32, 80].map((s) => `        <bt:Image id="Ic.${n}.${s}" DefaultValue="${B}assets/icons/${n}-${s}.png"/>`));
   imgs.push(`        <bt:Image id="Icon.16" DefaultValue="${B}assets/icon-16.png"/>`, `        <bt:Image id="Icon.32" DefaultValue="${B}assets/icon-32.png"/>`, `        <bt:Image id="Icon.80" DefaultValue="${B}assets/icon-80.png"/>`);
   const u = [...urls].map(([k, v]) => `        <bt:Url id="${k}" DefaultValue="${esc(v)}"/>`);
-  u.push(`        <bt:Url id="Commands.Url" DefaultValue="${B}commands.html"/>`, `        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/kunye"/>`);
+  u.push(`        <bt:Url id="Commands.Url" DefaultValue="${B}commands.html"/>`, `        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>`);
   for (const [k, v] of short) if (v.length > 125) throw new Error(`short string too long: ${k}`);
   for (const [k, v] of long) if (v.length > 250) throw new Error(`long string too long: ${k}`);
   return `    <Resources>
@@ -84,13 +84,13 @@ ${imgs.join("\n")}
 ${u.join("\n")}
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Künye hazır"/>
-        <bt:String id="Tab" DefaultValue="Künye"/>
-        <bt:String id="Ctx" DefaultValue="Künye"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Derkenar hazır"/>
+        <bt:String id="Tab" DefaultValue="Derkenar"/>
+        <bt:String id="Ctx" DefaultValue="Derkenar"/>
 ${[...short].map(([k, v]) => `        <bt:String id="${k}" DefaultValue="${esc(v)}"/>`).join("\n")}
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Künye sekmesinden Atıf ekle düğmesine basın; önce Kütüphane'den Zotero'yu bağlayın veya bir dosya içe aktarın."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinden Atıf ekle düğmesine basın; önce Kütüphane'den Zotero'yu bağlayın veya bir dosya içe aktarın."/>
 ${[...long].map(([k, v]) => `        <bt:String id="${k}" DefaultValue="${esc(v)}"/>`).join("\n")}
       </bt:LongStrings>
     </Resources>
@@ -106,15 +106,15 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
            xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
-  <Id>3d0f8a52-6c1e-4b7d-a9f4-58e2c71b04ad</Id>
+  <Id>8b2e4f17-3a9c-4d65-b0e1-7c54d29a6f38</Id>
   <Version>{{VERSION}}</Version>
-  <ProviderName>Künye</ProviderName>
+  <ProviderName>Derkenar</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
-  <DisplayName DefaultValue="Künye"/>
+  <DisplayName DefaultValue="Derkenar"/>
   <Description DefaultValue="Word için hızlı atıf ve kaynakça: Zotero kütüphanesi, İSNAD, APA, Chicago ve diğer CSL stilleri."/>
   <IconUrl DefaultValue="${B}assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="${B}assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://github.com/apoyraz58-max/kunye"/>
+  <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
   <AppDomains>
     <AppDomain>https://api.zotero.org</AppDomain>
     <AppDomain>https://api.crossref.org</AppDomain>
@@ -143,13 +143,13 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
           </GetStarted>
           <FunctionFile resid="Commands.Url"/>
           <ExtensionPoint xsi:type="PrimaryCommandSurface">
-            <CustomTab id="Kunye.Tab">
+            <CustomTab id="Derkenar.Tab">
 ${tabXml}              <Label resid="Tab"/>
             </CustomTab>
           </ExtensionPoint>
           <ExtensionPoint xsi:type="ContextMenu">
             <OfficeMenu id="ContextMenuText">
-              <Control xsi:type="Menu" id="Kunye.Ctx">
+              <Control xsi:type="Menu" id="Derkenar.Ctx">
                 <Label resid="Ctx"/>
                 <Supertip>
                   <Title resid="Ctx"/>
@@ -161,7 +161,7 @@ ${tabXml}              <Label resid="Tab"/>
                   <bt:Image size="80" resid="Icon.80"/>
                 </Icon>
                 <Items>
-${ctxXml.replace('<Control xsi:type="Button" id="Kunye.Ctx.Insert">', '<Item id="Kunye.Ctx.Insert">').replace(/<\/Control>\n$/, "</Item>\n").replace(/^/gm, "  ")}                </Items>
+${ctxXml.replace('<Control xsi:type="Button" id="Derkenar.Ctx.Insert">', '<Item id="Derkenar.Ctx.Insert">').replace(/<\/Control>\n$/, "</Item>\n").replace(/^/gm, "  ")}                </Items>
               </Control>
             </OfficeMenu>
           </ExtensionPoint>

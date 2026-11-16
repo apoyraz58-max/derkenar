@@ -6,7 +6,7 @@
 import { TAG_BIBLIOGRAPHY, TAG_CITATION, citationIdFromTag, parseState, type FoundCitation } from "../core/docstate.js";
 import type { DocState, Segment } from "../core/types.js";
 
-const SETTING = "kunye";
+const SETTING = "derkenar";
 
 export function footnotesSupported(): boolean {
   try {
@@ -98,7 +98,7 @@ interface Located {
   readonly control: Word.ContentControl;
 }
 
-/** Every Künye control: footnote citations first (in note order), then those in the text. */
+/** Every Derkenar control: footnote citations first (in note order), then those in the text. */
 async function locate(context: Word.RequestContext): Promise<{ citations: Located[]; bibliography: Word.ContentControl[] }> {
   const bodyControls = context.document.body.contentControls;
   bodyControls.load("items/id,items/tag,items/text");

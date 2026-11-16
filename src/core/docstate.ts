@@ -6,8 +6,8 @@
 import { type Bibliography, type OrderedCitation, Renderer } from "./engine.js";
 import type { CiteRef, CslItem, DocState, StoredCitation } from "./types.js";
 
-export const TAG_CITATION = "KUNYE:C:";
-export const TAG_BIBLIOGRAPHY = "KUNYE:BIB";
+export const TAG_CITATION = "DERKENAR:C:";
+export const TAG_BIBLIOGRAPHY = "DERKENAR:BIB";
 export const DEFAULT_STYLE = "isnad-dipnotlu";
 
 export function emptyState(style = DEFAULT_STYLE, locale = "tr-TR"): DocState {

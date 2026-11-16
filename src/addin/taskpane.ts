@@ -1,5 +1,5 @@
 /**
- * Künye pane: search the library, build a citation, insert or edit it, keep
+ * Derkenar pane: search the library, build a citation, insert or edit it, keep
  * the document's citations and bibliography in step with the chosen style.
  */
 import { DEFAULT_STYLE, commitPlan, newCitationId, planRefresh, putCitation, type FoundCitation } from "../core/docstate.js";
@@ -674,7 +674,7 @@ async function launch(action: string): Promise<void> {
 }
 
 Office.onReady(async () => {
-  $("version").textContent = `Künye ${__VERSION__}`;
+  $("version").textContent = `Derkenar ${__VERSION__}`;
   wire();
   customStyles = (await getMeta<CustomStyle[]>("customStyles")) ?? [];
   const d = doc();

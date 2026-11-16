@@ -8,7 +8,7 @@ const root = new URL("../", import.meta.url);
 const out = new URL("dist/addin/", root);
 const pkg = JSON.parse(await readFile(new URL("package.json", root), "utf8"));
 
-let baseUrl = process.env.BASE_URL ?? "https://apoyraz58-max.github.io/kunye/";
+let baseUrl = process.env.BASE_URL ?? "https://apoyraz58-max.github.io/derkenar/";
 if (!baseUrl.endsWith("/")) baseUrl += "/";
 if (!baseUrl.startsWith("https://") && !process.env.ALLOW_HTTP) throw new Error("BASE_URL must use https:// (Office requires it).");
 
@@ -53,4 +53,4 @@ await cp(new URL("data/styles/", root), new URL("styles/", out), { recursive: tr
 
 const template = await readFile(new URL("manifest/manifest.template.xml", root), "utf8");
 await writeFile(new URL("manifest.xml", out), template.replaceAll("{{BASE_URL}}", baseUrl).replaceAll("{{VERSION}}", manifestVersion));
-console.log(`Built Künye ${version} (manifest ${manifestVersion}) for ${baseUrl}`);
+console.log(`Built Derkenar ${version} (manifest ${manifestVersion}) for ${baseUrl}`);
