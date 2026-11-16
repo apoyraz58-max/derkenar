@@ -149,8 +149,11 @@ function authorKey(item: Item | undefined): string {
  * changes list: "aynı yazara ait farklı eserlere").
  */
 export function withSameAuthor(refs: readonly CiteRef[], items: Record<string, Item>): CiteRef[] {
+  // Two records of one work (entered twice) are still one work.
+  const title = (id: string) => (items[id]?.fields.title ?? "").toLocaleLowerCase("tr").replace(/[^\p{L}\p{N}]+/gu, "");
   return refs.map((r, i) => {
-    if (i === 0 || r["suppress-author"] || r.prefix || r.id === refs[i - 1]!.id) return r;
+    const prev = refs[i - 1];
+    if (i === 0 || !prev || r["suppress-author"] || r.prefix || r.id === prev.id || (title(r.id) && title(r.id) === title(prev.id))) return r;
     const key = authorKey(items[r.id]);
     if (!key || key !== authorKey(items[refs[i - 1]!.id])) return r;
     return { ...r, "suppress-author": true, prefix: "a.mlf., " };

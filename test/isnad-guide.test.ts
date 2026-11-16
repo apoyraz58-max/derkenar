@@ -80,6 +80,15 @@ describe("a.mlf. yalnız farklı eserlerde", () => {
     expect(text).not.toContain("a.mlf.");
     expect(text).toBe("Buhârî, “Zekât”, 2 (No. 36); Buhârî, “Savm”, 34.");
   });
+  it("aynı eserin iki ayrı kaydı da aynı eser sayılır", () => {
+    const item = work("el-Câmiʿu’ṣ-ṣaḥîḥ", "Buhârî");
+    const copy = { ...item, key: "COPY2345" };
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales);
+    const st = emptyState();
+    putCitation(st, "a", [{ id: item.key, kitab: "Zekât", bab: "2" }, { id: copy.key, kitab: "Savm", bab: "34" }], { [item.key]: item, [copy.key]: copy });
+    const plan = planRefresh(st, [{ id: "a", noteIndex: 1, text: "" }], r);
+    expect(htmlToText(plan.updates.get("a")!)).not.toContain("a.mlf.");
+  });
 });
 
 describe("İSNAD 2 kılavuzu: türler", () => {
