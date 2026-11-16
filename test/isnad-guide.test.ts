@@ -68,6 +68,41 @@ describe("İSNAD 2 kılavuzu: genel ilkeler (s. 65-67)", () => {
   });
 });
 
+describe("a.mlf.: müellif adı farklı yazılmış olsa da", () => {
+  const mk = (key: string, title: string, last: string, first: string): Item => ({ ...items[0]!, key, itemType: "book", fields: { title, place: "Beyrut", publisher: "Dâru’l-Kütübi’l-İlmiyye", date: "2000" }, creators: [{ creatorType: "author", lastName: last, firstName: first }], notes: [], tags: [], collections: [], relations: [] });
+  const cases: [string, string, string, string, boolean][] = [
+    ["Gazzâlî", "Ebû Hâmid Muhammed el-", "Gazzali", "Ebu Hamid", true],
+    ["el-Gazzâlî", "Ebû Hâmid", "Gazzâlî", "Ebû Hâmid Muhammed b. Muhammed", true],
+    ["İbn Teymiyye", "Takıyyüddîn Ahmed", "İbn Teymiyye", "", true],
+    ["Yılmaz", "A.", "Yilmaz", "Ahmet", true],
+    ["Yılmaz", "Ahmet", "Yılmaz", "Mehmet", false],
+    ["Gazzâlî", "Ebû Hâmid", "Râzî", "Fahreddîn", false],
+  ];
+  for (const [l1, f1, l2, f2, same] of cases) {
+    it(`${l1}, ${f1} / ${l2}, ${f2} → ${same ? "a.mlf." : "ayrı müellif"}`, () => {
+      const a = mk("AAAA2345", "el-Mustasfâ", l1, f1);
+      const b = mk("BBBB2345", "İhyâü ulûmi’d-dîn", l2, f2);
+      const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales);
+      const st = emptyState();
+      putCitation(st, "x", [{ id: a.key, locator: "1" }, { id: b.key, locator: "2" }], { [a.key]: a, [b.key]: b });
+      const text = htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!);
+      expect(text.includes("; a.mlf., ")).toBe(same);
+    });
+  }
+  it("denetim farklı yazımları bulur ve birleştirir", async () => {
+    const { nameVariants, unifyName } = await import("../src/core/names.js");
+    const a = mk("AAAA2345", "A", "Gazzâlî", "Ebû Hâmid Muhammed el-");
+    const b = mk("BBBB2345", "B", "Gazzali", "Ebu Hamid");
+    const c = mk("CCCC2345", "C", "Gazzâlî", "Ebû Hâmid Muhammed el-");
+    const v = nameVariants([a, b, c]);
+    expect(v).toHaveLength(1);
+    expect(v[0]!.spellings[0]!.label).toBe("Gazzâlî, Ebû Hâmid Muhammed el-");
+    const changed = unifyName([a, b, c], v[0]!.spellings[0]!.creator, v[0]!.spellings.map((x) => x.creator));
+    expect(changed.map((x) => x.key)).toEqual(["BBBB2345"]);
+    expect(changed[0]!.creators[0]).toEqual({ creatorType: "author", lastName: "Gazzâlî", firstName: "Ebû Hâmid Muhammed el-" });
+  });
+});
+
 describe("a.mlf. yalnız farklı eserlerde", () => {
   it("aynı eserden iki yer: a.mlf. değil, kısa atıf", () => {
     const item = work("el-Câmiʿu’ṣ-ṣaḥîḥ", "Buhârî");

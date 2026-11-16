@@ -5,6 +5,8 @@
  */
 import { type Bibliography, type OrderedCitation, Renderer } from "./engine.js";
 import type { CiteRef, CslItem, DocState, StoredCitation } from "./types.js";
+import { sameAuthors } from "./names.js";
+import { fold } from "./search.js";
 import { type Item, toCsl } from "./zotero.js";
 
 export const TAG_CITATION = "DERKENAR:C:";
@@ -135,12 +137,7 @@ export function fillImprint(csl: CslItem): CslItem {
   return csl;
 }
 
-/** Primary creators as a comparable key ("" when none). */
-function authorKey(item: Item | undefined): string {
-  if (!item) return "";
-  const main = item.creators.filter((c) => c.creatorType === "author");
-  return main.map((c) => `${c.lastName ?? c.name ?? ""}|${c.firstName ?? ""}`.toLocaleLowerCase("tr")).join(";");
-}
+const authorsOf = (item: Item | undefined) => (item ? item.creators.filter((c) => c.creatorType === "author") : []);
 
 /**
  * İSNAD: in one footnote, a consecutive *different* work by the same author
@@ -150,12 +147,12 @@ function authorKey(item: Item | undefined): string {
  */
 export function withSameAuthor(refs: readonly CiteRef[], items: Record<string, Item>): CiteRef[] {
   // Two records of one work (entered twice) are still one work.
-  const title = (id: string) => (items[id]?.fields.title ?? "").toLocaleLowerCase("tr").replace(/[^\p{L}\p{N}]+/gu, "");
+  const title = (id: string) => fold(items[id]?.fields.title ?? "").replace(/[^\p{L}\p{N}]+/gu, "");
   return refs.map((r, i) => {
     const prev = refs[i - 1];
     if (i === 0 || !prev || r["suppress-author"] || r.prefix || r.id === prev.id || (title(r.id) && title(r.id) === title(prev.id))) return r;
-    const key = authorKey(items[r.id]);
-    if (!key || key !== authorKey(items[refs[i - 1]!.id])) return r;
+    // The same author even when spelled differently in the two records ("Gazzâlî" / "Gazzali", fuller given name).
+    if (!sameAuthors(authorsOf(items[r.id]), authorsOf(items[prev.id]))) return r;
     return { ...r, "suppress-author": true, prefix: "a.mlf., " };
   });
 }

@@ -4,6 +4,7 @@
  * document's copy), then the document refreshes.
  */
 import { type Issue, LEVEL_LABEL, applyFix, apostropheReport, checkItem } from "../../core/isnad.js";
+import { nameVariants, unifyName } from "../../core/names.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { citedKeys, refresh } from "./document.js";
@@ -63,7 +64,38 @@ function render(): void {
       ),
     );
   }
-  if (!byItem.size) list.append(h("li", { class: "muted" }, lastItems.length ? "İSNAD açısından sorun bulunmadı." : "Denetlenecek kaynak yok."));
+  // The same author written in more than one way: a.mlf. and the bibliography need one spelling.
+  for (const v of nameVariants(lastItems)) {
+    const choice = h("select", { "aria-label": "Kullanılacak yazım" }, ...v.spellings.map((sp, i) => h("option", { value: String(i) }, `${sp.label} (${sp.count})`)));
+    list.prepend(
+      h(
+        "li",
+        {},
+        h("div", { class: "issue warning" }, h("span", { class: "lvl" }, "Uyarı"), ` Aynı müellif farklı yazılmış: ${v.spellings.map((x) => x.label).join(" · ")}`),
+        h(
+          "div",
+          { class: "row small" },
+          choice,
+          h("button", {
+            type: "button",
+            onclick: () =>
+              void run("Yazımlar birleştiriliyor", async () => {
+                const target = v.spellings[Number(choice.value)]!.creator;
+                const changed = unifyName(S.items, target, v.spellings.map((x) => x.creator)).map((i) => ({ ...i, dateModified: now() }));
+                await putItems(changed, [], true);
+                const d = doc();
+                for (const it of changed) if (d.items[it.key]) d.items[it.key] = it;
+                await word.saveState(d);
+                await refresh(false, true);
+                setMessage(`${changed.length} kaynakta müellif adı "${v.spellings[Number(choice.value)]!.label}" olarak birleştirildi.`, "success");
+                runCheck();
+              }),
+          }, "Hepsini bu yazıma çevir"),
+        ),
+      ),
+    );
+  }
+  if (!byItem.size && !list.children.length) list.append(h("li", { class: "muted" }, lastItems.length ? "İSNAD açısından sorun bulunmadı." : "Denetlenecek kaynak yok."));
 }
 
 async function fix(issues: Issue[]): Promise<void> {
