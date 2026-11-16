@@ -3,6 +3,7 @@
  * One Renderer per (style, locale); items are swapped in without rebuilding it.
  */
 import CSL from "citeproc";
+import { composeLocator } from "./isnadmodes.js";
 import type { CiteRef, CslItem } from "./types.js";
 
 export interface StyleMeta {
@@ -96,8 +97,16 @@ export class Renderer {
     if (!result) return null;
     const [params, entries] = result;
     const ids = (params.entry_ids as string[][]) ?? [];
+    // İSNAD: several entries of one dictionary are one bibliography line (madde names are not listed).
+    const seen = new Set<string>();
+    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html })).filter((e) => {
+      const k = e.html.replace(/\s+/g, " ").trim();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
     return {
-      entries: entries.map((html, i) => ({ ids: ids[i] ?? [], html })),
+      entries: unique,
       hangingIndent: Boolean(params.hangingindent),
       lineSpacing: Number(params.linespacing) || 1,
       entrySpacing: Number(params.entryspacing) || 0,
@@ -108,6 +117,15 @@ export class Renderer {
 
 function toCiteItem(r: CiteRef): Record<string, unknown> {
   const item: Record<string, unknown> = { id: r.id };
+  const special = composeLocator(r);
+  if (special) {
+    if (special.locator) item.locator = special.locator;
+    if (special.label) item.label = special.label;
+    if (r.prefix) item.prefix = r.prefix;
+    if (r.suffix) item.suffix = r.suffix;
+    if (r["suppress-author"]) item["suppress-author"] = true;
+    return item;
+  }
   const vol = r.volume?.trim();
   if (vol && r.locator && (r.label ?? "page") === "page") {
     item.locator = `${vol}/${r.locator}`;
@@ -131,7 +149,7 @@ export const LOCATOR_LABELS: readonly (readonly [string, string])[] = [
   ["page", "Sayfa"],
   ["volume", "Cilt"],
   ["chapter", "Bölüm"],
-  ["folio", "Varak (vr.)"],
+  ["folio", "Varak"],
   ["section", "Kısım"],
   ["paragraph", "Paragraf"],
   ["line", "Satır"],

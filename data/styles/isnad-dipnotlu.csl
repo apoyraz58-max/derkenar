@@ -75,8 +75,6 @@
   <locale xml:lang="tr-TR">
     <terms>
       <term name="no date" form="short">ts.</term>
-      <!-- Derkenar: İSNAD yazmalarda varak kısaltması -->
-      <term name="folio" form="short">vr.</term>
       <term name="et-al">vd.</term>
       <term name="edition" form="verb">basım</term>
       <term name="editor" form="verb-short">ed.</term>

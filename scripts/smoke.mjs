@@ -227,7 +227,7 @@ try {
   await cite("kemalpasazade", undefined, "12b");
   await waitNotes(() => window.__notes().length === 4, "four notes");
   n = await notes();
-  if (!n[3].includes("Süleymaniye Ktp.") || !n[3].includes("vr. 12b")) fail(`manuscript: ${n[3]}`);
+  if (!n[3].includes("Süleymaniye Ktp.") || !n[3].endsWith(", 12b.") || n[3].includes("vr.")) fail(`manuscript: ${n[3]}`);
   // Inserted before everything: becomes full, the old first one shortens.
   await page.evaluate(() => (window.__doc.cursor = 0));
   await cite("gazzali", "3", "7");

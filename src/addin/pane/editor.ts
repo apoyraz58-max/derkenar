@@ -27,6 +27,7 @@ import {
   titleCase,
   titleOf,
 } from "../../core/zotero.js";
+import { CITE_MODES, citeMode } from "../../core/isnadmodes.js";
 import { addToBasket } from "./cite.js";
 import { richNote } from "./richnote.js";
 import * as store from "../store.js";
@@ -159,6 +160,12 @@ function renderFields(): void {
   box.replaceChildren();
   const fields = fieldsOf(item.itemType);
   box.append(fieldInput("title"));
+  if (["book", "dictionaryEntry", "bookSection"].includes(item.itemType)) {
+    const auto = citeMode({ ...item, citeMode: undefined });
+    const sel = h("select", { "data-field": "citeMode" }, h("option", { value: "" }, `Otomatik (${CITE_MODES.find(([m]) => m === auto)![1].split(" (")[0]})`), ...CITE_MODES.map(([m, l]) => h("option", { value: m, selected: item.citeMode === m }, l)));
+    sel.onchange = () => update((it) => ({ ...it, citeMode: sel.value || undefined }));
+    box.append(h("label", { class: "field" }, "İSNAD atıf biçimi", sel));
+  }
   const caseFix = (fn: (s: string) => string) => () => {
     const el = box.querySelector<HTMLTextAreaElement>('[data-field="title"]')!;
     el.value = fn(el.value);

@@ -118,7 +118,8 @@ export function parseQuick(q: string): { words: string; volume?: string; locator
   const prefixed = /^(.*?)[\s,]+(s\.|ss\.|sayfa|vr\.|varak)\s*(\d+[ab]?(?:-\d+[ab]?)?)$/i.exec(q.trim());
   const hit = prefixed ?? m;
   if (!hit || !hit[1]!.trim()) return { words: q };
-  const label = /^v/i.test(hit[2] ?? "") ? "folio" : undefined;
+  // İSNAD writes varak numbers without "vr." (77b): the prefix is only a typing aid.
+  const label = undefined as string | undefined;
   const loc = hit[3]!;
   const slash = /^(\d+)\/(.+)$/.exec(loc);
   return { words: hit[1]!, ...(slash ? { volume: slash[1], locator: slash[2] } : { locator: loc }), ...(label ? { label } : {}) };

@@ -211,3 +211,6 @@ label.inline input[type="checkbox"], label.inline input[type="radio"] { width: a
 .cond select, .cond input { width: 100%; min-width: 0; }
 .att-kind { margin-right: 4px; }
 #ed-attachments li { padding: 3px 0; }
+
+.b-loc.three-even { grid-template-columns: 1.6fr 1fr 1fr; }
+.mode-hint { margin: 4px 0 0; }

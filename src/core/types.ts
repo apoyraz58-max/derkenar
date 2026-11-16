@@ -45,6 +45,13 @@ export interface CiteRef {
   prefix?: string;
   suffix?: string;
   "suppress-author"?: boolean;
+  /** Hadith: kitâb name ("Menâḳıb"), bâb or hadith number, hadith no in parentheses, free text in parentheses. */
+  kitab?: string;
+  bab?: string;
+  hadisNo?: string;
+  paren?: string;
+  /** Dictionary: madde ("delîl"). */
+  madde?: string;
   "author-only"?: boolean;
 }
 

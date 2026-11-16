@@ -82,7 +82,7 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
       continue;
     }
     seen.add(f.id);
-    ordered.push({ id: f.id, items: c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
+    ordered.push({ id: f.id, items: renderer.meta.note ? withSameAuthor(c.items, state.items) : c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
   }
   renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items))));
   const html = renderer.renderCitations(ordered);
@@ -123,11 +123,36 @@ const CONTAINER_VOLUME = new Set(["article-journal", "article-magazine", "articl
 export const ISNAD_MISSING = { place: "b.y.", publisher: "y.y." } as const;
 const NEEDS_IMPRINT = new Set(["book", "chapter", "entry-encyclopedia", "entry-dictionary", "paper-conference"]);
 
+/**
+ * Printed works only: an e-book ("PDF: Yayıncı, 2004") or a web source
+ * ("Sözlük, “madde” (Erişim …)") has no place to report as missing.
+ */
 export function fillImprint(csl: CslItem): CslItem {
   if (!NEEDS_IMPRINT.has(csl.type)) return csl;
+  if (csl.medium || csl.accessed || (csl.URL && !csl.publisher && !csl["publisher-place"])) return csl;
   if (!String(csl["publisher-place"] ?? "").trim()) csl["publisher-place"] = ISNAD_MISSING.place;
   if (!String(csl.publisher ?? "").trim()) csl.publisher = ISNAD_MISSING.publisher;
   return csl;
+}
+
+/** Primary creators as a comparable key ("" when none). */
+function authorKey(item: Item | undefined): string {
+  if (!item) return "";
+  const main = item.creators.filter((c) => c.creatorType === "author");
+  return main.map((c) => `${c.lastName ?? c.name ?? ""}|${c.firstName ?? ""}`.toLocaleLowerCase("tr")).join(";");
+}
+
+/**
+ * İSNAD: in one footnote, a second consecutive work by the same author gets
+ * "a.mlf." (aynı müellif) instead of the name: "…, 56; a.mlf., “İlk Mürciî…”".
+ */
+export function withSameAuthor(refs: readonly CiteRef[], items: Record<string, Item>): CiteRef[] {
+  return refs.map((r, i) => {
+    if (i === 0 || r["suppress-author"] || r.prefix) return r;
+    const key = authorKey(items[r.id]);
+    if (!key || key !== authorKey(items[refs[i - 1]!.id])) return r;
+    return { ...r, "suppress-author": true, prefix: "a.mlf., " };
+  });
 }
 
 /** Works cited somewhere with a cilt of their own ("1/80"). */

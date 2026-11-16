@@ -356,7 +356,7 @@ describe("0.3: Zotero features", () => {
     const { parseQuick } = await import("../src/core/search.js");
     expect(parseQuick("gazzali 1/45")).toEqual({ words: "gazzali", volume: "1", locator: "45" });
     expect(parseQuick("gazzali s. 45-47")).toEqual({ words: "gazzali", locator: "45-47" });
-    expect(parseQuick("kemalpaşazade vr. 12b")).toEqual({ words: "kemalpaşazade", locator: "12b", label: "folio" });
+    expect(parseQuick("kemalpaşazade vr. 12b")).toEqual({ words: "kemalpaşazade", locator: "12b" });
     expect(parseQuick("gazzali 1982")).toEqual({ words: "gazzali 1982" });
     expect(parseQuick("gazzali 45")).toEqual({ words: "gazzali", locator: "45" });
   });

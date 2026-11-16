@@ -12,7 +12,8 @@
     "build": "node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "report:isnad": "vitest run --config vitest.report.config.ts"
   },
   "dependencies": {
     "@citation-js/core": "0.7.18",

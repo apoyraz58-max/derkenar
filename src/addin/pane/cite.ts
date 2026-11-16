@@ -9,6 +9,7 @@ import type { CiteRef } from "../../core/types.js";
 import { type Item, containerOf, creatorLine, isNoteItem, itemTypeLabel, titleOf, yearOf } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { citedKeys, refresh } from "./document.js";
+import { citeMode } from "../../core/isnadmodes.js";
 import { parseQuick } from "../../core/search.js";
 import { $, S, doc, getRenderer, h, run, serial, setMessage, showView, work } from "./core.js";
 
@@ -69,7 +70,7 @@ function moveCursor(by: number): void {
 }
 
 export function addToBasket(item: Item): void {
-  if (!S.basket.some((b) => b.id === item.key)) S.basket.push(item.itemType === "manuscript" ? { id: item.key, label: "folio" } : { id: item.key });
+  if (!S.basket.some((b) => b.id === item.key)) S.basket.push({ id: item.key });
   S.basketDirty = true;
   renderBasket();
   renderResults();
@@ -120,13 +121,39 @@ export function renderBasket(): void {
             h("button", { type: "button", class: "icon-btn", title: "Çıkar", onclick: () => (S.basket.splice(i, 1), (S.basketDirty = true), renderBasket(), renderResults()) }, "✕"),
           ),
         ),
-        h("div", { class: showVolume ? "b-loc three" : "b-loc" }, label, showVolume ? vol : null, loc),
-        recordVolume && showVolume ? h("p", { class: "muted small" }, ref.volume ? `Atıftaki cilt (${ref.volume}) kullanılır; kayıttaki cilt (${recordVolume}) bu eserin atıflarında yazılmaz.` : `Kayıtta Cilt: ${recordVolume}. Cilt kutusu boş kalırsa atıfta "${recordVolume}/sayfa" yazılır.`) : null,
+        locatorRow(ref, citeMode(w), { label, vol, loc, showVolume, set, enter }),
+        recordVolume && showVolume && citeMode(w) === "normal" ? h("p", { class: "muted small" }, ref.volume ? `Atıftaki cilt (${ref.volume}) kullanılır; kayıttaki cilt (${recordVolume}) bu eserin atıflarında yazılmaz.` : `Kayıtta Cilt: ${recordVolume}. Cilt kutusu boş kalırsa atıfta "${recordVolume}/sayfa" yazılır.`) : null,
         h("details", {}, h("summary", { class: "muted" }, "Ön ek, arka ek, yazar"), h("div", { class: "b-extra" }, prefix, suffix), h("div", { class: "b-flags" }, h("label", {}, hide, " Yazarı gizle"))),
       ),
     );
   });
   schedulePreview();
+}
+
+/** The locator boxes: olağan cilt/sayfa, or İSNAD's hadith and dictionary systems. */
+function locatorRow(
+  ref: CiteRef,
+  mode: ReturnType<typeof citeMode>,
+  p: { label: HTMLSelectElement; vol: HTMLInputElement; loc: HTMLInputElement; showVolume: boolean; set: (f: keyof CiteRef, v: string | boolean) => void; enter: (e: KeyboardEvent) => void },
+): HTMLElement {
+  const box = (field: keyof CiteRef, placeholder: string, cls = "") => {
+    const el = h("input", { placeholder, value: String(ref[field] ?? ""), class: cls, "aria-label": placeholder, "data-f": field, onkeydown: p.enter });
+    el.oninput = () => p.set(field, el.value.trim());
+    return el;
+  };
+  const hint = (t: string) => h("p", { class: "muted small mode-hint" }, t);
+  switch (mode) {
+    case "hadis-bab":
+      return h("div", {}, h("div", { class: "b-loc three-even" }, box("kitab", "Kitâb (ör. Menâḳıb)"), box("bab", "Bâb no"), box("hadisNo", "Hadis no")), hint("İSNAD: “Kitâb”, Bâb (No. hadis). Sonraki atıflarda eserin adı yazılmaz."));
+    case "hadis-no":
+      return h("div", {}, h("div", { class: "b-loc three-even" }, box("kitab", "Kitâb (ör. Ticârât)"), box("bab", "Hadis no"), box("paren", "Cilt/sayfa")), hint("İSNAD: “Kitâb”, Hadis no. Cilt/sayfa isteğe bağlı, parantez içinde yazılır."));
+    case "hadis-cilt":
+      return h("div", {}, h("div", { class: "b-loc three-even" }, p.vol, p.loc, box("hadisNo", "Hadis no")), hint("İSNAD: Cilt/Sayfa (No. hadis)."));
+    case "sozluk":
+      return h("div", {}, h("div", { class: "b-loc three-even" }, box("madde", "Madde (ör. delîl)"), p.vol, p.loc), hint("İSNAD: “Madde”, cilt/sayfa. Sonraki atıflarda sözlüğün adı yazılmaz; kaynakçada madde adı yer almaz."));
+    default:
+      return h("div", { class: p.showVolume ? "b-loc three" : "b-loc" }, p.label, p.showVolume ? p.vol : null, p.loc);
+  }
 }
 
 let previewTimer = 0;

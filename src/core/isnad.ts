@@ -227,7 +227,7 @@ export function checkItem(item: Item): Issue[] {
     const field = typeField(item.itemType, base);
     const v = field ? f[field]?.trim().toLocaleLowerCase("tr") : undefined;
     if (field && v && (abbr as readonly string[]).includes(v)) {
-      add({ code: "abbr-in-field", level: "warning", message: `${fieldLabel(field)} alanına "${f[field]}" yazılmış. Bu alanı boş bırakın; İSNAD kısaltmasını (${base === "place" ? "b.y." : base === "publisher" ? "y.y." : "ts."}) Derkenar kendisi yazar.`, field, fix: { field, value: "" }, fixLabel: "Alanı boşalt" });
+      add({ code: "abbr-in-field", level: "info", message: `${fieldLabel(field)} alanına "${f[field]}" yazılmış. Bu alanı boş bırakın; İSNAD kısaltmasını (${base === "place" ? "b.y." : base === "publisher" ? "y.y." : "ts."}) Derkenar kendisi yazar.`, field, fix: { field, value: "" }, fixLabel: "Alanı boşalt" });
     }
   }
 

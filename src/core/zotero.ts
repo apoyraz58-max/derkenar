@@ -59,6 +59,8 @@ export interface Item {
   /** Changed in Derkenar since the last Zotero sync (sent by "Zotero'ya gönder"). */
   dirty?: boolean;
   attachments?: Attachment[];
+  /** İSNAD citation system chosen in the editor (hadis-bab, hadis-no, hadis-cilt, sozluk); empty: recognised. */
+  citeMode?: string;
 }
 
 /** Zotero attachment: a link, or a file kept in the add-in's storage. */
@@ -93,6 +95,7 @@ export const ISNAD_ROLES: Record<string, { label: string; csl: string; extra: st
   nasir: { label: "Nâşir (nşr.)", csl: "editorial-director", extra: ["nasir", "nâşir", "naşir", "nşr", "neşir"] },
   hazirlayan: { label: "Hazırlayan (haz.)", csl: "director", extra: ["hazirlayan", "hazırlayan", "haz"] },
   sadelestiren: { label: "Sadeleştiren (sad.)", csl: "reviewed-author", extra: ["sadelestiren", "sadeleştiren", "sad"] },
+  muellif: { label: "Müellif (mlf.) — neşredilen eserin yazarı", csl: "original-author", extra: ["muellif", "müellif", "mlf"] },
 };
 
 /** Zotero creator types that the İSNAD style already prints as an İSNAD role. */
@@ -209,7 +212,8 @@ const MONTHS: Record<string, number> = {
  * forms İSNAD writes as they are stay literal.
  */
 export function parseDate(text: string): CslDate | undefined {
-  const t = text.trim();
+  // İSNAD's Zotero guide writes such dates in quotes: issued: "1422/2001".
+  const t = text.trim().replace(/^["“”'](.*)["“”']$/, "$1").trim();
   if (!t || /^(ts\.?|t\.y\.?|n\.d\.?)$/i.test(t)) return undefined;
   if (/^\d{1,4}$/.test(t)) return { "date-parts": [[Number(t)]] };
   let m = /^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?(?:[T ].*)?$/.exec(t);
@@ -288,7 +292,7 @@ export function parseExtra(extra: string | undefined): ExtraParts {
         continue;
       }
       if (CSL_TEXT_VARS.has(key)) {
-        out.csl[key] = m[2]!.trim();
+        out.csl[key] = m[2]!.trim().replace(/^["“”](.*)["“”]$/, "$1");
         continue;
       }
     }
@@ -313,7 +317,14 @@ const cslTextVarsOf = new Map<string, string[]>();
 for (const [csl, fields] of Object.entries(schema.csl.fields.text)) for (const f of fields) cslTextVarsOf.set(f, [...(cslTextVarsOf.get(f) ?? []), csl]);
 const cslDateVarOf = new Map(Object.entries(schema.csl.fields.date).map(([csl, f]) => [f, csl]));
 
+/** Roles printed in display order ("haz. Fuat Recep - Salih Kahriman"): a one-box name can be split safely. */
+const DISPLAY_ROLES = new Set(["editor", "translator", "seriesEditor", "contributor", "bookAuthor", "muhakkik", "nasir", "hazirlayan", "sadelestiren", "muellif", "interviewer", "director"]);
+
 function cslName(c: Creator): CslName {
+  if (c.name !== undefined && DISPLAY_ROLES.has(c.creatorType)) {
+    const parts = c.name.trim().split(/\s+/);
+    if (parts.length > 1) return { family: parts.pop()!, given: parts.join(" ") };
+  }
   if (c.name !== undefined || !c.firstName) return c.name !== undefined ? { literal: c.name } : { family: c.lastName ?? "" };
   return { family: c.lastName ?? "", given: c.firstName };
 }
