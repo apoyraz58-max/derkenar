@@ -214,3 +214,12 @@ label.inline input[type="checkbox"], label.inline input[type="radio"] { width: a
 
 .b-loc.three-even { grid-template-columns: 1.6fr 1fr 1fr; }
 .mode-hint { margin: 4px 0 0; }
+
+/* ---------- transkripsiyon klavyesi ---------- */
+header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+#translit-toggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.translit { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--border); padding: 6px 8px; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08); }
+.translit-keys { display: flex; flex-wrap: wrap; gap: 3px; }
+.tk { min-width: 28px; min-height: 28px; padding: 0 4px; font-size: 15px; line-height: 1; }
+.tk.shift.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+body.with-translit { padding-bottom: 92px; }

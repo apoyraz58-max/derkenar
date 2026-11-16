@@ -10,6 +10,7 @@ import { bibliography, changeStyle, nudge, refresh, renderDocList, startWatcher,
 import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
 import { newItem, refreshLibraryView, wireLibrary } from "./pane/library.js";
+import { wireTranslit } from "./pane/translit.js";
 
 declare const __VERSION__: string;
 
@@ -94,6 +95,7 @@ Office.onReady(async () => {
   wireDocument();
   wireCheck();
   wireIo();
+  wireTranslit();
   onShow("atif", () => $<HTMLInputElement>("q").focus());
   onShow("kutuphane", refreshLibraryView);
   onShow("belge", renderDocList);

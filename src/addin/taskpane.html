@@ -8,9 +8,12 @@
     <link rel="stylesheet" href="taskpane.css" />
   </head>
   <body>
-    <header>
-      <h1>Derkenar</h1>
-      <p id="summary" class="summary"></p>
+    <header class="top">
+      <div>
+        <h1>Derkenar</h1>
+        <p id="summary" class="summary"></p>
+      </div>
+      <button id="translit-toggle" type="button" class="icon-btn" title="Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …)" aria-pressed="false">ʿâ</button>
     </header>
     <nav class="tabs" role="tablist">
       <button type="button" role="tab" data-view="atif" id="tab-atif">Atıf</button>
@@ -298,6 +301,9 @@
       </section>
     </div>
 
+    <div id="translit" class="translit" hidden>
+      <div id="translit-keys" class="translit-keys"></div>
+    </div>
     <footer><span id="version" class="muted"></span></footer>
     <script type="module" src="taskpane.js"></script>
   </body>

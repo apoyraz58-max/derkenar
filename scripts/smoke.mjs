@@ -244,6 +244,15 @@ try {
   await page.waitForTimeout(600);
   if (shots) await page.screenshot({ path: `${shots}/kaynak.png`, fullPage: true });
 
+  // 2b. Transkripsiyon klavyesi writes where the cursor is.
+  await page.click("#translit-toggle");
+  await page.click('[data-field="title"]');
+  await page.keyboard.press("End");
+  await page.click('#translit-keys .tk:has-text("ḥ")');
+  if (!(await page.inputValue('[data-field="title"]')).endsWith("ḥ")) fail("transliteration key");
+  await page.keyboard.press("Backspace");
+  await page.click("#translit-toggle");
+
   // 3. New item by hand (manuscript) with İSNAD warnings.
   await page.click("#ed-back");
   await page.selectOption("#lib-new", "manuscript");
