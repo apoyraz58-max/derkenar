@@ -302,6 +302,47 @@ export async function unlinkAll(): Promise<number> {
   });
 }
 
+/**
+ * Deletes a citation from the text. When it is alone in its footnote or
+ * endnote (nothing else written there), the note goes too; otherwise only the
+ * citation, and the user's own words in the note stay.
+ */
+export async function deleteCitation(id: string): Promise<"note" | "citation" | "none"> {
+  return Word.run(async (context) => {
+    const tag = TAG_CITATION + id;
+    const sets: Word.NoteItemCollection[] = [];
+    if (footnotesSupported()) {
+      sets.push(context.document.body.footnotes, context.document.body.endnotes);
+      for (const n of sets) n.load("items");
+    }
+    const bodyControls = context.document.body.contentControls.getByTag(tag);
+    bodyControls.load("items");
+    await context.sync();
+    const notes = sets.flatMap((s) => s.items);
+    const checks = notes.map((n) => {
+      const ccs = n.body.contentControls.getByTag(tag);
+      ccs.load("items/text");
+      n.body.load("text");
+      return { n, ccs };
+    });
+    if (checks.length) await context.sync();
+    for (const { n, ccs } of checks) {
+      const cc = ccs.items[0];
+      if (!cc) continue;
+      const rest = n.body.text.replace(cc.text, "").replace(/[\s\u200b\u0002]+/g, "");
+      if (!rest) n.delete();
+      else cc.delete(false);
+      await context.sync();
+      return rest ? "citation" : "note";
+    }
+    const cc = bodyControls.items[0];
+    if (!cc) return "none";
+    cc.delete(false);
+    await context.sync();
+    return "citation";
+  });
+}
+
 /** Selects the n-th citation with this id (used by the document list). */
 export async function selectCitation(id: string): Promise<boolean> {
   return Word.run(async (context) => {

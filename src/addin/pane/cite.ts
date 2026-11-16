@@ -78,8 +78,13 @@ export function addToBasket(item: Item): void {
 }
 
 export function renderBasket(): void {
-  $("basket-section").hidden = S.basket.length === 0;
-  $("insert").textContent = S.editing ? "Atıfı güncelle" : "Atıf ekle";
+  // Editing: the section stays when every work is removed, so the citation can be deleted.
+  $("basket-section").hidden = S.basket.length === 0 && !S.editing;
+  const deleting = Boolean(S.editing) && S.basket.length === 0;
+  $("insert").textContent = deleting ? "Atıfı sil" : S.editing ? "Atıfı güncelle" : "Atıf ekle";
+  $("insert").classList.toggle("danger", deleting);
+  $("insert").classList.toggle("primary", !deleting);
+  $("preview").textContent = deleting ? "Atıf metinden silinecek. Dipnotta başka yazı yoksa dipnot da silinir." : $("preview").textContent;
   $("edit-bar").hidden = !S.editing;
   const ol = $("basket");
   ol.replaceChildren();
@@ -205,7 +210,20 @@ export function clearBasket(): void {
   renderResults();
 }
 
+/** Removes the citation under edit from the document (its note too when nothing else is in it). */
+export async function deleteEditing(): Promise<void> {
+  const id = S.editing;
+  if (!id) return;
+  await run("Atıf siliniyor", async () => {
+    const what = await serial(() => word.deleteCitation(id));
+    clearBasket();
+    await refresh(false, true);
+    setMessage(what === "note" ? "Atıf ve dipnotu silindi; sonraki atıflar güncellendi." : what === "citation" ? "Atıf silindi; dipnottaki diğer yazı yerinde." : "Atıf belgede bulunamadı.", what === "none" ? "warning" : "success");
+  });
+}
+
 export async function insert(): Promise<void> {
+  if (S.editing && !S.basket.length) return deleteEditing();
   if (!S.basket.length) {
     const top = results[cursor];
     if (!top) return;
@@ -306,4 +324,5 @@ export function wireCite(): void {
   $("insert").onclick = () => void insert();
   $("clear-basket").onclick = clearBasket;
   $("edit-new").onclick = clearBasket;
+  $("edit-delete").onclick = () => void deleteEditing();
 }

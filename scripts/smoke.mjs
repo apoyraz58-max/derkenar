@@ -118,7 +118,16 @@ const FAKE = String.raw`
       c.getByTag = (tag) => collection(bodyControls().filter((x) => x.tag === tag));
       return c;
     },
-    get footnotes() { return collection(doc.flow.filter((x) => x.fn).map((x) => ({ body: { contentControls: collection(x.fn.controls) } }))); },
+    get footnotes() {
+      return collection(doc.flow.filter((x) => x.fn).map((x) => {
+        const ccs = collection(x.fn.controls);
+        ccs.getByTag = (tag) => collection(x.fn.controls.filter((c) => c.tag === tag));
+        return {
+          body: { contentControls: ccs, get text() { return x.fn.controls.map((c) => c.text).join("") + x.fn.text; }, load() { return this; } },
+          delete() { doc.flow.splice(doc.flow.indexOf(x), 1); },
+        };
+      }));
+    },
     get endnotes() { return collection([]); },
   };
   const context = { document: { body, getSelection: () => selection }, sync: async () => undefined };
@@ -299,6 +308,18 @@ try {
   await waitNotes(() => window.__notes()[2] === "Gazzâlî, el-Müstasfâ min ʿilmi’l-uṣûl, 2/99.", "edit");
   await page.evaluate(() => window.__select(null));
 
+  // 5a. Delete a citation: remove its works in the edit pane, then "Atıfı sil" — its footnote goes too.
+  const count = (await notes()).length;
+  await page.evaluate(() => window.__select(window.__doc.flow.filter((x) => x.fn)[3].fn.controls[0]));
+  await page.waitForSelector("#edit-bar:not([hidden])");
+  while (await page.locator('#basket button[title="Çıkar"]').count()) await page.locator('#basket button[title="Çıkar"]').first().click();
+  if (!(await page.isVisible("#basket-section")) || (await page.textContent("#insert")) !== "Atıfı sil") fail("delete button missing after emptying the citation");
+  await page.click("#insert");
+  await waitNotes(() => true, "");
+  await page.waitForSelector("#message:has-text('Atıf ve dipnotu silindi')");
+  if ((await notes()).length !== count - 1) fail("footnote not deleted");
+  await page.evaluate(() => window.__select(null));
+
   // 5b. Cursor in a footnote right after a citation: the new work joins it with "; " (no new note).
   const before = (await notes()).length;
   await page.evaluate(() => { window.__doc.noteCursor = 0; window.__doc.noteGap = " "; });
@@ -331,7 +352,7 @@ try {
   const text = await page.evaluate(() => window.__text());
   if (!text.includes("# Kaynakça\n")) fail(`bibliography heading: ${text}`);
   if (!text.includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ min ʿilmi’l-uṣûl. nşr. Ali Nâşir. thk. Hamza b. Züheyr Hâfız.")) fail(`bibliography: ${text}`);
-  if ((await page.locator("#doc-citations li").count()) !== 6) fail("document list should show 6 citations");
+  if ((await page.locator("#doc-citations li").count()) !== 5) fail("document list should show 5 citations");
   if (shots) await page.screenshot({ path: `${shots}/belge.png`, fullPage: true });
 
   // 7b. Zotero features in the library.
