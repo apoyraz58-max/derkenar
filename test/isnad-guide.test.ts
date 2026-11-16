@@ -91,6 +91,36 @@ describe("a.mlf. yalnız farklı eserlerde", () => {
   });
 });
 
+describe("İSNAD 2 kılavuzu: Kur’ân ve Kitâb-ı Mukaddes (s. 79-86)", () => {
+  it("meâl-basılı: sonraki atıfta yalnız sûre ve âyet (s. 79)", () => {
+    const item = work("Kur’ân-ı Kerîm Meâli");
+    expect(citeMode(item)).toBe("kuran");
+    const r = render(item, { sure: "8", ayet: "2" }, { sure: "8", ayet: "6" });
+    expect(r.first).toBe("Kur’ân-ı Kerîm Meâli, çev. Halil Altuntaş - Muzaffer Şahin (Ankara: Diyanet İşleri Başkanlığı Yayınları, 2009), el-Enfâl 8/2.");
+    expect(r.later).toBe("el-Enfâl 8/6.");
+    expect(r.bib).toBe("Kur’ân-ı Kerîm Meâli. çev. Halil Altuntaş - Muzaffer Şahin. Ankara: Diyanet İşleri Başkanlığı Yayınları, 3. Basım, 2009.");
+  });
+  it("meâl-web (s. 83)", () => {
+    const r = render(work("Kur’ân Yolu"), { sure: "2", ayet: "12" }, { sure: "2", ayet: "12" });
+    expect(r.first).toBe("Kur’ân Yolu (Erişim 16 Nisan 2018), el-Bakara 2/12.");
+    expect(r.later).toBe("el-Bakara 2/12.");
+    expect(r.bib).toBe("Kur’ân Yolu. Erişim 16 Nisan 2018. https://kuran.diyanet.gov.tr");
+  });
+  it("Kitâb-ı Mukaddes-basılı (s. 84)", () => {
+    const item = work("Kitabı Mukaddes");
+    expect(citeMode(item)).toBe("incil");
+    const r = render(item, { kitap: "Yar.", bab: "1", cumle: "12" }, { kitap: "Yar.", bab: "1", cumle: "12" });
+    expect(r.first).toBe("Kitabı Mukaddes (İstanbul: Kitabı Mukaddes Şirketi, 2003), Yar.1:12.");
+    expect(r.later).toBe("Yar.1:12.");
+    expect(r.bib).toBe("Kitabı Mukaddes. İstanbul: Kitabı Mukaddes Şirketi, 2. Basım, 2003.");
+  });
+  it("Kitâb-ı Mukaddes-web (s. 86)", () => {
+    const r = render(work("Kitab-ı Mukaddes"), { kitap: "Yar.", bab: "1", cumle: "12" }, { kitap: "Yar.", bab: "1", cumle: "12" });
+    expect(r.first).toBe("Kitab-ı Mukaddes (Erişim 12 Temmuz 2019), Yar.1:12.");
+    expect(r.later).toBe("Yar.1:12.");
+  });
+});
+
 describe("İSNAD 2 kılavuzu: türler", () => {
   it("kitap-elektronik: yayın formatı, b.y. eklenmez (s. 72)", () => {
     const r = render(work("Amisos Mozaiği"), { locator: "44" }, { locator: "98" });

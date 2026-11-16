@@ -2,11 +2,12 @@
  * İSNAD citation systems that are not "cilt/sayfa": hadith collections cited
  * by kitâb and bâb or hadith number, dictionaries cited by madde.
  */
+import { SURES } from "./scripture.js";
 import { fold } from "./search.js";
 import type { CiteRef } from "./types.js";
 import type { Item } from "./zotero.js";
 
-export type CiteMode = "normal" | "hadis-bab" | "hadis-no" | "hadis-cilt" | "sozluk";
+export type CiteMode = "normal" | "hadis-bab" | "hadis-no" | "hadis-cilt" | "sozluk" | "kuran" | "incil";
 
 export const CITE_MODES: readonly (readonly [CiteMode, string])[] = [
   ["normal", "Cilt/sayfa (olağan)"],
@@ -14,6 +15,8 @@ export const CITE_MODES: readonly (readonly [CiteMode, string])[] = [
   ["hadis-no", "Hadis: “Kitâb”, Hadis no (Müslim, Muvatta)"],
   ["hadis-cilt", "Hadis: Cilt/sayfa (Müsned ve diğerleri)"],
   ["sozluk", "Sözlük: “Madde”, cilt/sayfa"],
+  ["kuran", "Kur’ân meâli: Sûre no/Âyet (el-Enfâl 8/2)"],
+  ["incil", "Kitâb-ı Mukaddes: Kitap kısaltması Bab:Cümle (Yar.1:12)"],
 ];
 
 const BAB = ["buhari", "ebu davud", "ebu davud", "ibn mace", "ibni mace", "tirmizi", "nesai", "darimi"];
@@ -25,6 +28,9 @@ export function citeMode(item: Item | undefined): CiteMode {
   if (!item) return "normal";
   if (item.citeMode) return item.citeMode as CiteMode;
   if (item.itemType === "dictionaryEntry" && !item.fields.title?.trim()) return "sozluk";
+  const t = fold(`${item.fields.title ?? ""} ${item.fields.shortTitle ?? ""}`);
+  if (/\bkur ?[' ]?an\b|\bkuran\b|\bmeal|\bqur/.test(t)) return "kuran";
+  if (/mukaddes|kutsal kitap|\bbible\b|\bincil\b|\btevrat\b/.test(t)) return "incil";
   if (item.itemType !== "book") return "normal";
   const author = fold(item.creators.find((c) => c.creatorType === "author")?.lastName ?? item.creators.find((c) => c.creatorType === "author")?.name ?? "").replace(/-/g, " ");
   const title = fold(item.fields.title ?? "");
@@ -40,6 +46,17 @@ export function citeMode(item: Item | undefined): CiteMode {
  * work's title in later notes ("Buhârî, “Menâḳıb”, 24").
  */
 export function composeLocator(r: CiteRef): { locator?: string; label?: string } | null {
+  // Kur’ân and the Bible: CSL "verse" — the İSNAD style then prints only the place in later notes ("el-Enfâl 8/6.").
+  if (r.sure) {
+    const s = SURES.find(([n]) => String(n) === r.sure);
+    const ayet = r.ayet?.trim();
+    return { locator: `${s ? s[2] : r.sure} ${s ? s[0] : ""}${ayet ? `/${ayet}` : ""}`.replace(/\s+/g, " ").replace(" /", "/").trim(), label: "verse" };
+  }
+  if (r.kitap?.trim()) {
+    const bab = r.bab?.trim();
+    const cumle = r.cumle?.trim();
+    return { locator: `${r.kitap.trim()}${bab ?? ""}${cumle ? `:${cumle}` : ""}`, label: "verse" };
+  }
   const vp = (vol?: string, page?: string) => (vol && page ? `${vol}/${page}` : (page ?? vol ?? ""));
   if (r.kitab?.trim()) {
     const n = r.bab?.trim();

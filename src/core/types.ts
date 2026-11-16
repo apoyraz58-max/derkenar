@@ -52,6 +52,12 @@ export interface CiteRef {
   paren?: string;
   /** Dictionary: madde ("delîl"). */
   madde?: string;
+  /** Kur’ân: sûre number and âyet ("8", "2" → el-Enfâl 8/2). */
+  sure?: string;
+  ayet?: string;
+  /** Kitâb-ı Mukaddes: book abbreviation, bab in `bab`, cümle ("Yar.", "1", "12" → Yar.1:12). */
+  kitap?: string;
+  cumle?: string;
   "author-only"?: boolean;
 }
 

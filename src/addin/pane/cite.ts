@@ -10,6 +10,7 @@ import { type Item, containerOf, creatorLine, isNoteItem, itemTypeLabel, titleOf
 import * as word from "../word.js";
 import { citedKeys, refresh } from "./document.js";
 import { citeMode } from "../../core/isnadmodes.js";
+import { BIBLE_BOOKS, SURES } from "../../core/scripture.js";
 import { parseQuick } from "../../core/search.js";
 import { $, S, doc, getRenderer, h, run, serial, setMessage, showView, work } from "./core.js";
 
@@ -149,6 +150,22 @@ function locatorRow(
       return h("div", {}, h("div", { class: "b-loc three-even" }, box("kitab", "Kitâb (ör. Ticârât)"), box("bab", "Hadis no"), box("paren", "Cilt/sayfa")), hint("İSNAD: “Kitâb”, Hadis no. Cilt/sayfa isteğe bağlı, parantez içinde yazılır."));
     case "hadis-cilt":
       return h("div", {}, h("div", { class: "b-loc three-even" }, p.vol, p.loc, box("hadisNo", "Hadis no")), hint("İSNAD: Cilt/Sayfa (No. hadis)."));
+    case "kuran": {
+      const sel = h("select", { "aria-label": "Sûre", "data-f": "sure" }, h("option", { value: "" }, "Sûre seçin"), ...SURES.map(([n, , short]) => h("option", { value: String(n), selected: ref.sure === String(n) }, `${n} ${short}`)));
+      sel.onchange = () => p.set("sure", sel.value);
+      return h("div", {}, h("div", { class: "b-loc" }, sel, box("ayet", "Âyet (ör. 2 veya 2-4)")), hint("İSNAD: Sûre adı sûre no/âyet (el-Enfâl 8/2). Sonraki atıflarda yalnız sûre ve âyet yazılır."));
+    }
+    case "incil": {
+      const sel = h(
+        "select",
+        { "aria-label": "Kitap", "data-f": "kitap" },
+        h("option", { value: "" }, "Kitap seçin"),
+        h("optgroup", { label: "Türkçe" }, ...BIBLE_BOOKS.map(([tr, ab]) => h("option", { value: ab, selected: ref.kitap === ab }, `${ab} ${tr}`))),
+        h("optgroup", { label: "İngilizce" }, ...BIBLE_BOOKS.map(([, , en, ab]) => h("option", { value: ab, selected: ref.kitap === ab }, `${ab} ${en}`))),
+      );
+      sel.onchange = () => p.set("kitap", sel.value);
+      return h("div", {}, h("div", { class: "b-loc three-even" }, sel, box("bab", "Bab"), box("cumle", "Cümle (ör. 10-12)")), hint("İSNAD: Kitap kısaltması Bab:Cümle (Yar.1:12). Sonraki atıflarda yalnız bu yazılır."));
+    }
     case "sozluk":
       return h("div", {}, h("div", { class: "b-loc three-even" }, box("madde", "Madde (ör. delîl)"), p.vol, p.loc), hint("İSNAD: “Madde”, cilt/sayfa. Sonraki atıflarda sözlüğün adı yazılmaz; kaynakçada madde adı yer almaz."));
     default:

@@ -1,0 +1,1358 @@
+[
+ {
+  "no": "2.1",
+  "title": "Kitap-Yazarsız ve Anonim",
+  "page": 68,
+  "first": [
+   "İş Kanunları ve İlgili Mevzuatı (Ankara: Adalet Yayınevi, 2014), 12.",
+   "Resāʾilü İḫvāni’ṣ-Ṣafā ve ḫullāni’l-vefāʾ, nşr. Butrus el-Bustânî (Beyrut: y.y., 1376-1377/1957), 1/45."
+  ],
+  "later": [
+   "İş Kanunları ve İlgili Mevzuatı, 32.",
+   "Resāʾilü İḫvāni’ṣ-Ṣafā, 1/45-46."
+  ],
+  "bib": [
+   "İş Kanunları ve İlgili Mevzuatı. 2 Cilt. Ankara: Adalet Yayınevi, 2. Basım, 2014.",
+   "Resāʾilü İḫvāni’ṣ-Ṣafā ve ḫullāni’l-vefāʾ. nşr. Butrus el-Bustânî. 4 Cilt. Beyrut: y.y., 1376-1377/1957."
+  ],
+  "notes": []
+ },
+ {
+  "no": "2.2",
+  "title": "Kitap-Tek Yazarlı",
+  "page": 68,
+  "first": [
+   "Afet İnan, Piri Reis'in Hayatı ve Eserleri (Ankara: Türk Tarih Kurumu, 2018), 22.",
+   "Fuat Sezgin, Geschichte des arabischen Schrifttums (Leiden: Brill, 1967-2015), 1/44-45."
+  ],
+  "later": [
+   "İnan, Piri Reis’in Hayatı ve Eserleri, 34.",
+   "Sezgin, GAS, 1/48-56."
+  ],
+  "bib": [
+   "İnan, Afet. Piri Reis’in Hayatı ve Eserleri. Ankara: Türk Tarih Kurumu, 2. Basım, 2018.",
+   "Sezgin, Fuat. Geschichte des arabischen Schrifttums. 17 Cilt. Leiden: Brill, 1967-2015."
+  ],
+  "notes": []
+ },
+ {
+  "no": "2.3",
+  "title": "Kitap-İki Yazarlı",
+  "page": 69,
+  "first": [
+   "Arı İnan - İsmet Parmaksızoğlu, Düşünceleriyle Atatürk (Ankara: Türk Tarih Kurumu Yayınları, 2018), 54-58.",
+   "Ömer Lütfi Barkan - Ekrem Hakkı Ayverdi, İstanbul Vakıfları Tahrir Defteri 953 Tarihli (İstanbul: İstanbul Fetih Cemiyeti, 1973), 520."
+  ],
+  "later": [
+   "İnan - Parmaksızoğlu, Düşünceleriyle Atatürk, 62.",
+   "Barkan - Ayverdi, İstanbul Vakıfları Tahrir Defteri, 159."
+  ],
+  "bib": [
+   "Barkan, Ömer Lütfi - Ayverdi, Ekrem Hakkı. İstanbul Vakıfları Tahrir Defteri 953 Tarihli. İstanbul: İstanbul Fetih Cemiyeti, 2. Basım, 1973.",
+   "İnan, Arı - Parmaksızoğlu, İsmet. Düşünceleriyle Atatürk. Ankara: Türk Tarih Kurumu Yayınları, 2018."
+  ],
+  "notes": [
+   "❖ Yazar isimlerinin arasında, öncesi ve sonrasında boşluk bırakılarak “tire/kısa çizgi işareti (-)” kullanılır."
+  ]
+ },
+ {
+  "no": "2.4",
+  "title": "Kitap-Çok Yazarlı",
+  "page": 70,
+  "first": [
+   "Bekir Topaloğlu vd., İslam’da İnanç Esasları (İstanbul: MÜ İlâhiyat Fakültesi Vakfı Yayınları, 1998), 25.",
+   "Mitchell L. Eisen vd., Memory and Suggestibility in the Forensic Interview (Mahwah, NJ: L. Erlbaum Assoicates, 2002), 65."
+  ],
+  "later": [
+   "Topaloğlu vd., İslam’da İnanç Esasları, 36.",
+   "Eisen vd., Memory and Suggestibility in the Forensic Interview, 67."
+  ],
+  "bib": [
+   "Eisen, Mitchell L. vd. Memory and Suggestibility in the Forensic Interview. Mahwah, NJ: L. Erlbaum Associates, 2002.",
+   "Topaloğlu, Bekir vd. İslam’da İnanç Esasları. İstanbul: MÜ İlâhiyat Fakültesi Vakfı Yayınları, 1998."
+  ],
+  "notes": [
+   "❖ Yazar sayısı üç veya daha fazla ise dipnotta ilk yazarın adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk yazarın soyadı ve adı belirtildikten sonra vd. kısaltması yazılır. EndNote ve Zotero gibi programlara bu türde bir yayın kaydedilirken örneklerde “x” ile belirtilen “Cilt Sayısı/Number of Volumes” ile “Basım/Edition” alanlarına, rakam ile cilt ve baskı sayısı yazılır. Nokta ve basım ifadesi (x. Basım) yazılmaz. İSNAD Dipnotlu                                                                               71"
+  ]
+ },
+ {
+  "no": "2.5",
+  "title": "Kitap-Editörlü",
+  "page": 71,
+  "first": [
+   "Mete Kaan Kaynar (ed.), Türkiye’nin 1950’li Yılları (İstanbul: İletişim Yayınları, 2015), 7.",
+   "Suraiya Faroqhi (ed.), Türkiye Tarihi 1603-1839, çev. Fethi Aytuna (İstanbul: Kitap Yayınevi, 2011), 3/6.",
+   "Ahmet Hamdi Furat vd. (ed.), Sahn-ı Semân’dan Dârülfünûn’a Osmanlı’da İlim ve Fikir Dünyası (Âlimler, Müesseseler ve Fikrî Eserler)-XVIII. Yüzyıl (İstanbul: Zeytinburnu Belediyesi Kültür Yayınları, 2018), 5-10."
+  ],
+  "later": [
+   "Kaynar, Türkiye’nin 1950’li Yılları, 7.",
+   "Faroqhi, Türkiye Tarihi 1603-1839, 3/6.",
+   "Furat vd., Sahn-ı Semân’dan Dârülfünûn’a Osmanlı’da İlim ve Fikir Dünyası, 5-10."
+  ],
+  "bib": [
+   "Faroqhi, Suraiya (ed.). Türkiye Tarihi 1603-1839. çev. Fethi Aytuna. 3 Cilt. İstanbul: Kitap Yayınevi, 2. Basım, 2011.",
+   "Furat, Ahmet Hamdi vd. (ed.). Sahn-ı Semân’dan Dârülfünûn’a Osmanlı’da İlim ve Fikir Dünyası (Âlimler, Müesseseler ve Fikrî Eserler)-XVIII. Yüzyıl. 2 Cilt. İstanbul: Zeytinburnu Belediyesi Kültür Yayınları, 2018.",
+   "Kaynar, Mete Kaan (ed.). Türkiye’nin 1950’li Yılları. İstanbul: İletişim Yayınları, 2015."
+  ],
+  "notes": [
+   "❖ Editörlü kitabın tamamına veya editörün yazdığı kısımlara “Kitap-Editörlü” kapsamında atıf yapılır. Editörlü kitabın içindeki bölümlere ise “Kitap Bölümü” türünde atıf yapılır.",
+   "❖ Editör sayısı üç veya daha fazla ise dipnotta ilk editörün adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk editörün soyadı ve adı belirtildikten sonra vd. kısaltması yazılır."
+  ]
+ },
+ {
+  "no": "2.6",
+  "title": "Kitap-Elektronik",
+  "page": 72,
+  "first": [
+   "Derya Şahin, Amisos Mozaiği (PDF: Kültür ve Turizm Bakanlığı Yayınları, 2004), 44.",
+   "Şule Yüksel Şenler, Huzur Sokağı (Epub: Timaş Yayınları, 2016), 56."
+  ],
+  "later": [
+   "Şahin, Amisos Mozaiği, 98.",
+   "Şenler, Huzur Sokağı, 59-60."
+  ],
+  "bib": [
+   "Şahin, Derya. Amisos Mozaiği. PDF: Kültür ve Turizm Bakanlığı Yayınları, 2004. http://www.kulturvarliklari.gov.tr/Eklenti/38967,amis os-mozaigi.pdf",
+   "Şenler, Şule Yüksel. Huzur Sokağı. Epub: Timaş Yayınları, 2016."
+  ],
+  "notes": []
+ },
+ {
+  "no": "2.7",
+  "title": "Kitap-Çeviri",
+  "page": 73,
+  "first": [
+   "Francis Dvornik, Konsiller Tarihi, İznik’ten II. Vatikan’a, çev. Mehmet Aydın (Ankara: Türk Tarih Kurumu Yayınları, 1990), 11.",
+   "Abdülhalim Mahmud, Muhâsibî Hayatı Eserleri Fikirleri, çev. M. Beşir Eryarsoy (İstanbul: İnsan Yayınları, 2005), 33."
+  ],
+  "later": [
+   "Dvornik, Konsiller Tarihi, 23.",
+   "Mahmud, Muhâsibî Hayatı Eserleri Fikirleri, 34-54."
+  ],
+  "bib": [
+   "Dvornik, Francis. Konsiller Tarihi İznik’ten II. Vatikan’a. çev. Mehmet Aydın. Ankara: Türk Tarih Kurumu Yayınları, 1990. Mahmud, Abdülhalim. Muhâsibî Hayatı Eserleri Fikirleri. çev. M. Beşir Eryarsoy. İstanbul: İnsan Yayınları, 2005."
+  ],
+  "notes": [
+   "❖ Bir eserin farklı çevirilerinin birlikte kullanılması durumunda, esere yapılan ikinci ve sonraki atıflarda çevirmen ismi belirtilir. Örnek: Dvornik, Konsiller Tarihi, çev. Mehmet Aydın, 23.",
+   "❖ Türkçeye çevrilerek yayımlanan kitapların kapaklarında yer alan isimler aynen korunur. Örnek: İbn Acîbe, Bahrü’l-Medîd fî Tefsiri’l-Kur’âni’l-Mecîd"
+  ]
+ },
+ {
+  "no": "2.8",
+  "title": "Kitap-Neşir",
+  "page": 74,
+  "first": [
+   "Taşköprizâde Ahmed Efendi, Miftâḥu’s-saʿâde ve miṣbâḥu’s-siyâde fî mevżûʿâti’l-ʿulûm, nşr. Abdülvehhâb Ebü’n-Nûr - Kâmil Kâmil Bekrî (Kahire: Dâru’l-Kütübi’l-Hadîse, 1968), 2/142.",
+   "Sa‘deddîn et-Teftâzânî, Şerḥu’l-ʿAḳāʾidi’n-Nesefiyye, nşr. Ahmed Hicâzî es-Sekkā (Kahire: Mektebetü’l-Külliyyâti’l-Ezheriyye, 1408/1988), 43."
+  ],
+  "later": [
+   "Taşköprizâde Ahmed Efendi, Miftâḥu’s-saʿâde, 2/162.",
+   "Teftâzânî, Şerḥu’l-ʿAḳāʾid, 73."
+  ],
+  "bib": [
+   "Taşköprizâde Ahmed Efendi. Miftâḥu’s-saʿâde ve miṣbâḥu’s-siyâde fî mevżûʿâti’l-ʿulûm. nşr. Abdülvehhâb Ebü’n-Nûr - Kâmil Kâmil Bekrî. 3 Cilt. Kahire: Dâru’l-Kütübi’l-Hadîse, 3. Basım, 1968.",
+   "Teftâzânî, Sa‘deddîn. Şerḥu’l-ʿAḳāʾidi’n-Nesefiyye. nşr. Ahmed Hicâzî es-Sekkā. Kahire: Mektebetü’l-Külliyyâti’l-Ezheriyye, 1408/1988."
+  ],
+  "notes": [
+   "❖ Bir eserin farklı neşirlerinin birlikte kullanılması durumunda, esere yapılan ikinci ve sonraki atıflarda neşredenin ismi belirtilir. Örnek: Teftâzânî, Şerḥu’l-ʿAḳāʾid, nşr. Ahmed Hicâzî es-Sekkā, 73. Zotero gibi programlara yazar adı kaydedilirken Soyad, Ad şeklinde kaydedilir. Arap müelliflerin isimleri kaydedilirken Yazar Adı alanına “Künyesi Adı Nisbesi Lakabı”, Soyadı alanına ise “Meşhur Adı” yazılır. Örnek: Buhârî, Ebû Abdillâh Muhammed b. İsmail el- Gazzâlî, Ebû Hâmid Muhammed el- EndNote programında “Neşreden”, “Neşreden” olarak girilir.           Zotero’da ise “İlave/Ekstra” alanına girilir. İSNAD Dipnotlu                                                                              75"
+  ]
+ },
+ {
+  "no": "2.10",
+  "title": "Kitap-Sadeleştirilen",
+  "page": 76,
+  "first": [
+   "Ahmed Cevdet Paşa, Sadeleştirilmiş Mecelle, sad. İbrahim Ural -Salih Özcan (İstanbul: Fey Vakfı, 1995), 420."
+  ],
+  "later": [
+   "Ahmed Cevdet Paşa, Sadeleştirilmiş Mecelle, 234-235."
+  ],
+  "bib": [
+   "Ahmed Cevdet Paşa. Sadeleştirilmiş Mecelle. sad. İbrahim Ural -Salih Özcan. İstanbul: Fey Vakfı, 1995."
+  ],
+  "notes": [
+   "❖ Bir eserin farklı sadeleştirmelerinin birlikte kullanılması durumunda, esere yapılan ikinci ve sonraki atıflarda sadeleştiren ismi belirtilir. Örnek: Ahmed Cevdet Paşa, Sadeleştirilmiş Mecelle, sad. İbrahim Ural - Salih Özcan, 234-235. EndNote programında “Sadeleştiren”, “Sadeleştiren” alanına girilir. Zotero’da ise “İlave/Ekstra” alanına girilir. EndNote ve Zotero gibi programlara bu türde bir yayın kaydedilirken örneklerde “x” ile belirtilen “Cilt Sayısı/Number of Volumes” ile “Basım/Edition” alanlarına, rakam ile cilt ve baskı sayısı yazılır. Eserin ilk baskısının “1. Basım” şeklinde belirtilmesine gerek yoktur. Ömer Seyfettin, Ahmed Cevdet Paşa vb. ad-soyad ayrımı yapılamayan yazar adları EndNote’a isimden sonra virgül (,) eklenerek kaydedilir. Zotero’da ise ad alanına olduğu gibi yazılır. EndNote Ad Alanı               : Ömer Seyfettin, Ahmed Cevdet Paşa, Zotero Ad Soyad Alanı          : Ömer Seyfettin Ahmed Cevdet Paşa İSNAD Dipnotlu                                                                           77"
+  ]
+ },
+ {
+  "no": "3.1",
+  "title": "Kitap Bölümü-Editörlü Eserde",
+  "page": 77,
+  "first": [
+   "Ulrich Rudolph, “Mâtürîdîliğin Ortaya Çıkışı”, çev. Ali Dere, İmam Mâturîdî ve Mâturidilik, haz. Sönmez Kutlu (Ankara: Kitâbiyât Yayınları, 2003), 297.",
+   "John D. Kelly, “Seeing Red: Mao Fetishism, Pax Americana and the Moral Economy of War”, Anthropology and Global Counterinsurgency, ed. John D. Kelly vd. (Chicago: University of Chicago Press, 2010), 77."
+  ],
+  "later": [
+   "Rudolph, “Mâtürîdîliğin Ortaya Çıkışı”, 298-299.",
+   "Kelly, “Seeing Red”, 81-82."
+  ],
+  "bib": [
+   "Kelly, John D. “Seeing Red: Mao Fetishism, Pax Americana and the Moral Economy of War”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.",
+   "Rudolph, Ulrich. “Mâtürîdîliğin Ortaya Çıkışı”. çev. Ali Dere. İmam Mâturîdî ve Mâturidilik. haz. Sönmez Kutlu. 295-304. Ankara: Kitâbiyât Yayınları, 2003."
+  ],
+  "notes": [
+   "❖ Editöryal bir kitapta yer alan ön söz, takdim, sunuş ve ekler gibi kısımlar da bu şekilde kaynak gösterilir.",
+   "❖ Editör sayısı üç veya daha fazla ise dipnotta ilk editörün adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk editörün soyadı ve adı belirtildikten sonra vd. kısaltması yazılır."
+  ]
+ },
+ {
+  "no": "3.2",
+  "title": "Kitap Bölümü-Neşredilen Eserde",
+  "page": 78,
+  "first": [
+   "Hişam İbrahim Mahmud, “Mukaddime”, Telḫîṣü’l-edille li-ḳavâʿidi’t-tevḥîd, mlf. Ebû İshâk İbrâhim ez-Zâhid es-Saffâr (Kahire: Dâru’s-Selâm, 1431/2010), 14."
+  ],
+  "later": [
+   "Mahmud, “Mukaddime”, 34."
+  ],
+  "bib": [
+   "Mahmud, Hişam İbrahim. “Mukaddime”. Telḫîṣü’l-edille li-ḳavâʿidi’t-tevḥîd. mlf. Ebû İshâk İbrâhim ez-Zâhid es-Saffâr. 5-44. Kahire: Dâru’s-Selâm, 1431/2010."
+  ],
+  "notes": [
+   "❖ Tahkik edilen veya neşredilen bir kitapta yer alan mukaddime, takdim ve ekler gibi kısımlar da kitap bölümü olarak kaynak gösterilir. İSNAD Dipnotlu                                                                                                                                      79"
+  ]
+ },
+ {
+  "no": "4.1",
+  "title": "Meâl-Basılı",
+  "page": 79,
+  "first": [
+   "Kur’ân-ı Kerîm Meâli, çev. Halil Altuntaş - Muzaffer Şahin (Ankara: Diyanet İşleri Başkanlığı Yayınları, 2009), el-Enfâl 8/2.",
+   "Kur’an Mesajı: Meal-Tefsir, çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk (Ankara: İşaret Yayınları, 2002), el-Bakara 2/4."
+  ],
+  "later": [
+   "el-Enfâl 8/2.",
+   "el-Bakara 2/14."
+  ],
+  "bib": [
+   "Kur’ân-ı Kerîm Meâli. çev. Halil Altuntaş - Muzaffer Şahin. Ankara: Diyanet İşleri Başkanlığı Yayınları, 3. Basım, 2009. Kur’an Mesajı: Meal-Tefsir. çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk. Ankara: İşaret Yayınları, 2002."
+  ],
+  "notes": [
+   "❖ Kur’an-ı Kerîm | al-Qurʾān al-Karīm",
+   "❖ Kur’ân | The Qurʾān",
+   "❖ Âyet atıflarında sûre adlarının yazımında ortaya çıkabilecek yazım hatalarını engellemek ve yazım birliği sağlamak için sûre adlarının Türkçe, Arapça ve İngilizce yazılışları aşağıda tablo olarak sunulmuştur No     Sûre Adı            Kısa             Arapça             Kısa     İngilizce             Kısa 1      Fâtiha Sûresi       el-Fâtiha       ‫سورة الْفاتحة‬        ‫ الْفاتحة‬Sūrat al-Fātiḥa      al-Fātiḥa 2      Bakara Sûresi       el-Bakara         ‫سورة الْبقرة‬         ‫ الْبقرة‬Sūrat al-Baqara     al-Baqara 3      Âl-i İmrân Sûresi   Âl-i İmrân    ‫سورة اّٰل عمْرّٰن‬     ‫ اّٰل عمْرّٰن‬Sūrat Āl ʿImrān   Āl ʿImrān 4      Nisâ Sûresi         en-Nisâ          ‫سورة النَّساء‬        ‫ النَّساء‬Sūrat al-Nisāʾ      al-Nisāʾ 5      Mâide Sûresi        el-Mâide        ‫سورة الْمائدة‬        ‫ الْمائدة‬Sūrat al-Māʾida      al-Māʾida 6      En’âm Sûresi        el-En’âm         ‫سورة الْانْعام‬       ‫ الْانْعام‬Sūrat al-Anʿām     al-Anʿām 7      A’râf Sûresi        el-A’râf      ‫سورة الْاعْراف‬        ‫ الْاعْراف‬Sūrat al-Aʿrāf       al-Aʿrāf 8      Enfâl Sûresi        el-Enfâl        ‫سورة الْانْفال‬       ‫ الْانْفال‬Sūrat al-Anfāl      al-Anfāl 9      Tevbe Sûresi        et-Tevbe          ‫سورة التَّوْبة‬      ‫ التَّوْبة‬Sūrat al-Tawba     al-Tawba 10     Yûnus Sûresi        Yûnus             ‫سورة يونس‬           ‫ يونس‬Sūrat Yūnus             Yūnus 11     Hûd Sûresi          Hûd                ٍ‫سورة هود‬           ٍ‫ هود‬Sūrat Hūd              Hūd 12     Yûsuf Sûresi        Yûsuf            ‫سورة يوسف‬            ‫ يوسف‬Sūrat Yūsuf             Yūsuf 13     Ra’d Sûresi         er-Ra’d           ‫سورة الرَّعْد‬       ‫ الرَّعْد‬Sūrat al-Raʿd       al-Raʿd 14     İbrâhîm Sûresi      İbrâhîm          ‫سورة ابْ ّٰره۪يم‬     ‫ ابْ ّٰره۪يم‬Sūrat Ibrāhīm    Ibrāhīm 15     Hicr Sûresi         el-Hicr         ‫سورة الْحجْر‬         ‫ الْحجْر‬Sūrat al-Ḥijr         al-Ḥijr 16     Nahl Sûresi         en-Nahl          ‫سورة النَّحْل‬        ‫ النَّحْل‬Sūrat al-Naḥl       al-Naḥl 17     İsrâ Sûresi         el-İsrâ         ‫سورة الْاسْراۤء‬      ‫ الْاسْراۤء‬Sūrat al-Isrāʾ     al-Isrāʾ 18     Kehf Sûresi         el-Kehf        ‫سورة الْكهْف‬          ‫ الْكهْف‬Sūrat al-Kahf         al-Kahf 19     Meryem Sûresi       Meryem             ‫سورة مرْيم‬          ‫ مرْيم‬Sūrat Maryam          Maryam 20     Tâhâ Sûresi         Tâhâ                 ‫سورة ّٰط ّٰه‬       ّٰ‫ ّٰطه‬Sūrat Ṭā Hā         Ṭā Hā 21     Enbiyâ Sûresi       el-Enbiyâ       ‫سورة الْانْبياء‬      ‫ الْانْبياء‬Sūrat al-Anbiyāʾ   al-Anbiyāʾ 22     Hac Sûresi          el-Hac            َّ‫سورة الْحج‬        ‫ الْحج‬Sūrat al-Ḥajj          al-Ḥajj 23     Mü’minûn Sûresi     el-Mü’minûn   ‫سورة الْمؤْمنون‬       ‫ الْمؤْمنون‬Sūrat al-Muʾminūn   al-Muʾminūn 24     Nûr Sûresi          Nûr                ‫سورة النَّور‬        ‫ النَّور‬Sūrat al-Nūr        al-Nūr 25     Furkān Sûresi       el-Furkān       ‫سورة الْفرْقان‬       ‫ الْفرْقان‬Sūrat al-Furqān     al-Furqān 26     Şuarâ Sûresi       eş-Şuarâ       ‫سورة الشَّعراء‬       ‫ الشَّعراء‬Sūrat al-Shuʿarāʾ   al-Shuʿarāʾ 27     Neml Sûresi         en-Neml           ‫سورة النَّمْل‬       ‫ النَّمْل‬Sūrat al-Naml       al-Naml 28     Kasas Sûresi        el-Kasas       ‫سورة الْقصص‬          ‫ الْقصص‬Sūrat al-Qaṣaṣ          al-Qaṣaṣ 29     Ankebût Sûresi      el-Ankebût    ‫سورة الْعنْكبوت‬       ‫ الْعنْكبوت‬Sūrat al-ʿAnkabūt   al-ʿAnkabūt 30     Rûm Sûresi          er-Rûm             ‫سورة الرَّوم‬        ‫ الرَّوم‬Sūrat al-Rūm        al-Rūm 31     Lokmân Sûresi       Lokmân           ‫سورة لقْمّٰان‬        ‫ لقْمّٰان‬Sūrat Luqmān        Luqmān 32     Secde Sûresi        es-Secde       ‫سورة السَّجْدة‬       ‫ السَّجْدة‬Sūrat al-Sajda       al-Sajda 33     Ahzâb Sûresi        el-Ahzâb      ‫سورة الْاحْزاب‬        ‫ الْاحْزاب‬Sūrat al-Aḥzāb       al-Aḥzāb 34     Sebe’ Sûresi        Sebe’               ٍ‫سورة سبا‬           ‫ سبا‬Sūrat Sabāʾ            Sabāʾ 35     Fâtır Sûresi        Fâtır              ‫سورة فاط ٍر‬         ‫ فاطر‬Sūrat Fāṭir            Fāṭir 36     Yâsîn Sûresi        Yâsîn               ۤ‫سورة يّٰس‬          ۤ‫ يّٰس‬Sūrat Yā Sīn         Yā Sīn 37     Sâffât Sûresi       es-Sâffât     ‫سورة الصَّاۤفَّات‬     ‫ الصَّاۤفَّات‬Sūrat al-Ṣāffāt   al-Ṣāffāt 38     Sâd Sûresi          Sâd                 ‫ص‬ ۤ ‫سورة‬              ۤ‫ ص‬Sūrat Ṣād               Ṣād 39     Zümer Sûresi        ez-Zümer           ‫سورة الزَّمر‬        ‫ الزَّمر‬Sūrat al-Zumar      al-Zumar İSNAD Dipnotlu                                                                                                    81 No    Sûre Adı            Kısa               Arapça              Kısa     İngilizce                   Kısa 40    Mü’min Sûresi       el-Mü’min          ‫سورة الْمؤْمن‬         ‫ الْمؤْمن‬Sūrat al-Muʾmin           al-Muʾmin 41    Fussilet Sûresi     Fussilet           ْ‫سورة فصَّلت‬          ‫ فصَّلت‬Sūrat Fuṣṣilat              Fuṣṣilat 42    Şûrâ Sûresi        eş-Şûrâ          ‫سورة الشَّورّٰى‬       ‫ الشَّورّٰى‬Sūrat al-Shūrā           al-Shūrā 43    Zuhruf Sûresi       ez-Zuhruf         ‫سورة الزَّخْرف‬        ‫ الزَّخْرف‬Sūrat al-Zukhruf          al-Zukhruf 44    Duhân Sûresi        ed-Duhân          ‫سورة الدَّخان‬         ‫ الدَّخان‬Sūrat al-Dukhān            al-Dukhān 45    Câsiye Sûresi       el-Câsiye          ‫سورة الْجاثية‬         ‫ الْجاثية‬Sūrat al-Jāthiya          al-Jāthiya 46    Ahkâf Sûresi        el-Ahkâf        ‫سورة الْاحْقاف‬         ‫ الْاحْقاف‬Sūrat al-Aḥqāf             al-Aḥqāf 47    Muhammed Sûresi     Muhammed           ٍ‫سورة محمَّد‬          ‫ محمَّد‬Sūrat Muḥammad              Muḥammad 48    Fetih Sûresi        el-Fetih             ‫سورة الْفتْح‬         ‫ الْفتْح‬Sūrat al-Fatḥ             al-Fatḥ 49    Hucurât Sûresi      el-Hucurât      ‫سورة الْحجرات‬          ‫ الْحجرات‬Sūrat al-Ḥujurāt            al-Ḥujurāt 50    Kāf Sûresi          Kāf                      ‫سورة ۤق‬              ۤ‫ ق‬Sūrat Qāf                  Qāf 51    Zâriyât Sûresi      ez-Zâriyât       ‫سورة الذَّاريات‬        ‫ الذَّاريات‬Sūrat al-Dhāriyāt        al-Dhāriyāt 52    Tûr Sûresi          et-Tûr               ‫سورة الطَّور‬         ‫ الطَّور‬Sūrat al-Ṭūr              al-Ṭūr 53    Necm Sûresi         en-Necm             ‫سورة النَّجْم‬        ‫ النَّجْم‬Sūrat al-Najm             al-Najm 54    Kamer Sûresi        el-Kamer             ‫سورة الْقمر‬          ‫ الْقمر‬Sūrat al-Qamar             al-Qamar 55    Rahmân Sûresi       er-Rahmân         ‫سورة الرَّحْمّٰن‬      ‫ الرَّحْمّٰن‬Sūrat al-Raḥmān         al-Raḥmān 56    Vâkıa Sûresi        Vâkıa              ‫سورة الْواقعة‬         ‫ الْواقعة‬Sūrat al-Wāqiʿa           al-Wāqiʿa 57    Hadîd Sûresi        el-Hadîd          ‫سورة الْحد۪يد‬         ‫ الْحد۪يد‬Sūrat al-Ḥadīd             al-Ḥadīd 58    Mücâdele Sûresi     el-Mücâdele      ‫سورة الْمجادلة‬        ‫ الْمجادلة‬Sūrat al-Mujādala          al-Mujādala 59    Haşr Sûresi         el-Haşr            ‫سورة الْحشْر‬          ‫ الْحشْر‬Sūrat al-Ḥashr             al-Ḥashr 60    Mümtehine Sûresi    el-Mümtehine     ‫سورة الْممْتحنة‬       ‫ الْممْتحنة‬Sūrat al-Mumtaḥina        al-Mumtaḥina 61    Saf Sûresi          es-Saf             َّ‫سورة الصَّف‬         ‫ الصَّف‬Sūrat al-Ṣaff               al-Ṣaff 62    Cuma Sûresi         el-Cuma           ‫سورة الْجمعة‬          ‫ الْجمعة‬Sūrat al-Jumuʿa             al-Jumuʿa 63    Münâfikûn Sûresi    el-Münâfikûn     ‫سورة الْمنافقون‬       ‫ الْمنافقون‬Sūrat al-Munāfiqūn        al-Munāfiqūn 64    Tegābün Sûresi      et-Tegābün         ‫سورة التَّغابن‬        ‫ التَّغابن‬Sūrat al-Taghābun        al-Taghābun 65    Talâk Sûresi        et-Talâk           ‫سورة الطَّلاق‬         ‫ الطَّلاق‬Sūrat al-Ṭalāq            al-Ṭalāq 66    Tahrîm Sûresi       et-Tahrîm         ‫سورة التَّحْر۪يم‬      ‫ التَّحْر۪يم‬Sūrat al-Taḥrīm         al-Taḥrīm 67    Mülk Sûresi         el-Mülk            ‫سورة الْملْك‬          ‫ الْملْك‬Sūrat al-Mulk              al-Mulk 68    Kalem Sûresi        el-Kalem             ‫سورة الْقلم‬          ‫ الْقلم‬Sūrat al-Qalam             al-Qalam 69    Hâkka Sûresi        el-Hâkka            ‫سورة الْحاقَّة‬       ‫ الْحاقَّة‬Sūrat al-Ḥāqqa           al-Ḥāqqa 70    Meâric Sûresi       el-Meâric         ‫سورة الْمعارج‬         ‫ الْمعارج‬Sūrat al-Maʿārij           al-Maʿārij 71    Nûh Sûresi          Nûh                    ‫سورة نو ٍح‬          ‫ نوح‬Sūrat Nūḥ                    Nūḥ 72    Cin Sûresi          el-Cin               َّ‫سورة الْجن‬         ‫ الْجن‬Sūrat al-Jinn               al-Jinn 73    Müzzemmil Sûresi    el-Müzzemmil       ‫سورة الْمزَّمَّل‬      ‫ الْمزَّمَّل‬Sūrat al-Muzzammil     al-Muzzammil 74    Müddessir Sûresi    el-Müddessir        ‫سورة الْمدَّثَّر‬     ‫ الْمدَّثَّر‬Sūrat al-Muddaththir   al-Muddaththir 75    Kıyâmet Sûresi      el-Kıyâmet          ‫سورة الْقيّٰمة‬       ‫ الْقيّٰمة‬Sūrat al-Qiyāma          al-Qiyāma 76    İnsân Sûresi        el-İnsân          ‫سورة الْانْسان‬        ‫ الْانْسان‬Sūrat al-Insān            al-Insān 77    Mürselât Sûresi     el-Mürselât     ‫سورة الْمرْسلات‬        ‫ الْمرْسلات‬Sūrat al-Mursalāt         al-Mursalāt 78    Nebe Sûresi         en-Nebe                ‫سورة النَّبا‬        ‫ النَّبا‬Sūrat al-Nabāʾ           al-Nabāʾ 79    Nâziât Sûresi       en-Nâziât        ‫سورة النَّازعات‬        ‫ النَّازعات‬Sūrat al-Nāziʿāt         al-Nāziʿāt 80    Abese Sûresi        Abese                ‫سورة عبس‬             ‫ عبس‬Sūrat ʿAbasa                  ʿAbasa 81    Tekvîr Sûresi       et-Tekvîr          ‫سورة التَّكْو۪ير‬      ‫ التَّكْو۪ير‬Sūrat al-Takwīr        al-Takwīr 82    İnfitâr Sûresi      el-İnfitâr        ‫سورة الْانْفطار‬       ‫ الْانْفطار‬Sūrat al-Infiṭār         al-Infiṭār 83    Mutaffifîn Sûresi   el-Mutaffifîn   ‫سورة الْمطفَّف۪ين‬      ‫ الْمطفَّف۪ين‬Sūrat al-Muṭaffifīn     al-Muṭaffifīn No    Sûre Adı          Kısa             Arapça             Kısa     İngilizce              Kısa 84    İnşikâk Sûresi    el-İnşikâk    ‫سورة الْانْشقاق‬       ‫ الْانْشقاق‬Sūrat al-Inshiqāq    al-Inshiqāq 85    Burûc Sûresi      el-Burûc         ‫سورة الْبروج‬         ‫ الْبروج‬Sūrat al-Burūj        al-Burūj 86    Târık Sûresi      et-Târık        ‫سورة الطَّارق‬         ‫ الطَّارق‬Sūrat al-Ṭāriq       al-Ṭāriq 87    A’lâ Sûresi       el-A’lâ         ‫سورة الْاعْلّٰى‬      ‫ الْاعْلّٰى‬Sūrat al-Aʿlā       al-Aʿlā 88    Gāşiye Sûresi     el-Gāşiye       ‫سورة الْغاشية‬        ‫ الْغاشية‬Sūrat al-Ghāshiya     al-Ghāshiya 89    Fecr Sûresi       el-Fecr           ‫سورة الْفجْر‬        ‫ الْفجْر‬Sūrat al-Fajr         al-Fajr 90    Beled Sûresi      el-Beled           ‫سورة الْبلد‬         ‫ الْبلد‬Sūrat al-Balad        al-Balad 91    Şems Sûresi      eş-Şems       ‫سورة الشَّمْس‬         ‫ الشَّمْس‬Sūrat al-Shams        al-Shams 92    Leyl Sûresi       el-Leyl             ‫سورة الَّيْل‬        ‫ الَّيْل‬Sūrat al-Layl       al-Layl 93    Duhâ Sûresi       ed-Duhâ        ‫سورة الضَّحّٰى‬        ‫ الضَّحّٰى‬Sūrat al-Ḍuḥā        al-Ḍuḥā 94    İnşirâh Sûresi    el-İnşirâh    ‫سورة الْانْشراح‬       ‫ الْانْشراح‬Sūrat al-Inshiraḥ    al-Inshiraḥ 95    Tîn               et-Tîn             ‫سورة التَّ۪ين‬       ‫ التَّ۪ين‬Sūrat al-Tīn        al-Tīn 96    Alak Sûresi       el-Alak           ‫سورة الْعلق‬          ‫ الْعلق‬Sūrat al-ʿAlaq        al-ʿAlaq 97    Kadr Sûresi       el-Kadr           ‫سورة الْقدْر‬         ‫ الْقدْر‬Sūrat al-Qadr        al-Qadr 98    Beyyine Sûresi    el-Beyyine         ‫سورة الْبيَّنة‬      ‫ الْبيَّنة‬Sūrat al-Bayyina   al-Bayyina 99    Zilzâl Sûresi     el-Zilzâl        ‫سورة الزَّلْزال‬      ‫ الزَّلْزال‬Sūrat al-Zilzāl    al-Zilzāl 100   Âdiyât Sûresi     el-Âdiyât     ‫سورة الْعاديات‬        ‫ الْعاديات‬Sūrat al-ʿĀdiyāt      al-ʿĀdiyāt 101   Kāria Sûresi      el-Kāria        ‫سورة الْقارعة‬         ‫ الْقارعة‬Sūrat al-Qāriʿa      al-Qāriʿa 102   Tekâsür Sûresi    et-Tekâsür      ‫سورة التَّكاثر‬        ‫ التَّكاثر‬Sūrat al-Takāthur   al-Takāthur 103   Asr Sûresi        el-Asr           ‫سورة الْعصْر‬         ‫ الْعصْر‬Sūrat al-ʿAṣr         al-ʿAṣr 104   Hümeze Sûresi     el-Hümeze        ‫سورة الْهمزة‬         ‫ الْهمزة‬Sūrat al-Humaza       al-Humaza 105   Fîl Sûresi        el-Fîl            ‫سورة الْف۪يل‬         ‫ الْف۪يل‬Sūrat al-Fīl         al-Fīl 106   Kureyş Sûresi     Kureyş            ٍ‫سورة قريْش‬         ‫ قريْش‬Sūrat Quraysh           Quraysh 107   Maûn Sûresi       el-Maûn        ‫سورة الْماعون‬         ‫ الْماعون‬Sūrat al-Māʿūn        al-Māʿūn 108   Kevser Sûresi     el-Kevser        ‫سورة الْكوْثر‬        ‫ الْكوْثر‬Sūrat al-Kawthar     al-Kawthar 109   Kâfirûn Sûresi    el-Kâfirûn     ‫سورة الْكافرون‬       ‫ الْكافرون‬Sūrat al-Kāfirūn      al-Kāfirūn 110   Nasr Sûresi       en-Nasr           ‫سورة النَّصْر‬       ‫ النَّصْر‬Sūrat al-Naṣr        al-Naṣr 111   Tebbet Sûresi     Tebbet             ‫سورة تبَّت‬          ‫ تبَّت‬Sūrat al-Tabbat        al-Tabbat 112   İhlâs Sûresi      el-İhlâs      ‫سورة الْاخْلاص‬        ‫ الْاخْلاص‬Sūrat al-Ikhlāṣ       al-Ikhlāṣ 113   Felak Sûresi      el-Felak          ‫سورة الْفلق‬          ‫ الْفلق‬Sūrat al-Falaq        al-Falaq 114   Nâs Sûresi        en-Nâs            ‫سورة النَّاس‬        ‫ النَّاس‬Sūrat al-Nās          al-Nās İSNAD Dipnotlu                                                                                                                               83"
+  ]
+ },
+ {
+  "no": "4.2",
+  "title": "Meâl-Web",
+  "page": 83,
+  "first": [
+   "Kur’ân Yolu (Erişim 16 Nisan 2019), el-Bakara 2/12."
+  ],
+  "later": [
+   "el-Bakara 2/12.",
+   "el-Enfâl 8/6."
+  ],
+  "bib": [
+   "Kur’ân Yolu. Erişim 16 Nisan 2018. https://kuran.diyanet.gov.tr"
+  ],
+  "notes": [
+   "❖ Kişi veya kurumlarca yayımlanan meâller, kurumsal web sayfaları ile ilmi hata veya telif hakkı ihlali içermediğine güvenilen web sitelerinden kaynak gösterilebilir. Bununla birlikte akademik çalışmalarda basılı meâllerin kullanılması öncelikli tercih olmalıdır.",
+   "❖ Elektronik yayınların internet erişim adresleri dipnotta değil sadece kaynakçada belirtilir. Eserin yayın türünün bilinebilmesi amacıyla dipnotta eser adından sonra parantez içinde erişim tarihi yazılır.",
+   "❖ Kur’an-ı Kerîm | al-Qurʾān al-Karīm",
+   "❖ Kur’ân | The Qurʾān"
+  ]
+ },
+ {
+  "no": "5.1",
+  "title": "Kitâb-ı Mukaddes-Basılı",
+  "page": 84,
+  "first": [
+   "Kitabı Mukaddes (İstanbul: Kitabı Mukaddes Şirketi, 2003), Yar.1:12.",
+   "Kutsal Kitap: Tevrat, Zebur İncil (İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009), Elç.12:10-12."
+  ],
+  "later": [
+   "Yar.1:12.",
+   "Elç.12:10-12."
+  ],
+  "bib": [
+   "Kitabı Mukaddes. İstanbul: Kitabı Mukaddes Şirketi, 2. Basım, 2003. Kutsal Kitap: Tevrat, Zebur İncil. İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009."
+  ],
+  "notes": [
+   "❖ Kitâb-ı Mukaddes içinde yer alan kitaplar ve kısaltmaları Türkçe ve İngilizce olarak aşağıda tablo olarak sunulmuştur. Eski Antlaşma                                Kısa.       Old Testament                Abrs. 1      Yaratılış/Tekvin                             Yar.        Genesis                      Gen. 2      Mısır’dan Çıkış/Çıkış                      Çık.       Exodus                       Ex. 3      Levililer/Levililer                          Lev.        Leviticus                    Lev. 4      Çölde Sayım/Sayılar                        Say.        Numbers                      Num. 5      Yasa’nın Tekrarı/Tesniye                     Yas.        Deuteronomy                  Deut. 6      Yeşu/Yeşu                                    Yşu.        Joshua                       Josh. 7      Hakimler/Hâkimler                            Hak.        Judges                       Judg. 8      Rut/Rut                                      Rut         Ruth                         Ruth. İSNAD Dipnotlu                                                                       85 9    I. Samuel/I. Samuel                    1Sa.    1 Samuel                  1 Sam. 10   II. Samuel/II. Samuel                  2Sa.    2 Samuel                  2 Sam. 11   I. Krallar/I. Kırallar                 1Kr.    1 Kings                   1 Kgs. 12   II. Krallar/II. Kırallar               2.Kr.   2 Kings                   2 Kgs. 13   I. Tarihler/ I. Tarihler               1.Ta.   1 Chronicles              1 Chr. 14   II. Tarihler/II. Tarihler              2.Ta.   2 Chronicles              2 Chr. 15   Ezra/Ezra                              Ezr.    Ezra                      Ezra. 16   Nehemya/Nehemya                        Neh.    Nehemiah                  Neh. 17   Ester/Ester                            Est.    Esther                    Esth. 18   Eyüp/ Eyub                             Eyü.    Job                       Job. 19   Mezmurlar (Zebur)/Mezmurlar            Mez.    Psalms                    Ps. 20   Süleyman’ın Özdeyişleri/Süleymanın    Özd.   Proverbs                  Prov. Meselleri 21   Vaiz/Vaiz                              Vai.    Ecclesiastes (Qoheleth)   Eccl. 22   Ezgiler Ezgisi/Neşideler Neşidesi      Ezg.    Song of Songs/Solomon     Song. 23   Yeşaya/İşaya                           Yşa.    Isaiah                    Isa. 24   Yeremya/Yeremya                        Yer.    Jeremiah                  Jer. 25   Ağıtlar/Yeremyanın Mersiyeleri        Ağı.   Lamentations              Lam. 26   Hezekiel/Hezekiel                      Hez.    Ezekiel                   Ezek. 27   Daniel/Daniel                          Dan.    Daniel                    Dan. 28   Hoşea/Hoşea                            Hoş.    Hosea                     Hos. 29   Yoel/Yoel                              Yoe.    Joel                      Joel. 30   Amos/Amos                              Amo.    Amos                      Amos. 31   Ovadya/Obadya                          Ova.    Obadiah                   Obad. 32   Yunus/Yunus                            Yun.    Jonah                     Jon. 33   Mika/Mika                              Mik.    Micah                     Mic. 34   Nahum/Nahum                            Nah.    Nahum                     Nah. 35   Habakkuk/Habakkuk                      Hab.    Habakkuk                  Hab. 36   Sefanya/Tsefanya                       Sef.    Zephaniah                 Zeph. 37   Hagay/Haggay                           Hag.    Haggai                    Hag. 38   Zekeriya/Zekarya                       Zek.    Zechariah                 Zech. 39   Malaki/Malaki                          Mal.    Malachi                   Mal. Yeni Antlaşma                          Kısa.   New Testament             Abrs. 1    Matta                                  Mat.    Matthew                   Mt. 2    Markos                                 Mar.    Mark                      Mk. 3    Luka                                   Luk.    Luke                      Lk. 4    Yuhanna                                Yu.     John                      Jn. 5    Elçilerin İşleri/Resullerin İşleri     Elç.    Acts                      Acts. 6    Romalılar/Romalılara Mektup            Rom.    Romans                    Rom. 7    1.Korintliler/Korintoslulara Birinci   1Ko.    1 Corinthians             1Cor. Mektup 8    2.Korintliler/Korintoslulara İkinci    2Ko.    2 Corinthians             2Cor. Mektup 9      Galatyalılar/Galatyalılara Mektup           Gal.      Galatians              Gal. 10     Efesliler/Efesoslulara Mektup               Ef.       Ephesians              Eph. 11     Filipililer/Filipililere Mektup             Flp.      Philippians            Phil. 12     Koloseliler/Koloselilere Mektup             Kol.      Colossians             Col. 13     1.Selanikliler/Selâniklilere Birinci        1Se.      1 Thessalonians        1Thess. Mektup 14     2.Selanikliler/Selâniklilere İkinci         2.Se.     2 Thessalonians        2Thess. Mektup 15     1.Timoteos/Timoteos’a Birinci Mektup        1Ti.      1 Timothy              1Ti. 16     2.Timoteos/Timoteos’a İkinci Mektup         2Ti.      2 Timothy              2Ti. 17     Titus/Titusa Mektup                         Tit.      Titus                  Tit. 18     Filimon/Filimona Mektup                     Flm.      Philemon               Phlm. 19     İbraniler/İbranilere Mektup                 İbr.      Hebrews                Heb. 20     Yakup'un Mektubu/Yakubun Mektubu            Yak.      James                  Jas. 21     1.Petrus/Petrusun Birinci Mektubu           1Pe.      1 Peter                1Pet. 22     2.Petrus/Petrusun İkinci Mektubu            2Pe.      1 Peter                2 Pet. 23     1.Yuhanna/Yuhannanın Birinci                1Yu.      1 John                 1Jn. Mektubu 24     2.Yuhanna/Yuhannanın İkinci Mektubu         2Yu.      2 John                 2Jn. 25     3.Yuhanna/Yuhannanın Üçüncü                3Yu.      3 John                 3Jn. Mektubu 26     Yahuda/Yahudanın Mektubu                    Yah.      Jude                   Jude. 27     Vahiy/Vahiy                                 Va.       Revelation             Rev."
+  ]
+ },
+ {
+  "no": "5.2",
+  "title": "Kitâb-ı Mukaddes-Web",
+  "page": 86,
+  "first": [],
+  "later": [],
+  "bib": [
+   "Kitab-ı         Mukaddes.    Erişim    12    Temmuz      2019. https://www.kitabimukaddes.com The          Holy    Bible.    Erişim     10   Nisan     2020. https://www.biblegateway.com"
+  ],
+  "notes": [
+   "❖ Elektronik yayınların internet erişim adresleri dipnotta değil sadece kaynakçada belirtilir. Eserin yayın türünün bilinebilmesi amacıyla dipnotta eser adından sonra parantez içinde erişim tarihi yazılır. İSNAD Dipnotlu                                                                             87"
+  ]
+ },
+ {
+  "no": "6.2",
+  "title": "Hadis (“Kitâb Adı”, Hadis No. Sistemi)",
+  "page": 88,
+  "first": [],
+  "later": [
+   "Müslim, “Ticârât”, 45.",
+   "İmam Mâlik, “Sadaka”, 12."
+  ],
+  "bib": [
+   "Müslim, Ebü’l-Hüseyn Müslim b. el-Haccâc. el-Câmiʿu’ṣ-ṣaḥîḥ. nşr. Muhammed Fuâd Abdülbâkī. Kahire: y.y., 1374-75/1955-56.",
+   "İmam Mâlik, Ebû Abdillâh Mâlik b. Enes el-Asbahî. el-Muvaṭṭaʾ. nşr. Abdüvehhâb Abdüllatîf. Kahire: y.y., 1382/1962."
+  ],
+  "notes": []
+ },
+ {
+  "no": "7.1",
+  "title": "Yazma Eser-Müellifi Bilinmeyen",
+  "page": 90,
+  "first": [
+   "Tefsîru suveri'l-Ḳur’ân (Ankara: Milli Kütüphane, Yazmalar, 363/2), 51a.",
+   "Kitâbu’z-zekât ve’l-buyûʿ mine’l-fıkh (Bursa: Bursa İnebey Yazma Eser Kütüphanesi, Orhan Camii, 473), 17a."
+  ],
+  "later": [
+   "Tefsîru suveri'l-Kur’ân (Yazmalar, 363/2), 51a.",
+   "Kitâbu’z-zekât ve’l-buyûʿ (Orhan Camii, 473), 17a."
+  ],
+  "bib": [
+   "Tefsîru suveri'l-Kur’ân. Ankara: Milli Kütüphane, Yazmalar, 363/2,           48a-72b.           http://yazmalar.gov.tr /eser/tefs%C3%AEru-suveril-kuran/4084",
+   "Kitâbu’z-zekât ve’l-buyûʿ mine’l-fıkh. Bursa: Bursa İnebey Yazma Eser Kütüphanesi, Orhan Camii, 473, 1a-272a."
+  ],
+  "notes": [
+   "❖ Bir yazma eserin farklı kütüphanelerde nüshalarının bulunabilmesi ve yapılan çalışmada eserin birden fazla nüshasının kullanılabilmesi nedeniyle, esere ikinci ve sonraki atıflarda koleksiyon ve kayıt numarası belirtilir.",
+   "❖ Varak numarasından önce “vr.” kısaltması kullanılmaz. Zotero’ya bu türde bir yayın kaydedilirken “Kütüphane Adı” Arşiv, “Koleksiyon Adı”, Arşivdeki Yeri, “Kayıt No” Yer Numarası ve “Varak No” Sayfa Sayısı alanına girilir. İSNAD Dipnotlu                                                                            91"
+  ]
+ },
+ {
+  "no": "7.2",
+  "title": "Yazma Eser-Müellifi Bilinen",
+  "page": 91,
+  "first": [
+   "Ebû Şekûr Muhammed b. Abdüsseyyid es-Sâlimî el-Keşşî, et-Temhîd fî beyâni’t-tevḥîd (İstanbul: Süleymaniye Kütüphanesi, Şehit Ali Paşa, 1153), 77b.",
+   "Hüsâmeddin Hüseyin b. Ali es-Siğnâkī, et-Tesdîd fî şerḥi’t-Temhîd li-ḳavâʿidi’t-tevḥîd (İstanbul: Süleymaniye Kütüphanesi, Esad Efendi, 3893), 1a.",
+   "Meḥmed ibn Pīr ʿAlī Birgiwī, Kitāb al-Ṭarīgah al-Muḥammadīyah (Copenhagen: The Royal Library, Danish Collection, Cod. Arab.",
+   "A.C. 5), 2a."
+  ],
+  "later": [
+   "Keşşî, et-Temhîd (Şehit Ali Paşa, 1153), 77b.",
+   "Siğnâkī, et-Tesdîd (Esad Efendi, 3893), 1a.",
+   "Birgiwī, al-Ṭarīgah al-Muḥammadīyah (Danish Collection, Cod.",
+   "Arab. A.C. 5), 2a."
+  ],
+  "bib": [
+   "Birgiwī, Meḥmed ibn Pīr ʿAlī. Kitāb al-Ṭarīgah al-Muḥammadīyah. Copenhagen: The Royal Library, Danish Collection, Cod. Arab. A.C. 5, 1a-227b.",
+   "Keşşî, Ebû Şekûr Muhammed b. Abdüsseyyid es-Sâlimî. et-Temhîd fî beyâni’t-tevḥîd. İstanbul: Süleymaniye Kütüphanesi, Şehit Ali Paşa, 1153, 1a-217b.",
+   "Siğnâkī, Hüsâmeddin Hüseyin b. Ali. et-Tesdîd fî şerḥi’t-Temhîd li-ḳavâʿidi’t-tevḥîd. İstanbul: Süleymaniye Kütüphanesi, Esad Efendi, 3893, 1a-215a."
+  ],
+  "notes": [
+   "❖ Bir yazma eserin farklı kütüphanelerde nüshalarının bulunabilmesi ve yapılan çalışmada eserin birden fazla nüshasının kullanılabilmesi nedeniyle, esere ikinci ve sonraki atıflarda koleksiyon ve kayıt numarası belirtilir.",
+   "❖ Varak numarasından önce “vr.” kısaltması kullanılmaz. Zotero’ya bu türde bir yayın kaydedilirken “Kütüphane Adı” Arşiv, “Koleksiyon Adı”, Arşivdeki Yeri, “Kayıt No” Yer Numarası ve “Varak No” Sayfa Sayısı alanına girilir."
+  ]
+ },
+ {
+  "no": "8",
+  "title": "Yunan ve Roma Klasikleri",
+  "page": 92,
+  "first": [
+   "Aristoteles, Metaphysics, çev. Richard Hope (USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960), 139 (1031a 15-20).",
+   "Thomas Aquinas, Commentary on the Metaphysics of Aristotle, çev. John P. Roman (Chicago: Henry Regnery Company, 1961), 784 (XI.2. 2188).",
+   "Aristoteles, Metafizik, çev. Ahmet Arslan (İstanbul: Sosyal Yayınlar, Kasım 1996), 171 (III.4 999b 5-7)."
+  ],
+  "later": [
+   "Aristoteles, Metaphysics, 139 (1031a 15-20).",
+   "Thomas Aquinas, Commentary on the Metaphysics of Aristotle, 784 (XI.2. 2188).",
+   "Aristoteles, Metafizik, 171 (III.4. 999b 5-7)."
+  ],
+  "bib": [
+   "Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, Kasım 1996. Aristoteles. Metaphysics. çev. Richard Hope. USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960. Thomas Aquinas. Commentary on the Metaphysics of Aristotle. çev. John P. Roman. 2 Cilt. Chicago: Henry Regnery Company, 1961."
+  ],
+  "notes": [
+   "❖ Klasik eserlere referansta bulunurken uluslararası standart atıf usulü parantez içerisinde yazılır. Örnek: (XI. 2. 2188). Klasikler EndNote gibi programlara “Kitap” veri türünde kaydedilir. Klasik eserlere referansta bulunurken EndNote ve Zotero gibi programlarda sayfa numarası alanına uluslararası standart atıf usulü yazılır. İSNAD Dipnotlu                                                                                        93"
+  ]
+ },
+ {
+  "no": "10.1",
+  "title": "Kadı Sicili-Matbu",
+  "page": 94,
+  "first": [
+   "Galata Mahkemesi 90 Numaralı Sicil (1073-1074/1663), haz. Fuat Recep -Salih Kahriman (İstanbul: İSAM Yayınları, 2012), 51.",
+   "İstanbul Kadı Sicilleri Eyüb (Havâss-ı Refîa) Mahkemesi 49 Numaralı Sicil (1054/1644), haz. Ayşe Seyyide Adıgüzel - Zeynep Trabzonlu (İstanbul: İSAM Yayınları, 2011), 37."
+  ],
+  "later": [
+   "Galata Mahkemesi 90 Numaralı Sicil, 51.",
+   "İstanbul Kadı Sicilleri Eyüb (Havâss-ı Refîa) Mahkemesi 49 Numaralı Sicil, 38."
+  ],
+  "bib": [
+   "Galata Mahkemesi 90 Numaralı Sicil (1073-1074/1663). haz. Fuat Recep -Salih Kahriman. İstanbul: İSAM Yayınları, 2012. http://www.kadisicilleri.org/index.php",
+   "İstanbul Kadı Sicilleri Eyüb (Havâss-ı Refîa) Mahkemesi 49 Numaralı Sicil (1054/1644). haz. Ayşe Seyyide Adıgüzel - Zeynep Trabzonlu. İstanbul: İSAM Yayınları, 2011. http://www.kadisicilleri.org/index.php"
+  ],
+  "notes": []
+ },
+ {
+  "no": "10.2",
+  "title": "Kadı Sicili-Arşivde",
+  "page": 94,
+  "first": [
+   "Kayseri Sancağı Şer'îye Sicil Defteri (1334-1336), Milli Kütüphane, No.",
+   "06 Mil Yz C 39/3, 68-90."
+  ],
+  "later": [
+   "Kayseri Sancağı Şer'îye Sicil Defteri (1334-1336), 61a-61b."
+  ],
+  "bib": [
+   "Kayseri Sancağı Şer'îye Sicil Defteri (1334-1336). Milli Kütüphane, No. 06 Mil Yz C 39/3, 68-90. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=857 602"
+  ],
+  "notes": []
+ },
+ {
+  "no": "11.1",
+  "title": "Ansiklopedi-Matbu",
+  "page": 95,
+  "first": [
+   "Ömer Faruk Akün, “Âlî Mustafa Efendi”, Türkiye Diyanet Vakfı İslâm Ansiklopedisi (Ankara: TDV Yayınları, 1989), 2/416.",
+   "Halil İnalcık, “Selīm I”, The Encyclopaedia of Islam, ed. C. E. Bosworth vd. (Leiden: Brill, 1997), 9/127-131.",
+   "Yusuf Şevki Yavuz, “İstidlâl (Kelâm)”, Türkiye Diyanet Vakfı İslâm Ansiklopedisi (İstanbul: TDV Yayınları, 2001), 23/325-328."
+  ],
+  "later": [
+   "Akün, “Âlî Mustafa Efendi”, 2/416.",
+   "İnalcık, “Selīm I”, 9/127.",
+   "Yavuz, “İstidlâl (Kelâm)”, 23/325-328."
+  ],
+  "bib": [
+   "Akün, Ömer Faruk. “Âlî Mustafa Efendi”. Türkiye Diyanet Vakfı İslâm Ansiklopedisi. 2/416-417. Ankara: TDV Yayınları, 1989.",
+   "İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C. E. Bosworth vd. 9/127-131. Leiden: Brill, 1997.",
+   "Yavuz, Yusuf Şevki. “İstidlâl (Kelâm)”. Türkiye Diyanet Vakfı İslâm Ansiklopedisi. 23/325-328. İstanbul: TDV Yayınları, 2001."
+  ],
+  "notes": [
+   "❖ Editör sayısı üç veya daha fazla ise dipnotta ilk editörün adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk editörün soyadı ve adı belirtildikten sonra vd. kısaltması yazılır."
+  ]
+ },
+ {
+  "no": "11.2",
+  "title": "Ansiklopedi-Yazarsız",
+  "page": 96,
+  "first": [
+   "“Felsefe”, Temel İslam Ansiklopedisi, ed. Tuncay Başoğlu (Ankara: Türkiye Diyanet Vakfı Yayınları - İSAM Yayınları, 2019), 3/33."
+  ],
+  "later": [
+   "“Felsefe”, 3/34."
+  ],
+  "bib": [
+   "“Felsefe”. Temel İslam Ansiklopedisi. ed. Tuncay Başoğlu. 3/31-36. Ankara: Türkiye Diyanet Vakfı Yayınları - İSAM Yayınları, 2019."
+  ],
+  "notes": [
+   "❖ Editör sayısı üç veya daha fazla ise dipnotta ilk editörün adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk editörün soyadı ve adı belirtildikten sonra vd. kısaltması yazılır. İSNAD Dipnotlu                                                                             97"
+  ]
+ },
+ {
+  "no": "11.3",
+  "title": "Ansiklopedi-Web",
+  "page": 97,
+  "first": [
+   "Mustafa Çağrıcı, “İhsan”, Türkiye Diyanet Vakfı İslâm Ansiklopedisi (Erişim 12 Temmuz 2019).",
+   "Shari L. Lowin, “Isrāʾīliyyāt”, Encyclopaedia of Islam (Erişim 13 Temmuz 2019).",
+   "Raşit Küçük, “İsnad”, Türkiye Diyanet Vakfı İslâm Ansiklopedisi (Erişim 16 Nisan 2019)."
+  ],
+  "later": [
+   "Çağrıcı, “İhsan”.",
+   "Lowin, “Isrāʾīliyyāt”.",
+   "Küçük, “İsnad”."
+  ],
+  "bib": [
+   "Çağrıcı, Mustafa. “İhsan”. Türkiye Diyanet Vakfı İslâm Ansiklopedisi.     Erişim     12       Temmuz         2019. https://islamansiklopedisi.org.tr/ihsan--iyilik",
+   "Küçük, Raşit. “İsnad”. Türkiye Diyanet Vakfı İslâm Ansiklopedisi. Erişim 16 Nisan 2019. https://islamansiklopedisi.org.tr/isnad--hadis",
+   "Lowin, Shari L. “Isrāʾīliyyāt”. Encyclopaedia of Islam (3. Edisyon). ed. Kate Fleet vd. Erişim 13 Temmuz 2019. http://ekaynaklar.mkutup.gov.tr:2097/10.1163/1573-3912_ei3_COM_32621"
+  ],
+  "notes": [
+   "❖ Elektronik yayınların internet erişim adresleri dipnotta değil sadece kaynakçada belirtilir. Eserin yayın türünün bilinebilmesi amacıyla dipnotta eser adından sonra parantez içinde erişim tarihi yazılır."
+  ]
+ },
+ {
+  "no": "12.1",
+  "title": "Sözlük-Arap Harfli",
+  "page": 98,
+  "first": [
+   "Muhammed Fuâd Abdülbâkī, el-Muʿcemü’l-müfehres li-elfâẓi’l-Ḳurʾâni’l-Kerîm (Kahire-Beyrut: y.y., 1364/1945), “ecl”, 332.",
+   "Muhammed Aʿlâ b. Ali et-Tehânevî, Keşşâfü ıṣṭılâḥâti’l-fünûn ve’l-‘ulûm, nşr. Ali Dahrûc - Abdullah Hâlidî (Beyrut: Mektebetü Lübnan, 1996), “delîl”, 1/793-799.",
+   "Hayreddin ez-Ziriklî, el-Aʿlâm: Ḳāmûsü terâcim, nşr. Züheyr Fethullah (Beyrut: Dârü’l-İlm li’l-Melâyin, 2002), “Ahmed Emîn”, 1/101.",
+   "Muhammed b. Mükerrem İbn Manzûr, Lisânü’l-ʿArab, nşr. Abdullah Ali el-Kebîr (Kahire: Dârü’l-Maârif, ts.), “ʿabd”, 4/2776."
+  ],
+  "later": [
+   "Abdülbâkī, “ecl”, 337.",
+   "Tehânevî, “delîl”, 1/797.",
+   "Ziriklî, “Ahmed Emîn”, 1/101.",
+   "İbn Manzûr, “ʿabd”, 4/2776-2782."
+  ],
+  "bib": [
+   "Abdülbâkī, Muhammed Fuâd. el-Muʿcemü’l-müfehres li-elfâẓi’l-Ḳurʾâni’l-Kerîm. Kahire - Beyrut: y.y., 1364/1945.",
+   "İbn Manzûr, Muhammed b. Mükerrem. Lisânü’l-ʿArab. nşr. Abdullah Ali el-Kebîr. 6 Cilt. Kahire: Dârü’l-Maârif, ts.",
+   "Tehânevî, Muhammed Ali b. Ali. Keşşâfü ıṣṭılâḥâti’l-fünûn ve’l-‘ulûm. nşr. Ali Dahrûc - Abdullah Hâlidî. 2 Cilt. Beyrut: Mektebetü Lübnan, 1996.",
+   "Ziriklî, Hayreddin. el-Aʿlâm: Ḳāmûsü terâcim. nşr. Züheyr Fethullah. 8 Cilt. Beyrut: Dârü’l-İlm li’l-Melâyin, 2002."
+  ],
+  "notes": [
+   "❖ Aynı sözlüğün bir veya birden fazla maddesine atıf yapılsa bile kaynakçada madde adları belirtilmez.",
+   "❖ Biyografik eserler de sözlük türü kapsamında atıf ve kaynakçada belirtilir."
+  ]
+ },
+ {
+  "no": "12.2",
+  "title": "Sözlük-Latin Harfli",
+  "page": 99,
+  "first": [
+   "Bekir Topaloğlu - İlyas Çelebi, Kelâm Terimleri Sözlüğü (İstanbul: İSAM Yayınları, 2015), “Kader”, 174-175.",
+   "Edward William Lane, An Arabic-English Lexicon (Beirut: Librairie du Liban, 1968), “nece’e”, 8/2764.",
+   "Ferit Devellioğlu, Osmanlıca-Türkçe Ansiklopedik Lûgat (Ankara: Aydın Kitabevi, 2017), “isnâd”, 520.",
+   "Ahmet Cevizci, Felsefe Sözlüğü (İstanbul: Paradigma Yayınları, 1999), “Ahlâk Yasası”, 27.",
+   "Şükrü Halûk Akalın vd., Türkçe Sözlük (Ankara: Türk Dil Kurumu, 11. Basım, 2011), “isnat”, 1029."
+  ],
+  "later": [
+   "Topaloğlu - Çelebi, “Kader”, 174-175.",
+   "Lane, “nece’e”, 8/2764.",
+   "Devellioğlu, “isnâd”, 520.",
+   "Cevizci, “Ahlâk Yasası”, 27.",
+   "Akalın vd., “isnat”, 1029."
+  ],
+  "bib": [
+   "Akalın, Şükrü Halûk vd. Türkçe Sözlük. Ankara: Türk Dil Kurumu, 11. Basım, 2011.",
+   "Cevizci, Ahmet. Felsefe Sözlüğü. İstanbul: Paradigma Yayınları, 3. Basım, 1999.",
+   "Devellioğlu, Ferit. Osmanlıca-Türkçe Ansiklopedik Lûgat. Ankara: Aydın Kitabevi, 33. Basım, 2017.",
+   "Lane, Edward William. An Arabic-English Lexicon. 8 Cilt. Beirut: Librairie du Liban, 1968.",
+   "Topaloğlu, Bekir - Çelebi, İlyas. Kelâm Terimleri Sözlüğü. İstanbul: İSAM Yayınları, 4. Basım, 2015."
+  ],
+  "notes": [
+   "❖ Aynı sözlüğün bir veya birden fazla maddesine atıf yapılsa bile kaynakçada madde adları belirtilmez. EndNote ve Zotero gibi programlara bu türde bir yayın kaydedilirken madde adı belirtilmez. Madde adı, sayfa alanına çift tırnak içinde yazılır ve sonrasına cilt/sayfa numarası belirtilir: Sayfa/Page Alanı: “nece’e”, 8/2764 EndNote ve Zotero gibi programlara bu türde bir yayın kaydedilirken örneklerde “x” ile belirtilen “Cilt Sayısı/Number of Volumes” ile “Basım/Edition” alanlarına, rakam ile cilt ve baskı sayısı yazılır. Eserin ilk baskısının “1. Basım” şeklinde belirtilmesine gerek yoktur."
+  ]
+ },
+ {
+  "no": "12.3",
+  "title": "Sözlük-Web",
+  "page": 100,
+  "first": [
+   "Güncel Türkçe Sözlük, “Mukallit (Erişim 8 Temmuz 2019).",
+   "Arabic Ontology, “‫( ”آمن‬Erişim 31 Ağustos 2019).",
+   "Kubbealtı Lugati, “İsnat-İsnad” (Erişim 11 Temmuz 2019)."
+  ],
+  "later": [
+   "Güncel Türkçe Sözlük, “Mukallit”.",
+   "Arabic Ontology, “‫”آمن‬.",
+   "Kubbealtı Lugati, “İsnat-İsnad”."
+  ],
+  "bib": [
+   "Arabic Ontology. Erişim 31 Ağustos 2019. https://ontology.birzeit.edu",
+   "Güncel Türkçe Sözlük. Erişim 8 Temmuz 2019. http://sozluk.gov.tr",
+   "Kubbealtı Lugati. Erişim 11 Temmuz 2019. http://lugatim.com"
+  ],
+  "notes": [
+   "❖    Elektronik yayınların internet erişim adresleri dipnotta değil sadece kaynakçada belirtilir. Eserin yayın türünün bilinebilmesi amacıyla dipnotta eser adından sonra parantez içinde erişim tarihi yazılır.",
+   "❖    Aynı sözlüğün bir veya birden fazla maddesine atıf yapılsa bile kaynakçada madde adları belirtilmez."
+  ]
+ },
+ {
+  "no": "13.1",
+  "title": "Tez-Lisans",
+  "page": 100,
+  "first": [
+   "Abdullah Demir, Mâtürîdî Kelâm Ekolünde Nesefîler ve Ebû Hafs Ömer en-Nesefî’nin İtikâdî Görüşleri (Bursa: Uludağ Üniversitesi, İlahiyat Fakültesi, Lisans Tezi, 2002), 54."
+  ],
+  "later": [
+   "Demir, Mâtürîdî Kelâm Ekolünde Nesefîler, 56-57."
+  ],
+  "bib": [
+   "Demir, Abdullah. Mâtürîdî Kelâm Ekolünde Nesefîler ve Ebû Hafs Ömer en-Nesefî’nin İtikâdî Görüşleri. Bursa: Uludağ Üniversitesi, İlahiyat Fakültesi, Lisans Tezi, 2002. https://doi.org/10.5281/zenodo.3359800"
+  ],
+  "notes": []
+ },
+ {
+  "no": "13.4",
+  "title": "Tez-Tıpta Uzmanlık",
+  "page": 103,
+  "first": [
+   "Enes Uyar, Sağlıklı Bireylerde Oruç Tutmanın Göz Üzerine Olan Etkilerinin Değerlendirilmesi (Bolu: Abant İzzet Baysal Üniversitesi, Tıp Fakültesi, Tıpta Uzmanlık Tezi, 2017), 34."
+  ],
+  "later": [
+   "Uyar, Sağlıklı Bireylerde Oruç Tutmanın Göz Üzerine Olan Etkilerinin Değerlendirilmesi, 45."
+  ],
+  "bib": [
+   "Uyar, Enes. Sağlıklı Bireylerde Oruç Tutmanın Göz Üzerine Olan Etkilerinin Değerlendirilmesi. Bolu: Abant İzzet Baysal Üniversitesi, Tıp Fakültesi, Tıpta Uzmanlık Tezi, 2017."
+  ],
+  "notes": []
+ },
+ {
+  "no": "13.5",
+  "title": "Tez-Sanatta Yeterlik",
+  "page": 103,
+  "first": [
+   "Esen Baydemir, Berlin İslam Sanatları Müzesi'nde Bulunan Türk Halıları (İstanbul: Mimar Sinan Güzel Sanatlar Üniversitesi, Güzel Sanatlar Enstitüsü, Sanatta Yeterlik Tezi, 2018), 55."
+  ],
+  "later": [
+   "Baydemir, Berlin İslam Sanatları Müzesi'nde Bulunan Türk Halıları, 70-71."
+  ],
+  "bib": [
+   "Baydemir, Esen. Berlin İslam Sanatları Müzesi'nde Bulunan Türk Halıları. İstanbul: Mimar Sinan Güzel Sanatlar Üniversitesi, Güzel Sanatlar Enstitüsü, Sanatta Yeterlik Tezi, 2018. https://tez.yok.gov.tr/UlusalTezMerkezi"
+  ],
+  "notes": []
+ },
+ {
+  "no": "13.7",
+  "title": "Tez-Tıpta Yan Dal Uzmanlık",
+  "page": 105,
+  "first": [
+   "Ayşe Zeynep Bal, Kronik Böbrek Yetmezliği Hastalarında Vasküler Kalsifikasyon ve Belirteçlerinin İlişkisi ve Bu İlişkiye Etki Eden Faktörler (Ankara: Başkent Üniversitesi, Tıp Fakültesi, Tıpta Yan Dal Uzmanlık Tezi, 2014), 56."
+  ],
+  "later": [
+   "Bal, Kronik Böbrek Yetmezliği Hastalarında Vasküler Kalsifikasyon, 65."
+  ],
+  "bib": [
+   "Bal, Ayşe Zeynep. Kronik Böbrek Yetmezliği Hastalarında Vasküler Kalsifikasyon ve Belirteçlerinin İlişkisi ve Bu İlişkiye Etki Eden Faktörler. Ankara: Başkent Üniversitesi, Tıp Fakültesi, Tıpta Yan Dal Uzmanlık Tezi, 2014."
+  ],
+  "notes": []
+ },
+ {
+  "no": "13.8",
+  "title": "Tez-Doçentlik",
+  "page": 105,
+  "first": [
+   "Özer Soysal, Cumhuriyet Öncesi Dönem Türk Kütüphaneciliği (Ankara: Ankara Üniversitesi, Dil ve Tarih-Coğrafya Fakültesi, Doçentlik Tezi, 1973), 33."
+  ],
+  "later": [
+   "Soysal, Cumhuriyet Öncesi Dönem Türk Kütüphaneciliği, 11."
+  ],
+  "bib": [
+   "Soysal, Özer. Cumhuriyet Öncesi Dönem Türk Kütüphaneciliği. Ankara: Ankara Üniversitesi, Dil ve Tarih-Coğrafya Fakültesi, Doçentlik Tezi, 1973."
+  ],
+  "notes": []
+ },
+ {
+  "no": "14.1",
+  "title": "Makale-Araştırma (Tek Yazarlı-Çok Yazarlı)",
+  "page": 106,
+  "first": [
+   "Adem Çiftci, “İslam Ceza Hukukunda Suça Teşebbüsten Vazgeçme”, Cumhuriyet İlahiyat Dergisi 19/1 (Haziran 2015), 23.",
+   "Galip Türcan, “Kelâm’ın Meşrûiyeti Sorunu: Ehl-i Sünnet Kelâmı ve Olgusal Gerçeklik Arasındaki İlişki”, Marife 5/3 (2005), 175-193.",
+   "Mehmet Kalaycı - Muhammet Emin Eren, “Reflection of Qāḍīzādelīs-Khalwatīs Tension on the Islamic Heresiography: Muṣṭafá Ibn Ibrāhīm and is Alphabetical Classifıcation of Sects”, Ilahiyat Studies 9/2 (2018), 249.",
+   "Ali Ayten vd., “Dini Başa Çıkma, Şükür ve Hayat Memnuniyeti ilişkisi: Hastalar, Hasta Yakınları ve Hastane Çalışanları Üzerine Bir Araştırma”, Dinbilimleri Akademik Araştırma Dergisi 12/2 (2012), 45-79."
+  ],
+  "later": [
+   "Çiftci, “Suça Teşebbüsten Vazgeçme”, 23.",
+   "Türcan, “Kelâm’ın Meşrûiyeti Sorunu”, 177.",
+   "Kalaycı - Eren, “Reflection of Qāḍīzādelīs-Khalwatīs Tension on the Islamic Heresiography”, 285.",
+   "Ayten vd., “Dini Başa Çıkma, Şükür ve Hayat Memnuniyeti İlişkisi”, 55."
+  ],
+  "bib": [
+   "Ayten, Ali vd. “Dini Başa Çıkma, Şükür ve Hayat Memnuniyeti İlişkisi: Hastalar, Hasta Yakınları ve Hastane Çalışanları Üzerine Bir Araştırma”. Dinbilimleri Akademik Araştırma Dergisi 12/2 (2012), 45-79.",
+   "Çiftci, Adem. “İslam Ceza Hukukunda Suça Teşebbüsten Vazgeçme”. Cumhuriyet İlahiyat Dergisi 19/1 (Haziran 2015), 23-46. https://doi.org/10.18505/cuifd.48242",
+   "Kalaycı, Mehmet - Eren, Muhammet Emin. “Reflection of Qāḍīzādelīs-Khalwatīs       Tension      on     the     Islamic Heresiography: Muṣṭafá Ibn Ibrāhīm and is Alphabetical Classifıcation of Sects”. Ilahiyat Studies 9/2 (2018), 249-290. https://doi.org/10.12730/13091719.2018.92.182",
+   "Türcan, Galip. “Kelâm’ın Meşrûiyeti Sorunu: Ehl-i Sünnet Kelâmı ve Olgusal Gerçeklik Arasındaki İlişki”. Marife 5/3 (2005), 175-193. https://doi.org/10.5281/zenodo.3343671"
+  ],
+  "notes": [
+   "❖ Yazar isimlerinin arasında, öncesi ve sonrasında boşluk bırakılarak “tire/kısa çizgi işareti (-)” kullanılır.",
+   "❖ Yazar sayısı üç veya daha fazla ise dipnotta ilk yazarın adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk yazarın soyadı ve adı belirtildikten sonra vd. kısaltması yazılır.",
+   "❖ Makale sayfa aralığı belirtilirken öncesi ve sonrasında boşluk verilmeksizin “tire/kısa çizgi işareti (-)” kullanılır. Örnek: Dinbilimleri Akademik Araştırma Dergisi 12/2 (2012), 45-79.",
+   "❖ Cilt ve sayı numarasından önce “c.” ve “S” kısaltması kullanılmaz.",
+   "❖ Derginin cilt ve sayı numarası var ise “Dergi Adı Cilt Numarası/Sayı Numarası (Ay Yıl), sayfa numarası” şeklinde gösterilir. Örnek: Cumhuriyet İlahiyat Dergisi 20/1 (Haziran 2016), 44.",
+   "❖ Dergi sadece sayı numarası kullanıyorsa “Dergi Adı Sayı no (Ay Yıl), sayfa” şeklinde gösterilir. Örnek: ULUM 3 (Temmuz 2018), 120-123.",
+   "❖ Makale DOI numarası dipnotta belirtilmez. Sadece kaynakçada yazılması yeterlidir. EndNote ve Zotero gibi programlarda makale DOI numarası 10.18505/cuifd.12582 şeklinde kaydedilir, “https://doi.org/” ön eki şablonda yer aldığından ayrıca yazılmaz.",
+   "❖ Değerlendirme süreçleri tamamlanmış, yayına kabul edilmiş ancak henüz yayımlanmamış, erken görünüm vb. şeklinde ulaşılabilen makalelerin kaynak gösterimi, mevcut bilgiler (cilt ve sayı numarası, sayfa numarası, DOI numarası vb.) yazılarak yapılır. Ancak dergi isminden sonra (Yayın Aşamasında) bilgisi eklenir. Örnek: Asutay, Muhammet Mücahit. “İlk Fıkhu’l-Luğa Kitaplarında Sözdizim ve Anlamsal Yoruma Bir Bakış”. Mütefekkir (Yayın Aşamasında) 6/12 (2019)."
+  ]
+ },
+ {
+  "no": "14.2",
+  "title": "Makale-Çeviri",
+  "page": 108,
+  "first": [
+   "Josef van Ess, “Mu‘tezile: İslâm’ın Akılcı Yorumu-1”, çev. Veysel Kasar, Harran Üniversitesi İlahiyat Fakültesi Dergisi 13/20 (2008), 296.",
+   "Jon Hoover, “İslâmî Monoteizm ve Teslîs”, çev. Zeynep Yücedoğru, Oksident 1/1 (2019), 117-143."
+  ],
+  "later": [
+   "Ess, “Mu‘tezile: İslâm’ın Akılcı Yorumu-1”, 296.",
+   "Hoover, “İslâmî Monoteizm ve Teslîs”, 121-122."
+  ],
+  "bib": [
+   "Ess, Josef van. “Mu‘tezile: İslâm’ın Akılcı Yorumu-1”. çev. Veysel Kasar. Harran Üniversitesi İlahiyat Fakültesi Dergisi 13/20 (2008), 291-299.",
+   "Hoover, Jon. “İslâmî Monoteizm ve Teslîs”. çev. Zeynep Yücedoğru.      Oksident       1/1     (2019),       117-143. https://doi.org/10.5281/zenodo.3360748"
+  ],
+  "notes": [
+   "❖ Yazar sayısı üç veya daha fazla ise dipnotta ilk yazarın adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk yazarın soyadı ve adı belirtildikten sonra vd. kısaltması yazılır.",
+   "❖ Çevrimen sayısı üç veya daha fazla ise dipnotta ilk çevirmenin adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk çevirmenin soyadı ve adı belirtildikten sonra vd. kısaltması yazılır. EndNote ve Zotero gibi programlarda makale DOI numarası 10.18505/cuifd.12582 şeklinde kaydedilir, “https://doi.org/” ön eki şablonda yer aldığından ayrıca yazılmaz. İSNAD Dipnotlu                                                                          109"
+  ]
+ },
+ {
+  "no": "14.3",
+  "title": "Makale-Tahkik/Neşir",
+  "page": 109,
+  "first": [
+   "İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl, “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö.",
+   "956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”, nşr. Kadir Gömbeyaz, Bilimname 38 (2019), 76.",
+   "Bedreddin eş- Şuhâvî. et-Tırâzu’l-müzheb, “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”, thk. Osman Bayder, Tahkik İslami İlimler Araştırma ve Neşir Dergisi 2/1 (Haziran 2019), 229"
+  ],
+  "later": [
+   "Halebî, Risâle fi hakkı ebeveyi’r-Resûl, 76.",
+   "Şuhâvî, et-Tırâzu’l-müzheb, 229."
+  ],
+  "bib": [
+   "Halebî, İbrahim. Risâle fi hakkı ebeveyi’r-Resûl. nşr. Kadir Gömbeyaz. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278",
+   "Şuhâvî, Bedreddin. et-Tırâzu’l-müzheb. “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”. thk. Osman Bayder. Tahkik İslami İlimler Araştırma ve Neşir Dergisi        2/1        (Haziran          2019),   211-257. https://doi.org/10.5281/zenodo.3475103"
+  ],
+  "notes": [
+   "❖ Yazar sayısı üç veya daha fazla ise dipnotta ilk yazarın adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk yazarın soyadı ve adı belirtildikten sonra vd. kısaltması yazılır."
+  ]
+ },
+ {
+  "no": "14.4",
+  "title": "Makale-Popüler",
+  "page": 110,
+  "first": [
+   "Mustafa Arslan, “Sanal Dünya ve Değişen Toplumsal/Bireysel İlişkiler”, Diyanet Aylık Dergi 315 (Mart 2017), 12-14."
+  ],
+  "later": [
+   "Arslan, “Sanal Dünya ve Değişen Toplumsal/Bireysel İlişkiler”, 14."
+  ],
+  "bib": [
+   "Arslan, Mustafa. “Sanal Dünya ve Değişen Toplumsal/Bireysel İlişkiler”. Diyanet Aylık Dergi 315 (Mart 2017), 12-30. http://www.diyanetdergi.com/gundem/item/674-sanal-dunya-ve-degisen-toplumsal-bireysel-iliskiler"
+  ],
+  "notes": []
+ },
+ {
+  "no": "14.5",
+  "title": "Makale-İnternette",
+  "page": 110,
+  "first": [
+   "Sebastian Karcher - Philipp Zumstein, “Citation Styles: History, Practice, and Future”, Authorea (Erişim 18 Eylül 2019)."
+  ],
+  "later": [
+   "Sebastian Karcher - Philipp Zumstein, “Citation Styles: History, Practice, and Future”."
+  ],
+  "bib": [
+   "Karcher, Sebastian - Zumstein, Philipp. “Citation Styles: History, Practice, and Future”. Authorea. Erişim 18 Eylül 2019.       https://www.authorea.com/users/102264/articles/124920-citation-styles-history-practice-and-future"
+  ],
+  "notes": []
+ },
+ {
+  "no": "15",
+  "title": "Bildiri/Tebliğ",
+  "page": 111,
+  "first": [
+   "Abdullah Demir, “Farklı Ebû Hanîfe Tasavvurları: Fakih ve Mütekellim Hanefîler Örneği”, IV. Uluslararası Şeyh Şa'ban-ı Velî Sempozyumu, ed. Cengiz Çuhadar vd. (Kastamonu: Kastamonu Üniversitesi Yayınları, 2017), 1/650.",
+   "Osman Uyanık, “Yusuf Has Hacib’in Gök Bilimine Katkıları”, Uluslararası Ahmet Yesevi’den Günümüze İnsanlığa Yön Veren Türk Büyükleri Sempozyumu Bildirileri, ed. İrfan Ünver Nasrattınoğlu (Ankara: Türk Kültürü Araştırmaları Kurumu, 2009), 5-43."
+  ],
+  "later": [
+   "Demir, “Farklı Ebû Hanîfe Tasavvurları: Fakih ve Mütekellim Hanefîler Örneği”, 1/653.",
+   "Uyanık, “Yusuf Has Hacib’in Gök Bilimine Katkıları”, 13."
+  ],
+  "bib": [
+   "Demir, Abdullah. “Farklı Ebû Hanîfe Tasavvurları: Fakih ve Mütekellim Hanefîler Örneği”. IV. Uluslararası Şeyh Şa'ban-ı Velî Sempozyumu. ed. Cengiz Çuhadar vd. 1/643-658. Kastamonu: Kastamonu Üniversitesi Yayınları, 2017.",
+   "Uyanık, Osman. “Yusuf Has Hacib’in Gök Bilimine Katkıları”. Uluslararası Ahmet Yesevi’den Günümüze İnsanlığa Yön Veren Türk Büyükleri Sempozyumu Bildirileri. ed. İrfan Ünver Nasrattınoğlu. 5-43. Ankara: Türk Kültürü Araştırmaları Kurumu, 2009."
+  ],
+  "notes": [
+   "❖ Yazar sayısı üç veya daha fazla ise dipnotta ilk yazarın adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk yazarın soyadı ve adı belirtildikten sonra vd. kısaltması yazılır."
+  ]
+ },
+ {
+  "no": "16.1",
+  "title": "Gazete-Köşe Yazısı",
+  "page": 112,
+  "first": [
+   "Murat Bardakçı, “Restorasyon Faaliyetleri ve Şeyh Galib’in Sandukası”, Habertürk (20 Ağustos 2019).",
+   "M. Şükrü Hanioğlu, “15 Temmuz’u Farklı Kılan Nedir?”, Sabah (15 Temmuz 2018), 8."
+  ],
+  "later": [
+   "Bardakçı, “Restorasyon Faaliyetleri ve Şeyh Galib’in Sandukası”.",
+   "Hanioğlu, “15 Temmuz’u Farklı Kılan Nedir?”, 8."
+  ],
+  "bib": [
+   "Bardakçı, Murat. “Restorasyon Faaliyetleri ve Şeyh Galib’in Sandukası”. Habertürk (20 Ağustos 2019). https://www.haberturk.com/yazarlar/murat-bardakci/2514553-restorasyon-faaliyetleri-ve-seyh-galibin-sandukasi",
+   "Hanioğlu, M. Şükrü. “15 Temmuz’u Farklı Kılan Nedir?”. Sabah (15 Temmuz 2018), 8. https://www.sabah.com.tr/yazarlar/hanioglu/2018/07/15/15-temmuzu-farkli-kilan-nedir"
+  ],
+  "notes": []
+ },
+ {
+  "no": "16.2",
+  "title": "Gazete Haberi-Yazarlı",
+  "page": 112,
+  "first": [
+   "Alaattin Aktaş, “Faizin düşmesi kimlere yarar?”, Dünya (10 Temmuz 2019), 6."
+  ],
+  "later": [
+   "Aktaş, “Faizin düşmesi kimlere yarar?”, 6."
+  ],
+  "bib": [
+   "Aktaş, Alaattin. “Faizin düşmesi kimlere yarar?”. Dünya (10 Temmuz 2019), 6. https://www.dunya.com"
+  ],
+  "notes": []
+ },
+ {
+  "no": "16.3",
+  "title": "Gazete Haberi-Yazarsız",
+  "page": 113,
+  "first": [
+   "Milliyet, “Yetki Kanunları” (17 Eylül 1971), 1."
+  ],
+  "later": [
+   "Milliyet, “Yetki Kanunları”, 1."
+  ],
+  "bib": [
+   "Milliyet. “Yetki Kanunları” (17 Eylül 1971), 1. http://www.milliyet.com.tr"
+  ],
+  "notes": []
+ },
+ {
+  "no": "17.1",
+  "title": "Rapor-Yazarsız",
+  "page": 113,
+  "first": [
+   "Din İşleri Yüksek Kurulu Başkanlığı (DİYKB), Kendi Dilinden FETÖ Örgütlü Bir Din İstismarı (Ankara: Diyanet İşleri Yayınları, 2017), 36.",
+   "Meclis Araştırması Komisyonu (MAK), Başta Cinsel İstismar Olmak Üzere Çocuklara Yönelik Her Türlü İstismar Olaylarının Araştırılarak Alınması Gereken Önlemlerin Belirlenmesi Amacıyla Kurulan Meclis Araştırması Komisyonu Raporu (Ankara: TBMM, 2016), 45."
+  ],
+  "later": [
+   "DİYKB, Kendi Dilinden FETÖ Örgütlü Bir Din İstismarı, 45.",
+   "MAK, Cinsel İstismar Olaylarının Önlenmesi Amacıyla Kurulan Meclis Araştırması Komisyonu Raporu, 45-47."
+  ],
+  "bib": [
+   "DİYKB, Din İşleri Yüksek Kurulu Başkanlığı. Kendi Dilinden FETÖ Örgütlü Bir Din İstismarı. Ankara: Diyanet İşleri Yayınları, 2017.",
+   "MAK, Meclis Araştırması Komisyonu. Başta Cinsel İstismar Olmak Üzere Çocuklara Yönelik Her Türlü İstismar Olaylarının Araştırılarak Alınması Gereken Önlemlerin Belirlenmesi Amacıyla Kurulan Meclis Araştırması Komisyonu Raporu. Ankara: TBMM, 2016. https://www.tbmm.gov.tr/sirasayi/donem26/yil01/ss442.pdf"
+  ],
+  "notes": []
+ },
+ {
+  "no": "17.2",
+  "title": "Rapor-Yazarlı",
+  "page": 114,
+  "first": [
+   "Mustafa Aydıntepe - İzzettin Artokça, Yemen Raporu (TASAM, 2013), 14,"
+  ],
+  "later": [
+   "Aydıntepe - Artokça, Yemen Raporu, 16."
+  ],
+  "bib": [
+   "Aydıntepe, Mustafa - Artokça, İzzettin. Yemen Raporu. TASAM, 2018. http://www.tasam.org/Files/PDF/Raporlar/yemen_raporu.pdf_b7e9f548-3946-4f3d-ac14-b8448ef6b8eb.pdf"
+  ],
+  "notes": [
+   "❖ Yazar sayısı üç veya daha fazla ise dipnotta ilk yazarın adı ve soyadına yer verildikten sonra “vd.” kısaltması kullanılır. Benzer şekilde kaynakçada ilk yazarın soyadı ve adı belirtildikten sonra vd. kısaltması yazılır."
+  ]
+ },
+ {
+  "no": "18",
+  "title": "Basın Bülteni",
+  "page": 114,
+  "first": [
+   "Hazine ve Maliye Bakanlığı (HMB), Aylık Bütçe Bülteni (Haziran 2019), 45-46.",
+   "Bankacılık Düzenleme ve Denetleme Kurumu (BDDK), Aylık Bankacılık Sektörü Verileri (Haziran 2019)."
+  ],
+  "later": [
+   "HMB, Aylık Bütçe Bülteni, 40.",
+   "BDDK, Aylık Bankacılık Sektörü Verileri."
+  ],
+  "bib": [
+   "BDDK, Bankacılık Düzenleme ve Denetleme Kurumu. Aylık Bankacılık   Sektörü  Verileri      (Haziran       2019). https://www.bddk.org.tr/bultenaylik",
+   "HMB, Hazine ve Maliye Bakanlığı. Aylık Bütçe Bülteni (Haziran 2019). https://ms.hmb.gov.tr/uploads/2019/07/2019-Haziran-Aylık-Bütçe-Bülteni.pdf"
+  ],
+  "notes": []
+ },
+ {
+  "no": "19",
+  "title": "İstatistik",
+  "page": 115,
+  "first": [
+   "Türkiye Cumhuriyet Merkez Bankası (TCMB), Bankalarca Açılan Kredilere Uygulanan Ağırlıklı Ortalama Faiz Oranları (16 Ağustos 2019).",
+   "Türkiye İstatistik Kurumu (TUİK), Sanayi Üretim Endeksi-Genel (Haziran 2019)."
+  ],
+  "later": [
+   "TCMB, Bankalarca Açılan Kredilere Uygulanan Ağırlıklı Ortalama Faiz Oranları.",
+   "TUİK, Sanayi Üretim Endeksi-Genel."
+  ],
+  "bib": [
+   "TCMB, Türkiye Cumhuriyet Merkez Bankası. Bankalarca Açılan Kredilere Uygulanan Ağırlıklı Ortalama Faiz Oranları (16 Ağustos 2019). https://www.tcmb.gov.tr/wps/wcm/connect/TR/TCM B+TR/Main+Menu/Istatistikler/Faiz+Istatistikleri/Bank alarca+Acilan+Kredi",
+   "TÜİK, Türkiye İstatistik Kurumu. Sanayi Üretim Endeksi (Haziran 2019). http://www.tuik.gov.tr/PreTablo.do?alt_id=1024"
+  ],
+  "notes": []
+ },
+ {
+  "no": "20.1",
+  "title": "Katalog-Yazarsız",
+  "page": 116,
+  "first": [
+   "el-Fihrisü’ş-şâmil li’t-türâsi’l-Arabiyyi’l-İslâmiyyi’l-mahtût: el-fıkh ve usûluhû (Amman: Müessesetü Âli’l-Beyt li’l-Fikri’l-İslâmî, 1999-2014), 11/49."
+  ],
+  "later": [
+   "el-Fihrisü’ş-şâmil, 11/49."
+  ],
+  "bib": [
+   "el-Fihrisü’ş-şâmil li’t-türâsi’l-Arabiyyi’l-İslâmiyyi’l-mahtût: el-fıkh ve usûluhû. 12 Cilt. Amman: Müessesetü Âli’l-Beyt li’l-Fikri’l-İslâmî, 1999-2014."
+  ],
+  "notes": []
+ },
+ {
+  "no": "20.2",
+  "title": "Katalog-Yazarlı",
+  "page": 116,
+  "first": [
+   "Yûsuf Zeydân, el-Mahtûtâtü’l-elfiyye (Kahire: Dâru’l-Hilâl, 2004), 33-34.",
+   "Hanbâbâ Müşâr, Fihrist-i kitâbhâ-yı çâpî-i Arabî (Tahran: Çâp-i Rengîn, 1965), 44."
+  ],
+  "later": [
+   "Zeydân, el-Mahtûtâtü’l-elfiyye, 45-50.",
+   "Müşâr, Fihrist-i kitâbhâ-yı çâpî-i Arabî, 90-92."
+  ],
+  "bib": [
+   "Müşâr, Hanbâbâ. Fihrist-i kitâbhâ-yı çâpî-i Arabî. Tahran: Çâp-i Rengîn, 2. Basım, 1965.",
+   "Zeydân, Yûsuf. el-Mahtûtâtü’l-elfiyye. Kahire: Dâru’l-Hilâl, 2004."
+  ],
+  "notes": []
+ },
+ {
+  "no": "20.3",
+  "title": "Katalog-Editörlü",
+  "page": 117,
+  "first": [
+   "Geoffrey Roper (ed.), World Survey of Islamic Manuscripts (London: al-Furqan Islamic Heritage Foundation, 1991-1994), 4/12."
+  ],
+  "later": [
+   "Roper (ed.), World Survey of Islamic Manuscripts, 2/112."
+  ],
+  "bib": [
+   "Roper, Geoffrey (ed.). World Survey of Islamic Manuscripts. 4 Cilt. London: al-Furqan Islamic Heritage Foundation, 1991-1994."
+  ],
+  "notes": []
+ },
+ {
+  "no": "20.4",
+  "title": "Katalog-Web",
+  "page": 117,
+  "first": [
+   "Türkiye Yazma Eserler Kurumu Başkanlığı (TYEKB), Yazma Eserler Portalı (Erişim 12 Eylül 2019).",
+   "The Fihrist (TF), Union Catalogue of Manuscripts from the Islamicate World (Erişim 13 Eylül 2019)."
+  ],
+  "later": [
+   "TYEKB, Yazma Eserler Portalı.",
+   "TF, Union Catalogue of Manuscripts from the Islamicate World."
+  ],
+  "bib": [
+   "TF, The Fihrist. Union Catalogue of Manuscripts from the Islamicate World.         Erişim         13         Eylül         2019. https://www.fihrist.org.uk/about",
+   "TYEKB, Türkiye Yazma Eserler Kurumu Başkanlığı. Yazma Eserler Portalı. Erişim 12 Eylül 2019. http://yazmalar.gov.tr"
+  ],
+  "notes": []
+ },
+ {
+  "no": "22.1",
+  "title": "Mevzuat-Resmî Gazete’de",
+  "page": 121,
+  "first": [
+   "Fikir ve Sanat Eserleri Kanunu (FSEK), Resmî Gazete 7981 (13 Aralık 1951), Kanun No. 5846, md. 35/4.",
+   "Yükseköğretim Kanunu (YK), Resmî Gazete 17506 (6 Kasım 1981), Kanun No. 2547, md. 53/3.",
+   "Doçentlik Yönetmeliği (DY), Resmî Gazete 30392 (15 Nisan 2018), md. 7/2.",
+   "Commission Decision (EU) 2017/1002 of 7 June 2017 on the proposed citizens' initiative entitled Stop extremism (Stop extremism), Official Journal of the European Union L 152/1 (15 June 2017), 2."
+  ],
+  "later": [
+   "FSEK, md. 35/4.",
+   "YK, md. 53/2-b.",
+   "DY, md. 7/3.",
+   "Stop extremism, 2."
+  ],
+  "bib": [
+   "DY, Doçentlik Yönetmeliği. Resmî Gazete 30392 (15 Nisan 2018). Erişim 3 Eylül 2019. http://www.resmigazete.gov.tr/eskiler/2018/04/20180415-3.htm",
+   "FSEK, Fikir ve Sanat Eserleri Kanunu (Kanun No. 5846). Resmî Gazete 7981 (13 Aralık 1951). Erişim 3 Eylül 2019. https://kms.kaysis.gov.tr/Home/Goster/33768?AspxAutoDete ctCookieSupport=1",
+   "Stop extremism, Commission Decision (EU) 2017/1002 of 7 June 2017 on the proposed citizens' initiative entitled Stop extremism. Official Journal of the European Union L 152/1 (15 June 2017). Erişim 3 Eylül 2019. https://eur-lex.europa.eu/eli/dec/2017/1002/oj",
+   "YK, Yükseköğretim Kanunu (Kanun No. 2547). Resmî Gazete 17506 (6 Kasım 1981). Erişim 3 Eylül 2019. http://www.mevzuat.gov.tr/MevzuatMetin/1.5.2547.pdf",
+   "Zotero gibi programlara bu türde bir yayın kaydedilirken Yayın Adı alanına Mevzuat Adı,",
+   "Yayın Kısa Adı alanına ise Mevzuat Adı Kısaltması yazılır.",
+   "Örnek: YK, Yükseköğretim Kanunu",
+   "EndNote gibi programlarda “md.” kısaltması ve madde numaraları elle yazılır."
+  ],
+  "notes": []
+ },
+ {
+  "no": "22.2",
+  "title": "Mevzuat-Diğer",
+  "page": 122,
+  "first": [
+   "Yükseköğretim Kurulu Bilimsel Araştırma ve Yayın Etiği Yönergesi (YKBAYEY), Yükseköğretim Kurulu (2016), md. 4.",
+   "Yükseköğretim Kurumları Etik Davranış İlkeleri (YKEDİ), Yükseköğretim Kurulu (2014), md. 1/1."
+  ],
+  "later": [
+   "YKBAYEY, md. 3.",
+   "YKEDİ, md. 1/1."
+  ],
+  "bib": [
+   "YKBAYEY, Yükseköğretim Kurulu Bilimsel Araştırma ve Yayın Etiği Yönergesi. Türkiye: Yükseköğretim Kurulu, 2016. Erişim 12 Temmuz 2019. https://www.yok.gov.tr/Documents/Kurumsal/mevzu at/YayınEtiğiYönergesi_140318.pdf",
+   "YKEDİ, Yükseköğretim Kurumları Etik Davranış İlkeleri. Türkiye: Yükseköğretim Kurulu, 2014. Erişim 12 Temmuz 2019. https://www.ankara.edu.tr/wp-content/uploads/sites/6/2015/01/etik-davranış-ilkeleri.pdf"
+  ],
+  "notes": [
+   "❖ Avrupa Birliği mevzuatına atıf için bk. Avrupa Birliği Bakanlığı, AB Mevzuatı Çeviri   Rehberi     (Ankara:      Avrupa     Birliği     Bakanlığı,    2017), https://www.ab.gov.tr/files/ceb/ab_mevzuati_ceviri_rehberi.pdf Zotero gibi programlara bu türde bir yayın kaydedilirken Yayın Adı alanına Mevzuat Adı, Yayın Kısa Adı alanına ise Mevzuat Adı Kısaltması yazılır. Örnek: Yayın Adı: Yükseköğretim Kurulu Bilimsel Araştırma ve Yayın Etiği Yönergesi Yayın Kısa Adı: YKBAYEY İSNAD Dipnotlu                                                                       123"
+  ]
+ },
+ {
+  "no": "23",
+  "title": "Standard",
+  "page": 123,
+  "first": [
+   "Türk Standardları Enstitüsü (TSE), Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz (Türkiye: Türk Standardları Enstitüsü, Kabul 05 Haziran 2012, TS OIC/SMIIC 2/T1)."
+  ],
+  "later": [
+   "TSE, Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz."
+  ],
+  "bib": [
+   "TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz. Türkiye: Türk Standardları Enstitüsü, Kabul 05 Haziran 2012, TS OIC/SMIIC 2/T1."
+  ],
+  "notes": []
+ },
+ {
+  "no": "24",
+  "title": "Mahkeme Kararı",
+  "page": 123,
+  "first": [
+   "Yargıtay 11. Hukuk Dairesi (Yargıtay), K. 2019/1204 (22 Ağustos 2019).",
+   "Anayasa Mahkemesi (AYM) K. 2015/19953 (26 Haziran 2019)."
+  ],
+  "later": [
+   "Yargıtay, K. 2019/1204.",
+   "AYM, K. 2015/19953."
+  ],
+  "bib": [
+   "AYM, Anayasa Mahkemesi. K. 2015/19953 (26 Haziran 2019). http://www.resmigazete.gov.tr/eskiler/2019/08/20190 806-6.pdf",
+   "Yargıtay, Yargıtay 11. Hukuk Dairesi. K. 2019/1204 (22 Ağustos 2019). http://www.resmigazete.gov.tr/eskiler/2019/08/20190822-4.pdf"
+  ],
+  "notes": []
+ },
+ {
+  "no": "26",
+  "title": "Veri Tabanı",
+  "page": 125,
+  "first": [
+   "Web of Science (WoS), “Aranan: Maturidism” (Erişim 18 Eylül 2019).",
+   "Dini Araştırmalar Veri Tabanı İlahiyat Atıf Dizini (DAVET), “Aranan: Oruç İbadeti” (Erişim 12 Eylül 2019).",
+   "EBSCO Akademik Search Complete (EBSCO), “Aranan: Mehmet Akif Ersoy” (Erişim 19 Nisan 2019).",
+   "AlManhal eLibrary (ALMANHAL), “Aranan: ‫( ”إسناد‬Erişim 9 Temmuz 2019)."
+  ],
+  "later": [
+   "WoS, “Aranan: Maturidism”.",
+   "DAVET, “Aranan: Oruç İbadeti”.",
+   "EBSCO, “Aranan: Mehmet Akif Ersoy” ALMANHAL, “Aranan: ‫”إسناد‬."
+  ],
+  "bib": [
+   "ALMANHAL, Al Manhal eLibrary. “Aranan: ‫”إسناد‬. Erişim 9 Temmuz 2019. http://platform.almanhal.com",
+   "DAVET, Dini Araştırmalar Veri Tabanı İlahiyat Atıf Dizini. “Aranan: Oruç      İbadeti”.     Erişim      12      Eylül      2019. https://www.davet.org.tr",
+   "EBSCO, EBSCO Akademik Search Complete. “Aranan: Mehmet Akif Ersoy”. Erişim 19 Nisan 2019. http://search.ebscohost.com",
+   "WoS, Web of Science. “Aranan: Maturidism”. Erişim 18 Eylül 2019. http://apps.webofknowledge.com"
+  ],
+  "notes": [
+   "❖ Zotero gibi programlarda Web of Science, EBSCO ve SCOPUS gibi kurum isimleri yazılırken ad alanına veri tabanının marka ismi, soyad alanına ise marka kısaltması yazılır. Örnek:     Soyad, Ad AB, Aile Bakanlığı EBSCO, EBSCO Academic Search Comlete WoS, Web of Science DAVET, Dini Araştırmalar Veri Tabanı İlahiyat Atıf Dizini",
+   "❖ Elektronik yayınların internet erişim adresleri dipnotta değil sadece kaynakçada belirtilir. Eserin yayın türünün bilinebilmesi amacıyla dipnotta eser adından sonra parantez içinde erişim tarihi yazılır."
+  ]
+ },
+ {
+  "no": "27",
+  "title": "Yazılım",
+  "page": 126,
+  "first": [
+   "EndNote X9 (Yazılım, ABD: Clarivate Analytics, 2019).",
+   "Islamic Calendar Converter (Yazılım, ABD: Muslim Student Association of UMR - Waleed A. Muhanna, 1955).",
+   "Microsoft Word (Yazılım, ABD: Microsoft Corporation, 16.29, 2019)."
+  ],
+  "later": [
+   "EndNote X9.",
+   "Islamic Calendar Converter.",
+   "Microsoft Word 16.29."
+  ],
+  "bib": [
+   "EndNote     X9. Yazılım. ABD: Clarivate Analytics, 2019. https://endnote.com",
+   "Islamic calendar converter. Yazılım. Rolla - ABD: Muslim Student Association of UMR - Waleed A. Muhanna, 1955. https://www.loc.gov/item/2003556315",
+   "Microsoft Word 16.29. Yazılım. ABD: Microsoft Corporation, 2019."
+  ],
+  "notes": []
+ },
+ {
+  "no": "28",
+  "title": "Patent",
+  "page": 127,
+  "first": [
+   "Adem Kaya, Eğitim Dokümanları İçin İçerik Sınıflandırma Sistemi ve Yöntemi (Patent, Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019).",
+   "Mehmet Fişek, Chair for Performing the Rituel Prayers of Islam to People Having Physical Illnesses (Patent, World Intellectual Property Organization, Patent No. WO2014/011125, Tarih 16 Ocak 2014)."
+  ],
+  "later": [
+   "Kaya, Eğitim Dokümanları İçin İçerik Sınıflandırma Sistemi ve Yöntemi.",
+   "Fişek, Chair for Performing the Rituel Prayers of Islam to People Having Physical Illnesses."
+  ],
+  "bib": [
+   "Fişek, Mehmet. Chair for Performing the Rituel Prayers of Islam to People Having Physical Illnesses. Patent. World Intellectual Property Organization, No. WO2014/011125, Tarih 16 Ocak 2014. https://patentscope.wipo.int/search/en/detail.jsf?docI d=WO2014011125&tab=PCTBIBLIO&_cid=P22-K0LCW3-92000-1",
+   "Kaya, Adem. Eğitim Dokümanları İçin İçerik Sınıflandırma Sistemi ve Yöntemi. Patent. Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019. https://www.turkpatent.gov.tr/TURKPATENT"
+  ],
+  "notes": [
+   "❖ Zotero gibi programlarda başvuru sahibi firma ise ad alanına Firma Adı, soyadı alanına ise Firma Adı Kısaltması yazılır. Örnek: Mantis, Mantis Software Company"
+  ]
+ },
+ {
+  "no": "29",
+  "title": "Sosyal Medya",
+  "page": 128,
+  "first": [
+   "Abdullah Demir, “İSNAD Yaygınlaşıyor”, Facebook (12 Mart 2019, 20:30).",
+   "T.C. Cumhurbaşkanlığı T.C. CB, “2019-2020 eğitim öğretim yılında öğretmenlerimiz ve öğrencilerimiz … diliyoruz”, Twitter (8 Eylül 2019, 23:32)."
+  ],
+  "later": [
+   "Demir, “İSNAD Yaygınlaşıyor” (12 Mart 2019, 20:30).",
+   "T.C. CB, “2019-2020 eğitim öğretim yılında öğretmenlerimiz ve öğrencilerimiz … diliyoruz” (8 Eylül 2019, 23:32)."
+  ],
+  "bib": [
+   "Demir, Abdullah. “İSNAD yaygınlaşıyor”. Facebook. 12 Mart 2019, 20:30. Erişim 12 Temmuz 2019. https://www.facebook.com/seherberat/posts/10218523 255423323",
+   "T.C. CB, T.C. Cumhurbaşkanlığı. “2019-2020 eğitim öğretim yılında öğretmenlerimiz ve öğrencilerimiz … diliyoruz”. Twitter. 8 Eylül 2019, 23:32. Erişim 9 Eylül 2019. https://twitter.com/tcbestepe/status/117094811236766 5153"
+  ],
+  "notes": []
+ },
+ {
+  "no": "30",
+  "title": "Film",
+  "page": 129,
+  "first": [
+   "Frank Darabont, The Shawshank Redemption [Esaretin Bedeli] (Film, 1995), 01:11:10-01:15:15."
+  ],
+  "later": [
+   "Darabont, “The Shawshank Redemption”, 01:55:10-01:55:30."
+  ],
+  "bib": [
+   "Darabont, Frank. The Shawshank Redemption [Esaretin Bedeli] (Film, 1995). http://www.imdb.com/title/tt0111161"
+  ],
+  "notes": []
+ },
+ {
+  "no": "31",
+  "title": "TV Yayını",
+  "page": 129,
+  "first": [
+   "Cenksu Üçer, “Mizan”, Diyanet TV (06 Temmuz 2019), 00:22:05-00:30:10."
+  ],
+  "later": [
+   "Üçer, “Mizan”, 00:22:05-00:30:10."
+  ],
+  "bib": [
+   "Üçer, Cenksu. “Mizan”. Diyanet TV. Yayın Tarihi 06 Temmuz 2019. https://www.diyanet.tv/mizan/video/mizan--58-bolum"
+  ],
+  "notes": []
+ },
+ {
+  "no": "32",
+  "title": "Video Kaydı",
+  "page": 129,
+  "first": [
+   "Muhammet Tarakçı, “İSNAD-Kitap Bölümüne Atıf”, YouTube (31 Mart 2018), 00:01:10-00:01:55."
+  ],
+  "later": [
+   "Tarakçı, “İSNAD-Kitap Bölümüne Atıf”, 00:01:10-00:01:55."
+  ],
+  "bib": [
+   "Tarakçı, Muhammet. “İSNAD-Kitap Bölümüne Atıf”. YouTube. Yayın Tarihi 31 Mart 2018. https://youtu.be/watch?v=QwJe7fJfGYI"
+  ],
+  "notes": []
+ },
+ {
+  "no": "33",
+  "title": "Ses Kaydı",
+  "page": 130,
+  "first": [
+   "Fatih Koca, “Hak Bir Gönül Verdi Bana”, Lâ Mekân (2016), 00:03:01-00:04:02.",
+   "Michael Jackson, “Break of Dawn”, Invincible (2001), 00:02:11-00:03:10.",
+   "İsmail Biçer, “Bakara Sûresi”, Seher Demir Özel Arşivi (ts.), 00:04:05-00:05:10.",
+   "Ahmed Naina, “Sûrat Al-Fatihah”, al-Mushaf al-Mujawwad (1987), 00:00:01-00:02:03.",
+   "Taner Şener, “Derman Kâr Eylemez”, Gönül Plak (1980), 00:04:50-00:06:20."
+  ],
+  "later": [
+   "Koca, “Hak Bir Gönül Verdi Bana”, 00:03:04-00:03:09.",
+   "Jackson, “Break of Dawn”, 00:03:24-00:04:00.",
+   "Biçer, “Bakara Sûresi”, 00:04:08-00:04:40.",
+   "Naina, “Sûrat Al-Fatihah”, 00:01:01-00:02:03.",
+   "Şener, “Derman Kâr Eylemez”, 00:04:50-00:06:20."
+  ],
+  "bib": [
+   "Biçer, İsmail. “Bakara Sûresi”. Seher Demir Özel Arşivi, ts.",
+   "Jackson, Michael. “Break of Dawn”. Invincible, 2001. Erişim 12 Temmuz 2018. https://rateyourmusic.com/release/album/michael-jackson/invincible-10",
+   "Koca, Fatih. “Hak Bir Gönül Verdi Bana”. Lâ Mekân, 2016.",
+   "Naina, Ahmed. “Sûrat Al-Fatihah”. al-Mushaf al-Mujawwad, 1987. Erişim 14 Temmuz 2018. https://en.islamway.net/collection/10935/al-mushaf-al-mujawwad",
+   "Şener, Taner. “Derman Kâr Eylemez”. Gönül Plak, 1970. Erişim 18 Temmuz 2018. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=590311"
+  ],
+  "notes": [
+   "❖ Ses kaydının telif veya kayıt tarihi belli değil ise “Yıl” alanına “ts.” kısaltması yazılır. Yayımlanmayan sadece özel arşivde yer alan bir kayıt EndNote ve Zotero kütüphanesine kaydedilirken “Albüm Adı” alanına Özel Arşiv Adı yazılır. Albüm Adı: Berat Demir Özel Arşivi İSNAD Dipnotlu                                                                            131"
+  ]
+ },
+ {
+  "no": "34",
+  "title": "Nota Kâğıdı",
+  "page": 131,
+  "first": [
+   "Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kâğıdı, ts.), İstanbul: İSAM Kütüphanesi, Kemal Batanay Müzik Arşivi, No.",
+   "KB: 1-37-130."
+  ],
+  "later": [
+   "Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kâğıdı, ts)."
+  ],
+  "bib": [
+   "Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kâğıdı, ts.). İstanbul: İSAM Kütüphanesi, Kemal Batanay Müzik Arşivi, No. KB: 1-37-130. http://isamveri.org"
+  ],
+  "notes": []
+ },
+ {
+  "no": "35",
+  "title": "Sınav Kâğıdı",
+  "page": 132,
+  "first": [
+   "Öğrenci 1, İç Tasarıma Giriş Dersi Vize Sınavı (Sınav Kâğıdı, 20 Mart 2019), Sivas Cumhuriyet Üniversitesi, Mimarlık Fakültesi, Öğretici 1.",
+   "Öğrenci 2, Uluslararası İlişkiler-I Dersi Final Sınavı (Sınav Kâğıdı, 12 Nisan 2019), Selçuk Üniversitesi, İktisadi İdari Bilimler Fakültesi, Öğretici 2.",
+   "Öğrenci 3, Türkçe Dersi Ara Sınav (Sınav Kâğıdı, 10 Ekim 2018), Ankara Üniversitesi, Eğitim Fakültesi, Öğretici 3."
+  ],
+  "later": [
+   "Öğrenci 1, İç Tasarıma Giriş Dersi Vize Sınavı (Sınav Kâğıdı, 20 Mart 2019).",
+   "Öğrenci 2, Uluslararası İlişkiler-I Dersi Final Sınavı (Sınav Kâğıdı, 12 Nisan 2019).",
+   "Öğrenci 3, Türkçe Dersi Ara Sınav (Sınav Kâğıdı, 10 Ekim 2018)."
+  ],
+  "bib": [
+   "Öğrenci 1. İç Tasarıma Giriş Dersi Vize Sınavı (Sınav Kâğıdı, 20 Mart 2019). Sivas Cumhuriyet Üniversitesi, Mimarlık Fakültesi, Öğretici 1.",
+   "Öğrenci 2. Uluslararası İlişkiler-I Dersi Final Sınavı (Sınav Kâğıdı, 12 Nisan 2019). Selçuk Üniversitesi, İktisadi İdari Bilimler Fakültesi, Öğretici 2.",
+   "Öğrenci 3. Türkçe Dersi Ara Sınav (Sınav Kâğıdı, 10 Ekim 2018). Ankara Üniversitesi, Eğitim Fakültesi, Öğretici 3."
+  ],
+  "notes": [
+   "❖ Gizliliği korumak amacı ile öğrenci adı alanına “Öğrenci”, soyadı alanına ise “1, 2, 3” şeklinde ardışık rakam yazılır.",
+   "❖ Gizliliği korumak amacı ile Öğretmen/Öğretim elemanı adı alanına “Öğretici”, soyadı alanına ise “1, 2, 3” şeklinde ardışık rakam yazılır. İSNAD Dipnotlu                                                                         133"
+  ]
+ },
+ {
+  "no": "36",
+  "title": "Sanat Eseri ve Tarihî Eser",
+  "page": 133,
+  "first": [
+   "Halı Seccade (Halı, 17-18. yüzyıl, İstanbul: Türk ve İslâm Eserleri Müzesi, Halı Koleksiyonu), No. 420.",
+   "Ud (Ahşap, 20. yüzyıl, İstanbul: Vehbi Koç Vakfı Sadberk Hanım Müzesi, Türk-İslam Koleksiyonu), No. 18138.",
+   "Kapaklı Sahan (Porselen, 19. yüzyıl, İstanbul: Vehbi Koç Vakfı Sadberk Hanım Müzesi, Türk-İslam Koleksiyonu), No. 120.",
+   "Şefik Direnoğlu, Alparslan Portresi (Yağlı Boya, 2003, Ankara: Milli Kütüphane), No. 000511.",
+   "Hoca Ali Rıza, Bursa Çekirge’de Sultan Murat Hüdavendigâr Camii (Karakalem, 1911, Ankara: Milli Kütüphane), No. 000311.",
+   "Hayali Küçük Ali, Abdal (Tasvir, 1957, Ankara: Milli Kütüphane), No.",
+   "000116.",
+   "Abdullah Fréres, Istanbul walls (Foto, 1880-1893, Washington: Library of Congress, Prints and Photographs Division), No. LOT 9528/12.",
+   "Ahşap 82 ve El Sanatları Fuarı 15-27 Temmuz (Afiş, 1982, Ankara: Milli Kütüphane), No. 1982 AFİŞ 52."
+  ],
+  "later": [
+   "Halı Seccade, No. 420.",
+   "Ud, No. 18138.",
+   "Kapaklı Sahan, No. 120.",
+   "Şefik Direnoğlu, Alparslan Portresi, No. 000511.",
+   "Hoca Ali Rıza, Bursa Çekirge’de Sultan Murat Hüdavendigâr Camii, No.",
+   "000311.",
+   "Hayali Küçük Ali, Abdal, No. 000116.",
+   "Fréres, Istanbul walls, No. LOT 9528/12.",
+   "Ahşap 82 ve El Sanatları Fuarı 15-27 Temmuz, No. 1982 AFİŞ 52."
+  ],
+  "bib": [
+   "Ahşap 82 ve El Sanatları Fuarı 15-27 Temmuz. Afiş, 1982. Ankara: Milli Kütüphane, No. 1982 AFİŞ 52.",
+   "Direnoğlu, Şefik. Alparslan Portresi. Yağlı Boya, 2003. Ankara: Milli Kütüphane, No. 000511.",
+   "Fréres, Abdullah. Istanbul walls. Fotoğraf, 1880-1893. Washington: Library of Congress, Abdul-Hamid II Collection, No. LOT 9528/12. https://lccn.loc.gov/2003663274",
+   "Halı Seccade. Halı, 17-18. yüzyıl. İstanbul: Türk ve İslâm Eserleri Müzesi, Halı Koleksiyonu, No. 420. http://www.tiem.gov.tr",
+   "Hayali Küçük Ali. Abdal. Tasvir, 1957. Ankara: Milli Kütüphane, No. 000116. https://dijital-kutuphane.mkutup.gov.tr/tr/nonbookmaterials/catalog/details/78006",
+   "Hoca Ali Rıza. Bursa Çekirge’de Sultan Murat Hüdavendigâr Camii. Karakalem, 1911. Ankara: Milli Kütüphane, No. 000311.",
+   "Kapaklı Sahan. Porselen, 19. yüzyıl. İstanbul: Vehbi Koç Vakfı Sadberk Hanım Müzesi, Türk-İslam Koleksiyonu, No. 120. http://www.sadberkhanimmuzesi.org.tr",
+   "Ud. Ahşap, 20. yüzyıl. İstanbul: Vehbi Koç Vakfı Sadberk Hanım Müzesi, Türk-İslam Koleksiyonu, No. 18138. http://www.sadberkhanimmuzesi.org.tr"
+  ],
+  "notes": []
+ },
+ {
+  "no": "37",
+  "title": "Fotoğraf-Dijital",
+  "page": 134,
+  "first": [
+   "Sezgin Pancar, Mersin'deki Yumuktepe Höyüğü'nde Kazı Çalışmaları Sürüyor (Fotoğraf, 2019), Anadolu Ajansı."
+  ],
+  "later": [
+   "Pancar, Mersin'deki Yumuktepe Höyüğü'nde Kazı Çalışmaları Sürüyor (Fotoğraf, 2019)."
+  ],
+  "bib": [
+   "Pancar, Sezgin. Mersin'deki Yumuktepe Höyüğü'nde Kazı Çalışmaları Sürüyor (Fotoğraf, 2019). Anadolu Ajansı. Erişim 4 Nisan 2019. https://www.aa.com.tr/tr/pg/foto-galeri/mersindeki-yumuktepe-hoyugunde-kazi-calismalari-suruyor/13"
+  ],
+  "notes": []
+ },
+ {
+  "no": "38.1",
+  "title": "Harita-Matbu",
+  "page": 135,
+  "first": [
+   "M. Kazım Çeçen, I. Bayezid Suyolu Haritaları (İstanbul: İSKİ Yayınları, 1977).",
+   "Dahiliye Nezâreti (DN), Vilayet Yolları Haritasıdır (İstanbul: Dahiliye Nezâreti Umur-i Mahalliye Vilayet Müdüriyeti, 1329/1913).",
+   "Muhyiddin b. Hacı Mehmed Pîrî Reis, Piri Reis Haritası (İstanbul: Deniz Kuvvetleri Komutanlığı Hidrografi Neşriyatı, 1966)."
+  ],
+  "later": [
+   "Çeçen, I. Bayezid Suyolu Haritaları.",
+   "DN, Vilayet Yolları Haritasıdır.",
+   "Pîrî Reis, Piri Reis Haritası."
+  ],
+  "bib": [
+   "Çeçen, M. Kazım. I. Bayezid Suyolu Haritaları. İstanbul: İSKİ Yayınları, 1977.",
+   "DN, Dahiliye Nezâreti. Vilayet Yolları Haritasıdır. İstanbul: Dahiliye Nezâreti Umur-i Mahalliye Vilayet Müdüriyeti, 1329/1913. İstanbul Büyükşehir Belediyesi Atatürk Kitaplığı, No. 23589. http://ataturkkitapligi.ibb.gov.tr",
+   "Pîrî Reis, Muhyiddin b. Hacı Mehmed. Piri Reis Haritası. İstanbul: Deniz Kuvvetleri Komutanlığı Hidrografi Neşriyatı, 1966. İstanbul Büyükşehir Belediyesi Atatürk Kitaplığı, No. Bel_Osm_B.00038. http://ataturkkitapligi.ibb.gov.tr"
+  ],
+  "notes": [
+   "❖ Haritacı adı ve soyadı belli değil ise harita adı alanına yayımlayan kurum adı, soyadı alanına ise kurum adı kısaltması yazılır. Örnek:          Haritacı Adı: Dahiliye Nezâreti Haritacı Soyadı: DN"
+  ]
+ },
+ {
+  "no": "38.2",
+  "title": "Harita-Web",
+  "page": 136,
+  "first": [
+   "Harita Genel Müdürlüğü, Atlas (Erişim 19 Eylül 2018).",
+   "Google, Google Maps (Erişim Ocak 2019).",
+   "David Rumsey Map Collection, Istanbul Vilayeti (Erişim 19 Eylül 2019)."
+  ],
+  "later": [
+   "Harita Genel Müdürlüğü, Atlas.",
+   "Google, Google Maps.",
+   "David Rumsey Map Collection, Istanbul Vilayeti."
+  ],
+  "bib": [
+   "David Rumsey Map Collection. Istanbul Vilayeti. 19 Eylül 2019. https://www.davidrumsey.com",
+   "Google.    Google     Maps.     Erişim  12      Ocak     2019. https://www.google.com/maps",
+   "Harita Genel Müdürlüğü. Atlas. Erişim 19 Eylül 2018. https://atlas.harita.gov.tr"
+  ],
+  "notes": []
+ },
+ {
+  "no": "39",
+  "title": "E-Posta",
+  "page": 136,
+  "first": [
+   "Abdullah Demir, İSNAD Atıf Sistemi 2. Edisyon Taslağı hk. (E-Posta 2 Eylül 2019, Alıcı: Emrah Kaya)."
+  ],
+  "later": [
+   "Demir, İSNAD Atıf Sistemi 2. Edisyon Taslağı hk.."
+  ],
+  "bib": [
+   "Demir, Abdullah. İSNAD Atıf Sistemi 2. Edisyon Taslağı hk. E-Posta 2 Eylül 2019, Alıcı Emrah Kaya."
+  ],
+  "notes": []
+ },
+ {
+  "no": "40",
+  "title": "Kısa Mesaj",
+  "page": 137,
+  "first": [
+   "Yusuf Doğan, İlahiyat Atıf Dizini hk. (Kısa Mesaj 2 Eylül 2019, Alıcı Emrah Kaya)."
+  ],
+  "later": [
+   "Doğan, İlahiyat Atıf Dizini hk."
+  ],
+  "bib": [
+   "Doğan, Yusuf. İlahiyat Atıf Dizini hk. Kısa Mesaj 2 Eylül 2019, Alıcı Sami Şahin."
+  ],
+  "notes": []
+ },
+ {
+  "no": "41",
+  "title": "Ambalaj",
+  "page": 137,
+  "first": [
+   "Kırınkıl Çubuk Kraker 150 gr. (Plastik Ambalaj, Ağustos 2019), İstanbul: BİM, Seri No. 291, Barkod No. 8695077001153."
+  ],
+  "later": [
+   "Kırınkıl Çubuk Kraker 150 gr. (Plastik Ambalaj, Eylül 2019)."
+  ],
+  "bib": [
+   "Kırınkıl Çubuk Kraker 150 gr. (Plastik Ambalaj, Ağustos 2019). İstanbul: BİM, Seri No. 291, Barkod No. 8695077001153."
+  ],
+  "notes": [
+   "❖ Malzeme adı; Cam Ambalaj, Plastik Ambalaj, Metal Ambalaj, Kağıt/Karton Ambalaj, Kompozit Ambalaj veya Ahşap Ambalaj şeklinde yazılır."
+  ]
+ }
+]

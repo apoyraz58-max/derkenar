@@ -160,7 +160,7 @@ function renderFields(): void {
   box.replaceChildren();
   const fields = fieldsOf(item.itemType);
   box.append(fieldInput("title"));
-  if (["book", "dictionaryEntry", "bookSection"].includes(item.itemType)) {
+  {
     const auto = citeMode({ ...item, citeMode: undefined });
     const sel = h("select", { "data-field": "citeMode" }, h("option", { value: "" }, `Otomatik (${CITE_MODES.find(([m]) => m === auto)![1].split(" (")[0]})`), ...CITE_MODES.map(([m, l]) => h("option", { value: m, selected: item.citeMode === m }, l)));
     sel.onchange = () => update((it) => ({ ...it, citeMode: sel.value || undefined }));
