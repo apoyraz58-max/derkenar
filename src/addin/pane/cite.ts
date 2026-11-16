@@ -81,7 +81,10 @@ export function renderBasket(): void {
   ol.replaceChildren();
   S.basket.forEach((ref, i) => {
     const w = work(ref.id);
-    const showVolume = !w || !OWN_VOLUME.has(w.itemType) || !w.fields.volume;
+    // The record's own Cilt (a single volume of a set, a journal volume) is printed by the style: "6/45".
+    const recordVolume = w?.fields.volume?.trim();
+    const showVolume = !recordVolume;
+    if (recordVolume && ref.volume) delete ref.volume;
     const set = (field: keyof CiteRef, value: string | boolean) => {
       const r = ref as unknown as Record<string, unknown>;
       if (value) r[field] = value;
@@ -117,6 +120,7 @@ export function renderBasket(): void {
           ),
         ),
         h("div", { class: showVolume ? "b-loc three" : "b-loc" }, label, showVolume ? vol : null, loc),
+        recordVolume && !OWN_VOLUME.has(w!.itemType) ? h("p", { class: "muted small" }, `Kaynağın kaydında cilt ${recordVolume}; atıfta "${recordVolume}/sayfa" yazılır. Başka cilde atıf için kayıttaki Cilt alanını boşaltın.`) : null,
         h("details", {}, h("summary", { class: "muted" }, "Ön ek, arka ek, yazar"), h("div", { class: "b-extra" }, prefix, suffix), h("div", { class: "b-flags" }, h("label", {}, hide, " Yazarı gizle"))),
       ),
     );
