@@ -1,0 +1,30 @@
+{
+  "name": "kunye",
+  "version": "0.1.0-dev",
+  "private": true,
+  "description": "Künye: Word için hızlı atıf ve kaynakça eklentisi (Office.js, citeproc-js, CSL)",
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@citation-js/core": "0.7.18",
+    "@citation-js/plugin-bibtex": "0.7.18",
+    "@citation-js/plugin-ris": "0.7.18",
+    "citeproc": "2.4.63"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/office-js": "1.0.617",
+    "esbuild": "0.24.0",
+    "typescript": "5.6.3",
+    "vitest": "2.1.8"
+  }
+}

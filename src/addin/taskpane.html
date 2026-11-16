@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Künye</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <link rel="stylesheet" href="taskpane.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Künye</h1>
+      <p id="summary" class="summary"></p>
+    </header>
+    <nav class="tabs" role="tablist">
+      <button type="button" role="tab" data-view="atif" id="tab-atif">Atıf</button>
+      <button type="button" role="tab" data-view="kutuphane" id="tab-kutuphane">Kütüphane</button>
+      <button type="button" role="tab" data-view="belge" id="tab-belge">Belge</button>
+    </nav>
+
+    <p id="message" class="message" hidden role="status"></p>
+    <div id="busy" class="busy" hidden role="status"><span id="busy-text">Çalışıyor…</span></div>
+
+    <!-- ============================== Atıf -->
+    <div id="view-atif" class="view" role="tabpanel">
+      <section id="edit-bar" class="notice" hidden>
+        <span>İmleçteki atıf düzenleniyor.</span>
+        <button id="edit-new" type="button" class="link">Yeni atıf</button>
+      </section>
+
+      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Yazar, başlık, yıl… (ör. gazzali ihya)" aria-label="Kütüphanede ara" />
+      <p class="hint">↑↓ seç · Enter sepete ekle · Ctrl+Enter atıfı ekle</p>
+      <ol id="results" class="results" role="listbox" aria-label="Sonuçlar"></ol>
+      <p id="empty-library" class="notice" hidden>
+        Kütüphane boş. <button id="go-library" type="button" class="link">Kütüphane</button> sekmesinden Zotero'yu bağlayın veya dosya içe aktarın.
+      </p>
+
+      <section id="basket-section" hidden aria-labelledby="basket-heading">
+        <h2 id="basket-heading">Bu atıftaki kaynaklar</h2>
+        <ol id="basket" class="basket"></ol>
+        <h2>Önizleme</h2>
+        <p id="preview" class="preview"></p>
+        <div class="actions">
+          <button id="insert" type="button" class="primary">Atıf ekle</button>
+          <button id="clear-basket" type="button" class="link">Temizle</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================== Kütüphane -->
+    <div id="view-kutuphane" class="view" role="tabpanel" hidden>
+      <section>
+        <h2>Kütüphane</h2>
+        <p id="lib-count"></p>
+        <ul id="sources" class="sources"></ul>
+      </section>
+
+      <section>
+        <h2>Zotero</h2>
+        <form id="zotero-form" class="grid">
+          <label>Kaynak
+            <select id="z-mode">
+              <option value="web">Zotero web kütüphanesi</option>
+              <option value="local">Bu bilgisayardaki Zotero 7 (yerel API)</option>
+            </select>
+          </label>
+          <label class="web-only">Kütüphane
+            <select id="z-kind"><option value="users">Kişisel</option><option value="groups">Grup</option></select>
+          </label>
+          <label class="web-only">Kullanıcı / grup no
+            <input id="z-id" inputmode="numeric" autocomplete="off" placeholder="1234567" />
+          </label>
+          <label class="web-only">API anahtarı
+            <input id="z-key" type="password" autocomplete="off" placeholder="Yalnız okuma izni yeterli" />
+          </label>
+          <p class="muted web-only">Numara ve anahtar: zotero.org → Settings → Security → Applications. Anahtar yalnız bu bilgisayarda saklanır.</p>
+          <p class="muted local-only" hidden>Zotero 7 → Ayarlar → Gelişmiş → "Bu bilgisayardaki diğer uygulamaların Zotero ile iletişim kurmasına izin ver" açık olmalı.</p>
+          <div class="actions">
+            <button id="z-sync" type="submit" class="primary">Eşitle</button>
+            <span id="z-status" class="muted"></span>
+          </div>
+        </form>
+      </section>
+
+      <section>
+        <h2>Dosyadan içe aktar</h2>
+        <p class="muted">BibTeX (.bib), RIS (.ris), CSL JSON (.json): Zotero, Mendeley, EndNote, Google Akademik çıktıları.</p>
+        <input id="file" type="file" accept=".bib,.bibtex,.ris,.json,.txt" multiple />
+      </section>
+
+      <section>
+        <h2>DOI veya ISBN ile ekle</h2>
+        <form id="lookup-form" class="row">
+          <input id="lookup" autocomplete="off" placeholder="10.1000/xyz veya 978-…" />
+          <button type="submit">Ekle</button>
+        </form>
+      </section>
+
+      <section>
+        <details id="manual">
+          <summary>Elle kaynak ekle</summary>
+          <form id="manual-form" class="grid">
+            <label>Tür
+              <select id="m-type">
+                <option value="book">Kitap</option>
+                <option value="article-journal">Makale</option>
+                <option value="chapter">Kitap bölümü</option>
+                <option value="thesis">Tez</option>
+                <option value="entry-encyclopedia">Ansiklopedi maddesi</option>
+                <option value="manuscript">Yazma eser</option>
+                <option value="webpage">Web sayfası</option>
+              </select>
+            </label>
+            <label>Yazarlar <span class="muted">(her satıra "Soyad, Ad")</span>
+              <textarea id="m-authors" rows="2"></textarea>
+            </label>
+            <label>Başlık <input id="m-title" required /></label>
+            <label>Yıl <input id="m-year" inputmode="numeric" /></label>
+            <label>Dergi / kitap / ansiklopedi adı <input id="m-container" /></label>
+            <label>Yayınevi <input id="m-publisher" /></label>
+            <label>Yayın yeri <input id="m-place" /></label>
+            <label>Cilt <input id="m-volume" /></label>
+            <label>Sayı <input id="m-issue" /></label>
+            <label>Sayfalar <input id="m-pages" placeholder="45-78" /></label>
+            <label>DOI / URL <input id="m-link" /></label>
+            <div class="actions"><button type="submit" class="primary">Kaydet</button></div>
+          </form>
+        </details>
+      </section>
+
+      <section>
+        <button id="import-doc" type="button">Bu belgedeki kaynakları kütüphaneye ekle</button>
+      </section>
+    </div>
+
+    <!-- ============================== Belge -->
+    <div id="view-belge" class="view" role="tabpanel" hidden>
+      <section class="grid">
+        <label>Atıf stili <select id="style"></select></label>
+        <label>Dil
+          <select id="locale"><option value="tr-TR">Türkçe</option><option value="en-US">İngilizce</option></select>
+        </label>
+        <label class="muted">Başka bir stil (.csl) <input id="style-file" type="file" accept=".csl,.xml" /></label>
+      </section>
+      <div class="actions">
+        <button id="refresh" type="button" class="primary">Belgeyi güncelle</button>
+        <button id="bibliography" type="button">Kaynakça ekle / güncelle</button>
+      </div>
+      <p id="refresh-stat" class="muted"></p>
+      <section>
+        <h2>Belgedeki atıflar</h2>
+        <ol id="doc-citations" class="doc-list"></ol>
+      </section>
+      <section>
+        <h2>Teslim</h2>
+        <p class="muted">Atıfları ve kaynakçayı düz metne çevirir; eklenti onları artık güncellemez. Önce belgenin bir kopyasını alın.</p>
+        <button id="unlink" type="button" class="danger">Düz metne çevir</button>
+      </section>
+    </div>
+
+    <footer><span id="version" class="muted"></span></footer>
+    <script type="module" src="taskpane.js"></script>
+  </body>
+</html>

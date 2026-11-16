@@ -1,0 +1,136 @@
+/**
+ * Thin wrapper around citeproc-js, the CSL processor Zotero itself uses.
+ * One Renderer per (style, locale); items are swapped in without rebuilding it.
+ */
+import CSL from "citeproc";
+import type { CiteRef, CslItem } from "./types.js";
+
+export interface StyleMeta {
+  readonly title: string;
+  readonly note: boolean;
+  readonly defaultLocale?: string;
+  readonly hasBibliography: boolean;
+}
+
+export function styleMeta(xml: string): StyleMeta {
+  const title = /<title>([^<]*)<\/title>/.exec(xml)?.[1]?.trim() ?? "Adsız stil";
+  const cls = /<style\b[^>]*\bclass="([^"]+)"/.exec(xml)?.[1];
+  const defaultLocale = /<style\b[^>]*\bdefault-locale="([^"]+)"/.exec(xml)?.[1];
+  return { title: decodeXml(title), note: cls === "note", defaultLocale, hasBibliography: /<bibliography\b/.test(xml) };
+}
+
+function decodeXml(text: string): string {
+  return text.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+}
+
+/** A citation in document order. noteIndex: footnote number (1…), 0 in the body. */
+export interface OrderedCitation {
+  readonly id: string;
+  readonly items: readonly CiteRef[];
+  readonly noteIndex: number;
+}
+
+export interface Bibliography {
+  readonly entries: { readonly ids: string[]; readonly html: string }[];
+  readonly hangingIndent: boolean;
+  readonly lineSpacing: number;
+  readonly entrySpacing: number;
+  readonly secondFieldAlign: boolean;
+}
+
+export const MISSING = "[Kaynak bulunamadı]";
+
+type Locales = (lang: string) => string | undefined;
+
+interface Engine {
+  opt: { development_extensions: Record<string, boolean>; xclass?: string };
+  rebuildProcessorState(citations: unknown[], mode: string, uncited?: string[]): [string, number, string][];
+  makeBibliography(): false | [Record<string, unknown>, string[]];
+  previewCitationCluster(citation: unknown, pre: unknown[], post: unknown[], mode: string): string;
+  updateItems(ids: string[]): void;
+}
+
+export class Renderer {
+  readonly meta: StyleMeta;
+  private items: Record<string, CslItem> = {};
+  private readonly engine: Engine;
+
+  constructor(styleXml: string, locales: Locales, lang?: string) {
+    this.meta = styleMeta(styleXml);
+    const sys = {
+      retrieveLocale: (l: string) => locales(l) ?? locales(l.split("-")[0] ?? l) ?? locales("en-US"),
+      retrieveItem: (id: string) => this.items[id] ?? { id, type: "document", title: MISSING },
+    };
+    const Engine = (CSL as unknown as { Engine: new (...args: unknown[]) => Engine }).Engine;
+    this.engine = new Engine(sys, styleXml, lang ?? this.meta.defaultLocale ?? "tr-TR", true);
+    this.engine.opt.development_extensions.wrap_url_and_doi = false;
+  }
+
+  setItems(items: Record<string, CslItem>): void {
+    this.items = {};
+    for (const [id, item] of Object.entries(items)) this.items[id] = { ...item, id };
+  }
+
+  /** Renders every citation, in order, so ibid./short forms come out right. Returns id → HTML. */
+  renderCitations(citations: readonly OrderedCitation[]): Map<string, string> {
+    const input = citations.map((c) => ({
+      citationID: c.id,
+      citationItems: c.items.map((r) => toCiteItem(r)),
+      properties: { noteIndex: c.noteIndex },
+    }));
+    const out = new Map<string, string>();
+    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html")) out.set(id, html);
+    return out;
+  }
+
+  /** What a new citation would look like (does not change the processor state). */
+  preview(refs: readonly CiteRef[], noteIndex = 1): string {
+    const citation = { citationItems: refs.map(toCiteItem), properties: { noteIndex } };
+    return this.engine.previewCitationCluster(citation, [], [], "html");
+  }
+
+  /** Bibliography of the works cited by the last renderCitations; null when the style has none. */
+  bibliography(): Bibliography | null {
+    if (!this.meta.hasBibliography) return null;
+    const result = this.engine.makeBibliography();
+    if (!result) return null;
+    const [params, entries] = result;
+    const ids = (params.entry_ids as string[][]) ?? [];
+    return {
+      entries: entries.map((html, i) => ({ ids: ids[i] ?? [], html })),
+      hangingIndent: Boolean(params.hangingindent),
+      lineSpacing: Number(params.linespacing) || 1,
+      entrySpacing: Number(params.entryspacing) || 0,
+      secondFieldAlign: Boolean(params["second-field-align"]),
+    };
+  }
+}
+
+function toCiteItem(r: CiteRef): Record<string, unknown> {
+  const item: Record<string, unknown> = { id: r.id };
+  if (r.locator) {
+    item.locator = r.locator;
+    item.label = r.label ?? "page";
+  }
+  if (r.prefix) item.prefix = r.prefix;
+  if (r.suffix) item.suffix = r.suffix;
+  if (r["suppress-author"]) item["suppress-author"] = true;
+  if (r["author-only"]) item["author-only"] = true;
+  return item;
+}
+
+/** CSL locator labels offered in the pane, Turkish names. */
+export const LOCATOR_LABELS: readonly (readonly [string, string])[] = [
+  ["page", "Sayfa"],
+  ["volume", "Cilt"],
+  ["chapter", "Bölüm"],
+  ["folio", "Varak"],
+  ["section", "Kısım"],
+  ["paragraph", "Paragraf"],
+  ["line", "Satır"],
+  ["number", "Numara"],
+  ["verse", "Ayet / Beyit"],
+  ["column", "Sütun"],
+  ["figure", "Şekil"],
+  ["note", "Not"],
+];
