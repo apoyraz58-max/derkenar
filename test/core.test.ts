@@ -473,3 +473,53 @@ describe("ISBN: several catalogues", async () => {
     await expect(lookupIsbnAll("9786258910605", { fetchFn })).rejects.toThrow(/bulunamadı.*kota/);
   });
 });
+
+describe("İSNAD spelling on the way in", async () => {
+  const { isnadTitle, isnadName, isnadPlace, isnadPublisher, shortTitleOf, cleanYear } = await import("../src/core/isnadstyle.js");
+  const { autoFix } = await import("../src/core/isnad.js");
+
+  it("title case: Turkish and English words capitalised, Arabic only the first word", () => {
+    expect(isnadTitle("Kelam ve akaid risaleleri")).toBe("Kelam ve Akaid Risaleleri");
+    expect(isnadTitle("İslam’da inanç esasları")).toBe("İslam’da İnanç Esasları");
+    expect(isnadTitle("Kur’an mesajı: meal-tefsir")).toBe("Kur’an Mesajı: Meal-Tefsir");
+    expect(isnadTitle("Kur’ân-ı Kerîm meâli")).toBe("Kur’ân-ı Kerîm Meâli");
+    expect(isnadTitle("the venture of islam: conscience and history")).toBe("The Venture of Islam: Conscience and History");
+    expect(isnadTitle("İLHAD NE BÜYÜK CEHALETTİR!")).toBe("İlhad Ne Büyük Cehalettir!");
+    expect(isnadTitle("El-makâsıd: kelâm ilminin maksatları")).toBe("el-Makâsıd: Kelâm İlminin Maksatları");
+    // Left alone: Arabic titles, acronyms, Roman numerals, German.
+    for (const t of ["el-Maḥsûl fî ʿilmi uṣûli’l-fıḳh", "İhyâü ulûmi’d-dîn", "İSNAD Atıf Sistemi", "Uluslararası İlişkiler-I", "Geschichte des arabischen Schrifttums", "el-Fihrisü’ş-şâmil: el-fıkh ve usûluhû"]) expect(isnadTitle(t)).toBe(t);
+  });
+
+  it("names, places, publishers, years, short titles", () => {
+    expect(isnadName("MARANGOZOĞLU")).toBe("Marangozoğlu");
+    expect(isnadName("el-gazzâlî")).toBe("el-Gazzâlî");
+    expect(isnadPlace("Istanbul")).toBe("İstanbul");
+    expect(isnadPlace("İstanbul, Türkiye")).toBe("İstanbul");
+    expect(isnadPlace("Beirut")).toBe("Beyrut");
+    expect(isnadPlace("London")).toBe("London");
+    expect(isnadPublisher("Ketebe", true)?.value).toBe("Ketebe Yayınları");
+    expect(isnadPublisher("Otuken Nesriyat", true)?.value).toBe("Ötüken Neşriyat");
+    expect(isnadPublisher("isam yay.", true)?.value).toBe("İSAM Yayınları");
+    expect(isnadPublisher("Ketebe Yayınevi", true)).toBeNull();
+    expect(isnadPublisher("Türk Dil Kurumu", true)).toBeNull();
+    expect(isnadPublisher("Brill", false)).toBeNull();
+    expect(cleanYear("[2015?]")).toBe("2015");
+    expect(cleanYear("1413/1993")).toBeNull();
+    expect(shortTitleOf("el-Maḥsûl fî ʿilmi uṣûli’l-fıḳh")).toBe("el-Maḥsûl");
+    expect(shortTitleOf("The Venture of Islam: Conscience and History")).toBe("The Venture of Islam");
+    expect(shortTitleOf("İslam’da İnanç Esasları")).toBeNull();
+  });
+
+  it("autoFix: a catalogue record becomes an İSNAD record; a short publisher stays a warning", () => {
+    const it = emptyItem("book", "isbn");
+    it.fields = { title: "kelam ilminin doğuşu ve gelişimi: başlangıçtan günümüze", place: "Istanbul", publisher: "Otuken Nesriyat", date: "c2015" };
+    it.creators = [{ creatorType: "author", lastName: "YILMAZ", firstName: "AHMET" }];
+    const r = autoFix(it);
+    expect(r.item.fields).toMatchObject({ title: "Kelam İlminin Doğuşu ve Gelişimi: Başlangıçtan Günümüze", place: "İstanbul", publisher: "Ötüken Neşriyat", date: "2015", shortTitle: "Kelam İlminin Doğuşu" });
+    expect(r.item.creators[0]).toMatchObject({ lastName: "Yılmaz", firstName: "Ahmet" });
+    const short = emptyItem("book", "isbn");
+    short.fields = { title: "Bir Kitap", place: "Ankara", publisher: "Gündoğan" };
+    expect(autoFix(short).item.fields.publisher).toBe("Gündoğan");
+    expect(checkItem(short).some((i) => i.code === "publisher-short")).toBe(true);
+  });
+});

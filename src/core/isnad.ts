@@ -3,6 +3,7 @@
  * usual slips of hand-entered or imported records. Each finding says what is
  * wrong and, where the fix is mechanical, carries it ("Düzelt").
  */
+import { cleanYear, isTurkishPlace, isnadName, isnadPlace, isnadPublisher, isnadTitle, nameNeedsCase, publisherLooksShort, shortTitleOf } from "./isnadstyle.js";
 import { type Creator, type Item, baseField, containerOf, fieldLabel, parseDate, primaryCreators, typeField } from "./zotero.js";
 
 export type Level = "error" | "warning" | "info";
@@ -140,6 +141,7 @@ const NEEDS: Record<string, Need[]> = {
   ],
 };
 
+const ITALIC_TITLE = new Set(["book"]);
 const NO_DATE_OK = new Set(["manuscript", "letter", "webpage"]);
 
 export function checkItem(item: Item): Issue[] {
@@ -173,7 +175,12 @@ export function checkItem(item: Item): Issue[] {
     if (trimmed !== value && field !== "extra" && field !== "abstractNote") add({ code: "spaces", level: "info", message: `${label}: fazla boşluk.`, field, fix: { field, value: trimmed }, fixLabel: "Boşlukları temizle" });
 
     if (base === "title" || base === "publicationTitle" || base === "shortTitle") {
-      if (isAllCaps(value)) add({ code: "caps", level: "warning", message: `${label} tamamen büyük harfle yazılmış.`, field, fix: { field, value: sentenceCase(value) }, fixLabel: "Küçült" });
+      if (isAllCaps(value) && !(base === "shortTitle" && !/\s/.test(value.trim()))) add({ code: "caps", level: "warning", message: `${label} tamamen büyük harfle yazılmış.`, field, fix: { field, value: base === "shortTitle" ? sentenceCase(value) : isnadTitle(value) }, fixLabel: "Küçült" });
+      // Title case only for what İSNAD prints in italics: books, and the book or journal a part belongs to.
+      else if (base !== "shortTitle" && (base === "publicationTitle" || ITALIC_TITLE.has(item.itemType)) && isnadTitle(value) !== value) {
+        const v = isnadTitle(value);
+        add({ code: "title-case", level: "warning", message: `${label} İSNAD'a göre büyük-küçük harf: "${v}". (Türkçe ve Batı dillerindeki adlarda kelime başları büyük; Arapça adlarda yalnız ilk kelime.)`, field, fix: { field, value: v }, fixLabel: "Düzelt" });
+      }
       if (/[^.]\.$/.test(value.trim()) && !/(^|\s)(\p{L}|vb|vd|vs|haz|thk|çev|nşr|ed|eds|bs|yy|ts|nr|no|c|s|ss|st|dr|prof|doç|mlf)\.$/iu.test(value.trim())) add({ code: "title-period", level: "warning", message: `${label} nokta ile bitiyor; noktayı stil koyar.`, field, fix: { field, value: value.trim().replace(/\.$/, "") }, fixLabel: "Noktayı sil" });
       if (/['’ʿ‘`]/.test(value) && new Set(value.match(/['’ʿ‘`]/g)).size > 1) add({ code: "apostrophes", level: "info", message: `${label}: farklı kesme / ayın işaretleri karışık kullanılmış (' ’ ʿ ‘).`, field });
     }
@@ -214,7 +221,12 @@ export function checkItem(item: Item): Issue[] {
       add({ code: "encoding", level: "error", message: `Kişi adı: bozuk Türkçe karakter (${full}).`, creatorIndex: i, fix: { creatorIndex: i, creator: mapCreator(c, fixEncoding) }, fixLabel: "Karakterleri düzelt" });
       return;
     }
-    if (isAllCaps(full)) add({ code: "name-caps", level: "warning", message: `Kişi adı büyük harfle yazılmış (${full.trim()}).`, creatorIndex: i, fix: { creatorIndex: i, creator: mapCreator(c, nameCase) }, fixLabel: "Düzelt" });
+    const acronym = c.name !== undefined && /^[\p{Lu}.\s]{2,10}$/u.test(c.name.trim());
+    if (isAllCaps(full) && !acronym) add({ code: "name-caps", level: "warning", message: `Kişi adı büyük harfle yazılmış (${full.trim()}).`, creatorIndex: i, fix: { creatorIndex: i, creator: mapCreator(c, isnadName) }, fixLabel: "Düzelt" });
+    else if (c.creatorType !== "contributor" && [c.name, c.lastName, c.firstName].some((x) => x && nameNeedsCase(x)) && !(c.name && /\p{Lu}{2}/u.test(c.name))) {
+      const fixedName = mapCreator(c, (x) => (nameNeedsCase(x) ? isnadName(x) : x));
+      add({ code: "name-case", level: "warning", message: `Kişi adının baş harfleri büyük yazılmalı (${full.trim()}).`, creatorIndex: i, fix: { creatorIndex: i, creator: fixedName }, fixLabel: "Düzelt" });
+    }
     if (c.name === undefined && c.lastName?.includes(",") && !c.firstName) {
       const [last, first] = c.lastName.split(",").map((s) => s.trim());
       add({ code: "name-comma", level: "warning", message: `Ad ve soyad tek kutuya yazılmış (${c.lastName}).`, creatorIndex: i, fix: { creatorIndex: i, creator: { creatorType: c.creatorType, lastName: last, firstName: first } }, fixLabel: "Ayır" });
@@ -229,6 +241,38 @@ export function checkItem(item: Item): Issue[] {
     if (field && v && (abbr as readonly string[]).includes(v)) {
       add({ code: "abbr-in-field", level: "info", message: `${fieldLabel(field)} alanına "${f[field]}" yazılmış. Bu alanı boş bırakın; İSNAD kısaltmasını (${base === "place" ? "b.y." : base === "publisher" ? "y.y." : "ts."}) Derkenar kendisi yazar.`, field, fix: { field, value: "" }, fixLabel: "Alanı boşalt" });
     }
+  }
+
+  // Publisher, place, year, short title as İSNAD writes them.
+  const placeField = typeField(item.itemType, "place");
+  const pubField = typeField(item.itemType, "publisher");
+  const place = placeField ? f[placeField]?.trim() : "";
+  const publisher = pubField ? f[pubField]?.trim() : "";
+  const abbr = /^(b\.?y\.?|y\.?y\.?(y\.?)?|ts\.?)$/i;
+  if (placeField && place && !abbr.test(place)) {
+    const p = isnadPlace(place);
+    if (p !== place) add({ code: "place", level: "warning", message: `Basım yeri İSNAD'da "${p}" diye yazılır.`, field: placeField, fix: { field: placeField, value: p }, fixLabel: `"${p}" yap` });
+  }
+  const turkish = Boolean((place && isTurkishPlace(place)) || /^(tr|tur|türkçe|turkish)/i.test(f.language ?? "") || /[çğışöüÇĞİŞÖÜ]/.test(publisher ?? ""));
+  const isBookish = ["book", "bookSection", "encyclopediaArticle", "dictionaryEntry", "conferencePaper", "report"].includes(item.itemType);
+  if (pubField && publisher && !abbr.test(publisher) && isBookish) {
+    const fix = isnadPublisher(publisher, turkish);
+    if (fix?.known) add({ code: "publisher-known", level: "warning", message: `Yayınevinin tam adı: "${fix.value}".`, field: pubField, fix: { field: pubField, value: fix.value }, fixLabel: `"${fix.value}" yap` });
+    else if (fix) add({ code: "publisher-case", level: "warning", message: `Yayınevi adı: "${fix.value}".`, field: pubField, fix: { field: pubField, value: fix.value }, fixLabel: "Düzelt" });
+    else if (turkish && publisherLooksShort(publisher)) {
+      add({ code: "publisher-short", level: "warning", message: `Yayınevi adı eksik olabilir: İSNAD'da tam adıyla yazılır (ör. "${publisher} Yayınları", "${publisher} Yayınevi", "${publisher} Neşriyat"). Kitabın künye sayfasındaki adı yazın.`, field: pubField, fix: { field: pubField, value: `${publisher} Yayınları` }, fixLabel: `"${publisher} Yayınları" yap` });
+    }
+  }
+  if (f.date && isBookish) {
+    const y = cleanYear(f.date);
+    if (y) add({ code: "date-clean", level: "warning", message: `Tarih alanına yalnız yıl yazılır ("${f.date}" → "${y}").`, field: "date", fix: { field: "date", value: y }, fixLabel: `"${y}" yap` });
+    const year = Number(/^\d{4}/.exec(f.date.trim())?.[0] ?? (/\/(\d{4})$/.exec(f.date.trim())?.[1] ?? 0));
+    if (year > new Date().getFullYear() + 1) add({ code: "date-future", level: "warning", message: `Yıl ileri bir tarih (${year}); denetleyin.`, field: "date" });
+  }
+  const stField = typeField(item.itemType, "shortTitle") ?? (f.shortTitle !== undefined ? "shortTitle" : undefined);
+  if (f.title && !f.shortTitle?.trim() && ["book", "bookSection", "journalArticle", "encyclopediaArticle", "thesis", "manuscript", "conferencePaper", "report", "dictionaryEntry"].includes(item.itemType)) {
+    const st = shortTitleOf(isnadTitle(f.title));
+    if (st) add({ code: "short-title", level: "info", message: `Kısa başlık yok; sonraki atıflarda kullanılacak kısa ad: "${st}".`, field: stField ?? "shortTitle", fix: { field: stField ?? "shortTitle", value: st }, fixLabel: `"${st}" yaz` });
   }
 
   // Cilt sayısı written into Cilt (a 6-volume work entered as "Cilt: 6").
@@ -275,3 +319,40 @@ export function apostropheReport(items: readonly Item[]): { mark: string; count:
 }
 
 export const LEVEL_LABEL: Record<Level, string> = { error: "Hata", warning: "Uyarı", info: "Bilgi" };
+
+/** Fixes applied by themselves when a work is added (DOI, ISBN, pasted record): mechanical, safe ones. */
+const AUTO = new Set(["encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
+const AUTO_LABEL: Record<string, string> = {
+  encoding: "bozuk karakterler",
+  spaces: "fazla boşluklar",
+  caps: "büyük harfle yazılmış başlık",
+  "title-case": "başlıkta büyük-küçük harf",
+  "title-period": "başlık sonundaki nokta",
+  "name-caps": "kişi adları",
+  "name-case": "kişi adları",
+  "name-comma": "ad-soyad ayrımı",
+  pages: "sayfa aralığı",
+  edition: "baskı",
+  "doi-url": "DOI",
+  "abbr-in-field": "elle yazılmış kısaltma",
+  place: "basım yeri",
+  "publisher-known": "yayınevinin tam adı",
+  "publisher-case": "yayınevi adı",
+  "date-clean": "yıl",
+  "short-title": "kısa başlık",
+};
+
+/** Applies the safe İSNAD fixes; returns the fixed item and what was changed. */
+export function autoFix(item: Item): { item: Item; changed: string[] } {
+  let next = item;
+  const changed = new Set<string>();
+  const seen = new Set<string>();
+  for (let n = 0; n < 60; n++) {
+    const issue = checkItem(next).find((i) => i.fix && AUTO.has(i.code) && !seen.has(JSON.stringify([i.code, i.fix])));
+    if (!issue) break;
+    seen.add(JSON.stringify([issue.code, issue.fix]));
+    next = applyFix(next, issue.fix!);
+    changed.add(AUTO_LABEL[issue.code] ?? issue.code);
+  }
+  return { item: next, changed: [...changed] };
+}

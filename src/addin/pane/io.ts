@@ -4,6 +4,7 @@
  */
 import { backup, cslJson, formatAs, isBackup, parseBackup } from "../../core/exporters.js";
 import { type ZoteroConfig, cleanArxiv, cleanDoi, cleanIsbn, cleanPmid, detectFormat, lookupArxiv, lookupDoi, lookupIsbn, lookupPmid, parseFile, pushToZotero, syncZotero } from "../../core/importers.js";
+import { autoFix, checkItem } from "../../core/isnad.js";
 import { report, zoteroCsv, zoteroRdf } from "../../core/zoteroexport.js";
 import { type Collection, type Item, creatorLine, emptyItem, now, titleOf } from "../../core/zotero.js";
 import { citedKeys } from "./document.js";
@@ -55,6 +56,23 @@ async function importFiles(files: File[]): Promise<void> {
   setMessage(`${added} kaynak eklendi${updated ? `, ${updated} kaynak güncellendi` : ""}${colls ? `, ${colls} koleksiyon alındı` : ""}.`, "success");
 }
 
+/**
+ * İSNAD on the way in: the safe fixes (title case, names, publisher's full
+ * name, place, year, short title …) are applied to newly added works, in
+ * place; returns a sentence for the message. What needs the user's eye stays
+ * as warnings in the editor.
+ */
+function isnadFix(items: Item[]): string {
+  const all = new Set<string>();
+  items.forEach((it, i) => {
+    const r = autoFix(it);
+    items[i] = r.item;
+    for (const c of r.changed) all.add(c);
+  });
+  const left = items.reduce((n, it) => n + checkItem(it).filter((x) => x.level !== "info").length, 0);
+  return (all.size ? ` İSNAD'a göre düzeltildi: ${[...all].join(", ")}.` : "") + (left ? ` ${left} uyarı düzenleyicide (yayınevi adı, eksik bilgi …).` : "");
+}
+
 /** Adds records pasted as RIS, BibTeX or CSL JSON text. */
 async function pasteRecords(): Promise<void> {
   const box = $<HTMLTextAreaElement>("new-paste");
@@ -65,9 +83,10 @@ async function pasteRecords(): Promise<void> {
   if (!r.items.length) throw new Error("Metinde kaynak bulunamadı.");
   const v = currentView();
   const items = r.items.map((i) => ({ ...i, source: "manual", collections: v.kind === "collection" ? [v.key] : i.collections }));
+  const fixedNote = isnadFix(items);
   await putItems(items);
   box.value = "";
-  setMessage(`${items.length} kaynak eklendi${items.length === 1 ? `: ${creatorLine(items[0]!)}, ${titleOf(items[0]!)}` : ""}.`, "success");
+  setMessage(`${items.length} kaynak eklendi${items.length === 1 ? `: ${creatorLine(items[0]!)}, ${titleOf(items[0]!)}` : ""}.${fixedNote}`, "success");
   if (items.length === 1) openEditor(items[0]!.key);
 }
 
@@ -188,6 +207,7 @@ async function lookup(box = "lookup"): Promise<void> {
   }
   const v = currentView();
   if (v.kind === "collection") for (const f of found) f.collections = [v.key];
+  const fixedNote = isnadFix(found);
   await putItems(found);
   $<HTMLTextAreaElement>(box).value = failed.join("\n");
   // A single ISBN no catalogue knows: open a book record with the ISBN in it.
@@ -202,7 +222,7 @@ async function lookup(box = "lookup"): Promise<void> {
     return;
   }
   if (!found.length) throw new Error(reasons.join(" "));
-  setMessage(`${found.length} kaynak eklendi${found.length === 1 ? `: ${creatorLine(found[0]!)}, ${titleOf(found[0]!)}` : ""}.${failed.length ? ` Eklenemeyen ${failed.length} satır kutuda bırakıldı: ${reasons.join(" ")}` : ""}`, failed.length ? "warning" : "success");
+  setMessage(`${found.length} kaynak eklendi${found.length === 1 ? `: ${creatorLine(found[0]!)}, ${titleOf(found[0]!)}` : ""}.${fixedNote}${failed.length ? ` Eklenemeyen ${failed.length} satır kutuda bırakıldı: ${reasons.join(" ")}` : ""}`, failed.length ? "warning" : "success");
   // One work found: open it, so it can be checked and completed at once.
   if (found.length === 1) openEditor(found[0]!.key);
 }

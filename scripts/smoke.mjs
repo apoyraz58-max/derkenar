@@ -478,6 +478,9 @@ try {
   await page.click("#new-paste-form button[type=submit]");
   await page.waitForSelector("#message:has-text('1 kaynak eklendi')");
   if (!(await page.isVisible("#view-kaynak"))) fail("pasted record not opened");
+  const pastedTitle = await page.inputValue('[data-field="title"]');
+  if (pastedTitle !== "Tasavvuf ve Tarikatlar Tarihi") fail(`İSNAD title case on paste: ${pastedTitle}`);
+  if (!(await page.textContent("#message")).includes("İSNAD'a göre düzeltildi")) fail("no İSNAD note in the message");
 
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");

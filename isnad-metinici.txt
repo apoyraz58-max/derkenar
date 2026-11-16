@@ -1,0 +1,631 @@
+Metin içi: 411 karşılaştırmadan 245 uyuşuyor.
+2.1 Kitap-Yazarsız ve Anonim (s. 141): 2/6
+2.2 Kitap-Tek Yazarlı (s. 141): 4/6
+2.3 Kitap-İki Yazarlı (s. 142): 3/6
+2.4 Kitap-Çok Yazarlı (s. 143): 3/6
+2.5 Kitap-Editörlü (s. 144): 6/9
+2.6 Kitap-Elektronik (s. 145): 5/6
+2.7 Kitap-Çeviri (s. 146): 5/6
+2.8 Kitap-Neşir (s. 147): 4/6
+2.10 Kitap Sadeleştirilen (s. 149): 3/3
+3.1 Kitap Bölümü-Editörlü Eserde (s. 150): 6/6
+3.2 Kitap Bölümü-Neşredilen Eserde (s. 151): 0/3
+4.1 Meâl-Basılı (s. 152): 0/3
+4.2 Meâl-Web (s. 153): 0/3
+5.1 Kitâb-ı Mukaddes-Basılı (s. 154): 1/6
+6.2 Hadis (“Kitâb Adı”, Hadis No. Sistemi) (s. 157): 1/6
+7.1 Yazma Eser-Müellifi Bilinmeyen (s. 159): 3/3
+7.2 Yazma Eser-Müellifi Bilinen (s. 160): 9/9
+8 Yunan ve Roma Klasikleri (s. 161): 4/9
+10.1 Kadı Sicili-Matbu (s. 163): 2/3
+10.2 Kadı Sicili-Arşivde (s. 163): 2/3
+11.1 Ansiklopedi-Matbu (s. 164): 7/9
+11.2 Ansiklopedi-Yazarsız (s. 165): 2/3
+11.3 Ansiklopedi-Web (s. 166): 4/9
+12.1 Sözlük-Arap Harfli (s. 167): 6/12
+12.2 Sözlük-Latin Harfli (s. 168): 9/15
+12.3 Sözlük-Web (s. 169): 6/9
+13.1 Tez-Lisans (s. 170): 3/3
+13.2 Tez-Yüksek Lisans (s. 170): 4/6
+13.6 Tez-Diş Hekimliği Uzmanlık (s. 173): 2/3
+13.7 Tez-Tıpta Yan Dal Uzmanlık (s. 173): 3/3
+14.1 Makale-Araştırma (Tek Yazarlı-Çok Yazarlı) (s. 174): 12/12
+14.2 Makale-Çeviri (s. 176): 6/6
+14.3 Makale-Tahkik/Neşir (s. 177): 3/6
+14.4 Makale-Popüler (s. 178): 3/3
+14.5 Makale-İnternette (s. 178): 2/3
+15 Bildiri/Tebliğ (s. 179): 5/6
+16.1 Gazete-Köşe Yazısı (s. 179): 2/3
+16.2 Gazete Haberi-Yazarlı (s. 180): 3/3
+16.3 Gazete Haberi-Yazarsız (s. 180): 1/3
+17.1 Rapor-Yazarsız (s. 181): 6/6
+17.2 Rapor-Yazarlı (s. 182): 3/3
+18 Basın Bülteni (s. 182): 1/6
+19 İstatistik (s. 183): 1/6
+20.1 Katalog-Yazarsız (s. 183): 3/3
+20.2 Katalog-Yazarlı (s. 184): 2/6
+20.3 Katalog-Editörlü (s. 184): 1/3
+20.4 Katalog-Web (s. 185): 4/6
+21.2 Görüşme/Mülakat-Webte (s. 186): 2/3
+21.3 Görüşme/Mülakat-Dergide (s. 186): 4/6
+22.1 Mevzuat-Resmî Gazete’de Yayımlanan (s. 188): 9/12
+22.2 Mevzuat - Diğer (s. 189): 6/6
+23 Standard (s. 190): 0/3
+24 Mahkeme Kararı (s. 190): 0/0
+26 Veri Tabanı (s. 192): 6/12
+27 Yazılım (s. 193): 3/9
+28 Patent (s. 194): 3/6
+29 Sosyal Medya (s. 195): 2/6
+30 Film (s. 196): 3/3
+31 TV Yayını (s. 196): 0/3
+32 Video Kaydı (s. 196): 0/3
+33 Ses Kaydı (s. 197): 13/15
+34 Nota Kâğıdı (s. 198): 0/3
+35 Sınav Kâğıdı (s. 198): 0/6
+36 Sanat Eseri ve Tarihî Eser (s. 199): 12/21
+37 Fotoğraf-Dijital (s. 201): 2/3
+38.1 Harita-Matbu (s. 202): 6/9
+38.2 Harita-Web (s. 203): 5/9
+39 E-Posta (s. 203): 1/3
+40 Kısa Mesaj (s. 204): 1/3
+41 Ambalaj (s. 204): 0/3
+
+## 2.1 Kitap-Yazarsız ve Anonim (s. 141)
+  ✗ ilk
+     kılavuz: (İş Kanunları, 1998)
+     derkenar: (İş Kanunları, 2014)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: İş Kanunları ve İlgili Mevzuatı. Ankara: Adalet Yayınevi, 2014.
+     derkenar: İş Kanunları ve İlgili Mevzuatı. 2 Cilt. Ankara: Adalet Yayınevi, 2. Basım, 2014.
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 2.2 Kitap-Tek Yazarlı (s. 141)
+  ✗ kaynakça
+     kılavuz: İnan, Afet. Piri Reis’in Hayatı ve Eserleri. Ankara: Türk Tarih Kurumu, 2018.
+     derkenar: İnan, Afet. Piri Reis’in Hayatı ve Eserleri. Ankara: Türk Tarih Kurumu, 2. Basım, 2018.
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 2.3 Kitap-İki Yazarlı (s. 142)
+  ✗ kaynakça
+     kılavuz: Barkan, Ömer Lütfi - Ayverdi, Ekrem Hakkı. İstanbul Vakıfları Tahrir Defteri 953 Tarihli. İstanbul: İstanbul Fetih Cemiyeti, 1973.
+     derkenar: Barkan, Ömer Lütfi - Ayverdi, Ekrem Hakkı. İstanbul Vakıfları Tahrir Defteri 953 Tarihli. İstanbul: İstanbul Fetih Cemiyeti, 2. Basım, 1973.
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (İnan-Parmaksızoğlu, 2018)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 2.4 Kitap-Çok Yazarlı (s. 143)
+  ✗ ilk
+     kılavuz: (Eisen vd., 1998)
+     derkenar: (Eisen vd., 2002)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 2.5 Kitap-Editörlü (s. 144)
+  ✗ kaynakça
+     kılavuz: Faroqhi, Suraiya (ed.). Türkiye Tarihi 1603-1839. çev. Fethi Aytuna. 3 Cilt. İstanbul: Kitap Yayınevi, 2011.
+     derkenar: Faroqhi, Suraiya (ed.). Türkiye Tarihi 1603-1839. çev. Fethi Aytuna. 3 Cilt. İstanbul: Kitap Yayınevi, 2. Basım, 2011.
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Furat vd., 2018)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 2.6 Kitap-Elektronik (s. 145)
+  ✗ kaynakça
+     kılavuz: Şenler, Şule Yüksel. Huzur Sokağı. Epub: Timaş Yayınları, 2016.
+     derkenar: Şenler, Şule Yüksel. Huzur Sokağı. ePub: Timaş Yayınları, 2016.
+## 2.7 Kitap-Çeviri (s. 146)
+  ✗ kaynakça
+     kılavuz: Mahmud, Abdülhalim. Muhâsibî Hayatı Eserleri Fikirleri. çev. M. Beşir Eryarsoy. İstanbul: İnsan Yayınları, 2005
+     derkenar: Mahmud, Abdülhalim. Muhâsibî Hayatı Eserleri Fikirleri. çev. M. Beşir Eryarsoy. İstanbul: İnsan Yayınları, 2005.
+## 2.8 Kitap-Neşir (s. 147)
+  ✗ kaynakça
+     kılavuz: Taşköprizâde Ahmed Efendi. Miftâḥu’s-saʿâde ve miṣbâḥu’s-siyâde fî mevżûʿâti’l-ʿulûm. nşr. Abdülvehhâb Ebü’n-Nûr - Kâmil Kâmil Bekrî. 3 Cilt. Kahire: Dârü’l-Kütübi’l-Hadis, 3. Basım, 1968.
+     derkenar: Taşköprizâde Ahmed Efendi. Miftâḥu’s-saʿâde ve miṣbâḥu’s-siyâde fî mevżûʿâti’l-ʿulûm. nşr. Abdülvehhâb Ebü’n-Nûr - Kâmil Kâmil Bekrî. 3 Cilt. Kahire: Dâru’l-Kütübi’l-Hadîse, 3. Basım, 1968.
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 3.2 Kitap Bölümü-Neşredilen Eserde (s. 151)
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Saffâr, 1432/2011)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Mahmud, Hişam İbrahim. “Mukaddime”. Telḫîṣü’l-edille li-ḳavâʿidi’t-tevḥîd. mlf. Ebû İshâk İbrâhim ez-Zâhid es-Saffâr. 5-44. Kahire: Dâru’s-Selâm, 1431/2010.
+     derkenar: Saffâr, Ebû İshâk İbrâhim ez-Zâhid. Telḫîṣü’l-edille li-ḳavâʿidi’t-tevḥîd. thk. Angelika Brodersen. 2 Cilt. Beyrut: el-Ma‘hedü’l-Almânî li’l-Ebhâsi’l-Şarkiyye, 1432/2011.
+## 4.1 Meâl-Basılı (s. 152)
+  ✗ ilk
+     kılavuz: (Kur'an Mesajı: Meal-Tefsir, 2002, el-Enfâl 8/2)
+     derkenar: (Kur'an Mesajı: Meal-Tefsir, 2002)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Kur’ân-ı Kerîm Meâli. çev. Halil Altuntaş - Muzaffer Şahin. Ankara: Diyanet İşleri Başkanlığı Yayınları, 3. Basım, 2009. Kur’an Mesajı: Meal-Tefsir. çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk. Ankara: İşaret Yayınları, 2002.
+     derkenar: Kur’an Mesajı: Meal-Tefsir. çev. Muhammed Esed vd. Ankara: İşaret Yayınları, 2002.
+## 4.2 Meâl-Web (s. 153)
+  ✗ ilk
+     kılavuz: (Kur'ân Yolu, 10 Ağustos 2018, el-Bakara 2/12)
+     derkenar: (Kur'ân Yolu, 16 Nisan 2018)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Kur’ân           Yolu.     Erişim       10                                      Ağustos                  2018. https://kuran.diyanet.gov.tr
+     derkenar: Kur’ân Yolu. Erişim 16 Nisan 2018. https://kuran.diyanet.gov.tr
+## 5.1 Kitâb-ı Mukaddes-Basılı (s. 154)
+  ✗ ilk
+     kılavuz: (Kitabı Mukaddes, 2003, Yar.1:12)
+     derkenar: (Kitabı Mukaddes, 2003)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ ilk
+     kılavuz: (Kutsal Kitap: Tevrat, Zebur İncil, 2003, Elç.12:10-12)
+     derkenar: (Kutsal Kitap: Tevrat, Zebur, İncil, 2009)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Kutsal Kitap: Tevrat, Zebur İncil. İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009.
+     derkenar: Kutsal Kitap: Tevrat, Zebur, İncil. İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009.
+## 6.2 Hadis (“Kitâb Adı”, Hadis No. Sistemi) (s. 157)
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Buhârî, 1422/2001)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Müslim, Ebü’l-Hüseyn Müslim b. el-Haccâc. el-Câmiʿu’ṣ-ṣaḥîḥ. nşr. Muhammed Fuâd Abdülbâkī. Kahire: y.y., 1374-75/1955-56.
+     derkenar: Buhârî, Ebû Abdillâh Muhammed b. İsmail. el-Câmiʿu’ṣ-ṣaḥîḥ. nşr. Muhammed Züheyr b. Nasr. 8 Cilt. b.y.: Dâru Tavki’n-Necât, 2. Basım, 1422/2001.
+  ✗ ilk
+     kılavuz: (İmam Mâlik, "Sadaka", 12)
+     derkenar: (İmam Mâlik, 1382/1962)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 7.1 Yazma Eser-Müellifi Bilinmeyen (s. 159)
+  ? eşleşmedi: Kitâbu’z-zekât ve’l-buyûʿ mine’l-fıkh. Bursa: Bursa İnebey Yazma Eser Kütüphanesi, Orhan Camii, 473, 1a-272a.
+## 8 Yunan ve Roma Klasikleri (s. 161)
+  ✗ kaynakça
+     kılavuz: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, Kasım 1996.
+     derkenar: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, 1996.
+  ✗ kaynakça
+     kılavuz: Aristoteles. Metaphysics. çev. Richard Hope. USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960.
+     derkenar: Aristoteles. Metaphysics. çev. Richard Hope. Ann Arbor, Michigan, USA: The University of Michigan Press, 1960.
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Aquinas, 1961)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Thomas Aquinas. Commentary on the Metaphysics of Aristotle. çev. John P. Roman. 2 Cilt. Chicago: Henry Regnery Company, 1961.
+     derkenar: Aquinas, Thomas. Commentary on the Metaphysics of Aristotle. çev. John P. Roman. 2 Cilt. Chicago: Henry Regnery Company, 1961.
+## 10.1 Kadı Sicili-Matbu (s. 163)
+  ✗ kaynakça
+     kılavuz: Galata Mahkemesi 90 Numaralı Sicil (1073-1074/1663). haz. Fuat Recep - Salih Kahriman. İstanbul: İSAM Yayınları, 2012. http://www.kadisicilleri.org/index.php İstanbul Kadı Sicilleri Eyüb (Havâss-ı Refîa) Mahkemesi 49 Numaralı Sicil (1054/1644). haz. Ayşe Seyyide Adıgüzel - Zeynep Trabzonlu. İstanbul: İSAM Yayınları, 2011. http://www.kadisicilleri.org/index.php
+     derkenar: İstanbul Kadı Sicilleri Eyüb (Havâss-ı Refîa) Mahkemesi 49 Numaralı Sicil (1054/1644). haz. Ayşe Seyyide Adıgüzel - Zeynep Trabzonlu. İstanbul: İSAM Yayınları, 2011. http://www.kadisicilleri.org/index.php
+## 10.2 Kadı Sicili-Arşivde (s. 163)
+  ✗ kaynakça
+     kılavuz: Kayseri Sancağı Şer'îye Sicil Defteri (1334-1336). Milli Kütüphane, No. 06 Mil Yz C 39/3, 68-90. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=857 602
+     derkenar: Kayseri Sancağı Şer’îye Sicil Defteri (1334-1336). Milli Kütüphane, No. 06 Mil Yz C 39/3. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=857602
+## 11.1 Ansiklopedi-Matbu (s. 164)
+  ✗ kaynakça
+     kılavuz: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C. E. Bosworth vd. 9/127-131. Leiden: Brill, 1997.
+     derkenar: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C.E. Bosworth vd. 9/117-118. Leiden: Brill, 1997.
+  ✗ ilk
+     kılavuz: (Yavuz, 1997)
+     derkenar: (Yavuz, 2001)
+## 11.2 Ansiklopedi-Yazarsız (s. 165)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 11.3 Ansiklopedi-Web (s. 166)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Devellioğlu, 2017)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Küçük, Raşit. “İsnad”. Türkiye Diyanet Vakfı İslâm Ansiklopedisi. Erişim 16 Nisan 2019. https://islamansiklopedisi.org.tr/isnad--hadis
+     derkenar: Devellioğlu, Ferit. Osmanlıca-Türkçe Ansiklopedik Lûgat. Ankara: Aydın Kitabevi, 33. Basım, 2017.
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 12.1 Sözlük-Arap Harfli (s. 167)
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Abdülbâkī, 1364/1945)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ ilk
+     kılavuz: (İbn Manzûr, ts.)
+     derkenar: (İbn Manzûr)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Tehânevî, Muhammed Aʿlâ b. Ali. Keşşâfü ıṣṭılâḥâti’l-fünûn ve’l-‘ulûm. nşr. Ali Dahrûc - Abdullah Hâlidî. 2 Cilt. Beyrut: Mektebetü Lübnan, 1996.
+     derkenar: Tehânevî, Muhammed Ali b. Ali. Keşşâfü ıṣṭılâḥâti’l-fünûn ve’l-‘ulûm. nşr. Ali Dahrûc - Abdullah Hâlidî. 2 Cilt. Beyrut: Mektebetü Lübnan, 1996.
+## 12.2 Sözlük-Latin Harfli (s. 168)
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Akalın vd., 2011)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Akalın, Şükrü Halûk vd. Türkçe Sözlük. Ankara: Türk Dil Kurumu, 11. Basım, 2011.
+     derkenar: Akalın, Şükrü Haluk vd. Türkçe Sözlük. Ankara: Türk Dil Kurumu, 11. Basım, 2011.
+  ✗ kaynakça
+     kılavuz: Cevizci, Ahmet. Felsefe Sözlüğü. İstanbul: Paradigma Yayınları, 4. Basım, 1999.
+     derkenar: Cevizci, Ahmet. Felsefe Sözlüğü. İstanbul: Paradigma Yayınları, 3. Basım, 1999.
+  ✗ ilk
+     kılavuz: (Lane, 1967)
+     derkenar: (Lane, 1968)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 12.3 Sözlük-Web (s. 169)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 13.2 Tez-Yüksek Lisans (s. 170)
+  ✗ ilk
+     kılavuz: (Eskildsen, 2017)
+     derkenar: (Eskildsen, 1989)
+  ✗ kaynakça
+     kılavuz: Eskildsen, Stephen Edward. The Beliefs and Practices of Early Ch‘üan-Chen Taoism. Canada: The University of British Columbia, The Faculty of Graduate Studies, Yüksek Lisans Tezi, 1989. https://open.library.ubc.ca/IRcle/collections/ubctheses/831/items/1.0097774
+     derkenar: Eskildsen, Stephen Edward. The Beliefs and Practices of Early Ch‘üan-Chen Taoism. Canada: The University of British Columbia, The Faculty of Graduate Studies, Yüksek Lisans Tezi, 1989. https://open.library.ubc.ca/ cIRcle/collections/ubctheses/831/items/1.0097774
+## 13.6 Tez-Diş Hekimliği Uzmanlık (s. 173)
+  ✗ kaynakça
+     kılavuz: Tekin, Elif. Sivas İlinde Yaşayan 7-14 Yaş Aralığındaki Çocuklarda Dental Erozyon Prevalansının ve Etiyolojik Faktörlerin Belirlenmesi. Sivas: Sivas Cumhuriyet Üniversitesi, Diş Hekimliği Fakültesi, Diş Hekimliği Uzmanlık Tezi, 2019.
+     derkenar: Tekin, Elif. Sivas İlinde Yaşayan 7-14 Yaş Aralığındaki Çocuklarda Dental Erozyon Prevalansının ve Etiyolojik Faktörlerin Belirlenmesi. Sivas: Sivas Cumhuriyet Üniversitesi, Diş Hekimliği Fakültesi, Diş Hekimliği Uzmanlık Tezi, 2019. https://tez.yok.gov.tr/UlusalTezMerkezi
+## 14.3 Makale-Tahkik/Neşir (s. 177)
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (İbrahim el-Halebî, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Halebî, İbrahim. Risâle fi hakkı ebeveyi’r-Resûl. nşr. Kadir Gömbeyaz. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278
+     derkenar: İbrahim el-Halebî. Risâle fi hakkı ebeveyi’r-Resûl. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. nşr. Kadir Gömbeyaz. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278
+## 14.5 Makale-İnternette (s. 178)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 15 Bildiri/Tebliğ (s. 179)
+  ✗ kaynakça
+     kılavuz: Demir, Abdullah. “Farklı Ebû Hanîfe Tasavvurları: Fakih ve Mütekellim Hanefîler Örneği”. IV. Uluslararası Şeyh Şa'ban-ı Velî Sempozyumu (Hanefîlik – Mâturîdîlik (05-07 Mayıs 2017). ed. Cengiz Çuhadar vd. 1/643-658. Kastamonu: Kastamonu Üniversitesi Yayınları, 2017.
+     derkenar: Demir, Abdullah. “Farklı Ebû Hanîfe Tasavvurları: Fakih ve Mütekellim Hanefîler Örneği”. IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu. ed. Cengiz Çuhadar vd. 1/643-658. Kastamonu: Kastamonu Üniversitesi Yayınları, 2017.
+## 16.1 Gazete-Köşe Yazısı (s. 179)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ? eşleşmedi: Hanioğlu, M. Şükrü. “15 Temmuz’u Farklı Kılan Ne?”. Sabah (15 Temmuz 2018), 8. https://www.sabah.com.tr/yazarlar/hanioglu/ 2018/07/15/15-temmuzu-farkli-kilan-nedir
+## 16.3 Gazete Haberi-Yazarsız (s. 180)
+  ✗ ilk
+     kılavuz: (Milliyet, 17 Eylül 2019)
+     derkenar: (Milliyet, 17 Eylül 1971)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 18 Basın Bülteni (s. 182)
+  ✗ ilk
+     kılavuz: (BDDK, Haziran 2019)
+     derkenar: (BDDK, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: BDDK, Bankacılık Düzenleme ve Denetleme Kurumu (BDDK). Aylık Bankacılık Sektörü Verileri (Haziran 2019). https://www.bddk.org.tr/bultenaylik
+     derkenar: BDDK, Bankacılık Düzenleme ve Denetleme Kurumu. Aylık Bankacılık Sektörü Verileri (Haziran 2019). https://www.bddk.org.tr/bultenaylik
+  ✗ ilk
+     kılavuz: (HMB, Haziran 2019)
+     derkenar: (HMB, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 19 İstatistik (s. 183)
+  ✗ ilk
+     kılavuz: (TCMB, Ağustos 2019)
+     derkenar: (TCMB, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: TCMB, Türkiye Cumhuriyet Merkez Bankası. Bankalarca Açılan Kredilere Uygulanan Ağırlıklı Ortalama Faiz Oranları (16 Ağustos 2019). https://www.tcmb.gov.tr
+     derkenar: TCMB, Türkiye Cumhuriyet Merkez Bankası. Bankalarca Açılan Kredilere Uygulanan Ağırlıklı Ortalama Faiz Oranları (16 Ağustos 2019). https://www.tcmb.gov.tr/wps/wcm/connect/TR/TCMB+TR/Main+Menu/Istatistikler/Faiz+Istatistikleri/Bankalarca+Acilan+Kredi
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (TÜİK, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 20.2 Katalog-Yazarlı (s. 184)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Zeydân, 2004)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Zeydâm, Yûsuf. el-Mahtûtâtü’l-elfiyye. Kahire: Dâru’l-Hilâl, 2004.
+     derkenar: Zeydân, Yûsuf. el-Mahtûtâtü’l-elfiyye. Kahire: Dâru’l-Hilâl, 2004.
+## 20.3 Katalog-Editörlü (s. 184)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Roper, Geoffrey (ed.). World Survey of Islamic Manuscripts. 4 Cilt. Londron: al Furgan Islamic Heritage Foundation, 1991-1994.
+     derkenar: Roper, Geoffrey (ed.). World Survey of Islamic Manuscripts. 4 Cilt. London: al-Furqan Islamic Heritage Foundation, 1991-1994.
+## 20.4 Katalog-Web (s. 185)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 21.2 Görüşme/Mülakat-Webte (s. 186)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 21.3 Görüşme/Mülakat-Dergide (s. 186)
+  ✗ ilk
+     kılavuz: (Şeyh Zindânî, 2013)
+     derkenar: (Şeyh Zindânî, Güz 2013)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 22.1 Mevzuat-Resmî Gazete’de Yayımlanan (s. 188)
+  ✗ ilk
+     kılavuz: (DY, 15 Nisan 2018)
+     derkenar: (DY, 2018)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (Stop extremism, 15 June 2017, p. 2)
+     derkenar: (Stop extremism, 15 June 2017, 2)
+## 23 Standard (s. 190)
+  ✗ ilk
+     kılavuz: (TSE, 05 Haziran 2012)
+     derkenar: (TSE, Kabul 5 Haziran 2012)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz. Türkiye: Türk Standardları Enstitüsü, Kabul 05 Haziran 2012, TS OIC/SMIIC 2/T1.
+     derkenar: TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz. Türkiye: Türk Standardları Enstitüsü, Kabul 5 Haziran 2012, TS OIC/SMIIC 2/T1.
+## 24 Mahkeme Kararı (s. 190)
+  ? eşleşmedi: AYM, Anayasa Mahkemesi. K. 2015/19953 (26 Haziran 2019). http://www.resmigazete.gov.tr/eskiler/2019/08/20190806-6.pdf
+  ? eşleşmedi: Yargıtay, Yargıtay 11. Hukuk Dairesi. K. 2019/1204 (22 Ağustos 2019). http://www.resmigazete.gov.tr/eskiler/2019/08/20190822-4.pdf
+## 26 Veri Tabanı (s. 192)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: ALMANHAL, Al Manhal eLibrary. “Aranan: ‫”إسناد‬. Erişim 9 Temmuz 2019. http://platform.almanhal.com
+     derkenar: ALMANHAL, Al Manhal eLibrary. “Aranan: إسناد”. Erişim 9 Temmuz 2019. http://platform.almanhal.com
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: DAVET, Dini Araştırmalar Veri Tabanı İlahiyat Atıf Dizini. “Aranan: Oruç      İbadeti”.     Erişim      12      Eylül      2019. https://www.davet.org.tr
+     derkenar: DAVET, Dini Araştırmalar Veri Tabanı İlahiyat Atıf Dizini. “Aranan: Oruç İbadeti”. Erişim 12 Eylül 2019. www.davet.org.tr
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 27 Yazılım (s. 193)
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (EndNote X9, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ ilk
+     kılavuz: (bulunamadı)
+     derkenar: (Islamic calendar converter, 1995)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Islamic Calendar Converter. Yazılım. Rolla - ABD: Muslim Student Association of UMR - Waleed A. Muhanna, 1955. https://www.loc.gov/item/2003556315
+     derkenar: Islamic calendar converter. Yazılım. Rolla, ABD: Muslim Student Association of UMR - Waleed A. Muhanna, 1995. https://www.loc.gov/item/2003556315
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 28 Patent (s. 194)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Fişek, Mehmet. Chair for Performing the Rituel Prayers of Islam to People Having Physical Illnesses. Patent. World Intellectual Property Organization, No. WO2014/011125, Tarih 16 Ocak 2014. https://patentscope.wipo.int/search/en/detail.jsf?docI d=WO2014011125&tab=PCTBIBLIO&_cid=P22-K0LCW3-92000-1
+     derkenar: Fişek, Mehmet. Chair For Performing The Rituel Prayers of Islam to People Having Physical Illnesses. Patent. World Intellectual Property Organization, No. WO2014/011125, Tarih 16 Ocak 2014. https://patentscope.wipo.int/search/en/detail.jsf?docId=WO2014011125&tab=PCTBIBLIO&_cid=P22-K0LCW3-92000-1
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 29 Sosyal Medya (s. 195)
+  ✗ ilk
+     kılavuz: (Demir, 12 Temmuz 2019)
+     derkenar: (Demir, 12 Mart 2019, 20:30)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ ilk
+     kılavuz: (T.C. CB, 8 Eylül 2019)
+     derkenar: (T.C. CB, 8 Eylül 2019, 23:32)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 31 TV Yayını (s. 196)
+  ✗ ilk
+     kılavuz: (Üçer, 06 Temmuz 2019)
+     derkenar: (Üçer, 6 Temmuz 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Üçer, Cenksu. “Mizan”. Diyanet TV. Yayın Tarihi 06 Temmuz 2019. https://www.diyanet.tv/mizan/video/mizan--58-bolum
+     derkenar: Üçer, Cenksu. “Mizan”. Diyanet TV. Yayın Tarihi 6 Temmuz 2019. https://www.diyanet.tv/mizan/video/mizan--58-bolum
+## 32 Video Kaydı (s. 196)
+  ✗ ilk
+     kılavuz: (Tarakçı, 31 Mart 2018)
+     derkenar: (Tarakçı, 2018)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Tarakçı, Muhammet. “İSNAD-Kitap Bölümüne Atıf”. YouTube. Yayın Tarihi 31 Mart 2018. https://youtu.be/watch?v=QwJe7fJfGYI
+     derkenar: Tarakçı, Muhammet. “İSNAD-Kitap Bölümüne Atıf”. YouTube. Yayın Tarihi 31 Mart 2018. https://www.youtube.com/watch?v=QwJe7fJfGYI
+## 33 Ses Kaydı (s. 197)
+  ✗ ilk
+     kılavuz: (Biçer, ts.)
+     derkenar: (Biçer)
+  ✗ kaynakça
+     kılavuz: Şener, Taner. “Derman Kâr Eylemez”. Gönül Plak, 1970. Erişim 18 Temmuz 2018. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=590311.
+     derkenar: Şener, Taner. “Derman Kâr Eylemez”. Gönül Plak, 1970. Erişim 18 Temmuz 2018. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=59031
+## 34 Nota Kâğıdı (s. 198)
+  ✗ ilk
+     kılavuz: (Hak'tan Doğarak Gönlüne İmân-ı Mehâbet, Nota Kâğıdı, ts.)
+     derkenar: (Hak'tan Doğarak Gönlüne İmân-ı Mehâbet, Nota Kağıdı)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kâğıdı, ts.). İSAM Kütüphanesi (İstanbul/Türkiye), Kemal Batanay Müzik Arşivi, No. KB: 1-37-130. http://isamveri.org
+     derkenar: Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kağıdı, ts.). İstanbul: İSAM Kütüphanesi, Kemal Batanay Müzik Arşivi, No. KB: 1-37-130. http://isamveri.org
+## 35 Sınav Kâğıdı (s. 198)
+  ✗ ilk
+     kılavuz: (Öğrenci 1, Sınav Kâğıdı, 20 Mart 2019)
+     derkenar: (Öğrenci 1, Sınav Kağıdı, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Öğrenci 1. İç Tasarıma Giriş Dersi Vize Sınavı (Sınav Kâğıdı, 20 Mart 2019). Sivas Cumhuriyet Üniversitesi, Mimarlık Fakültesi, Öğretici 1.
+     derkenar: Öğrenci 1. İç Tasarıma Giriş Dersi Vize Sınavı (Sınav Kağıdı, 20 Mart 2019). Sivas Cumhuriyet Üniversitesi, Mimarlık Fakültesi, Öğretici 1.
+  ✗ ilk
+     kılavuz: (Öğrenci 2, Sınav Kâğıdı, 12 Nisan 2019)
+     derkenar: (Öğrenci 2, Sınav Kağıdı, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Öğrenci 2. Uluslararası İlişkiler-I Dersi Final Sınavı (Sınav Kâğıdı, 12 Nisan 2019). Selçuk Üniversitesi, İktisadi İdari Bilimler Fakültesi, Öğretici 2.
+     derkenar: Öğrenci 2. Uluslararası İlişkiler-I Dersi Final Sınavı (Sınav Kağıdı, 12 Nisan 2019). Selçuk Üniversitesi, İktisadi İdari Bilimler Fakültesi, Öğretici 2.
+## 36 Sanat Eseri ve Tarihî Eser (s. 199)
+  ✗ ilk
+     kılavuz: (Ahşap 82 ve El Sanatları Fuarı 15-27 Temmuz. Afiş, 1982)
+     derkenar: (Ahşap 82 ve El Sanatları Fuarı 15-27 Temmuz, Afiş, 1982)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Hayali Küçük Ali. Abdal. Tasvir, 1957. Ankara: Milli Kütüphane, No. 000116. https://dijital-kutuphane.mkutup.gov.tr/tr/nonbookmaterials/catalog/details/78006
+     derkenar: Hayali Küçük Ali. Abdal. Tasvir, 1957. Ankara: Milli Kütüphane, No. 000116. https://dijital-kutuphane.mkutup.gov.tr/tr
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ? eşleşmedi: Ud. Ahşap, 20. yüzyıl. İstanbul: Vehbi Koç Vakfı Sadberk Hanım Müzesi, Türk-İslam Koleksiyonu, No. 18138. http://www.sadberkhanimmuzesi.org.tr
+## 37 Fotoğraf-Dijital (s. 201)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 38.1 Harita-Matbu (s. 202)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 38.2 Harita-Web (s. 203)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: David Rumsey Map Collection. Istanbul Vilayeti. 19 Eylül 2019. https://www.davidrumsey.com
+     derkenar: David Rumsey Map Collection. Istanbul Vilayeti. Erişim 19 Eylül 2019. https://www.davidrumsey.com
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+## 39 E-Posta (s. 203)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Demir, Abdullah. İSNAD Atıf Sistemi 2. Edisyon Taslağı hk. E-Posta 2 Eylül 2019, Alıcı Emrah Kaya.
+     derkenar: Demir, Abdullah. İSNAD Atıf Sistemi 2. Edisyon Taslağı hk. (E-Posta 2 Eylül 2019, Alıcı Emrah Kaya).
+## 40 Kısa Mesaj (s. 204)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Doğan, Yusuf. İlahiyat Atıf Dizini hk. Kısa Mesaj 2 Eylül 2019, Alıcı Sami Şahin.
+     derkenar: Doğan, Yusuf. İlahiyat Atıf Dizini hk. (Kısa Mesaj 2 Eylül 2019, Alıcı Sami Şahin).
+## 41 Ambalaj (s. 204)
+  ✗ ilk
+     kılavuz: (Kırınkıl Çubuk Kraker 150 gr., Plastik Ambalaj, 2019)
+     derkenar: (Kırınkıl Çubuk Kraker 150 gr, Plastik Ambalaj, 2019)
+  ✗ doğrudan
+     kılavuz: (bulunamadı)
+     derkenar: 
+  ✗ kaynakça
+     kılavuz: Kırınkıl Çubuk Kraker 150 gr. (Plastik Ambalaj, Ağustos 2019). İstanbul: BİM, Seri No. 291, Barkod No. 8695077001153.
+     derkenar: Kırınkıl Çubuk Kraker 150 gr (Plastik Ambalaj, Ağustos 2019). İstanbul: BİM, Seri No. 291, Barkod No. 8695077001153.
