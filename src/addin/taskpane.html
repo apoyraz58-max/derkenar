@@ -301,10 +301,94 @@
       </section>
     </div>
 
+    <!-- ============================== Veri bilgisi -->
+    <div id="view-veri" class="view" role="tabpanel" hidden>
+      <section>
+        <h2>Kütüphane</h2>
+        <dl id="info-library" class="facts"></dl>
+        <h3 class="small">Türlere göre</h3>
+        <ul id="info-types" class="plain cols"></ul>
+        <h3 class="small">Nereden geldi</h3>
+        <ul id="info-sources" class="plain"></ul>
+      </section>
+      <section>
+        <h2>Bu belge</h2>
+        <dl id="info-document" class="facts"></dl>
+      </section>
+      <section>
+        <h2>Saklama</h2>
+        <dl id="info-storage" class="facts"></dl>
+        <p class="muted small">Kütüphane bu bilgisayarda, Word'ün eklenti deposunda (IndexedDB) durur; hiçbir sunucuya gönderilmez. Office önbelleği temizlenirse ya da eklenti yeniden eklenirse, belgedeki kopyadan kendiliğinden geri yüklenir. Asıl güvence için ara ara <b>Dışa Aktar → Derkenar yedeği</b> alın.</p>
+      </section>
+      <section>
+        <h2>Ağ bağlantıları</h2>
+        <p class="muted small">Derkenar yalnız siz istediğinizde dışarıya bağlanır: DOI için Crossref, doi.org ve DataCite; ISBN için Open Library ve Google Books; PMID için PubMed; arXiv; Zotero eşitlemesi için api.zotero.org ya da bilgisayarınızdaki Zotero. Belge metni hiçbir yere gönderilmez.</p>
+      </section>
+      <section>
+        <h2>Bileşenler</h2>
+        <dl id="info-components" class="facts"></dl>
+      </section>
+    </div>
+
+    <!-- ============================== Kılavuz -->
+    <div id="view-yardim" class="view" role="tabpanel" hidden>
+      <section>
+        <h2>Başlarken</h2>
+        <ol class="guide">
+          <li><strong>Kütüphaneyi alın:</strong> Zotero → Dosya → Kütüphaneyi Dışa Aktar → <b>Zotero RDF</b>; sonra Derkenar → <strong>İçe Aktar</strong>. Koleksiyonlar, notlar ve etiketler de gelir. Ya da Zotero numaranız ve API anahtarınızla eşitleyin.</li>
+          <li><strong>Atıf ekleyin:</strong> İmleci yerleştirin, <strong>Atıf Ekle/Düzenle</strong>. Yazar, başlık ya da yıl yazın; sayfayı da aynı kutuya yazabilirsiniz: <code>gazzali 1/45</code>. Enter sepete ekler, Ctrl+Enter atıfı belgeye koyar.</li>
+          <li><strong>Kaynakça:</strong> Tezin sonunda <strong>Kaynakça Ekle/Düzenle</strong>. Başlığıyla eklenir, atıflarla birlikte kendiliğinden güncellenir.</li>
+          <li><strong>Teslimden önce</strong>, bir kopyada: <strong>Düz Metne Çevir</strong>.</li>
+        </ol>
+      </section>
+      <section>
+        <h2>Otomatik güncelleme</h2>
+        <p>Pencere açıkken Derkenar atıfların sırasını izler. Araya dipnot eklediğinizde, sildiğinizde ya da taşıdığınızda ilk geçiş tam, sonrakiler kısa künyeye kendiliğinden döner; kaynakça da yenilenir. <strong>Güncelle</strong> düğmesi genellikle gerekmez. Kapatmak için: <strong>Belge Tercihleri → Otomatik güncelle</strong>.</p>
+      </section>
+      <section>
+        <h2>Atıfı düzenleme ve silme</h2>
+        <ul class="guide">
+          <li>İmleci bir atıfın içine koyup <strong>Atıf Ekle/Düzenle</strong>'ye basın; sepet o atıfın kaynaklarıyla açılır.</li>
+          <li>Var olan atıfın yanına başka kaynak eklemek için imleç atıfın hemen arkasındayken yeni atıf ekleyin; <code>;</code> ile aynı dipnota bağlanır.</li>
+          <li>Atıfı tamamen kaldırmak için düzenlerken <strong>Atıfı sil</strong>. Dipnotta yalnız o atıf varsa dipnot da silinir.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>İSNAD'a özgü ayrıntılar</h2>
+        <ul class="guide">
+          <li><strong>Roller:</strong> Kişiler'de Muhakkik (thk.), Nâşir (nşr.), Hazırlayan (haz.), Sadeleştiren (sad.), Müellif (mlf.) ve Türkçeye çeviren de var.</li>
+          <li><strong>a.mlf.:</strong> Aynı dipnotta aynı müellifin farklı eseri geçince kendiliğinden yazılır. Ad farklı yazılmış olsa da (Gazzâlî / Huccetü'l-İslâm … el-Gazzâlî) aynı kişi sayılır.</li>
+          <li><strong>Atıf sistemleri:</strong> Hadis (kitap-bab, numara, cilt/sayfa), sözlük (madde adı), Kur'ân (sure/âyet) ve Kitâb-ı Mukaddes. Derkenar kaynaktan tahmin eder; düzenleyicide <b>İSNAD atıf biçimi</b> kutusundan değiştirebilirsiniz.</li>
+          <li><strong>Cilt:</strong> Cildi atıfta yazın (<code>1/45</code>). Kaydın Cilt alanı çok ciltli eserlerde cilt sayısı içindir; kaynakçada "6 Cilt" olarak görünür.</li>
+          <li><strong>Eksik künye:</strong> Basılı eserde yer yoksa b.y., yayıncı yoksa y.y., tarih yoksa ts. kendiliğinden eklenir.</li>
+          <li><strong>Denetim:</strong> <strong>Belgeyi Denetle</strong> İSNAD yazım kurallarına aykırı alanları gösterir; düzeltilebilenleri tek tıkla düzeltir.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>İpuçları</h2>
+        <ul class="guide">
+          <li>Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …) için pencerenin üstündeki <strong>ʿâ</strong> düğmesi.</li>
+          <li>Başka bir belgeden kopyalanan atıfın verisi yoksa: <strong>Belge → Belgedeki kaynakları kütüphaneye al</strong>.</li>
+          <li>Word eski sürümü açıyorsa: Dosya → Seçenekler → Güven Merkezi → Güvenilen Eklenti Katalogları → "önbelleği temizle", sonra Word'ü yeniden başlatın.</li>
+          <li>Kütüphanenizin nerede durduğu ve kaç kaynak olduğu: <strong>Veri bilgisi</strong>.</li>
+        </ul>
+        <p><a href="https://github.com/apoyraz58-max/derkenar/blob/main/docs/WORD-DENEME.md" target="_blank" rel="noopener noreferrer">Ayrıntılı kılavuz</a>
+          · <a href="https://www.isnadsistemi.org/guide/isnad2/" target="_blank" rel="noopener noreferrer">İSNAD 2 kılavuzu</a></p>
+      </section>
+      <section id="about">
+        <h2>Hakkında</h2>
+        <img src="assets/app-icon.svg" alt="Derkenar" class="about-logo" width="56" height="56">
+        <p>Derkenar <span id="about-version"></span></p>
+        <p>Geliştiren: <strong>Abdurrahman Poyraz</strong><br>
+          Sivas Cumhuriyet Üniversitesi İlahiyat Fakültesi</p>
+        <p class="muted small">Atıflar Zotero'nun da kullandığı citeproc-js ile, İSNAD Atıf Sistemi'nin resmî CSL stilleriyle biçimlenir. Kaynak türleri ve alanlar Zotero şemasındandır. Lisans: AGPL-3.0. Simgeler: Fluent UI System Icons (MIT).</p>
+      </section>
+    </div>
+
     <div id="translit" class="translit" hidden>
       <div id="translit-keys" class="translit-keys"></div>
     </div>
-    <footer><span id="version" class="muted"></span></footer>
+    <footer><span id="version" class="muted"></span><span><button id="go-info" type="button" class="link">Veri bilgisi</button> · <button id="go-help" type="button" class="link">Kılavuz</button></span></footer>
     <script type="module" src="taskpane.js"></script>
   </body>
 </html>

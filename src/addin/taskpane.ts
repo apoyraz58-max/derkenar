@@ -9,6 +9,7 @@ import { $, doc, loadLibrary, setMessage, onLibraryChange, onShow, renderSummary
 import { bibliography, changeStyle, nudge, refresh, renderDocList, startWatcher, wireDocument } from "./pane/document.js";
 import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
+import { renderInfo } from "./pane/info.js";
 import { newItem, refreshLibraryView, wireLibrary } from "./pane/library.js";
 import { wireTranslit } from "./pane/translit.js";
 
@@ -65,6 +66,10 @@ async function launch(action: string): Promise<void> {
     case "unlink":
       showView("belge");
       return void $("unlink").focus();
+    case "info":
+      return showView("veri");
+    case "help":
+      return showView("yardim");
     case "check-doc":
       $<HTMLSelectElement>("chk-scope").value = "document";
       showView("denetim");
@@ -89,6 +94,9 @@ Office.onReady(async () => {
   for (const b of document.querySelectorAll<HTMLButtonElement>(".tabs button")) b.onclick = () => showView(b.dataset.view!);
   $("go-new").onclick = () => newItem("book");
   $("go-import").onclick = () => showView("aktar");
+  $("go-info").onclick = () => showView("veri");
+  $("go-help").onclick = () => showView("yardim");
+  $("about-version").textContent = __VERSION__;
   wireCite();
   wireLibrary();
   wireEditor();
@@ -99,12 +107,14 @@ Office.onReady(async () => {
   onShow("atif", () => $<HTMLInputElement>("q").focus());
   onShow("kutuphane", refreshLibraryView);
   onShow("belge", renderDocList);
+  onShow("veri", () => void renderInfo());
   onShow("aktar", () => (renderSources(), renderPushCount()));
   onLibraryChange(() => {
     renderSummary();
     if (!$("view-atif").hidden) search();
     if (!$("view-kutuphane").hidden) refreshLibraryView();
     if (!$("view-aktar").hidden) renderSources();
+    if (!$("view-veri").hidden) void renderInfo();
   });
   doc();
   await loadLibrary();

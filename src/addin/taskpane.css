@@ -223,3 +223,12 @@ header.top { display: flex; justify-content: space-between; align-items: flex-st
 .tk { min-width: 28px; min-height: 28px; padding: 0 4px; font-size: 15px; line-height: 1; }
 .tk.shift.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 body.with-translit { padding-bottom: 92px; }
+
+/* Veri bilgisi ve kılavuz */
+dl.facts { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 4px 0 8px; font-size: 13px; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; overflow-wrap: anywhere; }
+ul.cols { columns: 2; column-gap: 12px; font-size: 13px; }
+ol.guide li, ul.guide li { margin-bottom: 6px; }
+.about-logo { display: block; margin: 4px 0 8px; border-radius: 12px; }
+code { font-size: 12px; background: rgba(127,127,127,.15); padding: 0 3px; border-radius: 3px; }

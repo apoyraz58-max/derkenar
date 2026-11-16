@@ -12,7 +12,7 @@ const { chromium } = require("playwright");
 const dist = new URL("../dist/addin/", import.meta.url);
 const shots = process.env.SMOKE_SCREENSHOT;
 
-const types = { ".rdf": "application/xml", ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".csl": "application/xml", ".xml": "application/xml", ".json": "application/json" };
+const types = { ".svg": "image/svg+xml", ".rdf": "application/xml", ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".csl": "application/xml", ".xml": "application/xml", ".json": "application/json" };
 const server = createServer(async (req, res) => {
   try {
     const path = new URL(`.${new URL(req.url, "http://x").pathname}`, dist);
@@ -464,6 +464,18 @@ try {
   await page.waitForSelector("#message:has-text('dipnota taşındı')");
   if ((await notes()).length !== notesBefore) fail(`back to notes: ${(await notes()).length} vs ${notesBefore}`);
   if (!(await notes()).some((n) => n.startsWith("Ebû Hâmid") || n.startsWith("Ahmet Yılmaz"))) fail("notes not re-rendered");
+
+  // 10. Veri bilgisi ve kılavuz.
+  await page.click("#go-info");
+  await page.waitForSelector("#info-document dd:has-text('kaynak,')");
+  const facts = await page.textContent("#info-library");
+  if (!/Kaynak\s*[1-9]/.test(facts)) fail(`data info: ${facts}`);
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/veri.png`, fullPage: true });
+  if (!(await page.textContent("#info-types")).trim()) fail("data info: no item types");
+  await page.click("#go-help");
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/kilavuz.png`, fullPage: true });
+  if (!(await page.isVisible("#view-yardim")) || !(await page.textContent("#about-version")).trim()) fail("guide view");
+  await page.click("#tab-belge");
 
   await page.click("#unlink");
   await page.click("#unlink");

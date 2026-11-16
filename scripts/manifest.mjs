@@ -52,6 +52,10 @@ const tab = [
     button("CheckDoc", "Belgeyi Denetle", "Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir.", "audit", "check-doc"),
     button("CheckLib", "Kütüphaneyi Denetle", "Bütün kütüphaneyi İSNAD 2 yazım kurallarına göre denetler.", "health", "check-lib"),
   ]),
+  group("Data", "Veri ve yardım", "info", [
+    button("Info", "Veri bilgisi", "Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, Zotero eşitlemesi, sürüm.", "info", "info"),
+    button("Help", "Kullanım kılavuzu", "Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında.", "help", "help"),
+  ]),
 ];
 
 const contextMenu = [

@@ -236,7 +236,7 @@ export function renderSources(): void {
   );
 }
 
-function sourceName(source: string): string {
+export function sourceName(source: string): string {
   if (source.startsWith("zotero:")) return `Zotero (${source.slice(7)})`;
   if (source.startsWith("file:")) return `Dosya: ${source.slice(5)}`;
   return ({ doi: "DOI ile eklenenler", isbn: "ISBN ile eklenenler", manual: "Elle girilenler", belge: "Belgelerden alınanlar" } as Record<string, string>)[source] ?? source;

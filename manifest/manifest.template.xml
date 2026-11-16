@@ -259,6 +259,46 @@
                   </Action>
                 </Control>
               </Group>
+              <Group id="Derkenar.G.Data">
+                <Label resid="G.Data"/>
+                <Icon>
+                  <bt:Image size="16" resid="Ic.info.16"/>
+                  <bt:Image size="32" resid="Ic.info.32"/>
+                  <bt:Image size="80" resid="Ic.info.80"/>
+                </Icon>
+                <Control xsi:type="Button" id="Derkenar.Info">
+                  <Label resid="Info"/>
+                  <Supertip>
+                    <Title resid="Info"/>
+                    <Description resid="Info.Tip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Ic.info.16"/>
+                    <bt:Image size="32" resid="Ic.info.32"/>
+                    <bt:Image size="80" resid="Ic.info.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.Info"/>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="Derkenar.Help">
+                  <Label resid="Help"/>
+                  <Supertip>
+                    <Title resid="Help"/>
+                    <Description resid="Help.Tip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Ic.help.16"/>
+                    <bt:Image size="32" resid="Ic.help.32"/>
+                    <bt:Image size="80" resid="Ic.help.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.Help"/>
+                  </Action>
+                </Control>
+              </Group>
               <Label resid="Tab"/>
             </CustomTab>
           </ExtensionPoint>
@@ -337,6 +377,12 @@
         <bt:Image id="Ic.health.16" DefaultValue="{{BASE_URL}}assets/icons/health-16.png"/>
         <bt:Image id="Ic.health.32" DefaultValue="{{BASE_URL}}assets/icons/health-32.png"/>
         <bt:Image id="Ic.health.80" DefaultValue="{{BASE_URL}}assets/icons/health-80.png"/>
+        <bt:Image id="Ic.info.16" DefaultValue="{{BASE_URL}}assets/icons/info-16.png"/>
+        <bt:Image id="Ic.info.32" DefaultValue="{{BASE_URL}}assets/icons/info-32.png"/>
+        <bt:Image id="Ic.info.80" DefaultValue="{{BASE_URL}}assets/icons/info-80.png"/>
+        <bt:Image id="Ic.help.16" DefaultValue="{{BASE_URL}}assets/icons/help-16.png"/>
+        <bt:Image id="Ic.help.32" DefaultValue="{{BASE_URL}}assets/icons/help-32.png"/>
+        <bt:Image id="Ic.help.80" DefaultValue="{{BASE_URL}}assets/icons/help-80.png"/>
         <bt:Image id="Icon.16" DefaultValue="{{BASE_URL}}assets/icon-16.png"/>
         <bt:Image id="Icon.32" DefaultValue="{{BASE_URL}}assets/icon-32.png"/>
         <bt:Image id="Icon.80" DefaultValue="{{BASE_URL}}assets/icon-80.png"/>
@@ -354,6 +400,8 @@
         <bt:Url id="U.Export" DefaultValue="{{BASE_URL}}taskpane.html?action=export"/>
         <bt:Url id="U.CheckDoc" DefaultValue="{{BASE_URL}}taskpane.html?action=check-doc"/>
         <bt:Url id="U.CheckLib" DefaultValue="{{BASE_URL}}taskpane.html?action=check-lib"/>
+        <bt:Url id="U.Info" DefaultValue="{{BASE_URL}}taskpane.html?action=info"/>
+        <bt:Url id="U.Help" DefaultValue="{{BASE_URL}}taskpane.html?action=help"/>
         <bt:Url id="U.Ctx.Insert" DefaultValue="{{BASE_URL}}taskpane.html?action=insert"/>
         <bt:Url id="Commands.Url" DefaultValue="{{BASE_URL}}commands.html"/>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
@@ -377,6 +425,9 @@
         <bt:String id="CheckDoc" DefaultValue="Belgeyi Denetle"/>
         <bt:String id="CheckLib" DefaultValue="Kütüphaneyi Denetle"/>
         <bt:String id="G.Isnad" DefaultValue="İSNAD"/>
+        <bt:String id="Info" DefaultValue="Veri bilgisi"/>
+        <bt:String id="Help" DefaultValue="Kullanım kılavuzu"/>
+        <bt:String id="G.Data" DefaultValue="Veri ve yardım"/>
         <bt:String id="Ctx.Insert" DefaultValue="Atıf ekle"/>
       </bt:ShortStrings>
       <bt:LongStrings>
@@ -393,6 +444,8 @@
         <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>
         <bt:String id="CheckDoc.Tip" DefaultValue="Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir."/>
         <bt:String id="CheckLib.Tip" DefaultValue="Bütün kütüphaneyi İSNAD 2 yazım kurallarına göre denetler."/>
+        <bt:String id="Info.Tip" DefaultValue="Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, Zotero eşitlemesi, sürüm."/>
+        <bt:String id="Help.Tip" DefaultValue="Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında."/>
         <bt:String id="Ctx.Insert.Tip" DefaultValue="Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
       </bt:LongStrings>
     </Resources>

@@ -94,7 +94,7 @@ export function onShow(view: string, fn: () => void): void {
 }
 
 export function showView(name: string): void {
-  for (const v of ["atif", "kutuphane", "kaynak", "belge", "denetim", "aktar"]) {
+  for (const v of ["atif", "kutuphane", "kaynak", "belge", "denetim", "aktar", "veri", "yardim"]) {
     $(`view-${v}`).hidden = v !== name;
     const tab = document.getElementById(`tab-${v}`);
     tab?.setAttribute("aria-selected", String(v === name || (name === "kaynak" && v === "kutuphane")));
