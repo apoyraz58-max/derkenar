@@ -10,7 +10,7 @@
   <ProviderName>Derkenar</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
   <DisplayName DefaultValue="Derkenar"/>
-  <Description DefaultValue="Word için hızlı atıf ve kaynakça: Zotero kütüphanesi, İSNAD, APA, Chicago ve diğer CSL stilleri."/>
+  <Description DefaultValue="Word için İSNAD temelli atıf ve kaynakça: Zotero kütüphanesi, otomatik dipnot güncelleme, İSNAD yazım denetimi."/>
   <IconUrl DefaultValue="{{BASE_URL}}assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="{{BASE_URL}}assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
@@ -62,7 +62,7 @@
                     <bt:Image size="80" resid="Ic.insert.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>DerkenarPane</TaskpaneId>
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
                     <SourceLocation resid="U.Insert"/>
                   </Action>
                 </Control>
@@ -78,8 +78,24 @@
                     <bt:Image size="80" resid="Ic.index.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>DerkenarPane</TaskpaneId>
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
                     <SourceLocation resid="U.Bib"/>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="Derkenar.Prefs">
+                  <Label resid="Prefs"/>
+                  <Supertip>
+                    <Title resid="Prefs"/>
+                    <Description resid="Prefs.Tip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Ic.settings.16"/>
+                    <bt:Image size="32" resid="Ic.settings.32"/>
+                    <bt:Image size="80" resid="Ic.settings.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.Prefs"/>
                   </Action>
                 </Control>
                 <Control xsi:type="Button" id="Derkenar.Refresh">
@@ -94,159 +110,25 @@
                     <bt:Image size="80" resid="Ic.consistency.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>DerkenarPane</TaskpaneId>
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
                     <SourceLocation resid="U.Refresh"/>
                   </Action>
                 </Control>
-              </Group>
-              <Group id="Derkenar.G.Style">
-                <Label resid="G.Style"/>
-                <Icon>
-                  <bt:Image size="16" resid="Ic.settings.16"/>
-                  <bt:Image size="32" resid="Ic.settings.32"/>
-                  <bt:Image size="80" resid="Ic.settings.80"/>
-                </Icon>
-                <Control xsi:type="Menu" id="Derkenar.Style">
-                  <Label resid="Style"/>
+                <Control xsi:type="Button" id="Derkenar.Unlink">
+                  <Label resid="Unlink"/>
                   <Supertip>
-                    <Title resid="Style"/>
-                    <Description resid="Style.Tip"/>
+                    <Title resid="Unlink"/>
+                    <Description resid="Unlink.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.settings.16"/>
-                    <bt:Image size="32" resid="Ic.settings.32"/>
-                    <bt:Image size="80" resid="Ic.settings.80"/>
+                    <bt:Image size="16" resid="Ic.finalize.16"/>
+                    <bt:Image size="32" resid="Ic.finalize.32"/>
+                    <bt:Image size="80" resid="Ic.finalize.80"/>
                   </Icon>
-                  <Items>
-                    <Item id="Derkenar.Style.0">
-                      <Label resid="Style.0"/>
-                      <Supertip>
-                        <Title resid="Style.0"/>
-                        <Description resid="Style.Tip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Ic.settings.16"/>
-                        <bt:Image size="32" resid="Ic.settings.32"/>
-                        <bt:Image size="80" resid="Ic.settings.80"/>
-                      </Icon>
-                      <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>DerkenarPane</TaskpaneId>
-                        <SourceLocation resid="U.Style.0"/>
-                      </Action>
-                    </Item>
-                    <Item id="Derkenar.Style.1">
-                      <Label resid="Style.1"/>
-                      <Supertip>
-                        <Title resid="Style.1"/>
-                        <Description resid="Style.Tip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Ic.settings.16"/>
-                        <bt:Image size="32" resid="Ic.settings.32"/>
-                        <bt:Image size="80" resid="Ic.settings.80"/>
-                      </Icon>
-                      <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>DerkenarPane</TaskpaneId>
-                        <SourceLocation resid="U.Style.1"/>
-                      </Action>
-                    </Item>
-                    <Item id="Derkenar.Style.2">
-                      <Label resid="Style.2"/>
-                      <Supertip>
-                        <Title resid="Style.2"/>
-                        <Description resid="Style.Tip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Ic.settings.16"/>
-                        <bt:Image size="32" resid="Ic.settings.32"/>
-                        <bt:Image size="80" resid="Ic.settings.80"/>
-                      </Icon>
-                      <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>DerkenarPane</TaskpaneId>
-                        <SourceLocation resid="U.Style.2"/>
-                      </Action>
-                    </Item>
-                    <Item id="Derkenar.Style.3">
-                      <Label resid="Style.3"/>
-                      <Supertip>
-                        <Title resid="Style.3"/>
-                        <Description resid="Style.Tip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Ic.settings.16"/>
-                        <bt:Image size="32" resid="Ic.settings.32"/>
-                        <bt:Image size="80" resid="Ic.settings.80"/>
-                      </Icon>
-                      <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>DerkenarPane</TaskpaneId>
-                        <SourceLocation resid="U.Style.3"/>
-                      </Action>
-                    </Item>
-                    <Item id="Derkenar.Style.4">
-                      <Label resid="Style.4"/>
-                      <Supertip>
-                        <Title resid="Style.4"/>
-                        <Description resid="Style.Tip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Ic.settings.16"/>
-                        <bt:Image size="32" resid="Ic.settings.32"/>
-                        <bt:Image size="80" resid="Ic.settings.80"/>
-                      </Icon>
-                      <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>DerkenarPane</TaskpaneId>
-                        <SourceLocation resid="U.Style.4"/>
-                      </Action>
-                    </Item>
-                    <Item id="Derkenar.Style.5">
-                      <Label resid="Style.5"/>
-                      <Supertip>
-                        <Title resid="Style.5"/>
-                        <Description resid="Style.Tip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Ic.settings.16"/>
-                        <bt:Image size="32" resid="Ic.settings.32"/>
-                        <bt:Image size="80" resid="Ic.settings.80"/>
-                      </Icon>
-                      <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>DerkenarPane</TaskpaneId>
-                        <SourceLocation resid="U.Style.5"/>
-                      </Action>
-                    </Item>
-                    <Item id="Derkenar.Style.6">
-                      <Label resid="Style.6"/>
-                      <Supertip>
-                        <Title resid="Style.6"/>
-                        <Description resid="Style.Tip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Ic.settings.16"/>
-                        <bt:Image size="32" resid="Ic.settings.32"/>
-                        <bt:Image size="80" resid="Ic.settings.80"/>
-                      </Icon>
-                      <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>DerkenarPane</TaskpaneId>
-                        <SourceLocation resid="U.Style.6"/>
-                      </Action>
-                    </Item>
-                    <Item id="Derkenar.Style.7">
-                      <Label resid="Style.7"/>
-                      <Supertip>
-                        <Title resid="Style.7"/>
-                        <Description resid="Style.Tip"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="Ic.settings.16"/>
-                        <bt:Image size="32" resid="Ic.settings.32"/>
-                        <bt:Image size="80" resid="Ic.settings.80"/>
-                      </Icon>
-                      <Action xsi:type="ShowTaskpane">
-                        <TaskpaneId>DerkenarPane</TaskpaneId>
-                        <SourceLocation resid="U.Style.7"/>
-                      </Action>
-                    </Item>
-                  </Items>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.Unlink"/>
+                  </Action>
                 </Control>
               </Group>
               <Group id="Derkenar.G.Library">
@@ -268,48 +150,112 @@
                     <bt:Image size="80" resid="Ic.catalog.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>DerkenarPane</TaskpaneId>
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
                     <SourceLocation resid="U.Library"/>
                   </Action>
                 </Control>
-                <Control xsi:type="Button" id="Derkenar.Document">
-                  <Label resid="Document"/>
+                <Control xsi:type="Button" id="Derkenar.New">
+                  <Label resid="New"/>
                   <Supertip>
-                    <Title resid="Document"/>
-                    <Description resid="Document.Tip"/>
+                    <Title resid="New"/>
+                    <Description resid="New.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.report.16"/>
-                    <bt:Image size="32" resid="Ic.report.32"/>
-                    <bt:Image size="80" resid="Ic.report.80"/>
+                    <bt:Image size="16" resid="Ic.bulk.16"/>
+                    <bt:Image size="32" resid="Ic.bulk.32"/>
+                    <bt:Image size="80" resid="Ic.bulk.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>DerkenarPane</TaskpaneId>
-                    <SourceLocation resid="U.Document"/>
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.New"/>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="Derkenar.Identifier">
+                  <Label resid="Identifier"/>
+                  <Supertip>
+                    <Title resid="Identifier"/>
+                    <Description resid="Identifier.Tip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Ic.search.16"/>
+                    <bt:Image size="32" resid="Ic.search.32"/>
+                    <bt:Image size="80" resid="Ic.search.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.Identifier"/>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="Derkenar.Import">
+                  <Label resid="Import"/>
+                  <Supertip>
+                    <Title resid="Import"/>
+                    <Description resid="Import.Tip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Ic.csv.16"/>
+                    <bt:Image size="32" resid="Ic.csv.32"/>
+                    <bt:Image size="80" resid="Ic.csv.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.Import"/>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="Derkenar.Export">
+                  <Label resid="Export"/>
+                  <Supertip>
+                    <Title resid="Export"/>
+                    <Description resid="Export.Tip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Ic.source.16"/>
+                    <bt:Image size="32" resid="Ic.source.32"/>
+                    <bt:Image size="80" resid="Ic.source.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.Export"/>
                   </Action>
                 </Control>
               </Group>
-              <Group id="Derkenar.G.Final">
-                <Label resid="G.Final"/>
+              <Group id="Derkenar.G.Isnad">
+                <Label resid="G.Isnad"/>
                 <Icon>
-                  <bt:Image size="16" resid="Ic.finalize.16"/>
-                  <bt:Image size="32" resid="Ic.finalize.32"/>
-                  <bt:Image size="80" resid="Ic.finalize.80"/>
+                  <bt:Image size="16" resid="Ic.audit.16"/>
+                  <bt:Image size="32" resid="Ic.audit.32"/>
+                  <bt:Image size="80" resid="Ic.audit.80"/>
                 </Icon>
-                <Control xsi:type="Button" id="Derkenar.Unlink">
-                  <Label resid="Unlink"/>
+                <Control xsi:type="Button" id="Derkenar.CheckDoc">
+                  <Label resid="CheckDoc"/>
                   <Supertip>
-                    <Title resid="Unlink"/>
-                    <Description resid="Unlink.Tip"/>
+                    <Title resid="CheckDoc"/>
+                    <Description resid="CheckDoc.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.finalize.16"/>
-                    <bt:Image size="32" resid="Ic.finalize.32"/>
-                    <bt:Image size="80" resid="Ic.finalize.80"/>
+                    <bt:Image size="16" resid="Ic.audit.16"/>
+                    <bt:Image size="32" resid="Ic.audit.32"/>
+                    <bt:Image size="80" resid="Ic.audit.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>DerkenarPane</TaskpaneId>
-                    <SourceLocation resid="U.Unlink"/>
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.CheckDoc"/>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="Derkenar.CheckLib">
+                  <Label resid="CheckLib"/>
+                  <Supertip>
+                    <Title resid="CheckLib"/>
+                    <Description resid="CheckLib.Tip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Ic.health.16"/>
+                    <bt:Image size="32" resid="Ic.health.32"/>
+                    <bt:Image size="80" resid="Ic.health.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.CheckLib"/>
                   </Action>
                 </Control>
               </Group>
@@ -342,7 +288,7 @@
                       <bt:Image size="80" resid="Ic.insert.80"/>
                     </Icon>
                     <Action xsi:type="ShowTaskpane">
-                      <TaskpaneId>DerkenarPane</TaskpaneId>
+                      <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
                       <SourceLocation resid="U.Ctx.Insert"/>
                     </Action>
                   </Item>
@@ -355,46 +301,59 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Ic.settings.16" DefaultValue="{{BASE_URL}}assets/icons/settings-16.png"/>
-        <bt:Image id="Ic.settings.32" DefaultValue="{{BASE_URL}}assets/icons/settings-32.png"/>
-        <bt:Image id="Ic.settings.80" DefaultValue="{{BASE_URL}}assets/icons/settings-80.png"/>
         <bt:Image id="Ic.insert.16" DefaultValue="{{BASE_URL}}assets/icons/insert-16.png"/>
         <bt:Image id="Ic.insert.32" DefaultValue="{{BASE_URL}}assets/icons/insert-32.png"/>
         <bt:Image id="Ic.insert.80" DefaultValue="{{BASE_URL}}assets/icons/insert-80.png"/>
         <bt:Image id="Ic.index.16" DefaultValue="{{BASE_URL}}assets/icons/index-16.png"/>
         <bt:Image id="Ic.index.32" DefaultValue="{{BASE_URL}}assets/icons/index-32.png"/>
         <bt:Image id="Ic.index.80" DefaultValue="{{BASE_URL}}assets/icons/index-80.png"/>
+        <bt:Image id="Ic.settings.16" DefaultValue="{{BASE_URL}}assets/icons/settings-16.png"/>
+        <bt:Image id="Ic.settings.32" DefaultValue="{{BASE_URL}}assets/icons/settings-32.png"/>
+        <bt:Image id="Ic.settings.80" DefaultValue="{{BASE_URL}}assets/icons/settings-80.png"/>
         <bt:Image id="Ic.consistency.16" DefaultValue="{{BASE_URL}}assets/icons/consistency-16.png"/>
         <bt:Image id="Ic.consistency.32" DefaultValue="{{BASE_URL}}assets/icons/consistency-32.png"/>
         <bt:Image id="Ic.consistency.80" DefaultValue="{{BASE_URL}}assets/icons/consistency-80.png"/>
-        <bt:Image id="Ic.catalog.16" DefaultValue="{{BASE_URL}}assets/icons/catalog-16.png"/>
-        <bt:Image id="Ic.catalog.32" DefaultValue="{{BASE_URL}}assets/icons/catalog-32.png"/>
-        <bt:Image id="Ic.catalog.80" DefaultValue="{{BASE_URL}}assets/icons/catalog-80.png"/>
-        <bt:Image id="Ic.report.16" DefaultValue="{{BASE_URL}}assets/icons/report-16.png"/>
-        <bt:Image id="Ic.report.32" DefaultValue="{{BASE_URL}}assets/icons/report-32.png"/>
-        <bt:Image id="Ic.report.80" DefaultValue="{{BASE_URL}}assets/icons/report-80.png"/>
         <bt:Image id="Ic.finalize.16" DefaultValue="{{BASE_URL}}assets/icons/finalize-16.png"/>
         <bt:Image id="Ic.finalize.32" DefaultValue="{{BASE_URL}}assets/icons/finalize-32.png"/>
         <bt:Image id="Ic.finalize.80" DefaultValue="{{BASE_URL}}assets/icons/finalize-80.png"/>
+        <bt:Image id="Ic.catalog.16" DefaultValue="{{BASE_URL}}assets/icons/catalog-16.png"/>
+        <bt:Image id="Ic.catalog.32" DefaultValue="{{BASE_URL}}assets/icons/catalog-32.png"/>
+        <bt:Image id="Ic.catalog.80" DefaultValue="{{BASE_URL}}assets/icons/catalog-80.png"/>
+        <bt:Image id="Ic.bulk.16" DefaultValue="{{BASE_URL}}assets/icons/bulk-16.png"/>
+        <bt:Image id="Ic.bulk.32" DefaultValue="{{BASE_URL}}assets/icons/bulk-32.png"/>
+        <bt:Image id="Ic.bulk.80" DefaultValue="{{BASE_URL}}assets/icons/bulk-80.png"/>
+        <bt:Image id="Ic.search.16" DefaultValue="{{BASE_URL}}assets/icons/search-16.png"/>
+        <bt:Image id="Ic.search.32" DefaultValue="{{BASE_URL}}assets/icons/search-32.png"/>
+        <bt:Image id="Ic.search.80" DefaultValue="{{BASE_URL}}assets/icons/search-80.png"/>
+        <bt:Image id="Ic.csv.16" DefaultValue="{{BASE_URL}}assets/icons/csv-16.png"/>
+        <bt:Image id="Ic.csv.32" DefaultValue="{{BASE_URL}}assets/icons/csv-32.png"/>
+        <bt:Image id="Ic.csv.80" DefaultValue="{{BASE_URL}}assets/icons/csv-80.png"/>
+        <bt:Image id="Ic.source.16" DefaultValue="{{BASE_URL}}assets/icons/source-16.png"/>
+        <bt:Image id="Ic.source.32" DefaultValue="{{BASE_URL}}assets/icons/source-32.png"/>
+        <bt:Image id="Ic.source.80" DefaultValue="{{BASE_URL}}assets/icons/source-80.png"/>
+        <bt:Image id="Ic.audit.16" DefaultValue="{{BASE_URL}}assets/icons/audit-16.png"/>
+        <bt:Image id="Ic.audit.32" DefaultValue="{{BASE_URL}}assets/icons/audit-32.png"/>
+        <bt:Image id="Ic.audit.80" DefaultValue="{{BASE_URL}}assets/icons/audit-80.png"/>
+        <bt:Image id="Ic.health.16" DefaultValue="{{BASE_URL}}assets/icons/health-16.png"/>
+        <bt:Image id="Ic.health.32" DefaultValue="{{BASE_URL}}assets/icons/health-32.png"/>
+        <bt:Image id="Ic.health.80" DefaultValue="{{BASE_URL}}assets/icons/health-80.png"/>
         <bt:Image id="Icon.16" DefaultValue="{{BASE_URL}}assets/icon-16.png"/>
         <bt:Image id="Icon.32" DefaultValue="{{BASE_URL}}assets/icon-32.png"/>
         <bt:Image id="Icon.80" DefaultValue="{{BASE_URL}}assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="U.Style.0" DefaultValue="{{BASE_URL}}taskpane.html?action=style:isnad-dipnotlu"/>
-        <bt:Url id="U.Style.1" DefaultValue="{{BASE_URL}}taskpane.html?action=style:isnad-metinici"/>
-        <bt:Url id="U.Style.2" DefaultValue="{{BASE_URL}}taskpane.html?action=style:apa"/>
-        <bt:Url id="U.Style.3" DefaultValue="{{BASE_URL}}taskpane.html?action=style:chicago-notes-bibliography"/>
-        <bt:Url id="U.Style.4" DefaultValue="{{BASE_URL}}taskpane.html?action=style:chicago-author-date"/>
-        <bt:Url id="U.Style.5" DefaultValue="{{BASE_URL}}taskpane.html?action=style:modern-language-association"/>
-        <bt:Url id="U.Style.6" DefaultValue="{{BASE_URL}}taskpane.html?action=style:harvard-cite-them-right"/>
-        <bt:Url id="U.Style.7" DefaultValue="{{BASE_URL}}taskpane.html?action=style:ieee"/>
         <bt:Url id="U.Insert" DefaultValue="{{BASE_URL}}taskpane.html?action=insert"/>
         <bt:Url id="U.Bib" DefaultValue="{{BASE_URL}}taskpane.html?action=bib"/>
+        <bt:Url id="U.Prefs" DefaultValue="{{BASE_URL}}taskpane.html?action=prefs"/>
         <bt:Url id="U.Refresh" DefaultValue="{{BASE_URL}}taskpane.html?action=refresh"/>
-        <bt:Url id="U.Library" DefaultValue="{{BASE_URL}}taskpane.html?action=library"/>
-        <bt:Url id="U.Document" DefaultValue="{{BASE_URL}}taskpane.html?action=document"/>
         <bt:Url id="U.Unlink" DefaultValue="{{BASE_URL}}taskpane.html?action=unlink"/>
+        <bt:Url id="U.Library" DefaultValue="{{BASE_URL}}taskpane.html?action=library"/>
+        <bt:Url id="U.New" DefaultValue="{{BASE_URL}}taskpane.html?action=new"/>
+        <bt:Url id="U.Identifier" DefaultValue="{{BASE_URL}}taskpane.html?action=identifier"/>
+        <bt:Url id="U.Import" DefaultValue="{{BASE_URL}}taskpane.html?action=import"/>
+        <bt:Url id="U.Export" DefaultValue="{{BASE_URL}}taskpane.html?action=export"/>
+        <bt:Url id="U.CheckDoc" DefaultValue="{{BASE_URL}}taskpane.html?action=check-doc"/>
+        <bt:Url id="U.CheckLib" DefaultValue="{{BASE_URL}}taskpane.html?action=check-lib"/>
         <bt:Url id="U.Ctx.Insert" DefaultValue="{{BASE_URL}}taskpane.html?action=insert"/>
         <bt:Url id="Commands.Url" DefaultValue="{{BASE_URL}}commands.html"/>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
@@ -403,36 +362,37 @@
         <bt:String id="GetStarted.Title" DefaultValue="Derkenar hazır"/>
         <bt:String id="Tab" DefaultValue="Derkenar"/>
         <bt:String id="Ctx" DefaultValue="Derkenar"/>
-        <bt:String id="Style" DefaultValue="Stil"/>
-        <bt:String id="Style.0" DefaultValue="İSNAD 2 (dipnotlu)"/>
-        <bt:String id="Style.1" DefaultValue="İSNAD 2 (metin içi)"/>
-        <bt:String id="Style.2" DefaultValue="APA 7"/>
-        <bt:String id="Style.3" DefaultValue="Chicago 18 (dipnot)"/>
-        <bt:String id="Style.4" DefaultValue="Chicago 18 (yazar-tarih)"/>
-        <bt:String id="Style.5" DefaultValue="MLA 9"/>
-        <bt:String id="Style.6" DefaultValue="Harvard"/>
-        <bt:String id="Style.7" DefaultValue="IEEE"/>
-        <bt:String id="Insert" DefaultValue="Atıf ekle"/>
-        <bt:String id="Bib" DefaultValue="Kaynakça"/>
+        <bt:String id="Insert" DefaultValue="Atıf Ekle/Düzenle"/>
+        <bt:String id="Bib" DefaultValue="Kaynakça Ekle/Düzenle"/>
+        <bt:String id="Prefs" DefaultValue="Belge Tercihleri"/>
         <bt:String id="Refresh" DefaultValue="Güncelle"/>
+        <bt:String id="Unlink" DefaultValue="Düz Metne Çevir"/>
         <bt:String id="G.Cite" DefaultValue="Atıf"/>
-        <bt:String id="G.Style" DefaultValue="Stil"/>
         <bt:String id="Library" DefaultValue="Kütüphane"/>
-        <bt:String id="Document" DefaultValue="Belgedeki atıflar"/>
-        <bt:String id="G.Library" DefaultValue="Kaynaklar"/>
-        <bt:String id="Unlink" DefaultValue="Düz metne çevir"/>
-        <bt:String id="G.Final" DefaultValue="Teslim"/>
+        <bt:String id="New" DefaultValue="Yeni Kaynak"/>
+        <bt:String id="Identifier" DefaultValue="Tanımlayıcıyla Ekle"/>
+        <bt:String id="Import" DefaultValue="İçe Aktar"/>
+        <bt:String id="Export" DefaultValue="Dışa Aktar"/>
+        <bt:String id="G.Library" DefaultValue="Kütüphane"/>
+        <bt:String id="CheckDoc" DefaultValue="Belgeyi Denetle"/>
+        <bt:String id="CheckLib" DefaultValue="Kütüphaneyi Denetle"/>
+        <bt:String id="G.Isnad" DefaultValue="İSNAD"/>
         <bt:String id="Ctx.Insert" DefaultValue="Atıf ekle"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinden Atıf ekle düğmesine basın; önce Kütüphane'den Zotero'yu bağlayın veya bir dosya içe aktarın."/>
-        <bt:String id="Style.Tip" DefaultValue="Belgenin atıf stilini değiştirir; bütün atıflar ve kaynakça yeni stile göre yeniden yazılır."/>
-        <bt:String id="Insert.Tip" DefaultValue="Derkenar penceresini açar: kaynağı arayın, sayfayı yazın, Ctrl+Enter ile atıfı ekleyin. Dipnotlu stillerde atıf yeni bir dipnota girer."/>
-        <bt:String id="Bib.Tip" DefaultValue="İmlecin bulunduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir."/>
-        <bt:String id="Refresh.Tip" DefaultValue="Bütün atıfları ve kaynakçayı seçili stile göre yeniden yazar (ilk atıf tam, sonrakiler kısa)."/>
-        <bt:String id="Library.Tip" DefaultValue="Zotero kütüphanenizi eşitleyin; BibTeX, RIS, CSL JSON dosyası içe aktarın; DOI/ISBN ile ya da elle kaynak ekleyin."/>
-        <bt:String id="Document.Tip" DefaultValue="Belgedeki atıfların listesi, stil ve dil seçimi."/>
-        <bt:String id="Unlink.Tip" DefaultValue="Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile Zotero kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
+        <bt:String id="Insert.Tip" DefaultValue="İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır."/>
+        <bt:String id="Bib.Tip" DefaultValue="İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir."/>
+        <bt:String id="Prefs.Tip" DefaultValue="Atıf stili (İSNAD 2 dipnotlu / metin içi), dil, dipnot ya da sonnot, otomatik güncelleme."/>
+        <bt:String id="Refresh.Tip" DefaultValue="Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez."/>
+        <bt:String id="Unlink.Tip" DefaultValue="Teslimden önce atıfları ve kaynakçayı düz metne çevirir (Zotero'daki Unlink Citations). Önce belgenin bir kopyasını alın."/>
+        <bt:String id="Library.Tip" DefaultValue="Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: Zotero'nun kütüphanesi bu pencerede."/>
+        <bt:String id="New.Tip" DefaultValue="Elle yeni kaynak girer: bütün Zotero türleri ve alanları, ayrıca muhakkik, nâşir, hazırlayan, sadeleştiren."/>
+        <bt:String id="Identifier.Tip" DefaultValue="DOI veya ISBN ile kaynak ekler."/>
+        <bt:String id="Import.Tip" DefaultValue="Zotero'dan dışa aktarılmış kütüphaneyi alır: Zotero RDF, CSL JSON, BibTeX, RIS. Ya da Zotero hesabıyla eşitler."/>
+        <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>
+        <bt:String id="CheckDoc.Tip" DefaultValue="Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir."/>
+        <bt:String id="CheckLib.Tip" DefaultValue="Bütün kütüphaneyi İSNAD 2 yazım kurallarına göre denetler."/>
         <bt:String id="Ctx.Insert.Tip" DefaultValue="Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
       </bt:LongStrings>
     </Resources>

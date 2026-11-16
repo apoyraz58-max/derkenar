@@ -5,6 +5,7 @@
  */
 import { type Bibliography, type OrderedCitation, Renderer } from "./engine.js";
 import type { CiteRef, CslItem, DocState, StoredCitation } from "./types.js";
+import { type Item, toCsl } from "./zotero.js";
 
 export const TAG_CITATION = "DERKENAR:C:";
 export const TAG_BIBLIOGRAPHY = "DERKENAR:BIB";
@@ -35,10 +36,10 @@ export function citationIdFromTag(tag: string | null | undefined): string | null
 }
 
 /** Stores a citation and copies the cited works into the document. */
-export function putCitation(state: DocState, id: string, items: CiteRef[], works: Record<string, CslItem>): void {
+export function putCitation(state: DocState, id: string, items: CiteRef[], works: Record<string, Item>): void {
   for (const r of items) {
     const w = works[r.id] ?? state.items[r.id];
-    if (w) state.items[r.id] = { ...w, id: r.id };
+    if (w) state.items[r.id] = structuredCloneItem(w);
   }
   const old = state.citations[id];
   state.citations[id] = { items, ...(old?.override ? { override: old.override } : {}) };
@@ -83,7 +84,7 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
     seen.add(f.id);
     ordered.push({ id: f.id, items: c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
   }
-  renderer.setItems(state.items);
+  renderer.setItems(cslMap(state.items));
   const html = renderer.renderCitations(ordered);
   const updates = new Map<string, string>();
   const texts = new Map(found.map((f) => [f.id, f.text]));
@@ -105,4 +106,32 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
 export function commitPlan(state: DocState, plan: RefreshPlan): void {
   for (const [id, html] of plan.updates) state.rendered[id] = html;
   state.bibliographyHtml = plan.bibliography?.entries.map((e) => e.html).join("") ?? "";
+}
+
+function structuredCloneItem(item: Item): Item {
+  return JSON.parse(JSON.stringify(item)) as Item;
+}
+
+export function cslMap(items: Record<string, Item>): Record<string, CslItem> {
+  const out: Record<string, CslItem> = {};
+  for (const [k, v] of Object.entries(items)) out[k] = { ...toCsl(v), id: k };
+  return out;
+}
+
+/** Order of citations and their notes: when it changes, the text must be re-rendered. */
+export function signature(found: readonly { id: string; noteIndex: number }[]): string {
+  return found.map((f) => `${f.id}@${f.noteIndex}`).join(",");
+}
+
+/** Works in the document whose library copy changed: refresh the document copy. */
+export function syncWorks(state: DocState, library: (key: string) => Item | undefined): string[] {
+  const changed: string[] = [];
+  for (const [k, w] of Object.entries(state.items)) {
+    const lib = library(k);
+    if (lib && lib.dateModified !== w.dateModified) {
+      state.items[k] = structuredCloneItem(lib);
+      changed.push(k);
+    }
+  }
+  return changed;
 }

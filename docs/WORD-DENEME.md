@@ -27,29 +27,37 @@ Vefeyât ile aynı anda kurulu olabilir; ikisinin sekmeleri ayrıdır.
 
 | Grup | Komutlar |
 | --- | --- |
-| Atıf | **Atıf ekle**, **Kaynakça**, **Güncelle** |
-| Stil | **Stil ▾** (İSNAD 2 dipnotlu/metin içi, APA 7, Chicago 18, MLA 9, Harvard, IEEE) |
-| Kaynaklar | **Kütüphane**, **Belgedeki atıflar** |
-| Teslim | **Düz metne çevir** |
+| Atıf | **Atıf Ekle/Düzenle**, **Kaynakça Ekle/Düzenle**, **Belge Tercihleri**, **Güncelle**, **Düz Metne Çevir** |
+| Kütüphane | **Kütüphane**, **Yeni Kaynak**, **Tanımlayıcıyla Ekle**, **İçe Aktar**, **Dışa Aktar** |
+| İSNAD | **Belgeyi Denetle**, **Kütüphaneyi Denetle** |
 
 Sağ tık → **Derkenar → Atıf ekle**.
 
-1. **Kütüphane:** Zotero numaranızı ve yalnız okuma izinli API anahtarınızı yazıp **Eşitle**
-   (zotero.org → Settings → Security → Applications). Ya da BibTeX/RIS/CSL JSON dosyası seçin.
-   Zotero 7 bilgisayarınızda açıksa "Bu bilgisayardaki Zotero 7" seçeneğiyle anahtarsız
-   eşitlenir (Zotero → Ayarlar → Gelişmiş → yerel API izni).
-2. **Atıf ekle:** yazar/başlık/yıl yazın (şapka ve Türkçe harf gerekmez), Enter ile sepete
-   ekleyin, sayfayı yazın, Ctrl+Enter. Dipnotlu stilde atıf yeni dipnota girer.
-3. **Düzenleme:** imleci atıfın içine koyun, pencere atıfı açar; sayfayı değiştirip
-   **Atıfı güncelle**.
-4. **Kaynakça:** imleci tezin sonuna koyup **Kaynakça**. Sonraki her atıfla güncellenir.
-5. **Teslim:** belgenin kopyasını alın → **Düz metne çevir**.
+1. **Zotero kütüphanesini alın:** Zotero → Dosya → Kütüphaneyi Dışa Aktar → **Zotero RDF**
+   → Derkenar → **İçe Aktar** → dosyayı seçin. Koleksiyonlar, notlar ve etiketler gelir.
+   Ya da Zotero numaranız ve API anahtarınızla **Eşitle**.
+2. **Elle kaynak:** **Yeni Kaynak** → türü seçin; alanlar Zotero'daki gibidir. Kişiler'de rol
+   olarak Muhakkik (thk.), Nâşir (nşr.), Hazırlayan (haz.), Sadeleştiren (sad.) da vardır.
+   Tarih alanına hicrî/milâdî (1413/1993) yazılabilir. Yazdıkça kaydedilir; üstte İSNAD
+   uyarıları görünür.
+3. **Atıf:** arayın (şapka ve Türkçe harf gerekmez), Enter ile sepete ekleyin, **Cilt** ve
+   **Sayfa** yazın (1/45 olur), Ctrl+Enter. Atıf yeni dipnota girer.
+4. **Otomatik güncelleme:** başka bir şey yapmanız gerekmez. Araya atıf ekleyin, bir dipnotu
+   silin ya da taşıyın; atıflar bir iki saniye içinde tam ya da kısa biçime döner. Derkenar
+   penceresi açık olmalıdır; ilk atıftan sonra Word belgeyle birlikte pencereyi de açar.
+5. **Düzenleme:** imleci atıfın içine koyun; pencere atıfı açar.
+6. **Kaynakça:** imleci tezin sonuna koyup **Kaynakça Ekle/Düzenle**.
+7. **Denetim:** **Belgeyi Denetle** → düzeltilebilenler için **Düzelt** ya da
+   **Önerilen düzeltmeleri uygula**.
+8. **Teslim:** belgenin kopyasını alın → **Düz Metne Çevir**.
 
-## Bilinen sınırlar (0.1)
+## Bilinen sınırlar (0.2)
 
-- Dipnot ekleme Word 2019 / Microsoft 365 / Word Online ister (WordApi 1.5). Word 2016'da
-  atıf metne eklenir.
-- Dipnotlu stilden metin içi stile (veya tersine) geçişte mevcut atıflar yerinde kalır;
-  yalnız biçimleri değişir.
-- Atıfın metnini elle değiştirirseniz bir sonraki güncellemede üzerine yazılır.
-- Küçük büyük harf (small caps) biçimi Word'e aktarılmaz.
+- Stil şimdilik yalnız İSNAD 2 (dipnotlu ve metin içi).
+- Dipnot ve sonnot Word 2019, Microsoft 365 veya Word Online ister (WordApi 1.5); Word 2016'da
+  atıf metne eklenir ve otomatik izleme yalnız metindeki atıflarda çalışır.
+- Otomatik güncelleme pencere açıkken çalışır. Pencere kapalıyken yapılan değişiklikler, pencere
+  açılınca ilk saniyede düzeltilir.
+- Dipnotlu stilden metin içi stile geçişte mevcut atıflar yerinde kalır.
+- Atıf metnini elle değiştirirseniz bir sonraki güncellemede üzerine yazılır.
+- PDF ve ek dosyalar, tarayıcı eklentisi, zotero.org'a geri yazma yok.

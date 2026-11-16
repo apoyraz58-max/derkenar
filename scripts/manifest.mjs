@@ -4,16 +4,7 @@
 import { writeFile } from "node:fs/promises";
 
 const B = "{{BASE_URL}}";
-const STYLES = [
-  ["isnad-dipnotlu", "İSNAD 2 (dipnotlu)"],
-  ["isnad-metinici", "İSNAD 2 (metin içi)"],
-  ["apa", "APA 7"],
-  ["chicago-notes-bibliography", "Chicago 18 (dipnot)"],
-  ["chicago-author-date", "Chicago 18 (yazar-tarih)"],
-  ["modern-language-association", "MLA 9"],
-  ["harvard-cite-them-right", "Harvard"],
-  ["ieee", "IEEE"],
-];
+
 
 const short = new Map();
 const long = new Map();
@@ -30,7 +21,7 @@ const icon = (name, ind) => {
   return `${ind}<Icon>\n${[16, 32, 80].map((s) => `${ind}  <bt:Image size="${s}" resid="Ic.${name}.${s}"/>\n`).join("")}${ind}</Icon>\n`;
 };
 const head = (label, tip, ind) => `${ind}<Label resid="${label}"/>\n${ind}<Supertip>\n${ind}  <Title resid="${label}"/>\n${ind}  <Description resid="${tip}"/>\n${ind}</Supertip>\n`;
-const pane = (url, ind) => `${ind}<Action xsi:type="ShowTaskpane">\n${ind}  <TaskpaneId>DerkenarPane</TaskpaneId>\n${ind}  <SourceLocation resid="${url}"/>\n${ind}</Action>\n`;
+const pane = (url, ind) => `${ind}<Action xsi:type="ShowTaskpane">\n${ind}  <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>\n${ind}  <SourceLocation resid="${url}"/>\n${ind}</Action>\n`;
 
 function button(id, label, tip, ic, action, ind = " ".repeat(16), tag = "Control") {
   const kind = tag === "Control" ? ' xsi:type="Button"' : "";
@@ -42,27 +33,25 @@ function group(id, label, ic, controls) {
   return `${ind}<Group id="Derkenar.G.${id}">\n${ind}  <Label resid="${S(`G.${id}`, label)}"/>\n${icon(ic, ind + "  ")}${controls.join("")}${ind}</Group>\n`;
 }
 
-const styleTip = L("Style.Tip", "Belgenin atıf stilini değiştirir; bütün atıflar ve kaynakça yeni stile göre yeniden yazılır.");
-const styleMenu =
-  `                <Control xsi:type="Menu" id="Derkenar.Style">\n${head(S("Style", "Stil"), styleTip, " ".repeat(18))}${icon("settings", " ".repeat(18))}                  <Items>\n` +
-  STYLES.map(([id, title], i) => {
-    const ind = " ".repeat(20);
-    return `${ind}<Item id="Derkenar.Style.${i}">\n${head(S(`Style.${i}`, title), styleTip, ind + "  ")}${icon("settings", ind + "  ")}${pane(U(`U.Style.${i}`, `style:${id}`), ind + "  ")}${ind}</Item>\n`;
-  }).join("") +
-  `                  </Items>\n                </Control>\n`;
-
 const tab = [
   group("Cite", "Atıf", "insert", [
-    button("Insert", "Atıf ekle", "Derkenar penceresini açar: kaynağı arayın, sayfayı yazın, Ctrl+Enter ile atıfı ekleyin. Dipnotlu stillerde atıf yeni bir dipnota girer.", "insert", "insert"),
-    button("Bib", "Kaynakça", "İmlecin bulunduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir.", "index", "bib"),
-    button("Refresh", "Güncelle", "Bütün atıfları ve kaynakçayı seçili stile göre yeniden yazar (ilk atıf tam, sonrakiler kısa).", "consistency", "refresh"),
+    button("Insert", "Atıf Ekle/Düzenle", "İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır.", "insert", "insert"),
+    button("Bib", "Kaynakça Ekle/Düzenle", "İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir.", "index", "bib"),
+    button("Prefs", "Belge Tercihleri", "Atıf stili (İSNAD 2 dipnotlu / metin içi), dil, dipnot ya da sonnot, otomatik güncelleme.", "settings", "prefs"),
+    button("Refresh", "Güncelle", "Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez.", "consistency", "refresh"),
+    button("Unlink", "Düz Metne Çevir", "Teslimden önce atıfları ve kaynakçayı düz metne çevirir (Zotero'daki Unlink Citations). Önce belgenin bir kopyasını alın.", "finalize", "unlink"),
   ]),
-  group("Style", "Stil", "settings", [styleMenu]),
-  group("Library", "Kaynaklar", "catalog", [
-    button("Library", "Kütüphane", "Zotero kütüphanenizi eşitleyin; BibTeX, RIS, CSL JSON dosyası içe aktarın; DOI/ISBN ile ya da elle kaynak ekleyin.", "catalog", "library"),
-    button("Document", "Belgedeki atıflar", "Belgedeki atıfların listesi, stil ve dil seçimi.", "report", "document"),
+  group("Library", "Kütüphane", "catalog", [
+    button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: Zotero'nun kütüphanesi bu pencerede.", "catalog", "library"),
+    button("New", "Yeni Kaynak", "Elle yeni kaynak girer: bütün Zotero türleri ve alanları, ayrıca muhakkik, nâşir, hazırlayan, sadeleştiren.", "bulk", "new"),
+    button("Identifier", "Tanımlayıcıyla Ekle", "DOI veya ISBN ile kaynak ekler.", "search", "identifier"),
+    button("Import", "İçe Aktar", "Zotero'dan dışa aktarılmış kütüphaneyi alır: Zotero RDF, CSL JSON, BibTeX, RIS. Ya da Zotero hesabıyla eşitler.", "csv", "import"),
+    button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "source", "export"),
   ]),
-  group("Final", "Teslim", "finalize", [button("Unlink", "Düz metne çevir", "Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın.", "finalize", "unlink")]),
+  group("Isnad", "İSNAD", "audit", [
+    button("CheckDoc", "Belgeyi Denetle", "Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir.", "audit", "check-doc"),
+    button("CheckLib", "Kütüphaneyi Denetle", "Bütün kütüphaneyi İSNAD 2 yazım kurallarına göre denetler.", "health", "check-lib"),
+  ]),
 ];
 
 const contextMenu = [
@@ -90,7 +79,7 @@ ${u.join("\n")}
 ${[...short].map(([k, v]) => `        <bt:String id="${k}" DefaultValue="${esc(v)}"/>`).join("\n")}
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinden Atıf ekle düğmesine basın; önce Kütüphane'den Zotero'yu bağlayın veya bir dosya içe aktarın."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile Zotero kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
 ${[...long].map(([k, v]) => `        <bt:String id="${k}" DefaultValue="${esc(v)}"/>`).join("\n")}
       </bt:LongStrings>
     </Resources>
@@ -111,7 +100,7 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <ProviderName>Derkenar</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
   <DisplayName DefaultValue="Derkenar"/>
-  <Description DefaultValue="Word için hızlı atıf ve kaynakça: Zotero kütüphanesi, İSNAD, APA, Chicago ve diğer CSL stilleri."/>
+  <Description DefaultValue="Word için İSNAD temelli atıf ve kaynakça: Zotero kütüphanesi, otomatik dipnot güncelleme, İSNAD yazım denetimi."/>
   <IconUrl DefaultValue="${B}assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="${B}assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>

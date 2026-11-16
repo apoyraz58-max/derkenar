@@ -1,0 +1,64 @@
+<rdf:RDF
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns:z="http://www.zotero.org/namespaces/export#"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:foaf="http://xmlns.com/foaf/0.1/"
+ xmlns:bib="http://purl.org/net/biblio#"
+ xmlns:vcard="http://nwalsh.com/rdf/vCard#"
+ xmlns:dcterms="http://purl.org/dc/terms/"
+ xmlns:prism="http://prismstandard.org/namespaces/1.2/basic/"
+ xmlns:link="http://purl.org/rss/1.0/modules/link/">
+    <bib:Book rdf:about="#item_1">
+        <z:itemType>book</z:itemType>
+        <dc:publisher>
+            <foaf:Organization>
+                <vcard:adr><vcard:Address><vcard:locality>Medine</vcard:locality></vcard:Address></vcard:adr>
+                <foaf:name>el-Câmiʿatü’l-İslâmiyye</foaf:name>
+            </foaf:Organization>
+        </dc:publisher>
+        <bib:authors><rdf:Seq><rdf:li><foaf:Person><foaf:surname>Gazzâlî</foaf:surname><foaf:givenName>Ebû Hâmid Muhammed b. Muhammed</foaf:givenName></foaf:Person></rdf:li></rdf:Seq></bib:authors>
+        <z:seriesEditors><rdf:Seq><rdf:li><foaf:Person><foaf:surname>Hâfız</foaf:surname><foaf:givenName>Hamza b. Züheyr</foaf:givenName></foaf:Person></rdf:li></rdf:Seq></z:seriesEditors>
+        <dc:subject>usûl</dc:subject>
+        <dc:subject><z:AutomaticTag><rdf:value>fıkıh</rdf:value></z:AutomaticTag></dc:subject>
+        <dcterms:isReferencedBy rdf:resource="#item_9"/>
+        <dc:relation rdf:resource="#item_2"/>
+        <dc:title>el-Müstasfâ min ʿilmi’l-uṣûl</dc:title>
+        <z:numberOfVolumes>4</z:numberOfVolumes>
+        <dc:description>editorial-director: Nâşir || Ali</dc:description>
+    </bib:Book>
+    <bib:Memo rdf:about="#item_9"><rdf:value>&lt;p&gt;Önemli nüsha&lt;/p&gt;</rdf:value></bib:Memo>
+    <bib:Article rdf:about="#item_2">
+        <z:itemType>journalArticle</z:itemType>
+        <dcterms:isPartOf>
+            <bib:Journal><prism:volume>12</prism:volume><prism:number>2</prism:number><dc:title>İslâm Araştırmaları Dergisi</dc:title><dc:identifier>ISSN 1301-3289</dc:identifier></bib:Journal>
+        </dcterms:isPartOf>
+        <bib:authors><rdf:Seq><rdf:li><foaf:Person><foaf:surname>Yılmaz</foaf:surname><foaf:givenName>Ahmet</foaf:givenName></foaf:Person></rdf:li></rdf:Seq></bib:authors>
+        <dc:title>Kelâm ilminin tarihî gelişimi</dc:title>
+        <dc:date>2004</dc:date>
+        <bib:pages>45–78</bib:pages>
+        <dc:identifier>DOI 10.1000/xyz</dc:identifier>
+    </bib:Article>
+    <bib:BookSection rdf:about="#item_3">
+        <z:itemType>bookSection</z:itemType>
+        <dcterms:isPartOf rdf:resource="urn:isbn:9789753891234"/>
+        <bib:authors><rdf:Seq><rdf:li><foaf:Person><foaf:surname>Kara</foaf:surname><foaf:givenName>Ali</foaf:givenName></foaf:Person></rdf:li></rdf:Seq></bib:authors>
+        <dc:title>Bir bölüm</dc:title>
+        <bib:pages>10-20</bib:pages>
+    </bib:BookSection>
+    <bib:Book rdf:about="urn:isbn:9789753891234">
+        <bib:editors><rdf:Seq><rdf:li><foaf:Person><foaf:surname>Editör</foaf:surname><foaf:givenName>Veli</foaf:givenName></foaf:Person></rdf:li></rdf:Seq></bib:editors>
+        <dc:publisher><foaf:Organization><vcard:adr><vcard:Address><vcard:locality>İstanbul</vcard:locality></vcard:Address></vcard:adr><foaf:name>İSAM</foaf:name></foaf:Organization></dc:publisher>
+        <dc:title>Derleme Kitap</dc:title>
+        <dc:identifier>ISBN 9789753891234</dc:identifier>
+        <dc:date>2015</dc:date>
+    </bib:Book>
+    <z:Collection rdf:about="#collection_5">
+        <dc:title>Tez</dc:title>
+        <dcterms:hasPart rdf:resource="#collection_6"/>
+        <dcterms:hasPart rdf:resource="#item_1"/>
+    </z:Collection>
+    <z:Collection rdf:about="#collection_6">
+        <dc:title>Usûl</dc:title>
+        <dcterms:hasPart rdf:resource="#item_2"/>
+    </z:Collection>
+</rdf:RDF>

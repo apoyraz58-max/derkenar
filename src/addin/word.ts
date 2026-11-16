@@ -53,34 +53,41 @@ function setupControl(cc: Word.ContentControl, id: string): void {
 
 // ---------------------------------------------------------------- citations
 
+export type Placement = "footnote" | "endnote" | "text";
+
 /**
- * Inserts a citation at the cursor: in a new footnote for note styles (when
- * Word supports footnotes), in the text otherwise. With a selection, the
- * citation goes after it and the selected text stays.
+ * Inserts a citation at the cursor: in a new footnote or endnote for note
+ * styles (when Word supports notes), in the text otherwise. With a selection,
+ * the citation goes after it and the selected text stays.
  */
-export async function insertCitation(id: string, segments: readonly Segment[], asFootnote: boolean): Promise<"footnote" | "text"> {
+export async function insertCitation(id: string, segments: readonly Segment[], want: Placement): Promise<Placement> {
   return Word.run(async (context) => {
-    const sel = context.document.getSelection();
-    const end = sel.getRange("End");
+    const end = context.document.getSelection().getRange("End");
     const text = segments.map((s) => s.text).join("") || "…";
-    let cc: Word.ContentControl;
-    let where: "footnote" | "text";
-    if (asFootnote && footnotesSupported()) {
-      const note = end.insertFootnote("");
-      const range = note.body.getRange("End").insertText(text, "End");
-      cc = range.insertContentControl();
-      where = "footnote";
-    } else {
-      const range = end.insertText(text, "End");
-      cc = range.insertContentControl();
-      where = "text";
+    const where: Placement = want !== "text" && footnotesSupported() ? want : "text";
+    let range: Word.Range;
+    if (where === "text") range = end.insertText(text, "End");
+    else {
+      const note = where === "endnote" ? end.insertEndnote("") : end.insertFootnote("");
+      range = note.body.getRange("End").insertText(text, "End");
     }
+    const cc = range.insertContentControl();
     setupControl(cc, id);
     writeRuns(cc, segments, true);
     cc.getRange("After").select("Start");
     await context.sync();
     return where;
   });
+}
+
+/** Opens the Derkenar pane whenever this document opens, so automatic updates keep running. */
+export function enableAutoOpen(): void {
+  try {
+    const s = Office.context.document.settings;
+    if (s.get("Office.AutoShowTaskpaneWithDocument") !== true) s.set("Office.AutoShowTaskpaneWithDocument", true);
+  } catch {
+    /* not available: the user opens the pane */
+  }
 }
 
 /** The citation the cursor is in, if any. */
@@ -98,25 +105,30 @@ interface Located {
   readonly control: Word.ContentControl;
 }
 
-/** Every Derkenar control: footnote citations first (in note order), then those in the text. */
-async function locate(context: Word.RequestContext): Promise<{ citations: Located[]; bibliography: Word.ContentControl[] }> {
+/**
+ * Every Derkenar control: footnote citations (in note order), endnote
+ * citations, then those in the text. Without `withText` only tags are read,
+ * which is what the automatic-update watcher needs.
+ */
+async function locate(context: Word.RequestContext, withText = true): Promise<{ citations: Located[]; bibliography: Word.ContentControl[] }> {
+  const props = withText ? "items/id,items/tag,items/text" : "items/id,items/tag";
   const bodyControls = context.document.body.contentControls;
-  bodyControls.load("items/id,items/tag,items/text");
-  let notes: Word.NoteItemCollection | null = null;
+  bodyControls.load(props);
+  const noteSets: Word.NoteItemCollection[] = [];
   if (footnotesSupported()) {
-    notes = context.document.body.footnotes;
-    notes.load("items");
+    noteSets.push(context.document.body.footnotes, context.document.body.endnotes);
+    for (const n of noteSets) n.load("items");
   }
   await context.sync();
   const noteControls: Word.ContentControlCollection[] = [];
-  if (notes) {
-    for (const n of notes.items) {
+  for (const set of noteSets) {
+    for (const n of set.items) {
       const c = n.body.contentControls;
-      c.load("items/id,items/tag,items/text");
+      c.load(props);
       noteControls.push(c);
     }
-    if (noteControls.length) await context.sync();
   }
+  if (noteControls.length) await context.sync();
   const citations: Located[] = [];
   const inNotes = new Set<number>();
   noteControls.forEach((coll, i) => {
@@ -124,7 +136,7 @@ async function locate(context: Word.RequestContext): Promise<{ citations: Locate
       const id = citationIdFromTag(cc.tag);
       if (!id) continue;
       inNotes.add(cc.id);
-      citations.push({ found: { id, noteIndex: i + 1, text: cc.text }, control: cc });
+      citations.push({ found: { id, noteIndex: i + 1, text: withText ? cc.text : "" }, control: cc });
     }
   });
   const bibliography: Word.ContentControl[] = [];
@@ -132,9 +144,14 @@ async function locate(context: Word.RequestContext): Promise<{ citations: Locate
     if (inNotes.has(cc.id)) continue;
     if (cc.tag === TAG_BIBLIOGRAPHY) bibliography.push(cc);
     const id = citationIdFromTag(cc.tag);
-    if (id) citations.push({ found: { id, noteIndex: 0, text: cc.text }, control: cc });
+    if (id) citations.push({ found: { id, noteIndex: 0, text: withText ? cc.text : "" }, control: cc });
   }
   return { citations, bibliography };
+}
+
+/** Citation ids and note numbers in document order (cheap: no text is read). */
+export async function readOrder(): Promise<FoundCitation[]> {
+  return Word.run(async (context) => (await locate(context, false)).citations.map((c) => c.found));
 }
 
 export interface RefreshWrite {

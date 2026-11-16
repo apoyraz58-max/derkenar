@@ -1,50 +1,61 @@
 # Derkenar
 
-Word için hızlı atıf ve kaynakça eklentisi. Masaüstü programı değildir: Word'ün
-içinde bir **Derkenar sekmesi** ve sağda bir **pencere** olarak çalışır (Vefeyât ile
-aynı Office.js mimarisi). Windows, Mac ve Word Online'da aynı kod çalışır; VBA yok.
+Word için İSNAD temelli atıf ve kaynakça eklentisi. Masaüstü programı değildir:
+Word'ün içinde bir **Derkenar sekmesi** ve sağda bir **pencere** olarak çalışır.
+Zotero masaüstünde yapılan işler (kütüphane, koleksiyonlar, etiketler, notlar, kaynak
+düzenleme, içe/dışa aktarma) bu pencerede yapılır. Windows, Mac ve Word Online'da aynı kod
+çalışır; VBA yok.
 
-Atıfları Zotero'nun kullandığı açık kaynak CSL işlemcisi
-[citeproc-js](https://github.com/Juris-M/citeproc-js) biçimlendirir; stiller
-[CSL stil deposundan](https://github.com/citation-style-language/styles) gelir.
-Yani çıktı Zotero'nunkiyle aynıdır, ama Zotero masaüstü programına gerek yoktur.
+Zotero'nun açık kaynak parçaları kullanılır: veri şeması (kaynak türleri, alanlar, Türkçe
+etiketler, CSL eşlemeleri) ve Zotero'nun da kullandığı CSL işlemcisi citeproc-js. İSNAD
+çıktısı resmî İSNAD CSL stilinden gelir.
 
-## Neden daha hızlı
+## Öne çıkanlar
 
-| Zotero Word eklentisi | Derkenar |
+- **Otomatik dipnot güncelleme.** Pencere belgeyle birlikte açılır ve atıfların sırasını
+  izler. Araya yeni atıflı dipnot eklendiğinde, bir dipnot silindiğinde, kesilip başka yere
+  yapıştırıldığında ya da taşındığında, ek bir işlem gerekmeden ilk atıf tam, sonrakiler kısa
+  yazılır. Kütüphanede bir kaynak düzeltildiğinde o kaynağa yapılan bütün atıflar ve kaynakça
+  da kendiliğinden güncellenir.
+- **İSNAD rolleri:** muhakkik (thk.), nâşir (nşr.), hazırlayan (haz.), sadeleştiren (sad.)
+  gerçek kişi rolleridir. Zotero'da bunlar yoktur; Zotero'dan gelen "Dizi editörü"
+  muhakkik olarak, Ekstra alanındaki `editorial-director: Soyad || Ad` gibi satırlar ilgili
+  rol olarak alınır. Dışa aktarırken Zotero'nun okuyacağı biçimde geri yazılır.
+- **İSNAD biçimleri:** cilt/sayfa (1/45), varak (vr. 12b), hicrî/milâdî tarih (1413/1993),
+  tarih yoksa ts., yazma eserler (kütüphane, koleksiyon, demirbaş no).
+- **İSNAD yazım denetimi:** eksik yayın yeri ve yayınevi (y.y. / y.y.y.), tamamen büyük harfle
+  yazılmış başlık ve adlar, sonda nokta, sayfa aralığında uzun tire ya da "s.", cilt ve sayı
+  alanına yazılmış "C." ve "S.", baskı alanında "2. Baskı", bozuk Türkçe karakterler
+  (Ä±, Ã¼, ý, þ), DOI ve ISBN hataları, web kaynağında erişim tarihi, tez ve ansiklopedi
+  maddesi için gerekli alanlar. Düzeltilebilenler tek tıkla ya da topluca düzeltilir.
+
+## Zotero'nun neleri pencerede
+
+| Zotero | Derkenar |
 | --- | --- |
-| Her işlemde Word ↔ Zotero programı arasında gidip gelir | Her şey Word'ün içindeki pencerede olur |
-| Güncellemede her alanı tek tek yeniden yazar | Belgeyi tek seferde okur, yalnız **değişen** atıfları yazar (2–3 Word çağrısı) |
-| Arama Zotero penceresinde, ayrı bir program | Kütüphane bellekte; 20 000 kaynakta arama < 100 ms, Türkçe karakter/şapka duyarsız ("gazzali ihya") |
-| Zotero açık olmalı | Zotero açık olmak zorunda değil; kütüphane eklentide saklanır, internet yokken de çalışır |
+| Kütüphane, koleksiyonlar ve alt koleksiyonlar | Var (oluştur, yeniden adlandır, sil, kaynak ekle/çıkar) |
+| Koleksiyonsuz, Çöp kutusu, Yinelenenler | Var (geri yükle, kalıcı sil, çöpü boşalt, birleştir) |
+| Arama, etiket süzgeci, sıralama, çoklu seçim | Var |
+| Kaynak düzenleyici: 37 tür, bütün alanlar, kişi rolleri | Var, artı İSNAD rolleri; değişiklikler yazarken kaydedilir |
+| Etiketler, notlar, ilgili kaynaklar | Var (ilişkiler iki yönlü) |
+| Tanımlayıcıyla ekleme | DOI, ISBN |
+| İçe aktarma | Zotero RDF (koleksiyon, not, etiket dahil), CSL JSON, BibTeX/BibLaTeX, RIS; Zotero web API ve Zotero 7 yerel API ile eşitleme |
+| Dışa aktarma | Derkenar yedeği (kayıpsız), CSL JSON, RIS, BibTeX; seçili kaynakların kaynakçasını kopyalama |
+| Word eklentisi: Atıf ekle/düzenle, Kaynakça, Belge tercihleri, Güncelle, Bağlantıyı kaldır | Var; dipnot ya da sonnot seçilebilir |
+| PDF okuyucu, ek dosyalar, tarayıcı eklentisi, zotero.org'a geri yazma | Yok (Word penceresinde yapılamaz ya da sonraki iş) |
 
-## Neler var
-
-- **Kaynaklar:** Zotero web kütüphanesi (kişisel/grup, artımlı eşitleme), bilgisayardaki
-  Zotero 7 (yerel API), BibTeX / RIS / CSL JSON dosyası (Zotero, Mendeley, EndNote,
-  Google Akademik), DOI ve ISBN ile ekleme, elle ekleme.
-- **Atıf:** arama → Enter ile sepete ekle → sayfa/cilt/varak yaz → Ctrl+Enter. Bir atıfta
-  birden çok kaynak, ön/arka ek ("bk."), yazarı gizleme, canlı önizleme.
-- **Dipnotlu stiller:** atıf kendiliğinden yeni bir dipnota girer; ilk atıf tam, sonrakiler
-  kısa ("a.g.e." mantığı stile göre). Araya atıf eklenince sıralama yeniden hesaplanır.
-- **Düzenleme:** imleci bir atıfın içine koyun; pencere o atıfı açar.
-- **Kaynakça:** imlecin olduğu yere eklenir, her atıfla birlikte güncellenir, asılı girinti.
-- **Stiller:** İSNAD 2 (dipnotlu ve metin içi), APA 7, Chicago 18 (dipnot ve yazar-tarih),
-  MLA 9, Harvard, IEEE; ayrıca herhangi bir `.csl` dosyası. Türkçe / İngilizce terimler.
-- **Belge kendine yeter:** atıf verisi belgenin içinde saklanır; belgeyi alan biri
-  kütüphanesi olmadan da güncelleyebilir, kaynakları kendi kütüphanesine alabilir.
-- **Teslim:** "Düz metne çevir" ile atıflar ve kaynakça sabit metne dönüşür.
+Stil şimdilik yalnız İSNAD 2 (dipnotlu ve metin içi). APA ve diğerleri sonraki iş.
 
 ## Depo yapısı
 
 | Klasör | İçerik |
 | --- | --- |
-| `src/core/` | Word'den bağımsız çekirdek: arama, citeproc sarmalayıcı, HTML→biçimli metin, içe aktarma, belge verisi ve güncelleme planı |
-| `src/addin/` | Office.js penceresi: arayüz, Word işlemleri (`word.ts`), IndexedDB kütüphanesi |
-| `data/styles/` | Eklentiyle yayımlanan CSL stilleri ve dil dosyaları (CC BY-SA 3.0) |
+| `src/core/` | Word'den bağımsız çekirdek: Zotero modeli ve CSL dönüşümü (`zotero.ts`), Zotero RDF (`rdf.ts`), içe aktarma, dışa aktarma, İSNAD denetimi (`isnad.ts`), kütüphane işlemleri, arama, citeproc sarmalayıcı, güncelleme planı (`docstate.ts`) |
+| `src/addin/` | Office.js penceresi: `pane/` altında Atıf, Kütüphane, Kaynak düzenleyici, Belge (otomatik güncelleme), Denetim, Aktar; `word.ts` Word işlemleri; `store.ts` IndexedDB |
+| `data/styles/` | İSNAD CSL stilleri ve dil dosyaları (CC BY-SA 3.0) |
+| `data/zotero/` | Zotero veri şeması; `scripts/schema.mjs` bunu `src/core/zschema.json`'a indirger |
 | `manifest/`, `assets/` | Manifest şablonu (`scripts/manifest.mjs` üretir), simgeler (Fluent UI, MIT) |
-| `scripts/` | Derleme, manifest, simge üretimi, tarayıcıda duman testi |
-| `test/` | Çekirdek testleri (vitest) |
+| `test/` | Çekirdek testleri ve Zotero RDF örneği |
 
 ## Geliştirme
 
@@ -70,15 +81,15 @@ npm run build
 npm run smoke
 ```
 
-`npm run build` eklentiyi `dist/addin/` klasörüne derler (varsayılan adres GitHub Pages:
-`https://apoyraz58-max.github.io/derkenar/`; başka adres için `BASE_URL=... npm run build`).
 `npm run smoke` derlenmiş pencereyi Chromium'da sahte bir Word belgesiyle baştan sona
-çalıştırır (içe aktarma, Zotero eşitleme, dipnot atfı, düzenleme, kaynakça, stil değişimi,
-düz metne çevirme). Word'de denemek için `docs/WORD-DENEME.md`.
+çalıştırır: Zotero RDF içe aktarma, koleksiyonlar, kaynak düzenleme, İSNAD düzeltmesi, elle
+yazma kaynağı, cilt/sayfa ve varaklı atıflar, araya atıf ekleme, dipnotun Word'de elle silinmesi
+ve taşınmasından sonra otomatik güncelleme, kütüphanedeki düzeltmenin atıflara yansıması, atıf
+düzenleme, denetim, kaynakça, dışa aktarma ve düz metne çevirme. Word'de denemek için
+`docs/WORD-DENEME.md`.
 
 ## Lisans
 
-AGPL-3.0-or-later. citeproc-js CPAL-1.0 / AGPL-1.0 lisanslıdır ve eklentiyle birlikte
-dağıtılır; bu yüzden eklentinin kaynak kodu açık kalmalıdır. CSL stilleri ve dil
-dosyaları CC BY-SA 3.0'dır. Zotero'nun kendi kodu (Zotero'nun AGPL'li Word eklentisi)
-kopyalanmamıştır; Zotero ile ortak olan, aynı açık kaynak CSL işlemcisi ve stilleridir.
+AGPL-3.0-or-later. citeproc-js CPAL-1.0 / AGPL-1.0, Zotero'nun veri şeması Zotero
+projesinin (AGPL) parçasıdır. CSL stilleri ve dil dosyaları CC BY-SA 3.0'dır; İSNAD stillerinin
+Türkçe bölümünde varak kısaltması "vr." yapılmıştır (`data/styles/README.md`).

@@ -34,20 +34,11 @@ export interface CslItem {
   [field: string]: unknown;
 }
 
-/** Library entry: the CSL item plus what the pane needs to find it. */
-export interface LibraryItem {
-  readonly key: string;
-  readonly csl: CslItem;
-  /** Where the item came from: "zotero:users/123", "file:refs.bib", "doi", "manual". */
-  readonly source: string;
-  readonly collections?: readonly string[];
-  readonly tags?: readonly string[];
-  readonly version?: number;
-}
-
 /** One cited work inside a citation, as stored in the document. */
 export interface CiteRef {
   id: string;
+  /** Cilt of a multi-volume work; with a page it becomes "1/45" (İSNAD). */
+  volume?: string;
   locator?: string;
   /** CSL locator label: page, chapter, volume, folio, … (default page). */
   label?: string;
@@ -68,11 +59,16 @@ export interface DocState {
   v: 1;
   style: string;
   locale: string;
-  items: Record<string, CslItem>;
+  /** Cited works (Derkenar/Zotero item data), so the document renders without the library. */
+  items: Record<string, import("./zotero.js").Item>;
   citations: Record<string, StoredCitation>;
   /** Last rendered HTML per citation; only changed citations are rewritten. */
   rendered: Record<string, string>;
   bibliographyHtml?: string;
+  /** "footnote" (default) or "endnote" for note styles. */
+  notes?: "footnote" | "endnote";
+  /** Re-render automatically when citations move, appear or disappear (default on). */
+  auto?: boolean;
 }
 
 /** Formatted run of text produced from citeproc HTML. */

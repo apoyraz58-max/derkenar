@@ -1,0 +1,220 @@
+/**
+ * Shared pane state and helpers: the library in memory, the document state,
+ * the CSL renderer, messages, and a queue that keeps Word operations in order.
+ */
+import { DEFAULT_STYLE } from "../../core/docstate.js";
+import { Renderer } from "../../core/engine.js";
+import { SearchIndex } from "../../core/search.js";
+import { BUILTIN_STYLES } from "../../core/styles.js";
+import type { CiteRef, DocState } from "../../core/types.js";
+import { type Collection, type Item, now } from "../../core/zotero.js";
+import * as store from "../store.js";
+import * as word from "../word.js";
+
+export const S = {
+  items: [] as Item[],
+  byKey: new Map<string, Item>(),
+  index: new SearchIndex(),
+  collections: [] as Collection[],
+  doc: null as DocState | null,
+  /** Citation being built or edited. */
+  basket: [] as CiteRef[],
+  editing: null as string | null,
+  basketDirty: false,
+  /** Items ticked in the library list. */
+  selected: new Set<string>(),
+  /** Library view value ("all", "c:KEY", "trash" …). */
+  libView: "all",
+};
+
+export const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
+
+/** Small element builder: h("button", { class: "link", onclick }, "Sil"). */
+export function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, unknown> = {}, ...kids: (Node | string | null | undefined | false)[]): HTMLElementTagNameMap[K] {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === undefined || v === null || v === false) continue;
+    if (k.startsWith("on") && typeof v === "function") (el as unknown as Record<string, unknown>)[k] = v;
+    else if (k === "class") el.className = String(v);
+    else if (k === "value" || k === "checked" || k === "selected" || k === "hidden" || k === "disabled") (el as unknown as Record<string, unknown>)[k] = v;
+    else el.setAttribute(k, v === true ? "" : String(v));
+  }
+  for (const kid of kids) if (kid !== null && kid !== undefined && kid !== false) el.append(kid);
+  return el;
+}
+
+export function setMessage(text: string, kind: "info" | "success" | "warning" | "error" = "info"): void {
+  const m = $("message");
+  m.textContent = text;
+  m.className = `message ${kind}`;
+  m.hidden = !text;
+}
+
+let busyCount = 0;
+export async function run<T>(label: string, task: () => Promise<T>): Promise<T | undefined> {
+  busyCount++;
+  $("busy-text").textContent = `${label}…`;
+  $("busy").hidden = false;
+  try {
+    return await task();
+  } catch (e) {
+    console.error(e);
+    setMessage(e instanceof Error ? e.message : String(e), "error");
+    return undefined;
+  } finally {
+    if (--busyCount === 0) $("busy").hidden = true;
+  }
+}
+
+/** Word operations run one at a time (the watcher must not interleave with an insert). */
+let queue: Promise<unknown> = Promise.resolve();
+export function serial<T>(task: () => Promise<T>): Promise<T> {
+  const next = queue.then(task, task);
+  queue = next.catch(() => undefined);
+  return next;
+}
+
+export function doc(): DocState {
+  if (!S.doc) {
+    S.doc = word.loadState();
+    if (!S.doc.style) S.doc.style = DEFAULT_STYLE;
+  }
+  return S.doc;
+}
+
+// ---------------------------------------------------------------- views
+
+const listeners = new Map<string, (() => void)[]>();
+export function onShow(view: string, fn: () => void): void {
+  listeners.set(view, [...(listeners.get(view) ?? []), fn]);
+}
+
+export function showView(name: string): void {
+  for (const v of ["atif", "kutuphane", "kaynak", "belge", "denetim", "aktar"]) {
+    $(`view-${v}`).hidden = v !== name;
+    const tab = document.getElementById(`tab-${v}`);
+    tab?.setAttribute("aria-selected", String(v === name || (name === "kaynak" && v === "kutuphane")));
+  }
+  for (const fn of listeners.get(name) ?? []) fn();
+}
+
+// ---------------------------------------------------------------- library
+
+const changeListeners: (() => void)[] = [];
+export function onLibraryChange(fn: () => void): void {
+  changeListeners.push(fn);
+}
+
+export function libraryChanged(): void {
+  S.byKey = new Map(S.items.map((i) => [i.key, i]));
+  S.index.reset(S.items.filter((i) => !i.deleted));
+  for (const fn of changeListeners) fn();
+}
+
+export async function loadLibrary(): Promise<void> {
+  const [items, collections] = await Promise.all([store.loadItems(), store.loadCollections()]);
+  S.items = items;
+  S.collections = collections;
+  libraryChanged();
+}
+
+/** Adds or replaces items (and removes keys) in memory and storage. */
+export async function putItems(items: readonly Item[], remove: readonly string[] = []): Promise<void> {
+  await store.write("items", items, remove);
+  const map = new Map(S.items.map((i) => [i.key, i]));
+  for (const k of remove) map.delete(k);
+  for (const i of items) map.set(i.key, i);
+  S.items = [...map.values()];
+  libraryChanged();
+}
+
+export async function saveItem(item: Item): Promise<Item> {
+  const next = { ...item, dateModified: now() };
+  await putItems([next]);
+  return next;
+}
+
+export async function putCollections(collections: readonly Collection[], remove: readonly string[] = []): Promise<void> {
+  await store.write("collections", collections, remove);
+  const map = new Map(S.collections.map((c) => [c.key, c]));
+  for (const k of remove) map.delete(k);
+  for (const c of collections) map.set(c.key, c);
+  S.collections = [...map.values()];
+  libraryChanged();
+}
+
+/** The item as the library has it, else the copy stored in the document. */
+export function work(key: string): Item | undefined {
+  return S.byKey.get(key) ?? doc().items[key];
+}
+
+// ---------------------------------------------------------------- styles and renderer
+
+const textCache = new Map<string, Promise<string>>();
+function fetchText(path: string): Promise<string> {
+  let p = textCache.get(path);
+  if (!p) {
+    p = fetch(path).then((r) => {
+      if (!r.ok) throw new Error(`${path} yüklenemedi (${r.status}).`);
+      return r.text();
+    });
+    p.catch(() => textCache.delete(path));
+    textCache.set(path, p);
+  }
+  return p;
+}
+
+const locales: Record<string, string> = {};
+let rendererKey = "";
+let renderer: Renderer | null = null;
+
+export async function getRenderer(): Promise<Renderer> {
+  const d = doc();
+  const key = `${d.style}|${d.locale}`;
+  if (renderer && rendererKey === key) return renderer;
+  const [xml] = await Promise.all([
+    fetchText(`styles/${d.style}.csl`),
+    ...["tr-TR", "en-US"].map(async (l) => {
+      locales[l] = await fetchText(`styles/locales-${l}.xml`);
+    }),
+  ]);
+  renderer = new Renderer(xml, (l) => locales[l], d.locale);
+  rendererKey = key;
+  return renderer;
+}
+
+export function styleTitle(id: string): string {
+  return BUILTIN_STYLES.find((s) => s.id === id)?.title ?? id;
+}
+
+export function renderSummary(): void {
+  const live = S.items.filter((i) => !i.deleted).length;
+  $("summary").textContent = `${styleTitle(doc().style)} · ${live} kaynak`;
+}
+
+/** Copies text to the clipboard (falls back to a hidden textarea inside Office). */
+export async function copyText(text: string, html?: string): Promise<void> {
+  try {
+    if (html && "ClipboardItem" in window) {
+      await navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([text], { type: "text/plain" }), "text/html": new Blob([html], { type: "text/html" }) })]);
+      return;
+    }
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = h("textarea", { style: "position:fixed;left:-9999px" });
+    ta.value = text;
+    document.body.append(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+}
+
+export function download(name: string, text: string, type = "application/json"): void {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = h("a", { href: url, download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}

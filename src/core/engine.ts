@@ -108,9 +108,16 @@ export class Renderer {
 
 function toCiteItem(r: CiteRef): Record<string, unknown> {
   const item: Record<string, unknown> = { id: r.id };
-  if (r.locator) {
-    item.locator = r.locator;
+  const vol = r.volume?.trim();
+  if (vol && r.locator && (r.label ?? "page") === "page") {
+    item.locator = `${vol}/${r.locator}`;
+    item.label = "page";
+  } else if (r.locator) {
+    item.locator = vol ? `${vol}/${r.locator}` : r.locator;
     item.label = r.label ?? "page";
+  } else if (vol) {
+    item.locator = vol;
+    item.label = "volume";
   }
   if (r.prefix) item.prefix = r.prefix;
   if (r.suffix) item.suffix = r.suffix;
@@ -124,7 +131,7 @@ export const LOCATOR_LABELS: readonly (readonly [string, string])[] = [
   ["page", "Sayfa"],
   ["volume", "Cilt"],
   ["chapter", "Bölüm"],
-  ["folio", "Varak"],
+  ["folio", "Varak (vr.)"],
   ["section", "Kısım"],
   ["paragraph", "Paragraf"],
   ["line", "Satır"],

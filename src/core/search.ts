@@ -3,7 +3,7 @@
  * (Turkish dotless/dotted i, circumflex and transliteration marks, case), so a
  * query is a handful of substring checks per item: 10 000 items in a few ms.
  */
-import type { CslItem, CslName, LibraryItem } from "./types.js";
+import { type Item, creatorLine, noteText, yearOf } from "./zotero.js";
 
 const MARKS = /[̀-ͯʼʾʿ‘’‛ʹʻ'`´]/g;
 
@@ -19,50 +19,29 @@ export function fold(text: string): string {
     .trim();
 }
 
-export function nameText(name: CslName): string {
-  return name.literal ?? [name.given, name["non-dropping-particle"], name.family].filter(Boolean).join(" ");
-}
-
-export function year(item: CslItem): string {
-  const parts = item.issued?.["date-parts"]?.[0];
-  if (parts && parts[0] !== undefined) return String(parts[0]);
-  const raw = item.issued?.literal ?? item.issued?.raw ?? "";
-  return /\d{3,4}/.exec(raw)?.[0] ?? "";
-}
-
-export function creators(item: CslItem): CslName[] {
-  return item.author ?? item.editor ?? item.translator ?? [];
-}
-
-/** "Gazzâlî, Yılmaz ve Kara" style short author line for result lists. */
-export function authorLine(item: CslItem, max = 3): string {
-  const names = creators(item).map((n) => n.family ?? n.literal ?? n.given ?? "");
-  if (names.length === 0) return "";
-  if (names.length > max) return `${names.slice(0, max).join(", ")} vd.`;
-  return names.length > 1 ? `${names.slice(0, -1).join(", ")} ve ${names[names.length - 1]}` : names[0]!;
-}
-
+export { creatorLine as authorLine } from "./zotero.js";
 interface Entry {
-  readonly item: LibraryItem;
+  readonly item: Item;
   readonly family: string;
   readonly title: string;
   readonly rest: string;
   readonly year: string;
+  readonly hijri: string;
 }
 
 export interface SearchHit {
-  readonly item: LibraryItem;
+  readonly item: Item;
   readonly score: number;
 }
 
 export class SearchIndex {
   private entries: Entry[] = [];
 
-  constructor(items: Iterable<LibraryItem> = []) {
+  constructor(items: Iterable<Item> = []) {
     this.reset(items);
   }
 
-  reset(items: Iterable<LibraryItem>): void {
+  reset(items: Iterable<Item>): void {
     this.entries = [];
     for (const item of items) this.entries.push(SearchIndex.entry(item));
   }
@@ -71,30 +50,18 @@ export class SearchIndex {
     return this.entries.length;
   }
 
-  private static entry(item: LibraryItem): Entry {
-    const c = item.csl;
-    const people = [...(c.author ?? []), ...(c.editor ?? []), ...(c.translator ?? [])];
+  private static entry(item: Item): Entry {
+    const people = item.creators;
+    const title = item.fields.title ?? "";
+    const rest: string[] = [];
+    for (const [k, v] of Object.entries(item.fields)) if (k !== "title" && k !== "date") rest.push(v);
     return {
       item,
-      family: fold(people.map((n) => n.family ?? n.literal ?? "").join(" ")),
-      title: fold([c.title, c["title-short"], c["original-title"]].filter(Boolean).join(" ")),
-      rest: fold(
-        [
-          people.map((n) => n.given ?? "").join(" "),
-          c["container-title"],
-          c["collection-title"],
-          c.publisher,
-          c["publisher-place"],
-          c.DOI,
-          c.ISBN,
-          c.note,
-          (item.tags ?? []).join(" "),
-          item.key,
-        ]
-          .filter(Boolean)
-          .join(" "),
-      ),
-      year: year(c),
+      family: fold(people.map((c) => c.lastName ?? c.name ?? "").join(" ")),
+      title: fold([title, item.fields.shortTitle].filter(Boolean).join(" ")),
+      rest: fold([people.map((c) => c.firstName ?? "").join(" "), ...rest, item.tags.map((t) => t.tag).join(" "), item.notes.map((n) => noteText(n.note)).join(" "), item.key].join(" ")),
+      year: yearOf(item).split("/").pop() ?? "",
+      hijri: yearOf(item).split("/")[0] ?? "",
     };
   }
 
@@ -103,7 +70,7 @@ export class SearchIndex {
    * an author's family name or a year scores highest, so "gazzali 1982" or
    * "yılmaz kelam" put the intended work on top.
    */
-  search(query: string, limit = 50, filter?: (item: LibraryItem) => boolean): SearchHit[] {
+  search(query: string, limit = 50, filter?: (item: Item) => boolean): SearchHit[] {
     const words = fold(query).split(" ").filter(Boolean);
     const hits: SearchHit[] = [];
     for (const e of this.entries) {
@@ -111,7 +78,7 @@ export class SearchIndex {
       let score = 0;
       let ok = true;
       for (const w of words) {
-        if (/^\d{4}$/.test(w) && e.year === w) score += 6;
+        if (/^\d{3,4}$/.test(w) && (e.year === w || e.hijri === w)) score += 6;
         else if (startsWord(e.family, w)) score += 5;
         else if (e.family.includes(w)) score += 3;
         else if (startsWord(e.title, w)) score += 3;
@@ -137,6 +104,6 @@ function startsWord(haystack: string, word: string): boolean {
   return i >= 0;
 }
 
-function compareItems(a: LibraryItem, b: LibraryItem): number {
-  return authorLine(a.csl).localeCompare(authorLine(b.csl), "tr") || year(a.csl).localeCompare(year(b.csl));
+function compareItems(a: Item, b: Item): number {
+  return creatorLine(a).localeCompare(creatorLine(b), "tr") || yearOf(a).localeCompare(yearOf(b));
 }
