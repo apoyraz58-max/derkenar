@@ -77,11 +77,22 @@ it("report", () => {
         continue;
       }
       const bare = render(item, "", "");
+      // Where the locator goes: render with a marker and take what precedes it.
+      const mark = render(item, "@@", "@@");
+      const cut = (example: string, marked: string): string | null => {
+        const i = marked.indexOf("@@");
+        if (i < 0) return null;
+        const before = loose(marked.slice(0, i));
+        const after = loose(marked.slice(i + 2));
+        const e = loose(example);
+        if (!e.startsWith(before) || !e.endsWith(after)) return null;
+        return e.slice(before.length, e.length - after.length);
+      };
       const vol = item.fields.volume?.trim();
       const strip = (l: string) => (vol && l.startsWith(`${vol}/`) ? l.slice(vol.length + 1) : l);
-      const l1 = strip(locatorOf(ex, bare.first) ?? "");
-      const laterEx = sec.later.find((x) => loose(x).startsWith(loose(bare.later).replace(/\.$/, ""))) ?? (label(item) ? (sec.later[sec.first.indexOf(ex)] ?? "") : "");
-      const l2 = strip(laterEx ? (locatorOf(laterEx, bare.later) ?? (label(item) === "verse" ? laterEx.replace(/\.$/, "") : "")) : "");
+      const l1 = strip(cut(ex, mark.first) ?? locatorOf(ex, bare.first) ?? "");
+      const laterEx = sec.later.find((x) => cut(x, mark.later) !== null) ?? sec.later.find((x) => loose(x).startsWith(loose(bare.later).replace(/\.$/, ""))) ?? (label(item) ? (sec.later[sec.first.indexOf(ex)] ?? "") : "");
+      const l2 = strip(laterEx ? (cut(laterEx, mark.later) ?? locatorOf(laterEx, bare.later) ?? (label(item) === "verse" ? laterEx.replace(/\.$/, "") : "")) : "");
       const r = render(item, l1, l2);
       const bibEx = sec.bib.find((x) => loose(x) === loose(r.bib)) ?? sec.bib.find((x) => fold(x).includes(fold(titleOf(item)).slice(0, 25))) ?? "";
       for (const [kind, want, got] of [["ilk", ex, r.first], ["sonraki", laterEx, r.later], ["kaynakça", bibEx, r.bib]] as const) {

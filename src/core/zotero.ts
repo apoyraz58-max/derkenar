@@ -341,6 +341,28 @@ function cslNameVar(creatorType: string, itemType?: string): string {
   return schema.csl.names[creatorType] ?? "contributor";
 }
 
+/** "TSE" for "Türk Standardları Enstitüsü", "WoS" for "Web of Science", "TÜİK" for "Türkiye İstatistik Kurumu". */
+export function isAcronymOf(abbr: string, full: string): boolean {
+  const a = abbr.replace(/[.\s]/g, "");
+  if (a.length < 2 || a.length > 10 || !/^[\p{Lu}][\p{L}]*$/u.test(a) || a === a.toLocaleLowerCase("tr")) return false;
+  const norm = (x: string) => x.toLocaleUpperCase("tr");
+  const A = norm(a);
+  // Small words may be skipped ("of", "ve"); every other word gives one or more leading letters.
+  const words = full.split(/[\s-]+/).filter(Boolean).map(norm);
+  const small = new Set(["OF", "THE", "AND", "VE", "İLE", "FOR", "DE", "DA"]);
+  const match = (i: number, w: number): boolean => {
+    if (i === A.length) return words.slice(w).every((x) => small.has(x));
+    if (w === words.length) return false;
+    const word = words[w]!;
+    for (let k = 1; k <= Math.min(word.length, A.length - i); k++) {
+      if (word.slice(0, k) !== A.slice(i, i + k)) break;
+      if (match(i + k, w + 1)) return true;
+    }
+    return small.has(word) && match(i, w + 1);
+  };
+  return match(0, 0);
+}
+
 /**
  * CSL types the İSNAD style was written for (its header: "Software → book
  * with version number"), where newer Zotero versions send another type.
@@ -372,6 +394,10 @@ export function toCsl(item: Item): CslItem {
       if (d) csl[k] = d;
     } else csl[k] = v;
   }
+  // Institutions are entered "TSE, Türk Standardları Enstitüsü": the abbreviation goes in parentheses
+  // ("Türk Standardları Enstitüsü (TSE)", guide s. 123), which İSNAD's style prints from "authority".
+  const first = item.creators.find((c) => c.creatorType === "author" || cslNameVar(c.creatorType, item.itemType) === "author");
+  if (!csl.authority && first?.lastName && first.firstName && isAcronymOf(first.lastName, first.firstName)) csl.authority = first.lastName;
   // İSNAD's Zotero rule: the edited work's title in a tahkik/neşir article goes in "Series Text" (s. 109).
   if (["journalArticle", "magazineArticle", "newspaperArticle"].includes(item.itemType) && item.fields.seriesText && !csl["collection-title"]) csl["collection-title"] = item.fields.seriesText;
   if (extra.rest) csl.note = extra.rest;

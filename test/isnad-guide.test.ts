@@ -139,6 +139,26 @@ describe("İSNAD 2 kılavuzu: virgül, makalede neşir", () => {
   });
 });
 
+describe("İSNAD 2 kılavuzu: kurum kısaltması, soru işareti", () => {
+  it("standard: kurum kısaltması parantezde (s. 123)", () => {
+    const r = render(work("Helal Belgelendirmesi"), {}, {});
+    expect(r.first.startsWith("Türk Standardları Enstitüsü (TSE), Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz")).toBe(true);
+    expect(r.bib.startsWith("TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi")).toBe(true);
+  });
+  it("kısaltma tanıma", async () => {
+    const { isAcronymOf } = await import("../src/core/zotero.js");
+    expect(isAcronymOf("TSE", "Türk Standardları Enstitüsü")).toBe(true);
+    expect(isAcronymOf("WoS", "Web of Science")).toBe(true);
+    expect(isAcronymOf("TÜİK", "Türkiye İstatistik Kurumu")).toBe(true);
+    expect(isAcronymOf("YILMAZ", "Ahmet")).toBe(false);
+    expect(isAcronymOf("Kaya", "Adem")).toBe(false);
+  });
+  it("gazete: soru işaretli başlıktan sonra nokta (s. 112)", () => {
+    const r = render(work("15 Temmuz’u Farklı Kılan Nedir"), { locator: "8" }, { locator: "8" });
+    expect(r.bib.startsWith("Hanioğlu, M. Şükrü. “15 Temmuz’u Farklı Kılan Nedir?”. Sabah (15 Temmuz 2018), 8.")).toBe(true);
+  });
+});
+
 describe("İSNAD 2 kılavuzu: türler", () => {
   it("kitap-elektronik: yayın formatı, b.y. eklenmez (s. 72)", () => {
     const r = render(work("Amisos Mozaiği"), { locator: "44" }, { locator: "98" });

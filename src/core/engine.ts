@@ -99,7 +99,9 @@ export class Renderer {
     const ids = (params.entry_ids as string[][]) ?? [];
     // İSNAD: several entries of one dictionary are one bibliography line (madde names are not listed).
     const seen = new Set<string>();
-    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html: isnadTidy(stripArticle(html)) })).filter((e) => {
+    // İSNAD keeps the period after a title ending in ? or ! ("Nedir?”. Sabah", guide s. 112).
+    const keepPeriod = (h: string) => h.replace(/([?!])”(\s|&#160;)(?=[\p{Lu}<])/gu, "$1”.$2");
+    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html: keepPeriod(isnadTidy(stripArticle(html))) })).filter((e) => {
       const k = e.html.replace(/\s+/g, " ").trim();
       if (seen.has(k)) return false;
       seen.add(k);
