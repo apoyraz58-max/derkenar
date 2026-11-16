@@ -6,11 +6,12 @@
     <title>Derkenar</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="taskpane.css" />
+    <link rel="icon" href="assets/logo/derkenar-mark.svg" type="image/svg+xml" />
   </head>
   <body>
     <header class="top">
       <div>
-        <h1>Derkenar</h1>
+        <h1 class="brand-row"><img src="assets/logo/derkenar-mark.svg" alt="" class="brand" width="22" height="22">Derkenar</h1>
         <p id="summary" class="summary"></p>
       </div>
       <button id="translit-toggle" type="button" class="icon-btn" title="Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …)" aria-pressed="false">ʿâ</button>
@@ -377,8 +378,11 @@
       </section>
       <section id="about">
         <h2>Hakkında</h2>
-        <img src="assets/app-icon.svg" alt="Derkenar" class="about-logo" width="56" height="56">
-        <p>Derkenar <span id="about-version"></span></p>
+        <picture>
+          <source srcset="assets/logo/derkenar-logo-dark.svg" media="(prefers-color-scheme: dark)">
+          <img src="assets/logo/derkenar-logo.svg" alt="Derkenar — İSNAD atıf ve kaynakça yöneticisi" class="about-logo">
+        </picture>
+        <p>Sürüm <span id="about-version"></span></p>
         <p>Geliştiren: <strong>Abdurrahman Poyraz</strong><br>
           Sivas Cumhuriyet Üniversitesi İlahiyat Fakültesi</p>
         <p class="muted small">Atıflar Zotero'nun da kullandığı citeproc-js ile, İSNAD Atıf Sistemi'nin resmî CSL stilleriyle biçimlenir. Kaynak türleri ve alanlar Zotero şemasındandır. Lisans: AGPL-3.0. Simgeler: Fluent UI System Icons (MIT).</p>

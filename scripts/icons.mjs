@@ -30,11 +30,17 @@ await browser.close();
 {
   const browser2 = await chromium.launch();
   const p = await browser2.newPage();
-  const svg = await readFile(new URL("../assets/app-icon.svg", import.meta.url), "utf8");
+  const svg = await readFile(new URL("../assets/logo/derkenar-mark.svg", import.meta.url), "utf8");
   for (const size of [16, 32, 64, 80, 128]) {
     await p.setViewportSize({ width: size, height: size });
     await p.setContent(`<html><body style="margin:0;background:transparent">${svg.replace("<svg", `<svg width="${size}" height="${size}"`)}</body></html>`);
     await p.locator("svg").screenshot({ path: new URL(`../assets/icon-${size}.png`, import.meta.url).pathname, omitBackground: true });
+  }
+  // The logo in colour for the few ribbon places that stand for the add-in.
+  for (const size of [16, 32, 80]) {
+    await p.setViewportSize({ width: size, height: size });
+    await p.setContent(`<html><body style="margin:0;background:transparent">${svg.replace("<svg", `<svg width="${size}" height="${size}"`)}</body></html>`);
+    await p.locator("svg").screenshot({ path: new URL(`../assets/icons/brand-${size}.png`, import.meta.url).pathname, omitBackground: true });
   }
   await browser2.close();
 }

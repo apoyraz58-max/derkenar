@@ -1,3 +1,5 @@
+<p><img src="assets/logo/derkenar-logo.svg" alt="Derkenar" width="320"></p>
+
 # Derkenar
 
 Word için İSNAD temelli atıf ve kaynakça eklentisi. Masaüstü programı değildir:

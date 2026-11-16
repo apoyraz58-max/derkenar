@@ -46,9 +46,9 @@
               <Group id="Derkenar.G.Cite">
                 <Label resid="G.Cite"/>
                 <Icon>
-                  <bt:Image size="16" resid="Ic.insert.16"/>
-                  <bt:Image size="32" resid="Ic.insert.32"/>
-                  <bt:Image size="80" resid="Ic.insert.80"/>
+                  <bt:Image size="16" resid="Ic.brand.16"/>
+                  <bt:Image size="32" resid="Ic.brand.32"/>
+                  <bt:Image size="80" resid="Ic.brand.80"/>
                 </Icon>
                 <Control xsi:type="Button" id="Derkenar.Insert">
                   <Label resid="Insert"/>
@@ -289,9 +289,9 @@
                     <Description resid="Help.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.help.16"/>
-                    <bt:Image size="32" resid="Ic.help.32"/>
-                    <bt:Image size="80" resid="Ic.help.80"/>
+                    <bt:Image size="16" resid="Ic.brand.16"/>
+                    <bt:Image size="32" resid="Ic.brand.32"/>
+                    <bt:Image size="80" resid="Ic.brand.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
@@ -311,9 +311,9 @@
                   <Description resid="Ctx.Insert.Tip"/>
                 </Supertip>
                 <Icon>
-                  <bt:Image size="16" resid="Icon.16"/>
-                  <bt:Image size="32" resid="Icon.32"/>
-                  <bt:Image size="80" resid="Icon.80"/>
+                  <bt:Image size="16" resid="Ic.brand.16"/>
+                  <bt:Image size="32" resid="Ic.brand.32"/>
+                  <bt:Image size="80" resid="Ic.brand.80"/>
                 </Icon>
                 <Items>
                   <Item id="Derkenar.Ctx.Insert">
@@ -356,6 +356,9 @@
         <bt:Image id="Ic.finalize.16" DefaultValue="{{BASE_URL}}assets/icons/finalize-16.png"/>
         <bt:Image id="Ic.finalize.32" DefaultValue="{{BASE_URL}}assets/icons/finalize-32.png"/>
         <bt:Image id="Ic.finalize.80" DefaultValue="{{BASE_URL}}assets/icons/finalize-80.png"/>
+        <bt:Image id="Ic.brand.16" DefaultValue="{{BASE_URL}}assets/icons/brand-16.png"/>
+        <bt:Image id="Ic.brand.32" DefaultValue="{{BASE_URL}}assets/icons/brand-32.png"/>
+        <bt:Image id="Ic.brand.80" DefaultValue="{{BASE_URL}}assets/icons/brand-80.png"/>
         <bt:Image id="Ic.catalog.16" DefaultValue="{{BASE_URL}}assets/icons/catalog-16.png"/>
         <bt:Image id="Ic.catalog.32" DefaultValue="{{BASE_URL}}assets/icons/catalog-32.png"/>
         <bt:Image id="Ic.catalog.80" DefaultValue="{{BASE_URL}}assets/icons/catalog-80.png"/>
@@ -380,12 +383,6 @@
         <bt:Image id="Ic.info.16" DefaultValue="{{BASE_URL}}assets/icons/info-16.png"/>
         <bt:Image id="Ic.info.32" DefaultValue="{{BASE_URL}}assets/icons/info-32.png"/>
         <bt:Image id="Ic.info.80" DefaultValue="{{BASE_URL}}assets/icons/info-80.png"/>
-        <bt:Image id="Ic.help.16" DefaultValue="{{BASE_URL}}assets/icons/help-16.png"/>
-        <bt:Image id="Ic.help.32" DefaultValue="{{BASE_URL}}assets/icons/help-32.png"/>
-        <bt:Image id="Ic.help.80" DefaultValue="{{BASE_URL}}assets/icons/help-80.png"/>
-        <bt:Image id="Icon.16" DefaultValue="{{BASE_URL}}assets/icon-16.png"/>
-        <bt:Image id="Icon.32" DefaultValue="{{BASE_URL}}assets/icon-32.png"/>
-        <bt:Image id="Icon.80" DefaultValue="{{BASE_URL}}assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="U.Insert" DefaultValue="{{BASE_URL}}taskpane.html?action=insert"/>

@@ -34,7 +34,7 @@ function group(id, label, ic, controls) {
 }
 
 const tab = [
-  group("Cite", "Atıf", "insert", [
+  group("Cite", "Atıf", "brand", [
     button("Insert", "Atıf Ekle/Düzenle", "İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır.", "insert", "insert"),
     button("Bib", "Kaynakça Ekle/Düzenle", "İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir.", "index", "bib"),
     button("Prefs", "Belge Tercihleri", "Atıf stili (İSNAD 2 dipnotlu / metin içi), dil, dipnot ya da sonnot, otomatik güncelleme.", "settings", "prefs"),
@@ -54,7 +54,7 @@ const tab = [
   ]),
   group("Data", "Veri ve yardım", "info", [
     button("Info", "Veri bilgisi", "Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, Zotero eşitlemesi, sürüm.", "info", "info"),
-    button("Help", "Kullanım kılavuzu", "Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında.", "help", "help"),
+    button("Help", "Kullanım kılavuzu", "Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında.", "brand", "help"),
   ]),
 ];
 
@@ -64,7 +64,6 @@ const contextMenu = [
 
 const resources = () => {
   const imgs = [...icons].flatMap((n) => [16, 32, 80].map((s) => `        <bt:Image id="Ic.${n}.${s}" DefaultValue="${B}assets/icons/${n}-${s}.png"/>`));
-  imgs.push(`        <bt:Image id="Icon.16" DefaultValue="${B}assets/icon-16.png"/>`, `        <bt:Image id="Icon.32" DefaultValue="${B}assets/icon-32.png"/>`, `        <bt:Image id="Icon.80" DefaultValue="${B}assets/icon-80.png"/>`);
   const u = [...urls].map(([k, v]) => `        <bt:Url id="${k}" DefaultValue="${esc(v)}"/>`);
   u.push(`        <bt:Url id="Commands.Url" DefaultValue="${B}commands.html"/>`, `        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>`);
   for (const [k, v] of short) if (v.length > 125) throw new Error(`short string too long: ${k}`);
@@ -149,9 +148,9 @@ ${tabXml}              <Label resid="Tab"/>
                   <Description resid="Ctx.Insert.Tip"/>
                 </Supertip>
                 <Icon>
-                  <bt:Image size="16" resid="Icon.16"/>
-                  <bt:Image size="32" resid="Icon.32"/>
-                  <bt:Image size="80" resid="Icon.80"/>
+                  <bt:Image size="16" resid="Ic.brand.16"/>
+                  <bt:Image size="32" resid="Ic.brand.32"/>
+                  <bt:Image size="80" resid="Ic.brand.80"/>
                 </Icon>
                 <Items>
 ${ctxXml.replace('<Control xsi:type="Button" id="Derkenar.Ctx.Insert">', '<Item id="Derkenar.Ctx.Insert">').replace(/<\/Control>\n$/, "</Item>\n").replace(/^/gm, "  ")}                </Items>

@@ -47,7 +47,7 @@ for (const file of ["taskpane.html", "commands.html"]) {
 await writeFile(new URL("version.json", out), JSON.stringify({ version }));
 await cp(new URL("assets/icons/", root), new URL("assets/icons/", out), { recursive: true });
 for (const f of await readdir(new URL("assets/", root))) if (/^icon-\d+\.png$/.test(f)) await cp(new URL(`assets/${f}`, root), new URL(`assets/${f}`, out));
-await cp(new URL("assets/app-icon.svg", root), new URL("assets/app-icon.svg", out));
+await cp(new URL("assets/logo/", root), new URL("assets/logo/", out), { recursive: true });
 
 // CSL styles and locales (CC BY-SA 3.0), loaded by the pane on demand.
 await cp(new URL("data/styles/", root), new URL("styles/", out), { recursive: true });
