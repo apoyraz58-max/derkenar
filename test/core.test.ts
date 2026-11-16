@@ -508,6 +508,30 @@ describe("İSNAD spelling on the way in", async () => {
     expect(shortTitleOf("el-Maḥsûl fî ʿilmi uṣûli’l-fıḳh")).toBe("el-Maḥsûl");
     expect(shortTitleOf("The Venture of Islam: Conscience and History")).toBe("The Venture of Islam");
     expect(shortTitleOf("İslam’da İnanç Esasları")).toBeNull();
+    // As the İSNAD guide's own records shorten them.
+    expect(shortTitleOf("Telḫîṣü’l-edille li-ḳavâʿidi’t-tevḥîd")).toBe("Telḫîṣü’l-edille");
+    expect(shortTitleOf("Miftâḥu’s-saʿâde ve miṣbâḥu’s-siyâde fî mevżûʿâti’l-ʿulûm")).toBe("Miftâḥu’s-saʿâde");
+    expect(shortTitleOf("Kitāb al-Ṭarīgah al-Muḥammadīyah")).toBe("al-Ṭarīgah al-Muḥammadīyah");
+    expect(shortTitleOf("Mâtürîdî Kelâm Ekolünde Nesefîler ve Ebû Hafs Ömer en-Nesefî’nin İtikâdî Görüşleri")).toBe("Mâtürîdî Kelâm Ekolünde Nesefîler");
+    expect(shortTitleOf("İslam Ceza Hukukunda Suça Teşebbüsten Vazgeçme")).toBe("Suça Teşebbüsten Vazgeçme");
+    expect(shortTitleOf("Konsiller Tarihi İznik’ten II. Vatikan’a")).toBe("Konsiller Tarihi");
+    expect(shortTitleOf("Galata Mahkemesi 90 Numaralı Sicil (1073-1074/1663)")).toBe("Galata Mahkemesi 90 Numaralı Sicil");
+    expect(shortTitleOf("İstanbul Vakıfları Tahrir Defteri 953 Tarihli")).toBe("İstanbul Vakıfları Tahrir Defteri");
+    expect(shortTitleOf("Klasik Dönem İslam Düşüncesinde İrade Hürriyeti")).toBe("İrade Hürriyeti");
+    expect(shortTitleOf("Sessiz Diplomasi: Osmanlı Topraklarında Ağırlanan Romanovlar")).toBe("Sessiz Diplomasi");
+    expect(shortTitleOf("Tasavvuf Üzerine")).toBeNull();
+  });
+
+  it("lost Turkish letters come back; correct and English text is left alone", async () => {
+    const { restoreTurkish } = await import("../src/core/isnadstyle.js");
+    expect(restoreTurkish("Recep Tayyip Erdogan Universitesi")).toBe("Recep Tayyip Erdoğan Üniversitesi");
+    expect(restoreTurkish("Ataturk Universitesi Ilahiyat Fakultesi")).toBe("Atatürk Üniversitesi İlahiyat Fakültesi");
+    expect(restoreTurkish("ISAM Yayinlari")).toBe("İSAM Yayınları");
+    expect(restoreTurkish("Istanbul")).toBe("İstanbul");
+    for (const t of ["The Venture of Islam", "Islamic Law", "Brill", "Recep Tayyip Erdoğan Üniversitesi", "el-Maḥsûl"]) expect(restoreTurkish(t)).toBe(t);
+    const thesis = emptyItem("thesis", "manual");
+    thesis.fields = { title: "Bir Tez", university: "Recep Tayyip Erdogan Universitesi", place: "Rize" };
+    expect(autoFix(thesis).item.fields.university).toBe("Recep Tayyip Erdoğan Üniversitesi");
   });
 
   it("autoFix: a catalogue record becomes an İSNAD record; a short publisher stays a warning", () => {
@@ -515,7 +539,7 @@ describe("İSNAD spelling on the way in", async () => {
     it.fields = { title: "kelam ilminin doğuşu ve gelişimi: başlangıçtan günümüze", place: "Istanbul", publisher: "Otuken Nesriyat", date: "c2015" };
     it.creators = [{ creatorType: "author", lastName: "YILMAZ", firstName: "AHMET" }];
     const r = autoFix(it);
-    expect(r.item.fields).toMatchObject({ title: "Kelam İlminin Doğuşu ve Gelişimi: Başlangıçtan Günümüze", place: "İstanbul", publisher: "Ötüken Neşriyat", date: "2015", shortTitle: "Kelam İlminin Doğuşu" });
+    expect(r.item.fields).toMatchObject({ title: "Kelam İlminin Doğuşu ve Gelişimi: Başlangıçtan Günümüze", place: "İstanbul", publisher: "Ötüken Neşriyat", date: "2015", shortTitle: "Kelam İlminin Doğuşu ve Gelişimi" });
     expect(r.item.creators[0]).toMatchObject({ lastName: "Yılmaz", firstName: "Ahmet" });
     const short = emptyItem("book", "isbn");
     short.fields = { title: "Bir Kitap", place: "Ankara", publisher: "Gündoğan" };

@@ -3,7 +3,7 @@
  * usual slips of hand-entered or imported records. Each finding says what is
  * wrong and, where the fix is mechanical, carries it ("Düzelt").
  */
-import { cleanYear, isTurkishPlace, isnadName, isnadPlace, isnadPublisher, isnadTitle, nameNeedsCase, publisherLooksShort, shortTitleOf } from "./isnadstyle.js";
+import { cleanYear, restoreTurkish, isTurkishPlace, isnadName, isnadPlace, isnadPublisher, isnadTitle, nameNeedsCase, publisherLooksShort, shortTitleOf } from "./isnadstyle.js";
 import { type Creator, type Item, baseField, containerOf, fieldLabel, parseDate, primaryCreators, typeField } from "./zotero.js";
 
 export type Level = "error" | "warning" | "info";
@@ -174,6 +174,14 @@ export function checkItem(item: Item): Issue[] {
     const trimmed = value.replace(/[ \t]{2,}/g, " ").trim();
     if (trimmed !== value && field !== "extra" && field !== "abstractNote") add({ code: "spaces", level: "info", message: `${label}: fazla boşluk.`, field, fix: { field, value: trimmed }, fixLabel: "Boşlukları temizle" });
 
+    // Lost Turkish letters ("Recep Tayyip Erdogan Universitesi").
+    if (["title", "publicationTitle", "shortTitle", "publisher", "place", "series", "seriesTitle", "university", "institution", "archive"].includes(base) || ["publisher", "place", "series"].includes(field)) {
+      const t = restoreTurkish(value);
+      if (t !== value) {
+        add({ code: "turkish-letters", level: "warning", message: `${label}: Türkçe harfler eksik ("${t}").`, field, fix: { field, value: t }, fixLabel: "Düzelt" });
+        continue;
+      }
+    }
     if (base === "title" || base === "publicationTitle" || base === "shortTitle") {
       if (isAllCaps(value) && !(base === "shortTitle" && !/\s/.test(value.trim()))) add({ code: "caps", level: "warning", message: `${label} tamamen büyük harfle yazılmış.`, field, fix: { field, value: base === "shortTitle" ? sentenceCase(value) : isnadTitle(value) }, fixLabel: "Küçült" });
       // Title case only for what İSNAD prints in italics: books, and the book or journal a part belongs to.
@@ -220,6 +228,9 @@ export function checkItem(item: Item): Issue[] {
     if (fixedEnc !== full) {
       add({ code: "encoding", level: "error", message: `Kişi adı: bozuk Türkçe karakter (${full}).`, creatorIndex: i, fix: { creatorIndex: i, creator: mapCreator(c, fixEncoding) }, fixLabel: "Karakterleri düzelt" });
       return;
+    }
+    if (c.name !== undefined && restoreTurkish(c.name) !== c.name) {
+      add({ code: "turkish-letters", level: "warning", message: `Kurum adı: Türkçe harfler eksik ("${restoreTurkish(c.name)}").`, creatorIndex: i, fix: { creatorIndex: i, creator: { ...c, name: restoreTurkish(c.name) } }, fixLabel: "Düzelt" });
     }
     const acronym = c.name !== undefined && /^[\p{Lu}.\s]{2,10}$/u.test(c.name.trim());
     if (isAllCaps(full) && !acronym) add({ code: "name-caps", level: "warning", message: `Kişi adı büyük harfle yazılmış (${full.trim()}).`, creatorIndex: i, fix: { creatorIndex: i, creator: mapCreator(c, isnadName) }, fixLabel: "Düzelt" });
@@ -321,8 +332,9 @@ export function apostropheReport(items: readonly Item[]): { mark: string; count:
 export const LEVEL_LABEL: Record<Level, string> = { error: "Hata", warning: "Uyarı", info: "Bilgi" };
 
 /** Fixes applied by themselves when a work is added (DOI, ISBN, pasted record): mechanical, safe ones. */
-const AUTO = new Set(["encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
+const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
 const AUTO_LABEL: Record<string, string> = {
+  "turkish-letters": "eksik Türkçe harfler",
   encoding: "bozuk karakterler",
   spaces: "fazla boşluklar",
   caps: "büyük harfle yazılmış başlık",

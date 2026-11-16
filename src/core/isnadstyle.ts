@@ -290,29 +290,119 @@ export function cleanYear(date: string): string | null {
 
 const CUT = new Set(["fî", "fi", "ilâ", "ila", "min", "alâ", "ala", "an", "li", "ve", "ile", "and", "of", "the", "in", "on"]);
 
+/** Postpositions that close an adjunct ("İslam Hukukunda Delil Olarak", "Kelam Açısından"). */
+const POSTPOSITIONS = new Set(["olarak", "açısından", "bağlamında", "göre", "ışığında", "üzerine", "üzerinde", "hakkında", "karşı", "itibariyle", "yönüyle", "yönünden", "çerçevesinde", "bakımından", "kapsamında", "örneğinde", "özelinde", "etrafında", "perspektifinden", "ekseninde", "aracılığıyla", "için", "dair", "ait", "boyunca", "sonra", "önce", "kadar", "rağmen", "sayesinde", "nazarında", "gözüyle", "temelinde", "zemininde", "işığında"]);
+
+/** Nouns that only look case-marked (irade, mesele, vicdan …). */
+const NOT_ADJUNCT = new Set(["irade", "ifade", "iade", "ziyade", "sade", "akide", "maide", "vade", "mesele", "risale", "mukabele", "muamele", "cümle", "hile", "kale", "vicdan", "meydan", "ramazan", "insan", "zaman", "mekân", "mekan", "lisan", "ihsan", "irfan", "kur’an", "kur'an", "kurân", "kur’ân", "kur'ân", "ezan", "beyan", "divan", "erkan", "erkân", "nazariyede", "hidayet", "seyyide", "fâide", "faide", "kaide", "medine", "dünya", "felsefe", "mektepte"]);
+
+/** A word that ends an adjunct: locative, ablative or instrumental ("Hukukunda", "Kur’ân’da", "Başlangıçtan", "Yorumlarla"). */
+function isAdjunct(word: string): boolean {
+  const w = lower(word).replace(/[!?.,;]+$/, "");
+  if (POSTPOSITIONS.has(w)) return true;
+  if (NOT_ADJUNCT.has(w) || w.length < 5) return false;
+  if (/[’'](d|t)[ae](n)?$/.test(w) || /[’'](y)?l[ae]$/.test(w)) return true;
+  const stem = w.replace(/(d|t)[ae]n?$/, "");
+  if (stem !== w) return /[^aeıioöuüâîû]$/.test(stem) || w.length >= 7;
+  return /[^aeıioöuüâîû]l[ae]$/.test(w) && /(lar|ler|[^aeıioöuüâîû])l[ae]$/.test(w) && w.length >= 6;
+}
+
+
 /**
- * Short title for later citations: the main title (before ":"), cut before
- * "fî"/"ilâ"/"min" in Arabic titles, else its first three words.
- * Null when the full title is short already.
+ * A leading scope a short title can do without: a field or period in the
+ * locative ("Hukukunda", "Düşüncesinde", "Döneminde") or a proper name
+ * ("Osmanlı Devleti'nde", "Gazzâlî'de").
+ */
+function isScope(word: string): boolean {
+  const w = lower(word);
+  if (!/(d|t)[ae]$/.test(w) || NOT_ADJUNCT.has(w)) return false;
+  if (/[’'][^’']*(d|t)[ae]$/.test(w)) return true;
+  return /^(hukuk|düşünce|gelenek|tarih|devlet|dönem|kelâm|kelam|tasavvuf|tefsir|hadis|fıkıh|fıkh|felsefe|edebiyat|kültür|toplum|ilim|ilm|ekol|mezhep|mezheb|literatür|anlayış|yorum|asır|yüzyıl|çağ|gelenek|dünya|islâm|islam|türk|osmanlı|kur)/.test(w);
+}
+
+/** Arabic particles a title's first construct ends before ("li’t-", "fî", "ve", "mine’l-"). */
+const AR_CUT = /^((li|bi|ke)[-’'ʾ]|(fî|fi|ve|min|ilâ|ila|alâ|ala|an|ʿan|ʿalâ|wa|fī|ilá|ʿalá)$|mine[’'ʾ])/i;
+
+/**
+ * Short title for later citations, the way the İSNAD guide's own records
+ * shorten them (test: the guide's 34 short titles):
+ *  - the main title only: no subtitle after ":", nothing in ( ) or [ ],
+ *    no trailing date ("953 Tarihli", "XVIII. Yüzyıl");
+ *  - Arabic: the first construct ("Telḫîṣü’l-edille li-ḳavâʿidi…" →
+ *    "Telḫîṣü’l-edille", "Miftâḥu’s-saʿâde ve miṣbâḥu…" → "Miftâḥu’s-saʿâde");
+ *  - Turkish: a second part joined by "ve" goes ("Mâtürîdî Kelâm Ekolünde
+ *    Nesefîler ve Ebû Hafs … Görüşleri" → "… Nesefîler"); a leading scope
+ *    drops from a long title ("İslam Ceza Hukukunda Suça Teşebbüsten
+ *    Vazgeçme" → "Suça Teşebbüsten Vazgeçme"); a closing range goes
+ *    ("Konsiller Tarihi İznik’ten II. Vatikan’a" → "Konsiller Tarihi");
+ *  - English and other Western titles: the main title.
+ * Null when that is the whole title already.
  */
 export function shortTitleOf(title: string): string | null {
-  const main = title.split(/\s*[:–—]\s+|\s+-\s+|\s*:\s*/)[0]!.trim();
-  const words = main.split(/\s+/);
-  let cut = words;
-  if (isArabicTitle(main)) {
-    const i = words.findIndex((w, k) => k > 0 && CUT.has(lower(w)));
-    if (i > 0) cut = words.slice(0, i);
+  const full = title.trim();
+  let main = full
+    .split(/\s*[:–—]\s+|\s+-\s+|\s*:\s*/)[0]!
+    .replace(/\s*\[[^\]]*\]/g, "")
+    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/\s*-?\s*\b[IVXLC]+\.\s*(Yüzyıl|Asır)\b.*$/i, "")
+    .replace(/\s+\d+\s+Tarihli$/i, "")
+    .replace(/[,;.\s]+$/, "")
+    .trim();
+  let words = main.split(/\s+/);
+
+  if (isArabicTitle(words.slice(0, 2).join(" ")) && !words.some((w, k) => k < words.length - 1 && isAdjunct(w) && !isArabicTitle(w))) {
+    if (words.length > 1 && /^(kitâb|kitāb|kitab)$/i.test(words[0]!) && /^(al|el)-/i.test(words[1]!)) words = words.slice(1);
+    const i = words.findIndex((w, k) => k > 0 && AR_CUT.test(w));
+    if (i > 0) words = words.slice(0, i);
+    else if (words.length > 4) words = words.slice(0, 2);
+  } else if (!(isWestern(main) || isOtherWestern(main))) {
+    // A second part joined by "ve" (long enough to be a second subject).
+    const v = words.findIndex((w, k) => k >= 2 && /^(ve|ile)$/i.test(w) && words.length - k - 1 >= 3 && !words.slice(0, k).join(" ").includes(","));
+    if (v > 0) words = words.slice(0, v);
+    // A closing range: "… İznik’ten II. Vatikan’a".
+    const last = words[words.length - 1] ?? "";
+    if (/[’'](y)?[ae]$/.test(last) || /[^aeıioöuü][ae]$/.test(last)) {
+      const from = words.findIndex((w, k) => k >= 2 && /[’'](d|t)[ae]n$/.test(w));
+      if (from > 0) words = words.slice(0, from);
+    }
+    // A leading scope ("İslam Ceza Hukukunda") drops from a long title.
+    if (words.length > 4) {
+      const a = words.findIndex((w, k) => k <= 3 && k < words.length - 2 && isScope(w));
+      if (a >= 0 && !words.slice(0, a).some((w) => /[’'](d|t)[ae]n$|[’'](y)?[ae]$/.test(w))) words = words.slice(a + 1);
+    }
+    // A closing postposition ("Tasavvuf Üzerine") is about what precedes it.
+    while (words.length > 2 && POSTPOSITIONS.has(lower(words[words.length - 1]!))) words = words.slice(0, -1);
+  } else if (words.length > 10) {
+    words = words.slice(0, 6);
   }
-  // Up to three words that carry meaning ("The Venture of Islam", "Geleneksel ve Çağdaş Yorumlarla").
-  let content = 0;
-  const kept: string[] = [];
-  for (const w of cut) {
-    if (content === 3) break;
-    kept.push(w);
-    if (!CUT.has(lower(w)) && !SMALL.has(w.toLowerCase())) content++;
-  }
-  cut = kept;
-  while (cut.length > 1 && CUT.has(lower(cut[cut.length - 1]!))) cut = cut.slice(0, -1);
-  const short = cut.join(" ").replace(/[,;]$/, "");
-  return short && short !== title.trim() ? short : null;
+  while (words.length > 1 && (CUT.has(lower(words[words.length - 1]!)) || /^(ve|ile)$/i.test(words[words.length - 1]!))) words = words.slice(0, -1);
+  const short = words.join(" ").replace(/[,;:]$/, "");
+  return short && short !== full ? short : null;
+}
+
+// ---------------------------------------------------------------- lost Turkish letters
+
+/**
+ * Words whose Turkish letters were lost on the way ("Erdogan Universitesi").
+ * Only unambiguous words: "dini" (dinî / onun dini) or "ayin" are not here.
+ */
+const TR_WORDS = `Üniversitesi Üniversite Üniversiteleri Fakültesi Fakülte Enstitüsü Yüksekokulu Müdürlüğü Başkanlığı Bakanlığı Bakanlık Vakfı Vakıf Vakıflar Derneği Şirketi Kütüphanesi Kütüphane Yayınları Yayınevi Yayıncılık Yayın Neşriyat Neşriyatı Matbaası Basımevi Kitabevi Araştırma Araştırmaları Araştırmalar Merkezi Bölümü Anabilim Dalı Eğitim Eğitimi Öğretim Öğretimi Öğrenci Öğretmen Sağlık Güzel Teknik
+İlahiyat İlâhiyat İslam İslâm İslami İslâmî İslamiyet İnanç İnancı İnançları Esasları Düşünce Düşüncesi Düşüncesinde Düşünürleri Kültür Kültürü Kültürel Türk Türkiye Türkçe Türklerin Osmanlı Osmanlıca Çağdaş Çağ Çağı Günümüz Günümüze Öğreti Öğretisi Özel Üzerine Üzerinde Açısından Bağlamında Işığında Çerçevesinde Hakkında Karşı Karşılaştırmalı Değerlendirme Değerlendirmesi Yaklaşım Yaklaşımı Yaklaşımlar Gelişim Gelişimi Doğuşu Doğu Batı Dünya Dünyası Işık Işığı Sünnet Fıkıh Fıkhı Usulü Mantık Akıl Şiir Şiiri Şair Şairi Çeviri Çevirisi Hazırlayan Seçme Seçmeler Özgürlük Özgürlüğü Hürriyet Hürriyeti Sorunları Çözüm Önerileri Çocuk Kadın Geçmiş Yüzyıl Yüzyılda Yüzyılı Dönem Dönemi Döneminde Şehir Şehri Arşiv Arşivi Kaynakları Kataloğu Sözlük Sözlüğü Sayı Baskı Büyük Küçük Bütün Kısa Dönüşüm Değişim İlişki İlişkiler İlişkileri Uluslararası Bildiriler Kitabı Kitapları Armağan Armağanı Hatıra İçin Göre Arasında Önce Öncesi Sonrası Günü Günleri Tarihçe Ahlâk Ahlak Felsefesi Medeniyeti Medeniyet İktisat İktisadi Siyasî Toplumsal Sosyoloji Psikoloji Bilgisi Bilinç Varlık Gönül İnsan İnsanın Kur’ân Kur’an Kuran’ı Mushaf Âyet Âyetleri Sûre Sûresi Hadîs Hz İSAM Ötüken Peygamber Peygamberin Sahâbe Tâbiîn Müslüman Müslümanlar Müslümanların Ümmet Şerh Şerhi Hâşiye Ta‘lîk Tercüme Tercümesi
+İstanbul İzmir Uludağ Selçuk Çukurova Fırat İnönü Atatürk Erdoğan Mayıs Eylül Yüzüncü Yıl Sütçü Şeyh Çeçen Ağrı Şırnak Bartın Karabük Düzce Uşak Süleyman Muğla Sıtkı Koçman Aydın Balıkesir Çanakkale Kırklareli Namık Nevşehir Hacı Bektaş Niğde Ömer Karamanoğlu Aralık Şanlıurfa Iğdır Çoruh Gaziosmanpaşa Çorum Kırşehir Yıldırım Özal Elazığ Çankırı Gümüşhane Adıyaman Kahramanmaraş Muş Diyarbakır Kırıkkale Eskişehir Kütahya Dumlupınar Tekirdağ Bingöl Yıldız Boğaziçi İzzet Üsküdar Bahçeşehir Özyeğin Koç Sabancı Atılım Başkent Çankaya Haliç Doğuş İbrahim Ankara`;
+
+const TR_FIX = new Map<string, string>();
+for (const w of TR_WORDS.split(/\s+/)) {
+  const key = foldText(w).replace(/ /g, "");
+  if (/[çğıöşüâîûÇĞİÖŞÜÂÎÛ’‘]/.test(w) && !TR_FIX.has(key)) TR_FIX.set(key, w);
+}
+
+/** Text with no Turkish letter at all whose words show they lost them. */
+export function restoreTurkish(text: string): string {
+  if (!text || /[çğıöşüâîûÇĞİÖŞÜÂÎÛ]/.test(text) || /[ḥṣṭẓḳḫġżḍāīūʿ]/.test(text) || isWestern(text) || isOtherWestern(text) || /\b(studies|journal|review|walls|history|law|press|quarterly|bulletin|annals|proceedings|series|world|new|modern|islamic|muslim|university|institute|center|centre|research|thought|religion|religious)\b/i.test(text)) return text;
+  return text.replace(/[A-Za-z]+(?:['’][a-z]+)?/g, (word) => {
+    const fixed = TR_FIX.get(word.toLowerCase().replace(/['’]/g, ""));
+    if (!fixed) return word;
+    if (word === word.toUpperCase() && word.length > 1) return upper(fixed);
+    return /^[A-Z]/.test(word) ? cap(fixed) : lower(fixed);
+  });
 }
