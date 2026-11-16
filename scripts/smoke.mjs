@@ -137,6 +137,18 @@ const FAKE = String.raw`
     },
   };
   window.__makeCC = makeCC;
+  const xmlParts = () => JSON.parse(sessionStorage.getItem("__xml") || "[]");
+  const saveParts = (p) => sessionStorage.setItem("__xml", JSON.stringify(p));
+  Office.context.document.customXmlParts = {
+    addAsync(xml, cb) { const p = xmlParts(); const id = Math.random().toString(36).slice(2); p.push({ id, xml }); saveParts(p); cb({ status: "succeeded", value: {} }); },
+    getByNamespaceAsync(ns, cb) {
+      const found = xmlParts().filter((x) => x.xml.includes(ns)).map((x) => ({
+        getXmlAsync: (c) => c({ status: "succeeded", value: x.xml }),
+        deleteAsync: (c) => { saveParts(xmlParts().filter((y) => y.id !== x.id)); c && c({ status: "succeeded" }); },
+      }));
+      cb({ status: "succeeded", value: found });
+    },
+  };
   window.__select = (cc) => { doc.selected = cc; selHandler && selHandler(); };
   window.__text = () => doc.flow.map((x) => x.cc ? (x.cc.kind === "block" ? "\n[KAYNAKÇA]\n" + x.cc.paras.map(runText).join("\n") + "\n" : "{" + x.cc.text + "}") : x.fn ? "[^" + x.fn.controls.map((c) => c.text).join("") + x.fn.text + "]" : x.text).join("");
   window.__notes = () => doc.flow.filter((x) => x.fn).map((x) => x.fn.controls.map((c) => c.text).join(" | ") + x.fn.text);
@@ -191,6 +203,12 @@ try {
   await page.click("#tab-aktar");
   await page.setInputFiles("#file", { name: "kutuphane.rdf", mimeType: "application/rdf+xml", buffer: RDF });
   await page.waitForSelector("#message:has-text('3 kaynak eklendi, 2 koleksiyon')");
+
+  // 1b. Office's add-in storage is wiped (cache cleared, add-in re-added): the library comes back from the document.
+  await page.waitForFunction(() => (sessionStorage.getItem("__xml") || "").includes("derkenar"), null, { timeout: 10000 });
+  await page.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabase("derkenar"); q.onsuccess = q.onerror = q.onblocked = () => r(); }));
+  await page.reload();
+  await page.waitForSelector("#message:has-text('geri yüklendi (3 kaynak)')", { timeout: 10000 });
 
   // 2. Library: collection tree, editor with roles, İSNAD fix, autosave.
   await page.click("#tab-kutuphane");

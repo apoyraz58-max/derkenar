@@ -82,6 +82,8 @@ export interface DocState {
   notes?: "footnote" | "endnote";
   /** Re-render automatically when citations move, appear or disappear (default on). */
   auto?: boolean;
+  /** Keep a compressed copy of the library in this document (default on). */
+  keepLibrary?: boolean;
   /** Heading put above a new bibliography ("Kaynakça"); empty string: no heading. */
   bibTitle?: string;
 }

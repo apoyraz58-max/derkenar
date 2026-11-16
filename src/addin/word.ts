@@ -4,6 +4,7 @@
  * formatting, is where Word add-ins lose their time.
  */
 import { TAG_BIBLIOGRAPHY, TAG_CITATION, citationIdFromTag, parseState, type FoundCitation } from "../core/docstate.js";
+import { LIBRARY_NS } from "../core/librarycopy.js";
 import type { DocState, Segment } from "../core/types.js";
 
 const SETTING = "derkenar";
@@ -329,5 +330,47 @@ export async function insertPlainText(text: string): Promise<void> {
     let range = context.document.getSelection().insertText(paras[0]!, "Replace");
     for (const p of paras.slice(1)) range = range.insertParagraph(p, "After").getRange("End");
     await context.sync();
+  });
+}
+
+// ---------------------------------------------------------------- library copy in the document
+
+
+type Parts = Office.CustomXmlParts;
+const parts = (): Parts | null => {
+  try {
+    return Office.context.document.customXmlParts ?? null;
+  } catch {
+    return null;
+  }
+};
+
+/** The library copy stored in this document (raw XML), or null. */
+export function readLibraryCopy(): Promise<string | null> {
+  const p = parts();
+  if (!p) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    p.getByNamespaceAsync(LIBRARY_NS, (r) => {
+      const found = r.status === Office.AsyncResultStatus.Succeeded ? r.value : [];
+      if (!found.length) return resolve(null);
+      found[found.length - 1]!.getXmlAsync((x) => resolve(x.status === Office.AsyncResultStatus.Succeeded ? x.value : null));
+    });
+  });
+}
+
+/** Replaces the library copy stored in this document. */
+export function writeLibraryCopy(xml: string): Promise<void> {
+  const p = parts();
+  if (!p) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    p.getByNamespaceAsync(LIBRARY_NS, (r) => {
+      const old = r.status === Office.AsyncResultStatus.Succeeded ? r.value : [];
+      p.addAsync(xml, (added) => {
+        if (added.status !== Office.AsyncResultStatus.Succeeded) return reject(new Error(added.error?.message ?? "Kütüphane belgeye yazılamadı"));
+        let left = old.length;
+        if (!left) return resolve();
+        for (const part of old) part.deleteAsync(() => --left === 0 && resolve());
+      });
+    });
   });
 }

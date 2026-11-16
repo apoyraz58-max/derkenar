@@ -417,3 +417,20 @@ describe("DOI lookup", () => {
     await expect(lookupDoi("10.1/none", (async () => { throw new TypeError("Failed to fetch"); }) as typeof fetch)).rejects.toThrow("ulaşılamadı");
   });
 });
+
+describe("library copy in the document", () => {
+  it("packs, unpacks and merges (newer wins, missing added)", async () => {
+    const { packLibrary, unpackLibrary, mergeLibrary } = await import("../src/core/librarycopy.js");
+    const many = Array.from({ length: 500 }, (_, i) => ({ ...GAZZALI, key: `G${i}`, fields: { ...GAZZALI.fields, title: `Eser ${i}` } }));
+    const xml = packLibrary({ items: many, collections: [{ key: "C", name: "Tez" }], searches: [], tagColors: [] });
+    expect(xml.length).toBeLessThan(40000);
+    const copy = unpackLibrary(xml)!;
+    expect(copy.items).toHaveLength(500);
+    const newer = { ...many[0]!, fields: { ...many[0]!.fields, title: "Yeni" }, dateModified: "2099-01-01T00:00:00Z" };
+    const m = mergeLibrary({ items: [many[1]!], collections: [], searches: [] }, { ...copy, items: [newer, ...copy.items.slice(1)] });
+    expect(m.items).toHaveLength(500);
+    expect(m.added).toBe(499);
+    expect(m.items.find((i) => i.key === "G0")!.fields.title).toBe("Yeni");
+    expect(unpackLibrary("<x/>")).toBeNull();
+  });
+});

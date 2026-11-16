@@ -31,6 +31,10 @@ etiketler, CSL eşlemeleri) ve Zotero'nun da kullandığı CSL işlemcisi citepr
   (Ä±, Ã¼, ý, þ), DOI ve ISBN hataları, web kaynağında erişim tarihi, tez ve ansiklopedi
   maddesi için gerekli alanlar. Düzeltilebilenler tek tıkla ya da topluca düzeltilir.
 
+**Kütüphane belgeyle taşınır:** kütüphanenin sıkıştırılmış bir kopyası çalışılan Word belgesinde
+saklanır; Office önbelleği silinse, eklenti yeniden eklense ya da başka bilgisayara geçilse de belge
+açılınca kütüphane kendiliğinden geri gelir.
+
 ## Zotero'nun neleri pencerede
 
 | Zotero | Derkenar |

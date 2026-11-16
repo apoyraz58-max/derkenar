@@ -113,6 +113,53 @@ export function libraryChanged(): void {
   S.byKey = new Map(S.items.map((i) => [i.key, i]));
   S.index.reset(S.items.filter((i) => !i.deleted));
   for (const fn of changeListeners) fn();
+  scheduleCopy();
+}
+
+// ---------------------------------------------------------------- library copy in the document
+
+let copyTimer = 0;
+let copyReady = false;
+/** A few seconds after the last change, the document's library copy is refreshed. */
+function scheduleCopy(): void {
+  if (!copyReady || doc().keepLibrary === false) return;
+  window.clearTimeout(copyTimer);
+  copyTimer = window.setTimeout(() => void saveLibraryCopy(), 4000);
+}
+
+export async function saveLibraryCopy(): Promise<void> {
+  try {
+    const { packLibrary } = await import("../../core/librarycopy.js");
+    await word.writeLibraryCopy(packLibrary({ items: S.items, collections: S.collections, searches: S.searches, tagColors: S.tagColors }));
+  } catch (e) {
+    console.warn("Kütüphane belgeye yazılamadı", e);
+  }
+}
+
+/**
+ * Brings back what the document's copy has and this computer's storage lacks
+ * (cleared cache, re-added add-in, another computer). Returns a message or "".
+ */
+async function restoreFromDocument(): Promise<string> {
+  const xml = await word.readLibraryCopy().catch(() => null);
+  if (!xml) return "";
+  const { unpackLibrary, mergeLibrary } = await import("../../core/librarycopy.js");
+  const copy = unpackLibrary(xml);
+  if (!copy) return "";
+  const merged = mergeLibrary({ items: S.items, collections: S.collections, searches: S.searches }, copy);
+  if (!merged.added && !merged.updated && merged.collections.length === S.collections.length && merged.searches.length === S.searches.length) return "";
+  const wasEmpty = S.items.length === 0;
+  await store.write("items", merged.items);
+  await store.write("collections", merged.collections);
+  await store.write("searches", merged.searches);
+  S.items = merged.items;
+  S.collections = merged.collections;
+  S.searches = merged.searches;
+  if (!S.tagColors.length && copy.tagColors?.length) {
+    S.tagColors = copy.tagColors;
+    await store.setMeta("tagColors", S.tagColors);
+  }
+  return wasEmpty ? `Kütüphane bu belgedeki kopyadan geri yüklendi (${merged.items.length} kaynak).` : merged.added ? `Belgedeki kütüphane kopyasından ${merged.added} kaynak eklendi.` : "";
 }
 
 export async function loadLibrary(): Promise<void> {
@@ -121,7 +168,12 @@ export async function loadLibrary(): Promise<void> {
   S.collections = collections;
   S.searches = searches;
   S.tagColors = colors ?? [];
+  const restored = await restoreFromDocument();
+  copyReady = true;
   libraryChanged();
+  if (restored) setMessage(restored, "success");
+  // Ask the browser not to evict the add-in's storage under disk pressure.
+  void navigator.storage?.persist?.().catch(() => undefined);
 }
 
 /**

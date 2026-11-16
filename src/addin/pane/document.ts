@@ -14,7 +14,7 @@ import { htmlToSegments, htmlToText } from "../../core/html.js";
 import { BUILTIN_STYLES } from "../../core/styles.js";
 import { type Item, now } from "../../core/zotero.js";
 import * as word from "../word.js";
-import { $, S, doc, getRenderer, h, putItems, renderSummary, run, serial, setMessage, styleTitle } from "./core.js";
+import { $, S, doc, getRenderer, h, putItems, renderSummary, run, saveLibraryCopy, serial, setMessage, styleTitle } from "./core.js";
 
 let order: FoundCitation[] = [];
 let orphans = new Set<string>();
@@ -129,6 +129,7 @@ function renderPrefs(): void {
   $<HTMLSelectElement>("locale").value = d.locale;
   $<HTMLSelectElement>("notes-kind").value = d.notes ?? "footnote";
   $<HTMLInputElement>("auto").checked = d.auto !== false;
+  $<HTMLInputElement>("keep-library").checked = d.keepLibrary !== false;
   $<HTMLInputElement>("bib-title").value = d.bibTitle ?? "Kaynakça";
 }
 
@@ -194,6 +195,13 @@ export function wireDocument(): void {
       doc().notes = $<HTMLSelectElement>("notes-kind").value as "footnote" | "endnote";
       await word.saveState(doc());
       setMessage(doc().notes === "endnote" ? "Yeni atıflar sonnota eklenecek." : "Yeni atıflar dipnota eklenecek.", "success");
+    });
+  $<HTMLInputElement>("keep-library").onchange = () =>
+    void run("Kaydediliyor", async () => {
+      doc().keepLibrary = $<HTMLInputElement>("keep-library").checked;
+      await word.saveState(doc());
+      if (doc().keepLibrary) await saveLibraryCopy();
+      setMessage(doc().keepLibrary ? "Kütüphanenin kopyası bu belgede saklanıyor." : "Kütüphane kopyası artık bu belgeye yazılmayacak (var olan kopya duruyor).", "success");
     });
   $<HTMLInputElement>("auto").onchange = () =>
     void run("Kaydediliyor", async () => {
