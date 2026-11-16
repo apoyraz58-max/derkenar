@@ -9,6 +9,7 @@ import { type Collection, type Item, creatorLine, now, titleOf } from "../../cor
 import { citedKeys } from "./document.js";
 import { getMeta, setMeta } from "../store.js";
 import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMessage } from "./core.js";
+import { openEditor } from "./editor.js";
 import { currentView, inCurrentView } from "./library.js";
 
 
@@ -128,6 +129,7 @@ async function lookup(): Promise<void> {
   if (!lines.length) throw new Error("DOI (10.xxxx/…), ISBN, PMID veya arXiv numarası yazın.");
   const found: Item[] = [];
   const failed: string[] = [];
+  const reasons: string[] = [];
   for (const line of lines) {
     const doi = cleanDoi(line);
     const arxiv = doi ? null : cleanArxiv(line);
@@ -138,16 +140,23 @@ async function lookup(): Promise<void> {
       else if (arxiv) found.push(await lookupArxiv(arxiv));
       else if (pmid) found.push(await lookupPmid(pmid));
       else if (isbn) found.push(await lookupIsbn(isbn));
-      else failed.push(line);
-    } catch {
+      else {
+        failed.push(line);
+        reasons.push(`"${line}" DOI, ISBN, PMID ya da arXiv numarası olarak tanınmadı.`);
+      }
+    } catch (e) {
       failed.push(line);
+      reasons.push(e instanceof Error ? e.message : String(e));
     }
   }
   const v = currentView();
   if (v.kind === "collection") for (const f of found) f.collections = [v.key];
   await putItems(found);
   $<HTMLTextAreaElement>("lookup").value = failed.join("\n");
-  setMessage(`${found.length} kaynak eklendi${found.length === 1 ? `: ${creatorLine(found[0]!)}, ${titleOf(found[0]!)}` : ""}.${failed.length ? ` Bulunamayan: ${failed.length} (kutuda bırakıldı).` : ""}`, failed.length ? "warning" : "success");
+  if (!found.length) throw new Error(reasons.join(" "));
+  setMessage(`${found.length} kaynak eklendi${found.length === 1 ? `: ${creatorLine(found[0]!)}, ${titleOf(found[0]!)}` : ""}.${failed.length ? ` Eklenemeyen ${failed.length} satır kutuda bırakıldı: ${reasons.join(" ")}` : ""}`, failed.length ? "warning" : "success");
+  // One work found: open it, so it can be checked and completed at once.
+  if (found.length === 1) openEditor(found[0]!.key);
 }
 
 function exportScope(): Item[] {

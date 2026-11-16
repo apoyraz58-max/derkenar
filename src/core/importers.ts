@@ -227,12 +227,69 @@ export function cleanIsbn(text: string): string | null {
   return digits.length === 10 || digits.length === 13 ? digits : null;
 }
 
+/** CSL types other services use for the same thing ("monograph", "book-chapter" …). */
+const CSL_TYPE_ALIASES: Record<string, string> = {
+  monograph: "book",
+  "edited-book": "book",
+  "reference-book": "book",
+  "book-set": "book",
+  "book-series": "book",
+  "book-chapter": "chapter",
+  "book-section": "chapter",
+  "book-part": "chapter",
+  "reference-entry": "entry-encyclopedia",
+  "journal-article": "article-journal",
+  "proceedings-article": "paper-conference",
+  dissertation: "thesis",
+  "posted-content": "article",
+  "report-component": "report",
+};
+
+/** Lists where CSL wants text (Crossref sends ISBN, title, container-title as arrays). */
+function flattenCsl(raw: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (Array.isArray(v) && v.every((x) => typeof x === "string")) out[k] = k === "ISBN" || k === "ISSN" ? [...new Set(v)].join(", ") : v[0];
+    else out[k] = v;
+  }
+  const type = String(out.type ?? "");
+  if (CSL_TYPE_ALIASES[type]) out.type = CSL_TYPE_ALIASES[type];
+  return out;
+}
+
+/**
+ * DOI → item. DOIs are registered by several agencies: Crossref (most
+ * journals, DergiPark), DataCite (many books, theses, datasets), mEDRA and
+ * others. Crossref is asked first, then doi.org's content negotiation (which
+ * answers for every agency), then DataCite directly.
+ */
 export async function lookupDoi(doi: string, fetchFn: Fetch = fetch): Promise<Item> {
-  const r = await fetchFn(`https://api.crossref.org/works/${encodeURIComponent(doi)}/transform/application/vnd.citationstyles.csl+json`);
-  if (!r.ok) throw new Error(`DOI bulunamadı (${doi}).`);
-  const csl = tidy((await r.json()) as Record<string, unknown>);
-  for (const k of ["reference", "license", "link", "funder", "assertion", "indexed", "deposited", "content-domain", "created", "member", "prefix", "score", "source", "references-count", "is-referenced-by-count", "relation", "subject", "update-policy", "published", "published-print", "published-online", "journal-issue"]) delete csl[k];
-  return fromCsl(csl, "doi");
+  const csl = "application/vnd.citationstyles.csl+json";
+  const tries: [string, RequestInit | undefined][] = [
+    [`https://api.crossref.org/works/${encodeURIComponent(doi)}/transform/${csl}`, undefined],
+    [`https://doi.org/${encodeURI(doi)}`, { headers: { Accept: csl } }],
+    [`https://api.datacite.org/dois/${csl}/${encodeURIComponent(doi)}`, undefined],
+  ];
+  let reached = false;
+  for (const [url, init] of tries) {
+    try {
+      const r = await fetchFn(url, init);
+      reached = true;
+      if (!r.ok) continue;
+      const data = (await r.json()) as Record<string, unknown>;
+      if (!data || typeof data !== "object" || (!data.title && !data.type)) continue;
+      const item = tidy(flattenCsl(data));
+      for (const k of ["reference", "license", "link", "funder", "assertion", "indexed", "deposited", "content-domain", "created", "member", "prefix", "score", "source", "references-count", "is-referenced-by-count", "relation", "subject", "update-policy", "published", "published-print", "published-online", "journal-issue", "original-title", "short-title", "alternative-id", "isbn-type", "issn-type", "id"]) delete item[k];
+      item.type ??= "document";
+      const result = fromCsl({ ...item, id: "" }, "doi");
+      result.fields.DOI ||= doi;
+      if (!result.fields.title) continue;
+      return result;
+    } catch {
+      /* next service */
+    }
+  }
+  throw new Error(reached ? `DOI hiçbir kayıt kuruluşunda bulunamadı (${doi}). Numarayı denetleyin; kitabın DOI'si yoksa ISBN ile deneyin.` : `DOI servislerine ulaşılamadı (${doi}): internet bağlantısını denetleyin.`);
 }
 
 /** ISBN: Open Library first, Google Books when Open Library does not know the book (common for Turkish books). */

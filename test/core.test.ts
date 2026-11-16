@@ -396,3 +396,24 @@ describe("0.3: Zotero features", () => {
     expect(sentenceCaseTitle("KELÂM İLMİ: GİRİŞ")).toBe("Kelâm ilmi: Giriş");
   });
 });
+
+describe("DOI lookup", () => {
+  it("falls back from Crossref to doi.org and flattens Crossref lists", async () => {
+    const { lookupDoi } = await import("../src/core/importers.js");
+    const urls: string[] = [];
+    const fake = (async (url: string) => {
+      urls.push(url);
+      if (url.includes("crossref")) return new Response("Resource not found.", { status: 404 });
+      return new Response(JSON.stringify({ type: "monograph", title: ["Osmanlı Düşünce Tarihi"], author: [{ family: "Kara", given: "İsmail" }], publisher: "Dergâh", "publisher-place": "İstanbul", ISBN: ["9789759951234", "9789759951234"], issued: { "date-parts": [[2015]] }, DOI: "10.5000/abc" }));
+    }) as typeof fetch;
+    const item = await lookupDoi("10.5000/abc", fake);
+    expect(urls.length).toBe(2);
+    expect(item.itemType).toBe("book");
+    expect(item.fields).toMatchObject({ title: "Osmanlı Düşünce Tarihi", publisher: "Dergâh", place: "İstanbul", ISBN: "9789759951234", date: "2015", DOI: "10.5000/abc" });
+  });
+  it("says why it failed", async () => {
+    const { lookupDoi } = await import("../src/core/importers.js");
+    await expect(lookupDoi("10.1/none", (async () => new Response("", { status: 404 })) as typeof fetch)).rejects.toThrow("hiçbir kayıt kuruluşunda");
+    await expect(lookupDoi("10.1/none", (async () => { throw new TypeError("Failed to fetch"); }) as typeof fetch)).rejects.toThrow("ulaşılamadı");
+  });
+});
