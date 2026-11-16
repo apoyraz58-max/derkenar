@@ -343,6 +343,78 @@ export async function deleteCitation(id: string): Promise<"note" | "citation" | 
   });
 }
 
+/**
+ * Switching between İSNAD dipnotlu and metin içi moves the citations:
+ * to text — a footnote holding only a citation is replaced by the citation at
+ * the note mark; to notes — each citation in the text goes into a new
+ * footnote at its place. Notes with the user's own words stay as they are.
+ */
+export async function convertPlacement(toNotes: boolean): Promise<{ moved: number; kept: number }> {
+  if (!footnotesSupported()) return { moved: 0, kept: 0 };
+  return Word.run(async (context) => {
+    let moved = 0;
+    let kept = 0;
+    if (toNotes) {
+      const controls = context.document.body.contentControls;
+      controls.load("items/id,items/tag,items/text,items/title,items/appearance");
+      const notes = context.document.body.footnotes;
+      notes.load("items");
+      await context.sync();
+      const inNotes = new Set<number>();
+      const noteSets = notes.items.map((n) => {
+        const c = n.body.contentControls;
+        c.load("items/id");
+        return c;
+      });
+      await context.sync();
+      for (const c of noteSets) for (const cc of c.items) inNotes.add(cc.id);
+      for (const cc of controls.items) {
+        if (!citationIdFromTag(cc.tag) || inNotes.has(cc.id)) continue;
+        const note = cc.getRange("End").insertFootnote("");
+        const nc = note.body.getRange("End").insertText(cc.text || "…", "End").insertContentControl();
+        nc.tag = cc.tag;
+        nc.title = "Atıf";
+        nc.appearance = "Hidden";
+        cc.delete(false);
+        moved++;
+      }
+      await context.sync();
+      return { moved, kept };
+    }
+    const sets = [context.document.body.footnotes, context.document.body.endnotes];
+    for (const n of sets) n.load("items");
+    await context.sync();
+    const checks = sets.flatMap((set) =>
+      set.items.map((n) => {
+        const ccs = n.body.contentControls;
+        ccs.load("items/tag,items/text");
+        n.body.load("text");
+        return { n, ccs };
+      }),
+    );
+    await context.sync();
+    for (const { n, ccs } of checks) {
+      const mine = ccs.items.filter((cc) => citationIdFromTag(cc.tag));
+      if (!mine.length) continue;
+      const rest = mine.reduce((t, cc) => t.replace(cc.text, ""), n.body.text).replace(/[\s;\u200b\u0002]+/g, "");
+      if (mine.length !== 1 || rest) {
+        kept++;
+        continue;
+      }
+      const cc = mine[0]!;
+      const r = n.reference.insertText(` ${cc.text}`, "After");
+      const nc = r.insertContentControl();
+      nc.tag = cc.tag;
+      nc.title = "Atıf";
+      nc.appearance = "Hidden";
+      n.delete();
+      moved++;
+    }
+    await context.sync();
+    return { moved, kept };
+  });
+}
+
 /** Selects the n-th citation with this id (used by the document list). */
 export async function selectCitation(id: string): Promise<boolean> {
   return Word.run(async (context) => {

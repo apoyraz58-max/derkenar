@@ -58,6 +58,7 @@ Sağ tık → **Derkenar → Atıf ekle**.
   atıf metne eklenir ve otomatik izleme yalnız metindeki atıflarda çalışır.
 - Otomatik güncelleme pencere açıkken çalışır. Pencere kapalıyken yapılan değişiklikler, pencere
   açılınca ilk saniyede düzeltilir.
-- Dipnotlu stilden metin içi stile geçişte mevcut atıflar yerinde kalır.
+- Dipnotlu stilden metin içi stile geçişte yalnız atıf içeren dipnotlar metne taşınır; içinde açıklama da
+  olan dipnotlar yerinde kalır (sayısı bildirilir).
 - Atıf metnini elle değiştirirseniz bir sonraki güncellemede üzerine yazılır.
 - PDF ve ek dosyalar, tarayıcı eklentisi, zotero.org'a geri yazma yok.

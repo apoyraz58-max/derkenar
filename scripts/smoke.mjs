@@ -44,6 +44,12 @@ const FAKE = String.raw`
       getRange(loc) { return {
         select() { doc.selected = null; const i = doc.flow.findIndex((x) => x.cc === cc || (x.fn && x.fn.controls.includes(cc))); doc.cursor = i + 1; },
         compareLocationWith() { return { value: "Before" }; },
+        insertFootnote() {
+          const fn = { controls: [], text: "" };
+          const i = doc.flow.findIndex((x) => x.cc === cc);
+          doc.flow.splice(i + 1, 0, { fn });
+          return { body: { getRange() { return { insertText(t) { return { insertContentControl() { const n = makeCC("inline"); n.runs = [{ text: t, font: {} }]; fn.controls.push(n); return n; } }; } }; } } };
+        },
         expandTo() { return { text: doc.noteGap ?? "", load() { return this; } }; },
       }; },
       select() { doc.selected = cc; },
@@ -52,6 +58,11 @@ const FAKE = String.raw`
       insertParagraph(t, where) { cc.paras.push(t ? [{ text: t, font: {} }] : []); return para(cc, cc.paras.length - 1); },
       delete(keep) {
         cc.deleted = true;
+        if (keep === false) {
+          const i = doc.flow.findIndex((x) => x.cc === cc);
+          if (i >= 0) { doc.flow.splice(i, 1); return; }
+          for (const x of doc.flow) if (x.fn) { const j = x.fn.controls.indexOf(cc); if (j >= 0) { x.fn.controls.splice(j, 1); return; } }
+        }
         for (const x of doc.flow) {
           if (x.cc === cc) { x.kind = "text"; x.text = cc.text; delete x.cc; }
           if (x.fn) { const i = x.fn.controls.indexOf(cc); if (i >= 0) { x.fn.controls.splice(i, 1); x.fn.text += cc.text; } }
@@ -125,6 +136,7 @@ const FAKE = String.raw`
         return {
           body: { contentControls: ccs, get text() { return x.fn.controls.map((c) => c.text).join("") + x.fn.text; }, load() { return this; } },
           delete() { doc.flow.splice(doc.flow.indexOf(x), 1); },
+          reference: { insertText(t) { return { insertContentControl() { const n = makeCC("inline"); n.runs = [{ text: t, font: {} }]; doc.flow.splice(doc.flow.indexOf(x), 0, { cc: n }); return n; } }; } },
         };
       }));
     },
@@ -439,7 +451,20 @@ try {
   if (stored.style !== "isnad-dipnotlu" || !stored.items[Object.keys(stored.items)[0]].itemType) fail("document state");
   if (!(await page.evaluate(() => window.__doc.settings["Office.AutoShowTaskpaneWithDocument"]))) fail("auto-open not set");
 
+  // 9. İSNAD dipnotlu → metin içi: citations alone in a footnote move into the text; back again.
   await page.click("#tab-belge");
+  const notesBefore = (await notes()).length;
+  const lone = await page.evaluate(() => window.__doc.flow.filter((x) => x.fn && x.fn.controls.length === 1 && !x.fn.text.trim()).length);
+  await page.selectOption("#style", "isnad-metinici");
+  await page.waitForSelector("#message:has-text('dipnottan metne taşındı')");
+  if ((await notes()).length !== notesBefore - lone) fail(`to text: ${notesBefore} → ${(await notes()).length}, lone ${lone}`);
+  const inline = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).map((x) => x.cc.text));
+  if (!inline.length || !inline.every((t) => /^\(.+\)$/.test(t))) fail(`in-text citations: ${JSON.stringify(inline)}`);
+  await page.selectOption("#style", "isnad-dipnotlu");
+  await page.waitForSelector("#message:has-text('dipnota taşındı')");
+  if ((await notes()).length !== notesBefore) fail(`back to notes: ${(await notes()).length} vs ${notesBefore}`);
+  if (!(await notes()).some((n) => n.startsWith("Ebû Hâmid") || n.startsWith("Ahmet Yılmaz"))) fail("notes not re-rendered");
+
   await page.click("#unlink");
   await page.click("#unlink");
   await page.waitForSelector("#message:has-text('düz metne çevrildi')");

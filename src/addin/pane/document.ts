@@ -140,12 +140,15 @@ async function changeStyle(id: string): Promise<void> {
   d.rendered = {};
   const after = await getRenderer();
   renderSummary();
+  // Dipnotlu ↔ metin içi: the citations move with the style.
+  let note = "";
+  if (before.meta.note !== after.meta.note) {
+    const r = await serial(() => word.convertPlacement(after.meta.note));
+    if (r.moved) note += after.meta.note ? ` ${r.moved} atıf dipnota taşındı.` : ` ${r.moved} atıf dipnottan metne taşındı.`;
+    if (r.kept) note += ` İçinde açıklama da olan ${r.kept} dipnot yerinde bırakıldı; onları elle düzenleyin.`;
+  }
   await refresh(true, true);
-  const moved = before.meta.note !== after.meta.note && order.length;
-  setMessage(
-    `Stil: ${styleTitle(id)}.${moved ? (after.meta.note ? " Metindeki atıflar metinde kaldı; yeni atıflar dipnota girer." : " Dipnottaki atıflar dipnotta kaldı; yeni atıflar metne girer.") : ""}`,
-    moved ? "warning" : "success",
-  );
+  setMessage(`Stil: ${styleTitle(id)}.${note}${note ? " Geri almak için Word'de Geri Al." : ""}`, note.includes("yerinde bırakıldı") ? "warning" : "success");
 }
 
 export async function bibliography(): Promise<void> {
