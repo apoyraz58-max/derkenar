@@ -159,7 +159,8 @@
                   </group>
                 </if>
                 <else>
-                  <names variable="editor collection-editor editorial-director director reviewed-author original-author director">
+                  <!-- Derkenar: "director" was listed twice (haz. printed twice) -->
+                  <names variable="editor collection-editor editorial-director reviewed-author original-author director">
                     <label form="verb-short" text-case="lowercase" suffix=" "/>
                     <name/>
                   </names>

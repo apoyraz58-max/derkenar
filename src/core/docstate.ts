@@ -84,7 +84,8 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
       continue;
     }
     seen.add(f.id);
-    ordered.push({ id: f.id, items: renderer.meta.note ? withSameAuthor(c.items, state.items) : c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
+    // a.mlf. in footnotes and in in-text citations alike (guide s. 65 and s. 139).
+    ordered.push({ id: f.id, items: withSameAuthor(c.items, state.items), noteIndex: renderer.meta.note ? f.noteIndex : 0 });
   }
   renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items))));
   const html = renderer.renderCitations(ordered);

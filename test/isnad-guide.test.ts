@@ -295,3 +295,31 @@ describe("İSNAD 2 kılavuzu: türler", () => {
     expect(plan.bibliography!.entries).toHaveLength(1);
   });
 });
+
+describe("İSNAD 2 kılavuzu: metin içi (s. 139-)", () => {
+  const mi = (item: Item, locator?: string) => {
+    const r = new Renderer(readFileSync(new URL("isnad-metinici.csl", styles), "utf8"), locales);
+    const st = emptyState("isnad-metinici");
+    putCitation(st, "a", [{ id: item.key, ...(locator ? { locator } : {}) }], { [item.key]: item });
+    const p = planRefresh(st, [{ id: "a", noteIndex: 0, text: "" }], r);
+    return { cite: htmlToText(p.updates.get("a")!), bib: htmlToText(p.bibliography!.entries[0]!.html) };
+  };
+  it("kitap-tek yazarlı (s. 141)", () => {
+    const item = { ...work("Geschichte des arabischen"), fields: { ...work("Geschichte des arabischen").fields, volume: "" } };
+    expect(mi(item).cite).toBe("(Sezgin, 1967-2015)");
+    expect(mi(item, "17/19-23").cite).toBe("(Sezgin, 1967-2015, 17/19-23)");
+  });
+  it("kitap bölümü: hazırlayan bir kez (s. 150)", () => {
+    const r = mi(work("Mâtürîdîliğin Ortaya Çıkışı"));
+    expect(r.bib).toBe("Rudolph, Ulrich. “Mâtürîdîliğin Ortaya Çıkışı”. çev. Ali Dere. İmam Mâturîdî ve Mâturidilik. haz. Sönmez Kutlu. 295-304. Ankara: Kitâbiyât Yayınları, 2003.");
+  });
+  it("a.mlf. metin içinde de (s. 139)", () => {
+    const mk = (key: string, title: string, date: string): Item => ({ ...items[0]!, key, itemType: "book", fields: { title, place: "Ankara", publisher: "TDV", date }, creators: [{ creatorType: "author", lastName: "Kutlu", firstName: "Sönmez" }], notes: [], tags: [], collections: [], relations: [] });
+    const a = mk("AAAA2345", "Türklerin İslâmlaşma Sürecinde Mürcie", "2010");
+    const b = mk("BBBB2345", "İlk Mürciî Metinler", "1997");
+    const r = new Renderer(readFileSync(new URL("isnad-metinici.csl", styles), "utf8"), locales);
+    const st = emptyState("isnad-metinici");
+    putCitation(st, "x", [{ id: a.key, locator: "56" }, { id: b.key, locator: "317-331" }], { [a.key]: a, [b.key]: b });
+    expect(htmlToText(planRefresh(st, [{ id: "x", noteIndex: 0, text: "" }], r).updates.get("x")!)).toBe("(Kutlu, 2010, 56; a.mlf., 1997, 317-331)");
+  });
+});

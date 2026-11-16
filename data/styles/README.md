@@ -7,3 +7,6 @@ Derkenar change: in locales-tr-TR.xml the day of the text date form is "numeric"
 
 Derkenar change: in isnad-dipnotlu.csl the inventor of a patent with an issuing
 authority is printed in notes (the guide, s. 127, shows "Adem Kaya, …").
+
+Derkenar change: in isnad-metinici.csl a names list carried "director" twice, which
+printed the hazırlayan twice in book chapters; the duplicate is removed.
