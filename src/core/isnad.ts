@@ -89,14 +89,14 @@ interface Need {
 /** What İSNAD expects per item type (by base field). */
 const NEEDS: Record<string, Need[]> = {
   book: [
-    { base: "place", level: "warning", message: "Yayın yeri yok. İSNAD'da bilinmiyorsa \"y.y.\" yazılır.", fill: "y.y." },
-    { base: "publisher", level: "warning", message: "Yayınevi yok. İSNAD'da bilinmiyorsa \"y.y.y.\" yazılır.", fill: "y.y.y." },
+    { base: "place", level: "info", message: "Basım yeri yok; atıfta ve kaynakçada \"b.y.\" yazılacak." },
+    { base: "publisher", level: "info", message: "Yayınevi yok; atıfta ve kaynakçada \"y.y.\" yazılacak." },
   ],
   bookSection: [
     { base: "publicationTitle", level: "error", message: "Bölümün yer aldığı kitabın adı yok." },
     { base: "pages", level: "warning", message: "Bölümün sayfa aralığı yok (kaynakçada gerekir)." },
-    { base: "place", level: "warning", message: "Yayın yeri yok (\"y.y.\").", fill: "y.y." },
-    { base: "publisher", level: "warning", message: "Yayınevi yok (\"y.y.y.\").", fill: "y.y.y." },
+    { base: "place", level: "info", message: "Basım yeri yok; \"b.y.\" yazılacak." },
+    { base: "publisher", level: "info", message: "Yayınevi yok; \"y.y.\" yazılacak." },
   ],
   journalArticle: [
     { base: "publicationTitle", level: "error", message: "Derginin adı yok." },
@@ -128,7 +128,7 @@ const NEEDS: Record<string, Need[]> = {
   ],
   conferencePaper: [
     { base: "publicationTitle", level: "warning", message: "Bildiri kitabının adı yok." },
-    { base: "place", level: "warning", message: "Yayın yeri yok (\"y.y.\").", fill: "y.y." },
+    { base: "place", level: "info", message: "Basım yeri yok." },
   ],
   webpage: [
     { base: "url", level: "error", message: "Web adresi (URL) yok." },
@@ -221,6 +221,15 @@ export function checkItem(item: Item): Issue[] {
     }
     if (c.name === undefined && !c.lastName?.trim() && c.firstName?.trim()) add({ code: "name-last", level: "warning", message: `Soyad / şöhret kutusu boş (${c.firstName}).`, creatorIndex: i });
   });
+
+  // İSNAD abbreviations typed into the record: Derkenar writes them itself.
+  for (const [base, abbr] of [["place", ["b.y.", "y.y.", "yy.", "b.y", "y.y"]], ["publisher", ["y.y.", "y.y.y.", "yyy.", "y.y", "y.y.y"]], ["date", ["ts.", "ts", "t.y.", "t.y"]]] as const) {
+    const field = typeField(item.itemType, base);
+    const v = field ? f[field]?.trim().toLocaleLowerCase("tr") : undefined;
+    if (field && v && (abbr as readonly string[]).includes(v)) {
+      add({ code: "abbr-in-field", level: "warning", message: `${fieldLabel(field)} alanına "${f[field]}" yazılmış. Bu alanı boş bırakın; İSNAD kısaltmasını (${base === "place" ? "b.y." : base === "publisher" ? "y.y." : "ts."}) Derkenar kendisi yazar.`, field, fix: { field, value: "" }, fixLabel: "Alanı boşalt" });
+    }
+  }
 
   // Cilt sayısı written into Cilt (a 6-volume work entered as "Cilt: 6").
   const volField = typeField(item.itemType, "volume");

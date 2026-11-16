@@ -13,7 +13,7 @@ import { openEditor } from "./editor.js";
 import { currentView } from "./library.js";
 
 /** Fixes applied by "Önerilen düzeltmeleri uygula"; case changes stay manual. */
-const SAFE = new Set(["encoding", "spaces", "pages", "volume", "issue", "edition", "doi-url", "title-period", "name-comma", "url", "need-place", "need-publisher"]);
+const SAFE = new Set(["encoding", "spaces", "pages", "volume", "issue", "edition", "doi-url", "title-period", "name-comma", "url", "abbr-in-field"]);
 
 let lastItems: Item[] = [];
 let lastIssues: Issue[] = [];

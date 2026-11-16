@@ -35,9 +35,9 @@ let docTimer = 0;
 const LONG = new Set(["title", "abstractNote", "extra", "bookTitle", "publicationTitle", "encyclopediaTitle"]);
 /** Hints for fields İSNAD users fill differently. */
 const HINTS: Record<string, string> = {
-  date: "Yıl, gün.ay.yıl veya hicrî/milâdî: 1413/1993",
-  place: "Bilinmiyorsa y.y.",
-  publisher: "Bilinmiyorsa y.y.y.",
+  date: "Yıl, gün.ay.yıl, hicrî/milâdî (1413/1993); bilinmiyorsa boş (ts. yazılır)",
+  place: "Bilinmiyorsa boş bırakın (b.y. yazılır)",
+  publisher: "Bilinmiyorsa boş bırakın (y.y. yazılır)",
   pages: "45-78",
   volume: "Yalnız bu kaydın cildi; toplam için Cilt Sayısı",
   numberOfVolumes: "Toplam cilt; yalnız kaynakçada çıkar",

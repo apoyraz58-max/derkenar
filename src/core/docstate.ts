@@ -115,6 +115,21 @@ function structuredCloneItem(item: Item): Item {
 /** Types whose Cilt belongs to the container (journal, encyclopedia): never replaced by the citation's cilt. */
 const CONTAINER_VOLUME = new Set(["article-journal", "article-magazine", "article-newspaper", "entry-encyclopedia", "entry-dictionary"]);
 
+/**
+ * İSNAD abbreviations for missing publication data, written at render time
+ * (the record stays empty): basım yeri yok → b.y., yayınevi yok → y.y.
+ * Tarih yok → ts. comes from the style itself.
+ */
+export const ISNAD_MISSING = { place: "b.y.", publisher: "y.y." } as const;
+const NEEDS_IMPRINT = new Set(["book", "chapter", "entry-encyclopedia", "entry-dictionary", "paper-conference"]);
+
+export function fillImprint(csl: CslItem): CslItem {
+  if (!NEEDS_IMPRINT.has(csl.type)) return csl;
+  if (!String(csl["publisher-place"] ?? "").trim()) csl["publisher-place"] = ISNAD_MISSING.place;
+  if (!String(csl.publisher ?? "").trim()) csl.publisher = ISNAD_MISSING.publisher;
+  return csl;
+}
+
 /** Works cited somewhere with a cilt of their own ("1/80"). */
 export function volumesCited(refs: readonly CiteRef[]): Set<string> {
   return new Set(refs.filter((r) => r.volume?.trim()).map((r) => r.id));
@@ -133,7 +148,7 @@ export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet
       if (csl["number-of-volumes"] === undefined) csl["number-of-volumes"] = csl.volume;
       delete csl.volume;
     }
-    out[k] = csl;
+    out[k] = fillImprint(csl);
   }
   return out;
 }

@@ -23,7 +23,9 @@ etiketler, CSL eşlemeleri) ve Zotero'nun da kullandığı CSL işlemcisi citepr
   rol olarak alınır. Dışa aktarırken Zotero'nun okuyacağı biçimde geri yazılır.
 - **İSNAD biçimleri:** cilt/sayfa (1/45), varak (vr. 12b), hicrî/milâdî tarih (1413/1993),
   tarih yoksa ts., yazma eserler (kütüphane, koleksiyon, demirbaş no).
-- **İSNAD yazım denetimi:** eksik yayın yeri ve yayınevi (y.y. / y.y.y.), tamamen büyük harfle
+- **İSNAD kısaltmaları kendiliğinden:** basım yeri yoksa b.y., yayınevi yoksa y.y., tarih yoksa ts.
+  atıfta ve kaynakçada otomatik yazılır; kayıt boş kalır (Zotero'ya temiz döner).
+- **İSNAD yazım denetimi:** alana elle yazılmış kısaltmalar, cilt sayısının Cilt alanına yazılması, tamamen büyük harfle
   yazılmış başlık ve adlar, sonda nokta, sayfa aralığında uzun tire ya da "s.", cilt ve sayı
   alanına yazılmış "C." ve "S.", baskı alanında "2. Baskı", bozuk Türkçe karakterler
   (Ä±, Ã¼, ý, þ), DOI ve ISBN hataları, web kaynağında erişim tarihi, tez ve ansiklopedi

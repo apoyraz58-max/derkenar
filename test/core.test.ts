@@ -135,6 +135,17 @@ describe("İSNAD rendering", () => {
     expect(htmlToText(plan.updates.get("m")!)).toMatch(/1997\), 1\/80-81\.$/);
     expect(htmlToText(plan.bibliography!.entries[0]!.html)).toContain("6 Cilt");
   });
+  it("missing imprint: b.y., y.y., ts. written automatically, record stays empty", () => {
+    const bare = item("BAR", "book", { title: "Risâle" }, [{ creatorType: "author", lastName: "Yazar", firstName: "Ali" }]);
+    const st = emptyState();
+    putCitation(st, "x", [{ id: "BAR", locator: "5" }], { BAR: bare });
+    const plan = planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], isnad());
+    expect(htmlToText(plan.updates.get("x")!)).toBe("Ali Yazar, Risâle (b.y.: y.y., ts.), 5.");
+    expect(htmlToText(plan.bibliography!.entries[0]!.html)).toBe("Yazar, Ali. Risâle. b.y.: y.y., ts.");
+    expect(st.items.BAR!.fields.place).toBeUndefined();
+    const typed = checkItem(item("T", "book", { title: "A", place: "y.y.", publisher: "y.y.y." }));
+    expect(typed.filter((i) => i.code === "abbr-in-field").map((i) => i.field)).toEqual(["place", "publisher"]);
+  });
   it("signature changes only when order changes", () => {
     expect(signature([{ id: "a", noteIndex: 1 }, { id: "b", noteIndex: 2 }])).not.toBe(signature([{ id: "b", noteIndex: 1 }, { id: "a", noteIndex: 2 }]));
   });
@@ -191,11 +202,11 @@ describe("İSNAD denetimi", () => {
     const bad = item("B", "book", { title: "İHYÂÜ ULÛMİ'D-DÎN.", edition: "2. Baskı", volume: "C. 3" }, [{ creatorType: "author", lastName: "GAZZÂLÎ, EBÛ HÂMİD" }]);
     const issues = checkItem(bad);
     const codes = issues.map((i) => i.code);
-    expect(codes).toEqual(expect.arrayContaining(["need-place", "need-publisher", "caps", "title-period", "edition", "volume", "name-caps", "name-comma"]));
+    expect(codes).toEqual(expect.arrayContaining(["caps", "title-period", "edition", "volume", "name-caps", "name-comma"]));
     let fixed = bad;
     for (const i of issues) if (i.fix && i.code !== "title-period") fixed = applyFix(fixed, i.fix);
-    expect(fixed.fields.place).toBe("y.y.");
-    expect(fixed.fields.publisher).toBe("y.y.y.");
+    expect(issues.find((i) => i.code === "need-place")!.message).toContain("b.y.");
+    expect(issues.find((i) => i.code === "need-publisher")!.message).toContain("y.y.");
     expect(fixed.fields.edition).toBe("2");
     expect(fixed.fields.volume).toBe("3");
   });

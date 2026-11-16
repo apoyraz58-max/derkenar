@@ -175,7 +175,6 @@ try {
   const roles = await page.locator("#ed-fields .creator select").evaluateAll((els) => els.map((e) => e.value));
   if (JSON.stringify(roles) !== JSON.stringify(["author", "muhakkik", "nasir"])) fail(`roles: ${roles}`);
   if (!(await page.textContent("#ed-notes textarea")).includes("Önemli nüsha") && (await page.inputValue("#ed-notes textarea")) !== "Önemli nüsha") fail("note missing");
-  if (!(await page.textContent("#ed-issues")).includes("y.y.") === false) {} // place exists: no y.y. warning expected
   // Add a hazırlayan and a date, save by typing.
   await page.click("#ed-fields button:has-text('+ Kişi ekle')");
   await page.locator("#ed-fields .creator select").last().selectOption("hazirlayan");
