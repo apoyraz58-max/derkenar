@@ -329,13 +329,27 @@ function cslName(c: Creator): CslName {
   return { family: c.lastName ?? "", given: c.firstName };
 }
 
-function cslNameVar(creatorType: string): string {
+/**
+ * Zotero prints the item type's primary creator (inventor of a patent,
+ * programmer of software, artist, cartographer, director of a film…) as the
+ * CSL author; the schema's name map lists only the shared roles.
+ */
+function cslNameVar(creatorType: string, itemType?: string): string {
   if (creatorType.startsWith("csl:")) return creatorType.slice(4);
-  return ISNAD_ROLES[creatorType]?.csl ?? schema.csl.names[creatorType] ?? "contributor";
+  if (ISNAD_ROLES[creatorType]) return ISNAD_ROLES[creatorType]!.csl;
+  if (itemType && typeIndex.get(itemType)?.creatorTypes[0] === creatorType) return "author";
+  return schema.csl.names[creatorType] ?? "contributor";
 }
 
+/**
+ * CSL types the İSNAD style was written for (its header: "Software → book
+ * with version number"), where newer Zotero versions send another type.
+ */
+const ISNAD_CSL_TYPE: Record<string, string> = { software: "book" };
+
 export function toCsl(item: Item): CslItem {
-  const csl: CslItem = { id: item.key, type: cslTypeOf.get(item.itemType) ?? "document" };
+  const baseType = cslTypeOf.get(item.itemType) ?? "document";
+  const csl: CslItem = { id: item.key, type: ISNAD_CSL_TYPE[baseType] ?? baseType };
   for (const [field, value] of Object.entries(item.fields)) {
     if (!value || field === "extra") continue;
     const base = baseField(item.itemType, field);
@@ -349,7 +363,7 @@ export function toCsl(item: Item): CslItem {
   }
   const extra = parseExtra(item.fields.extra);
   for (const c of [...item.creators, ...extra.creators]) {
-    const v = cslNameVar(c.creatorType);
+    const v = cslNameVar(c.creatorType, item.itemType);
     ((csl[v] as CslName[] | undefined) ?? (csl[v] = [] as CslName[]) as CslName[]).push(cslName(c));
   }
   for (const [k, v] of Object.entries(extra.csl)) {

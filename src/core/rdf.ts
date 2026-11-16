@@ -220,7 +220,14 @@ export function parseZoteroRdf(xml: string, source: string): RdfResult {
     for (const c of children(n)) {
       const simple = SIMPLE.find(([ns, name]) => is(c, ns, name));
       if (simple) {
-        setBase(item, simple[2], text(c), extra);
+        // Zotero writes a program's version as prism:edition.
+        const base = simple[2] === "edition" && !typeField(itemType, "edition") && typeField(itemType, "versionNumber") ? "versionNumber" : simple[2];
+        setBase(item, base, text(c), extra);
+        continue;
+      }
+      // Any other z:field Zotero exports under its own name (issuingAuthority, legalStatus, programmingLanguage…).
+      if (c.namespaceURI === NS.z && !children(c).length && typeField(itemType, local(c))) {
+        setBase(item, local(c), text(c), extra);
         continue;
       }
       const ct = creatorTypeFromElement(c);
