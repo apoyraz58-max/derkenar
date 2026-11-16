@@ -10,3 +10,6 @@ authority is printed in notes (the guide, s. 127, shows "Adem Kaya, …").
 
 Derkenar change: in isnad-metinici.csl a names list carried "director" twice, which
 printed the hazırlayan twice in book chapters; the duplicate is removed.
+
+Derkenar change: in isnad-dipnotlu.csl the bibliography writes e-mail and text message
+details without parentheses ("…hk. E-Posta 2 Eylül 2019, Alıcı Emrah Kaya.", guide s. 136-137).

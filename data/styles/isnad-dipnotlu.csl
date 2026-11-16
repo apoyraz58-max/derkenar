@@ -862,7 +862,7 @@
         <text macro="locators"/>
       </if>
     </choose>
-    <text macro="locators-multimedia-with-space"/>
+    <text macro="locators-multimedia-with-space-bib"/>
   </macro>
   <macro name="locators-join-with-comma">
     <choose>
@@ -1666,6 +1666,20 @@
         <group prefix="(" suffix=")">
           <text macro="recipient"/>
         </group>
+      </else-if>
+    </choose>
+  </macro>
+  <!-- Derkenar: in the bibliography e-mail and text message details are not in parentheses (guide s. 136-137) -->
+  <macro name="locators-multimedia-with-space-bib">
+    <choose>
+      <if type="motion_picture" variable="genre">
+        <group delimiter=", " prefix="(" suffix=")">
+          <text variable="genre" text-case="capitalize-first"/>
+          <date variable="issued" form="text"/>
+        </group>
+      </if>
+      <else-if type="personal_communication">
+        <text macro="recipient"/>
       </else-if>
     </choose>
   </macro>

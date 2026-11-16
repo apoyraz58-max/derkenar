@@ -96,6 +96,7 @@ export const ISNAD_ROLES: Record<string, { label: string; csl: string; extra: st
   hazirlayan: { label: "Hazırlayan (haz.)", csl: "director", extra: ["hazirlayan", "hazırlayan", "haz"] },
   sadelestiren: { label: "Sadeleştiren (sad.)", csl: "reviewed-author", extra: ["sadelestiren", "sadeleştiren", "sad"] },
   muellif: { label: "Müellif (mlf.) — neşredilen eserin yazarı", csl: "original-author", extra: ["muellif", "müellif", "mlf"] },
+  turkceye: { label: "Türkçeye çeviren (çeviriden çeviri)", csl: "translator", extra: ["turkceye", "türkçeye", "türkçeye-çev"] },
 };
 
 /** Zotero creator types that the İSNAD style already prints as an İSNAD role. */
@@ -260,7 +261,8 @@ const CSL_NAME_VARS = new Set([...Object.values(schema.csl.names), ...Object.val
 const CSL_TEXT_VARS = new Set([...Object.keys(schema.csl.fields.text), ...Object.keys(schema.csl.fields.date), "type", "original-title", "original-publisher", "original-publisher-place", "event-date", "medium", "status"]);
 const ROLE_BY_EXTRA = new Map<string, string>();
 for (const [role, r] of Object.entries(ISNAD_ROLES)) {
-  ROLE_BY_EXTRA.set(r.csl, role);
+  // "translator" stays Zotero's own translator; only the Turkish names read as "turkceye".
+  if (r.csl !== "translator") ROLE_BY_EXTRA.set(r.csl, role);
   for (const e of r.extra) ROLE_BY_EXTRA.set(e, role);
 }
 const CREATOR_BY_CSL = new Map<string, string>();
@@ -365,11 +367,29 @@ export function isAcronymOf(abbr: string, full: string): boolean {
   return match(0, 0);
 }
 
+const EN_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/**
+ * İSNAD writes a publication date in the language of the source ("15 June
+ * 2017" for an English document, guide s. 121); the access date stays
+ * Turkish. A date typed with English month names, or any date of a source
+ * whose language is English, is kept/written in English.
+ */
+function sourceLanguageDate(d: CslDate, text: string, language: string | undefined): CslDate {
+  // Whole words only: "Mayıs" is not "May".
+  const englishText = /(?<!\p{L})(january|february|march|april|may|june|july|august|september|october|november|december)(?!\p{L})/iu.test(text);
+  const english = englishText || /^(en|eng|english|ingilizce|İngilizce)\b/i.test((language ?? "").trim());
+  const p = d["date-parts"]?.[0];
+  if (!english || !p || p.length < 2) return d;
+  const [y, m, day] = p.map(Number);
+  return { literal: [day, EN_MONTHS[(m ?? 1) - 1], y].filter((x) => x !== undefined && x !== 0).join(" ") };
+}
+
 /**
  * CSL types the İSNAD style was written for (its header: "Software → book
  * with version number"), where newer Zotero versions send another type.
  */
-const ISNAD_CSL_TYPE: Record<string, string> = { software: "book" };
+const ISNAD_CSL_TYPE: Record<string, string> = { software: "book", document: "article" };
 
 export function toCsl(item: Item): CslItem {
   const baseType = cslTypeOf.get(item.itemType) ?? "document";
@@ -380,13 +400,22 @@ export function toCsl(item: Item): CslItem {
     const dateVar = cslDateVarOf.get(base);
     if (dateVar) {
       const d = parseDate(value);
-      if (d) csl[dateVar] = d;
+      if (d) csl[dateVar] = dateVar === "issued" ? sourceLanguageDate(d, value, item.fields.language) : d;
       continue;
     }
     for (const v of cslTextVarsOf.get(base) ?? []) csl[v] = value;
   }
   const extra = parseExtra(item.fields.extra);
-  for (const c of [...item.creators, ...extra.creators]) {
+  // Translation of a translation: "çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk" (guide s. 79).
+  const all = [...item.creators, ...extra.creators];
+  const turkish = all.filter((c) => c.creatorType === "turkceye");
+  const original = all.filter((c) => c.creatorType === "translator");
+  if (turkish.length && original.length) {
+    const join = (list: Creator[]) => list.map(creatorFull).join(" - ");
+    csl.translator = [{ literal: `${join(original)}, Türkçeye çev. ${join(turkish)}` }];
+  }
+  for (const c of all) {
+    if (turkish.length && original.length && (c.creatorType === "turkceye" || c.creatorType === "translator")) continue;
     const v = cslNameVar(c.creatorType, item.itemType);
     ((csl[v] as CslName[] | undefined) ?? (csl[v] = [] as CslName[]) as CslName[]).push(cslName(c));
   }
@@ -400,6 +429,11 @@ export function toCsl(item: Item): CslItem {
   // ("Türk Standardları Enstitüsü (TSE)", guide s. 123), which İSNAD's style prints from "authority".
   const first = item.creators.find((c) => c.creatorType === "author" || cslNameVar(c.creatorType, item.itemType) === "author");
   if (!csl.authority && first?.lastName && first.firstName && isAcronymOf(first.lastName, first.firstName)) csl.authority = first.lastName;
+  // A video's platform (YouTube) is often kept as the place: İSNAD prints it after the title.
+  if (["videoRecording", "film"].includes(item.itemType) && !csl.publisher && csl["publisher-place"]) {
+    csl.publisher = csl["publisher-place"] as string;
+    delete csl["publisher-place"];
+  }
   // Album of a recording (İSNAD: “Parça”, Albüm (Yıl)); Zotero keeps it as the series.
   if (item.itemType === "audioRecording" && !csl["container-title"]) {
     const album = item.fields.seriesTitle ?? extra.csl.seriesText ?? /^seriesText:\s*(.+)$/m.exec(item.fields.extra ?? "")?.[1];

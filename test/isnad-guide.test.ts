@@ -24,7 +24,7 @@ const locales = (l: string) => {
 };
 const { items } = parseZoteroRdf(readFileSync(new URL("fixtures/isnad/isnad2-eserler.rdf", import.meta.url), "utf8"), "file:isnad");
 function work(title: string, author?: string): Item {
-  const found = items.filter((i) => [i.fields.title, i.fields.dictionaryTitle].some((t) => t?.includes(title)) && (!author || i.creators.some((c) => c.lastName === author)));
+  const found = items.filter((i) => [i.fields.title, i.fields.dictionaryTitle, i.fields.nameOfAct].some((t) => t?.includes(title)) && (!author || i.creators.some((c) => c.lastName === author)));
   if (found.length !== 1) throw new Error(`${title}: ${found.length} eser`);
   return found[0]!;
 }
@@ -138,6 +138,14 @@ describe("İSNAD 2 kılavuzu: Kur’ân ve Kitâb-ı Mukaddes (s. 79-86)", () =>
     expect(r.later).toBe("el-Enfâl 8/6.");
     expect(r.bib).toBe("Kur’ân-ı Kerîm Meâli. çev. Halil Altuntaş - Muzaffer Şahin. Ankara: Diyanet İşleri Başkanlığı Yayınları, 3. Basım, 2009.");
   });
+  it("çeviriden çeviri: Türkçeye çev. (s. 79)", () => {
+    const item = work("Kur’an Mesajı");
+    const fixed = { ...item, creators: item.creators.map((c, i) => (i === 0 ? c : { ...c, creatorType: "turkceye" })) };
+    const r = render(fixed, { sure: "2", ayet: "4" }, { sure: "2", ayet: "14" });
+    expect(r.first).toBe("Kur’an Mesajı: Meal-Tefsir, çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk (Ankara: İşaret Yayınları, 2002), el-Bakara 2/4.");
+    expect(r.later).toBe("el-Bakara 2/14.");
+    expect(r.bib).toBe("Kur’an Mesajı: Meal-Tefsir. çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk. Ankara: İşaret Yayınları, 2002.");
+  });
   it("meâl-web (s. 83)", () => {
     const r = render(work("Kur’ân Yolu"), { sure: "2", ayet: "12" }, { sure: "2", ayet: "12" });
     expect(r.first).toBe("Kur’ân Yolu (Erişim 16 Nisan 2018), el-Bakara 2/12.");
@@ -195,6 +203,23 @@ describe("İSNAD 2 kılavuzu: kurum kısaltması, soru işareti", () => {
     const r = render(work("Eğitim Dokümanları"), {}, {});
     expect(r.first).toBe("Adem Kaya, Eğitim Dokümanları İçin İçerik Sınıflandırma Sistemi ve Yöntemi (Patent, Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019).");
     expect(r.bib).toBe("Kaya, Adem. Eğitim Dokümanları İçin İçerik Sınıflandırma Sistemi ve Yöntemi. Patent. Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019. https://www.turkpatent.gov.tr/TURKPATENT");
+  });
+  it("İngilizce kaynağın yayın tarihi İngilizce, erişim tarihi Türkçe (s. 121)", () => {
+    const item = work("Commission Decision (EU)");
+    const r = render({ ...item, fields: { ...item.fields, nameOfAct: item.fields.nameOfAct!.replace(/\.$/, "") } }, { locator: "2" }, { locator: "2" });
+    expect(r.first).toBe("Commission Decision (EU) 2017/1002 of 7 June 2017 on the proposed citizens’ initiative entitled Stop extremism (Stop extremism), Official Journal of the European Union L 152/1 (15 June 2017), 2.");
+    expect(r.bib).toContain("(15 June 2017). Erişim 3 Eylül 2019.");
+  });
+  it("e-posta: kaynakçada parantez yok (s. 136)", () => {
+    const r = render(work("İlahiyat Atıf Dizini hk"), {}, {});
+    expect(r.bib).toBe("Doğan, Yusuf. İlahiyat Atıf Dizini hk. Kısa Mesaj 2 Eylül 2019, Alıcı Sami Şahin.");
+  });
+  it("nota kâğıdı / sınav kâğıdı / ambalaj: Başlık (Tür, Tarih) (s. 131-137)", () => {
+    expect(render(work("İç Tasarıma Giriş"), {}, {}).first).toBe("Öğrenci 1, İç Tasarıma Giriş Dersi Vize Sınavı (Sınav Kağıdı, 20 Mart 2019), Sivas Cumhuriyet Üniversitesi, Mimarlık Fakültesi, Öğretici 1.");
+    expect(render(work("Kırınkıl"), {}, {}).bib).toBe("Kırınkıl Çubuk Kraker 150 gr (Plastik Ambalaj, Ağustos 2019). İstanbul: BİM, Seri No. 291, Barkod No. 8695077001153.");
+  });
+  it("video kaydında platform (s. 129)", () => {
+    expect(render(work("İSNAD-Kitap Bölümüne"), { locator: "00:01:10-00:01:55" }, {}).first).toBe("Muhammet Tarakçı, “İSNAD-Kitap Bölümüne Atıf”, YouTube (31 Mart 2018), 00:01:10-00:01:55.");
   });
   it("gazete: soru işaretli başlıktan sonra nokta (s. 112)", () => {
     const r = render(work("15 Temmuz’u Farklı Kılan Nedir"), { locator: "8" }, { locator: "8" });
