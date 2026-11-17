@@ -159,6 +159,22 @@ const FAKE = String.raw`
       }));
     },
     get endnotes() { return collection([]); },
+    // Word's search over the plain text of the body (not inside controls); a range re-finds its occurrence when replaced.
+    search(t) {
+      const occurrences = () => doc.flow.flatMap((x) => { if (x.cc || x.fn || typeof x.text !== "string") return []; const out = []; let i = 0; while ((i = x.text.indexOf(t, i)) >= 0) { out.push({ x, off: i }); i += t.length; } return out; });
+      return collection(occurrences().map((_, n) => ({
+        parentContentControlOrNullObject: { isNullObject: true, tag: "", load() { return this; } },
+        insertText(nt) {
+          const { x, off } = occurrences()[n];
+          const after = x.text.slice(off + t.length);
+          x.text = x.text.slice(0, off);
+          const cc = makeCC("inline");
+          cc.runs = [{ text: nt, font: {} }];
+          doc.flow.splice(doc.flow.indexOf(x) + 1, 0, { cc }, { kind: "text", text: after });
+          return { insertContentControl() { return cc; } };
+        },
+      })));
+    },
   };
   const context = { document: { body, getSelection: () => selection }, sync: async () => undefined };
   window.Word = { run: async (fn) => fn(context), Style: { heading1: "Heading1", normal: "Normal" } };
@@ -539,6 +555,16 @@ try {
   await page.waitForSelector("#message:has-text('Stil: APA')");
   const apa = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).map((x) => x.cc.text));
   if (!apa.length || apa.some((t) => /a\.mlf\.|b\.y\.|y\.y\./.test(t)) || !apa.every((t) => /^\(.+\)$/.test(t))) fail(`APA citations: ${JSON.stringify(apa)}`);
+  // An in-text citation typed by hand (the same text as a rendered one): found, matched, turned into a citation.
+  const typed = apa.find((t) => /\d{4}/.test(t) && !t.includes(";"));
+  await page.evaluate((t) => window.__doc.flow.push({ kind: "text", text: ` Elle yazılmış ${t} burada.` }), typed);
+  await page.click("#tab-belge");
+  await page.click("#hand-intext-scan");
+  await page.waitForSelector("#hand-intext-result:has-text('1 metin içi atıf kütüphanedeki eserlerle eşleşti')", { timeout: 5000 }).catch(async () => fail(`in-text scan for ${typed}: ${await page.textContent("#hand-intext-result")} / ${await page.textContent("#message")}`));
+  await page.locator("#hand-intext-result button").click();
+  await page.waitForSelector("#message:has-text('1 metin içi atıf Derkenar atıfına çevrildi')");
+  const after = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).length);
+  if (after !== apa.length + 1) fail(`in-text conversion: ${after} citations, expected ${apa.length + 1}`);
   await page.selectOption("#style", "isnad-dipnotlu");
   await page.waitForSelector("#message:has-text('dipnota taşındı')");
 

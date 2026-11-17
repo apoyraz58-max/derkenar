@@ -677,3 +677,42 @@ export async function selectionToBibliography(): Promise<boolean> {
     return true;
   });
 }
+
+/** Where the texts stand in the document's body, outside Derkenar's own citations (how many times each). */
+async function findInBody(context: Word.RequestContext, texts: readonly string[]): Promise<Map<string, Word.Range[]>> {
+  const found = texts.map((t) => {
+    const r = context.document.body.search(t, { matchCase: true });
+    r.load("items");
+    return { t, r };
+  });
+  await context.sync();
+  const parents = found.map(({ t, r }) => ({ t, items: r.items.map((range) => ({ range, cc: range.parentContentControlOrNullObject })) }));
+  for (const p of parents) for (const x of p.items) x.cc.load("tag,isNullObject");
+  await context.sync();
+  return new Map(parents.map((p) => [p.t, p.items.filter((x) => x.cc.isNullObject || !citationIdFromTag(x.cc.tag)).map((x) => x.range)]));
+}
+
+/** How many times each hand-typed citation stands in the text. */
+export async function countInBody(texts: readonly string[]): Promise<Record<string, number>> {
+  return Word.run(async (context) => Object.fromEntries([...(await findInBody(context, texts))].map(([t, rs]) => [t, rs.length])));
+}
+
+/** Replaces each occurrence of the texts with a citation (ids in document order), the last first. */
+export async function replaceInBody(writes: readonly { text: string; ids: readonly string[]; segments: readonly Segment[] }[]): Promise<number> {
+  return Word.run(async (context) => {
+    const where = await findInBody(context, writes.map((w) => w.text));
+    let done = 0;
+    for (const w of writes) {
+      const ranges = where.get(w.text) ?? [];
+      for (let i = Math.min(ranges.length, w.ids.length) - 1; i >= 0; i--) {
+        const range = ranges[i]!.insertText(w.segments.map((s) => s.text).join("") || "…", "Replace");
+        const cc = range.insertContentControl();
+        setupControl(cc, w.ids[i]!);
+        writeRuns(cc, w.segments, true);
+        done++;
+      }
+    }
+    await context.sync();
+    return done;
+  });
+}

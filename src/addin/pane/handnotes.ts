@@ -3,12 +3,12 @@
  * citations in place (the note, its number and its place stay). First a
  * look at what would change; then the change, which Word's Undo takes back.
  */
-import { type HandNote, readHandNotes } from "../../core/handnotes.js";
+import { type HandInText, type HandNote, readHandNotes, readInText } from "../../core/handnotes.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import type { CiteRef } from "../../core/types.js";
 import { type Item, creatorLine, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
-import { $, S, doc, h, putItems, run, serial, setMessage } from "./core.js";
+import { $, S, doc, getRenderer, h, putItems, run, serial, setMessage } from "./core.js";
 import { refresh } from "./document.js";
 import { isnadFix } from "./io.js";
 import { existingCopy } from "../../core/library.js";
@@ -160,7 +160,54 @@ async function convertBibliography(): Promise<void> {
   );
 }
 
+// ---------------------------------------------------------------- in-text citations typed by hand
+
+let inText: { found: HandInText[]; counts: Record<string, number> } | null = null;
+
+async function scanInText(): Promise<void> {
+  const r = await getRenderer();
+  if (r.meta.note) throw new Error("Belgenin stili dipnotlu. Metin içi atıfları çevirmek için önce Belge → Atıf stili'ni metin içi bir stile (İSNAD metin içi, APA …) çevirin.");
+  const text = await serial(() => word.documentText());
+  const found = readInText(text, S.items);
+  if (!found.length) {
+    $("hand-intext-result").replaceChildren(h("p", { class: "muted small" }, "Kütüphanedeki bir eserle eşleşen elle yazılmış metin içi atıf bulunamadı. Eserler kütüphanede değilse önce kaynakçayı okutun (yukarıda)."));
+    return;
+  }
+  const counts = await serial(() => word.countInBody(found.map((f) => f.match)));
+  const usable = found.filter((f) => counts[f.match]);
+  inText = { found: usable, counts };
+  const total = usable.reduce((n, f) => n + counts[f.match]!, 0);
+  $("hand-intext-result").replaceChildren(
+    h("p", { class: "small" }, `${total} metin içi atıf kütüphanedeki eserlerle eşleşti.`),
+    h("ol", { class: "hand-list small" }, ...usable.slice(0, 200).map((f) => h("li", {}, h("div", { class: "hand-src" }, `${f.match}${counts[f.match]! > 1 ? ` (${counts[f.match]} yerde)` : ""}`), h("div", { class: "hand-to" }, `→ ${f.refs.map((x) => `${x.prefix ? `${x.prefix} ` : ""}${creatorLine(x.item) || "—"}, ${short(titleOf(x.item), 50)}${x.locator ? `, s. ${x.locator}` : ""}`).join("; ")}`)))),
+    total ? h("button", { type: "button", class: "primary", onclick: () => void run("Atıflar çevriliyor", convertInText) }, `${total} atıfı çevir`) : h("p", { class: "muted small" }, "Çevrilecek atıf yok."),
+  );
+}
+
+async function convertInText(): Promise<void> {
+  if (!inText) return;
+  const d = doc();
+  const writes = inText.found.map((f) => {
+    const refs: CiteRef[] = f.refs.map((r) => ({ id: r.item.key, ...(r.volume ? { volume: r.volume } : {}), ...(r.locator ? { locator: r.locator } : {}), ...(r.prefix ? { prefix: r.prefix } : {}) }));
+    const works = Object.fromEntries(refs.map((r) => [r.id, S.byKey.get(r.id) ?? d.items[r.id]!]));
+    const ids = Array.from({ length: inText!.counts[f.match]! }, () => {
+      const id = newCitationId();
+      putCitation(d, id, refs, works);
+      return id;
+    });
+    return { text: f.match, ids, segments: [{ text: f.match }] };
+  });
+  const done = await serial(() => word.replaceInBody(writes));
+  // Citations Word did not find again (the text changed meanwhile) are dropped from the state.
+  await word.saveState(d);
+  await refresh(false, true);
+  inText = null;
+  $("hand-intext-result").replaceChildren();
+  setMessage(`${done} metin içi atıf Derkenar atıfına çevrildi.`, "success");
+}
+
 export function wireHandNotes(): void {
+  $("hand-intext-scan").onclick = () => void run("Metin okunuyor", scanInText);
   $("hand-bib-scan").onclick = () => void run("Kaynakça okunuyor", scanBibliography);
   $("hand-scan").onclick = () => void run("Dipnotlar okunuyor", scan);
 }

@@ -179,3 +179,61 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
   }
   return out;
 }
+
+// ---------------------------------------------------------------- in-text citations typed by hand
+
+export interface HandInText {
+  /** The text as it stands in the document, parentheses included: "(Kara, 2005: 45; Uludağ 1995, s. 12)". */
+  readonly match: string;
+  readonly refs: HandRef[];
+}
+
+const YEAR = /\b((?:1[5-9]|20)\d{2})([a-z])?\b/;
+
+function yearsOfItem(it: Item): string[] {
+  return (it.fields.date ?? "").match(/\b\d{4}\b/g) ?? [];
+}
+
+/**
+ * "(Kara, 2005: 45)", "(Kara 2005, s. 45-47)", "(Kara ve Uludağ, 2010)", "(Kara vd., 2012; Ocak, 1996)":
+ * each is matched to a work of the library by its first author's surname and the year
+ * (2005a, 2005b: in the library's order). A parenthesis with any part that is not such a reference is left.
+ */
+export function readInText(text: string, library: readonly Item[]): HandInText[] {
+  const out: HandInText[] = [];
+  const done = new Set<string>();
+  for (const m of text.matchAll(/\(([^()]{4,240})\)/g)) {
+    const inner = m[1]!;
+    if (!YEAR.test(inner) || done.has(m[0])) continue;
+    const refs: HandRef[] = [];
+    let ok = true;
+    for (const part of splitNote(inner)) {
+      const pm = /^(?:bk\.|bkz\.|krş\.|ayrıca\s+bk\.|see|cf\.)\s*/i.exec(part);
+      const prefix = pm ? pm[0].trim().toLocaleLowerCase("tr") : undefined;
+      const p = pm ? part.slice(pm[0].length) : part;
+      const r = /^(.+?)[,\s]+(?:\d{3,4}\s*\/\s*)?((?:1[5-9]|20)\d{2})([a-z])?(?:\s*,\s*(?:cilt|c\.|vol\.)\s*(\d+|[IVXLC]+))?(?:\s*[,:]\s*(?:s\.|ss\.|p\.|pp\.)?\s*(\d+(?:\s*[-–]\s*\d+)?(?:\s*vd\.)?))?\s*$/iu.exec(p.trim());
+      if (!r) {
+        ok = false;
+        break;
+      }
+      const who = fold(r[1]!.replace(/\s+(vd\.|et al\.?|ve\s+.+|and\s+.+|&\s*.+)$/i, "").trim());
+      if (!who || who.split(" ").length > 3) {
+        ok = false;
+        break;
+      }
+      const year = r[2]!;
+      const hits = library.filter((it) => !it.deleted && yearsOfItem(it).includes(year) && surnames(it)[0] !== undefined && (surnames(it)[0] === who || surnames(it)[0]!.endsWith(` ${who}`)));
+      const pick = r[3] ? hits[r[3].toLowerCase().charCodeAt(0) - 97] : hits.length === 1 ? hits[0] : undefined;
+      if (!pick) {
+        ok = false;
+        break;
+      }
+      refs.push({ item: pick, isNew: false, ...(r[4] ? { volume: r[4] } : {}), ...(r[5] ? { locator: r[5].replace(/\s*[-–]\s*/g, "-") } : {}), ...(prefix ? { prefix } : {}) });
+    }
+    if (ok && refs.length) {
+      out.push({ match: m[0], refs });
+      done.add(m[0]);
+    }
+  }
+  return out;
+}

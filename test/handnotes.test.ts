@@ -77,3 +77,33 @@ describe("hand-typed footnotes, eski usul", () => {
     ]);
   });
 });
+
+import { readInText } from "../src/core/handnotes.js";
+
+describe("hand-typed in-text citations", () => {
+  const mk = (last: string, year: string, title: string) => {
+    const i = emptyItem("book");
+    i.creators = [{ creatorType: "author", firstName: "X", lastName: last }];
+    i.fields = { title, date: year };
+    return i;
+  };
+  const libr = [mk("Kara", "2005", "Tasavvuf"), mk("Uludağ", "1995", "Sözlük"), mk("Ocak", "1996", "Bakışlar"), mk("Ocak", "1996", "Kalenderîler")];
+  it("matches author and year, takes the page", () => {
+    const r = readInText("Metin (Kara, 2005: 45). Başka (Uludag 1995, s. 12-13; bk. Kara, 2005). Yine (Ocak, 1996b, 7) ve (Ocak, 1996) ile (bkz. 1. bölüm, 2005 yılı).", libr);
+    expect(r.map((x) => `${x.match} → ${x.refs.map((y) => `${y.prefix ?? ""}${y.item.fields.title}${y.locator ? `:${y.locator}` : ""}`).join(" ; ")}`)).toEqual([
+      "(Kara, 2005: 45) → Tasavvuf:45",
+      "(Uludag 1995, s. 12-13; bk. Kara, 2005) → Sözlük:12-13 ; bk.Tasavvuf",
+      "(Ocak, 1996b, 7) → Kalenderîler:7",
+    ]);
+  });
+});
+
+describe("hand-typed in-text citations, hicrî and cilt", () => {
+  it("reads (Gazzâlî, 1413/1993, Cilt 1, s. 45)", () => {
+    const g = emptyItem("book");
+    g.creators = [{ creatorType: "author", firstName: "Ebû Hâmid", lastName: "Gazzâlî" }];
+    g.fields = { title: "el-Mustasfâ", date: "1413/1993" };
+    const r = readInText("x (Gazzâlî, 1413/1993, Cilt 1, s. 45) y", [g]);
+    expect(r.map((x) => [x.refs[0]!.volume, x.refs[0]!.locator])).toEqual([["1", "45"]]);
+  });
+});
