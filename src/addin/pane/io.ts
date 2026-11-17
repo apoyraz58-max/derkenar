@@ -115,11 +115,13 @@ async function pasteRecords(): Promise<void> {
   const box = $<HTMLTextAreaElement>("new-paste");
   const text = box.value.trim();
   if (!text) throw new Error("RIS, BibTeX ya da CSL JSON metnini yapıştırın.");
-  if (detectFormat(text) === "unknown") throw new Error("Metin tanınmadı. RIS satırları \"TY  - \" ile, BibTeX kayıtları \"@book{\" gibi, CSL JSON \"[\" ya da \"{\" ile başlar.");
-  const r = await parseFile(text, "yapıştırılan");
+  const { isDia, parseDia } = await import("../../core/dia.js");
+  const dia = isDia(text) ? parseDia(text) : null;
+  if (!dia && detectFormat(text) === "unknown") throw new Error("Metin tanınmadı. RIS satırları \"TY  - \" ile, BibTeX kayıtları \"@book{\" gibi, CSL JSON \"[\" ya da \"{\" ile başlar.");
+  const r = dia ? { items: [dia], collections: [] } : await parseFile(text, "yapıştırılan");
   if (!r.items.length) throw new Error("Metinde kaynak bulunamadı.");
   const v = currentView();
-  const items = r.items.map((i) => ({ ...i, source: "manual", collections: v.kind === "collection" ? [v.key] : i.collections }));
+  const items = r.items.map((i) => ({ ...i, source: dia ? "dia" : "manual", collections: v.kind === "collection" ? [v.key] : i.collections }));
   const fixedNote = isnadFix(items);
   const { fresh, already } = splitExisting(items);
   box.value = "";
@@ -335,7 +337,7 @@ export function renderSources(): void {
 export function sourceName(source: string): string {
   if (source.startsWith("zotero:")) return `Çevrimiçi kütüphane (${source.slice(7)})`;
   if (source.startsWith("file:")) return `Dosya: ${source.slice(5)}`;
-  return ({ doi: "DOI ile eklenenler", isbn: "ISBN ile eklenenler", manual: "Elle girilenler", belge: "Belgelerden alınanlar" } as Record<string, string>)[source] ?? source;
+  return ({ doi: "DOI ile eklenenler", isbn: "ISBN ile eklenenler", manual: "Elle girilenler", belge: "Belgelerden alınanlar", dia: "DİA maddeleri" } as Record<string, string>)[source] ?? source;
 }
 
 export async function restoreZoteroForm(): Promise<void> {

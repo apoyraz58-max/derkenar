@@ -528,6 +528,14 @@ try {
   const pastedTitle = await page.inputValue('[data-field="title"]');
   if (pastedTitle !== "Tasavvuf ve Tarikatlar Tarihi") fail(`İSNAD title case on paste: ${pastedTitle}`);
   if (!(await page.textContent("#message")).includes("İSNAD'a göre düzeltildi")) fail("no İSNAD note in the message");
+  // A DİA madde: the Atıf box and the printed-volume sentence.
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-new", "__ways");
+  await page.fill("#new-paste", 'MUSTAFA ÇAĞRICI, "GAZZÂLÎ", TDV İslâm Ansiklopedisi, https://islamansiklopedisi.org.tr/gazzali#1 (17.11.2026).\nMaddenin bu bölümü TDV İslâm Ansiklopedisi’nin 1996 yılında İstanbul’da basılan 13. cildinde, 489-505 numaralı sayfalarda yer almıştır.');
+  await page.click("#new-paste-form button[type=submit]");
+  await page.waitForSelector("#message:has-text('Çağrıcı, Gazzâlî')");
+  if ((await page.inputValue('[data-field="pages"]')) !== "489-505") fail("DİA pages");
+
   // The same record again: not added twice, the existing one opens.
   await page.click("#tab-kutuphane");
   await page.selectOption("#lib-new", "__ways");

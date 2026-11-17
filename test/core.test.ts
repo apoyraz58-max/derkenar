@@ -659,3 +659,31 @@ describe("kaynakçayı düzenle", () => {
     expect(plan.unused).not.toContain(c.key);
   });
 });
+
+describe("DİA maddesi yapıştırma", async () => {
+  const { parseDia, isDia } = await import("../src/core/dia.js");
+  const cite = 'MUSTAFA ÇAĞRICI, "GAZZÂLÎ", TDV İslâm Ansiklopedisi, https://islamansiklopedisi.org.tr/gazzali#1 (17.11.2026).';
+  const print = "Maddenin bu bölümü TDV İslâm Ansiklopedisi’nin 1996 yılında İstanbul’da basılan 13. cildinde, 489-505 numaralı sayfalarda yer almıştır.";
+  it("Atıf kutusu ve basılı nüsha cümlesi: matbu madde", () => {
+    expect(isDia(cite + "\n" + print)).toBe(true);
+    const it = parseDia(cite + "\n" + print)!;
+    expect(it.itemType).toBe("encyclopediaArticle");
+    expect(it.creators[0]).toMatchObject({ lastName: "Çağrıcı", firstName: "Mustafa" });
+    expect(it.fields).toMatchObject({ title: "Gazzâlî", publicationTitle: "Türkiye Diyanet Vakfı İslâm Ansiklopedisi", place: "İstanbul", publisher: "TDV Yayınları", date: "1996", volume: "13", pages: "489-505" });
+  });
+  it("yalnız Atıf kutusu: web maddesi, erişim tarihiyle", () => {
+    const it = parseDia('M. SAİT ÖZERVARLI, "GAZZÂLÎ", TDV İslâm Ansiklopedisi, https://islamansiklopedisi.org.tr/gazzali#2-kelam-ilmindeki-yeri (17.11.2026).')!;
+    expect(it.creators[0]).toMatchObject({ lastName: "Özervarlı", firstName: "M. Sait" });
+    expect(it.fields).toMatchObject({ title: "Gazzâlî", publicationTitle: "TDV İslâm Ansiklopedisi", accessDate: "2026-11-17", url: "https://islamansiklopedisi.org.tr/gazzali#2-kelam-ilmindeki-yeri" });
+  });
+  it("İSNAD çıktısı (kılavuz s. 95)", () => {
+    const it = { ...parseDia(cite + "\n" + print)!, key: "DIA00001" };
+    const r = new Renderer(style("isnad-dipnotlu"), locales);
+    const st = emptyState();
+    putCitation(st, "x", [{ id: it.key, locator: "490" }], { [it.key]: it });
+    const p = planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r);
+    expect(htmlToText(p.updates.get("x")!)).toBe("Mustafa Çağrıcı, “Gazzâlî”, Türkiye Diyanet Vakfı İslâm Ansiklopedisi (İstanbul: TDV Yayınları, 1996), 13/490.");
+    expect(htmlToText(p.bibliography!.entries[0]!.html)).toBe("Çağrıcı, Mustafa. “Gazzâlî”. Türkiye Diyanet Vakfı İslâm Ansiklopedisi. 13/489-505. İstanbul: TDV Yayınları, 1996.");
+    expect(it.attachments?.[0]?.url).toBe("https://islamansiklopedisi.org.tr/gazzali#1");
+  });
+});
