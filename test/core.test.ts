@@ -687,3 +687,14 @@ describe("DİA maddesi yapıştırma", async () => {
     expect(it.attachments?.[0]?.url).toBe("https://islamansiklopedisi.org.tr/gazzali#1");
   });
 });
+
+describe("DİA web maddesi (kılavuz s. 97)", () => {
+  it("Yazar, “Madde”, TDV İslâm Ansiklopedisi (Erişim gün Ay yıl)", async () => {
+    const { parseDia } = await import("../src/core/dia.js");
+    const it = { ...parseDia('M. SAİT ÖZERVARLI, "GAZZÂLÎ", TDV İslâm Ansiklopedisi, https://islamansiklopedisi.org.tr/gazzali#2 (17.11.2026).')!, key: "DIAWEB01" };
+    const r = new Renderer(style("isnad-dipnotlu"), locales);
+    const st = emptyState();
+    putCitation(st, "x", [{ id: it.key }], { [it.key]: it });
+    expect(htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!)).toBe("M. Sait Özervarlı, “Gazzâlî”, TDV İslâm Ansiklopedisi (Erişim 17 Kasım 2026).");
+  });
+});
