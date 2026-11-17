@@ -136,9 +136,9 @@
               <Group id="Derkenar.G.Library">
                 <Label resid="G.Library"/>
                 <Icon>
-                  <bt:Image size="16" resid="Ic.catalog.16"/>
-                  <bt:Image size="32" resid="Ic.catalog.32"/>
-                  <bt:Image size="80" resid="Ic.catalog.80"/>
+                  <bt:Image size="16" resid="Ic.library.16"/>
+                  <bt:Image size="32" resid="Ic.library.32"/>
+                  <bt:Image size="80" resid="Ic.library.80"/>
                 </Icon>
                 <Control xsi:type="Button" id="Derkenar.Library">
                   <Label resid="Library"/>
@@ -147,9 +147,9 @@
                     <Description resid="Library.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.catalog.16"/>
-                    <bt:Image size="32" resid="Ic.catalog.32"/>
-                    <bt:Image size="80" resid="Ic.catalog.80"/>
+                    <bt:Image size="16" resid="Ic.library.16"/>
+                    <bt:Image size="32" resid="Ic.library.32"/>
+                    <bt:Image size="80" resid="Ic.library.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
@@ -345,9 +345,9 @@
         <bt:Image id="Ic.insert.16" DefaultValue="{{BASE_URL}}assets/icons/insert-16.png"/>
         <bt:Image id="Ic.insert.32" DefaultValue="{{BASE_URL}}assets/icons/insert-32.png"/>
         <bt:Image id="Ic.insert.80" DefaultValue="{{BASE_URL}}assets/icons/insert-80.png"/>
-        <bt:Image id="Ic.catalog.16" DefaultValue="{{BASE_URL}}assets/icons/catalog-16.png"/>
-        <bt:Image id="Ic.catalog.32" DefaultValue="{{BASE_URL}}assets/icons/catalog-32.png"/>
-        <bt:Image id="Ic.catalog.80" DefaultValue="{{BASE_URL}}assets/icons/catalog-80.png"/>
+        <bt:Image id="Ic.library.16" DefaultValue="{{BASE_URL}}assets/icons/library-16.png"/>
+        <bt:Image id="Ic.library.32" DefaultValue="{{BASE_URL}}assets/icons/library-32.png"/>
+        <bt:Image id="Ic.library.80" DefaultValue="{{BASE_URL}}assets/icons/library-80.png"/>
         <bt:Image id="Ic.bulk.16" DefaultValue="{{BASE_URL}}assets/icons/bulk-16.png"/>
         <bt:Image id="Ic.bulk.32" DefaultValue="{{BASE_URL}}assets/icons/bulk-32.png"/>
         <bt:Image id="Ic.bulk.80" DefaultValue="{{BASE_URL}}assets/icons/bulk-80.png"/>

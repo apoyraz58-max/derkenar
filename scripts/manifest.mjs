@@ -41,8 +41,8 @@ const tab = [
     button("Refresh", "Güncelle", "Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez.", "consistency", "refresh"),
     button("Unlink", "Düz Metne Çevir", "Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın.", "finalize", "unlink"),
   ]),
-  group("Library", "Kütüphane", "catalog", [
-    button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede.", "catalog", "library"),
+  group("Library", "Kütüphane", "library", [
+    button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede.", "library", "library"),
     button("New", "Yeni Kaynak", "Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar).", "bulk", "new"),
     button("Import", "İçe Aktar", "Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler.", "csv", "import"),
     button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "source", "export"),
