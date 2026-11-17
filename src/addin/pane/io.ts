@@ -78,7 +78,7 @@ function pendingFixes(items: readonly Item[]): string {
  * place; returns a sentence for the message. What needs the user's eye stays
  * as warnings in the editor.
  */
-function isnadFix(items: Item[]): string {
+export function isnadFix(items: Item[]): string {
   const all = new Set<string>();
   items.forEach((it, i) => {
     const r = autoFix(it);
@@ -90,7 +90,7 @@ function isnadFix(items: Item[]): string {
 }
 
 /** Works the library has already (same DOI, ISBN, or title, year and author) are not added twice. */
-function splitExisting(items: readonly Item[]): { fresh: Item[]; already: Item[] } {
+export function splitExisting(items: readonly Item[]): { fresh: Item[]; already: Item[] } {
   const fresh: Item[] = [];
   const already: Item[] = [];
   for (const it of items) {
@@ -101,11 +101,11 @@ function splitExisting(items: readonly Item[]): { fresh: Item[]; already: Item[]
   return { fresh, already };
 }
 
-function alreadyNote(already: readonly Item[]): string {
+export function alreadyNote(already: readonly Item[]): string {
   return already.length ? ` ${already.length} kaynak zaten kütüphanedeydi, ikinci kez eklenmedi: ${already.slice(0, 3).map((i) => `${creatorLine(i) || "—"}, ${titleOf(i)}`).join("; ")}${already.length > 3 ? "…" : ""}.` : "";
 }
 
-function showAlready(already: readonly Item[]): void {
+export function showAlready(already: readonly Item[]): void {
   if (already.length === 1) openEditor(already[0]!.key);
   setMessage(already.length === 1 ? `Bu kaynak zaten kütüphanede: ${creatorLine(already[0]!) || "—"}, ${titleOf(already[0]!)}. Kaydı açtım; ikinci kez eklenmedi.` : `Bu ${already.length} kaynağın hepsi zaten kütüphanede; ikinci kez eklenmedi.`, "info");
 }
@@ -234,7 +234,7 @@ export function renderPushCount(): void {
  * Turkish publishers often put the ISBN into the DOI (10.70458/fcr.9786258910605)
  * and do not always register it. When the DOI is not found, the ISBN inside it is tried.
  */
-async function lookupDoiOrIsbn(doi: string): Promise<Item> {
+export async function lookupDoiOrIsbn(doi: string): Promise<Item> {
   try {
     return await lookupDoi(doi);
   } catch (e) {

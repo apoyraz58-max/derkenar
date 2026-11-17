@@ -260,3 +260,9 @@ details.section-like summary { cursor: pointer; font-weight: 600; font-size: 13p
 
 /* Sırayla düzelt */
 .review-bar { position: sticky; top: 38px; z-index: 15; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; }
+
+/* Fotoğraftan / PDF'ten ekle */
+.file-btn { display: inline-flex; align-items: center; min-height: 32px; padding: 5px 12px; border-radius: 4px; background: var(--accent); color: var(--accent-text); cursor: pointer; font-weight: 600; }
+.file-btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scan-zone { margin-top: 8px; padding: 14px 10px; border: 1.5px dashed var(--border); border-radius: 6px; text-align: center; color: var(--muted); font-size: 12px; cursor: text; caret-color: transparent; }
+.scan-zone:focus, .scan-zone.drag { border-color: var(--accent); color: var(--accent); outline: none; }

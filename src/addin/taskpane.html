@@ -219,6 +219,13 @@
         </details>
       </section>
       <section>
+        <h2>Fotoğraftan ya da PDF'ten ekle</h2>
+        <label class="file-btn">Fotoğraf ya da PDF seç <input id="new-scan" type="file" accept="image/png,image/jpeg,image/webp,image/bmp,application/pdf,.pdf" multiple hidden /></label>
+        <div id="scan-zone" class="scan-zone" contenteditable="true" spellcheck="false" tabindex="0" aria-label="Ekran görüntüsünü buraya yapıştırın">Ekran görüntüsünü buraya yapıştırın (Ctrl+V) ya da dosyayı sürükleyin</div>
+        <p class="muted small"><b>Kitap:</b> iç kapağın ve künye sayfasının (ISBN, baskı, yayınevi yazan arka sayfa) fotoğrafını birlikte seçin. ISBN okunursa kataloglardan, okunmazsa sayfadan doldurulur: başlık, yazar, çevirmen, yayınevi, şehir, baskı, yıl. <b>Makale, tez:</b> PDF'i seçin; DOI'si ya da "Atıf:" satırı varsa ondan, yoksa ilk sayfanın düzeninden okunur. Taranmış PDF'ler de olur.</p>
+        <p class="muted small">Görüntü ve dosyalar bu bilgisayarda okunur, hiçbir yere gönderilmez; kataloglara yalnız bulunan DOI ya da ISBN sorulur. Metin tanıma ilk kullanımda ~10 MB iner.</p>
+      </section>
+      <section>
         <h2>Künye yapıştır (tek tek ya da liste)</h2>
         <form id="new-paste-form" class="grid">
           <textarea id="new-paste" rows="4" spellcheck="false" placeholder="Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları, 2005.&#10;Sönmez Kutlu, “İlk Mürciî Metinler”, AÜİFD 37 (1997), 320.&#10;… ya da RIS, BibTeX, DİA Atıf metni"></textarea>
@@ -459,6 +466,7 @@
           <li>Başka bir atıf programıyla yazılmış belge açılınca <strong>Belge</strong> sekmesinde "Başka programla eklenmiş atıflar" bölümü çıkar; <strong>Derkenar atıflarına çevir</strong> ile atıflar ve kaynakça Derkenar'a geçer. Önce belgenin bir kopyasını alın.</li>
           <li>Stil: İSNAD 2 (dipnotlu, metin içi), APA 7, Chicago 18; başka bir dergi ya da üniversite stili için <strong>Belge → Stil dosyası yükle (.csl)</strong> (citationstyles.org'daki bağımsız stiller). Yüklenen stil belgede de saklanır. Stil değişince atıflar dipnot ile metin arasında kendiliğinden taşınır.</li>
           <li>Sekmeler arasında klavyeyle: <strong>Alt+1</strong> Atıf … <strong>Alt+5</strong> Aktar.</li>
+          <li><strong>Elinizdeki kitap için:</strong> iç kapağın ve künye sayfasının fotoğrafını <strong>Yeni Kaynak → Fotoğraftan ya da PDF'ten ekle</strong>'ye verin; makale ve tezlerde PDF'in kendisini. Bir web sayfasındaki ya da PDF'teki künyenin ekran görüntüsünü de aynı kutuya Ctrl+V ile yapıştırabilirsiniz.</li>
           <li><strong>Künye girmenin en kolay yolu:</strong> künyeyi nerede görüyorsanız (başka bir tezin kaynakçası, bir dipnot, PDF) kopyalayıp <strong>Yeni Kaynak → Künye yapıştır</strong>'a yapıştırın; liste hâlinde de olur. Elle girerken düzenleyicinin üstünde eserin dipnot ve kaynakça hâli canlı görünür; yayınevi, şehir, dergi ve kişi adları kütüphaneden önerilir; aynı dergiden ya da kitaptan yeni kayıt için ⋯ → <strong>Aynı yayından yeni kayıt</strong>.</li>
           <li>Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …) için pencerenin üstündeki <strong>ʿâ</strong> düğmesi.</li>
           <li>Başka bir belgeden kopyalanan atıfın verisi yoksa: <strong>Belge → Belgedeki kaynakları kütüphaneye al</strong>.</li>

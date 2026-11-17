@@ -49,6 +49,17 @@ await cp(new URL("assets/icons/", root), new URL("assets/icons/", out), { recurs
 for (const f of await readdir(new URL("assets/", root))) if (/^icon-\d+\.png$/.test(f)) await cp(new URL(`assets/${f}`, root), new URL(`assets/${f}`, out));
 await cp(new URL("assets/logo/", root), new URL("assets/logo/", out), { recursive: true });
 
+// Fotoğraftan / PDF'ten ekle: text recognition and the PDF reader, served with the add-in and loaded on first use.
+const vendor = new URL("vendor/", out);
+const nm = (p) => new URL(`node_modules/${p}`, root);
+await mkdir(new URL("tesseract/", vendor), { recursive: true });
+await mkdir(new URL("tessdata/", vendor), { recursive: true });
+await mkdir(new URL("pdfjs/", vendor), { recursive: true });
+for (const f of ["tesseract.min.js", "worker.min.js"]) await cp(nm(`tesseract.js/dist/${f}`), new URL(`tesseract/${f}`, vendor));
+for (const f of ["tesseract-core-lstm.wasm.js", "tesseract-core-simd-lstm.wasm.js"]) await cp(nm(`tesseract.js-core/${f}`), new URL(`tesseract/${f}`, vendor));
+for (const lang of ["tur", "eng"]) await cp(nm(`@tesseract.js-data/${lang}/4.0.0_best_int/${lang}.traineddata.gz`), new URL(`tessdata/${lang}.traineddata.gz`, vendor));
+for (const f of ["pdf.min.mjs", "pdf.worker.min.mjs"]) await cp(nm(`pdfjs-dist/legacy/build/${f}`), new URL(`pdfjs/${f}`, vendor));
+
 // CSL styles and locales (CC BY-SA 3.0), loaded by the pane on demand.
 await cp(new URL("data/styles/", root), new URL("styles/", out), { recursive: true });
 

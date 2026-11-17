@@ -9,6 +9,7 @@ import { $, doc, loadLibrary, setMessage, onLibraryChange, onShow, renderSummary
 import { abbreviationsList, bibliography, changeStyle, checkForeign, nudge, refresh, renderDocList, startWatcher, wireDocument } from "./pane/document.js";
 import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
+import { wireScan } from "./pane/scan.js";
 import { renderInfo, wireInfo } from "./pane/info.js";
 import { refreshLibraryView, wireLibrary } from "./pane/library.js";
 import { wireTranslit } from "./pane/translit.js";
@@ -106,6 +107,7 @@ Office.onReady(async () => {
   wireDocument();
   wireCheck();
   wireIo();
+  wireScan();
   wireTranslit();
   wireInfo();
   onShow("atif", () => ($<HTMLInputElement>("q").focus({ preventScroll: true }), void onSelection()));

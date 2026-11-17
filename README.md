@@ -109,4 +109,6 @@ düzenleme, denetim, kaynakça, dışa aktarma ve düz metne çevirme. Word'de d
 
 AGPL-3.0-or-later. Açık kaynak bileşenler: citeproc-js (CPAL-1.0 / AGPL-1.0); kaynak türleri
 ve alanların veri şeması Zotero projesinden (AGPL). CSL stilleri ve dil dosyaları CC BY-SA 3.0'dır; İSNAD stillerinin
-Türkçe bölümünde varak kısaltması "vr." yapılmıştır (`data/styles/README.md`).
+Türkçe bölümünde varak kısaltması "vr." yapılmıştır (`data/styles/README.md`). Fotoğraftan ve PDF'ten ekleme için
+Tesseract.js ve tesseract.js-core (Apache-2.0), Tesseract dil verileri `tur` ve `eng` (Apache-2.0) ve pdf.js (Apache-2.0)
+eklentiyle birlikte `vendor/` altında sunulur ve ilk kullanımda yüklenir.

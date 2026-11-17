@@ -12,7 +12,7 @@ const { chromium } = require("playwright");
 const dist = new URL("../dist/addin/", import.meta.url);
 const shots = process.env.SMOKE_SCREENSHOT;
 
-const types = { ".svg": "image/svg+xml", ".rdf": "application/xml", ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".csl": "application/xml", ".xml": "application/xml", ".json": "application/json" };
+const types = { ".svg": "image/svg+xml", ".rdf": "application/xml", ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".csl": "application/xml", ".xml": "application/xml", ".json": "application/json", ".mjs": "text/javascript", ".wasm": "application/wasm" };
 const server = createServer(async (req, res) => {
   try {
     const path = new URL(`.${new URL(req.url, "http://x").pathname}`, dist);
@@ -570,6 +570,41 @@ try {
   await page.click("#tab-kutuphane");
   await page.selectOption("#lib-view", "all");
   if (!(await page.locator("#lib-list li.item-row", { hasText: "Müteşâbih Âyetlere" }).count())) fail("free-text thesis not in the library");
+
+  // 9b2. Fotoğraftan / PDF'ten ekle: a photographed title page (OCR) and an article PDF with an "Atıf:" line.
+  {
+    const maker = await browser.newPage({ viewport: { width: 700, height: 1000 } });
+    await maker.setContent(`<body style="font-family:Georgia,serif;text-align:center;padding:40px;background:#f4efe4;color:#222">
+      <div style="font-size:24px;letter-spacing:2px;margin-top:30px">HÜSEYİN YILMAZ</div>
+      <div style="font-size:52px;font-weight:bold;margin-top:80px;line-height:1.2">OSMANLI TAŞRASINDA<br>KADI SİCİLLERİ</div>
+      <div style="font-size:22px;margin-top:30px">Çeviren: Ahmet Serdaroğlu</div>
+      <div style="font-size:24px;margin-top:260px">KÜRE YAYINLARI</div>
+      <div style="font-size:20px;margin-top:8px">İstanbul 2016</div></body>`);
+    const photo = await maker.screenshot({ type: "jpeg", quality: 85 });
+    await maker.setContent(`<body style="font-family:Arial;padding:30px">
+      <p style="font-size:10pt">Kader Dergisi · Cilt 21, Sayı 2, 2023</p>
+      <h1 style="font-size:22pt">Mâtürîdî’de İnsan Fiilleri</h1>
+      <p style="font-size:12pt">Mehmet Ali Demir</p>
+      <p style="font-size:9pt">Atıf: Demir, Mehmet Ali. “Mâtürîdî’de İnsan Fiilleri”. Kader 21/2 (2023), 401-425.</p>
+      <p style="font-size:9pt">Geliş Tarihi: 12.03.2023</p><p>Öz: Bu makalede …</p></body>`);
+    const pdf = await maker.pdf({ format: "A4" });
+    await maker.close();
+    await page.click("#tab-kutuphane");
+    await page.selectOption("#lib-new", "__ways");
+    await page.setInputFiles("#new-scan", { name: "makale.pdf", mimeType: "application/pdf", buffer: pdf });
+    await page.waitForSelector("#message:has-text('Eklendi (sayfadaki atıf satırı)')", { timeout: 60000 });
+    if ((await page.inputValue('[data-field="title"]')) !== "Mâtürîdî’de İnsan Fiilleri") fail(`pdf title: ${await page.inputValue('[data-field="title"]')}`);
+    if ((await page.inputValue('[data-field="pages"]')) !== "401-425") fail("pdf pages");
+    await page.click("#tab-kutuphane");
+    await page.selectOption("#lib-new", "__ways");
+    await page.setInputFiles("#new-scan", { name: "kapak.jpg", mimeType: "image/jpeg", buffer: photo });
+    await page.waitForSelector("#message:has-text('Eklendi (sayfanın düzeni)')", { timeout: 120000 });
+    const ocrTitle = await page.inputValue('[data-field="title"]');
+    if (ocrTitle !== "Osmanlı Taşrasında Kadı Sicilleri") fail(`ocr title: ${ocrTitle}`);
+    if ((await page.inputValue('[data-field="publisher"]')) !== "Küre Yayınları") fail(`ocr publisher: ${await page.inputValue('[data-field="publisher"]')}`);
+    if ((await page.inputValue('[data-field="date"]')) !== "2016") fail("ocr year");
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/fotograf.png`, fullPage: true });
+  }
 
   // The same record again: not added twice, the existing one opens.
   await page.click("#tab-kutuphane");

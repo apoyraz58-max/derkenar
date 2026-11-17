@@ -500,3 +500,19 @@ export function hijriPair(date: string, place: string, publisher: string): strin
   // A Gregorian year in the same range (1100–1460) on an Arabic print is very unlikely after the 1800s.
   return `${h}/${hijriToGregorian(h)}`;
 }
+
+const WESTERN_PLACES = ["London", "Londra", "Leiden", "Oxford", "Cambridge", "New York", "Princeton", "Chicago", "Paris", "Berlin", "Leipzig", "Wiesbaden", "Göttingen", "Wien", "Viyana", "Roma", "Edinburgh", "Boston", "Washington", "Toronto", "Montreal", "Leuven", "Amsterdam", "Bonn", "Münih", "München", "Hamburg", "Heidelberg", "Tübingen", "Freiburg", "Lahey", "Brüksel", "Bruxelles", "Madrid", "Moskova", "Budapeşte", "Sofya", "Saraybosna", "Bakü", "Taşkent", "Kazan", "Üsküp", "Prizren", "Priştine", "Lefkoşa", "Berkeley", "Los Angeles", "Bloomington", "Albany", "Edinburg", "Abingdon", "New Haven", "Ithaca", "Austin", "Salt Lake City", "Atlanta", "Cenevre", "Genève"];
+const PLACE_KEYS = [...Object.keys(PLACES), ...WESTERN_PLACES.map(foldText)].sort((a, b) => b.length - a.length);
+
+/** A city named in a line ("İstanbul, 2015", "DERGÂH YAYINLARI İSTANBUL"): its İSNAD form and the words as written. */
+export function placeIn(line: string): { place: string; raw: string } | null {
+  const words = line.split(/[\s,;:()/–-]+/).filter(Boolean);
+  for (const key of PLACE_KEYS) {
+    const n = key.split(" ").length;
+    for (let i = 0; i + n <= words.length; i++) {
+      const raw = words.slice(i, i + n).join(" ");
+      if (foldText(raw) === key) return { place: PLACES[key] ?? WESTERN_PLACES.find((w) => foldText(w) === key)!, raw };
+    }
+  }
+  return null;
+}
