@@ -406,3 +406,27 @@ export function restoreTurkish(text: string): string {
     return /^[A-Z]/.test(word) ? cap(fixed) : lower(fixed);
   });
 }
+
+// ---------------------------------------------------------------- Arabic article of a nisba
+
+const SUN = /^[tsşdzrnṭṣḍẓẕs̱ẕ]/i;
+
+/**
+ * Classical Arabic authors carry the article before their nisba: "Ebû Şekûr
+ * Muhammed b. Abdüsseyyid es-Sâlimî el-Keşşî", "Muhammed Aʿlâ b. Ali
+ * et-Tehânevî". With the İSNAD-Zotero convention the article ends the given
+ * name ("Ebû Hâmid Muhammed el-" + "Gazzâlî"), so the short form reads
+ * "Gazzâlî". Returns the given name with the article added, or null.
+ */
+export function nisbaArticle(lastName: string, firstName: string): string | null {
+  const last = lastName.trim();
+  const first = firstName.trim();
+  if (!last || !first || /-$/.test(first) || /^(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|al|at|as|az|an|ad|ar|ash)-/i.test(last)) return null;
+  if (/^(ibn|ibnü|ibni|ebû|ebü|ebi|abd|abdül|abdür|abdu)/i.test(last)) return null;
+  if (!/[îīiy]$/.test(last) || !/[^aeıioöuüâîûāīū][îī]$/.test(last)) return null;
+  // A classical name chain: "b." (bin) or a kunya.
+  if (!/(^|\s)(b\.|bin|ibn)\s/i.test(first) && !/^(ebû|ebü|ebu)\s/i.test(first)) return null;
+  const c = last.normalize("NFD").charAt(0).toLocaleLowerCase("tr");
+  const article = SUN.test(c) ? `e${c === "s" && /^ş/i.test(last) ? "ş" : last.charAt(0).toLocaleLowerCase("tr")}-` : "el-";
+  return `${first} ${article}`;
+}

@@ -348,3 +348,20 @@ describe("İSNAD 2 kılavuzu: metin içi (s. 139-)", () => {
     expect(htmlToText(planRefresh(st, [{ id: "x", noteIndex: 0, text: "" }], r).updates.get("x")!)).toBe("(Kutlu, 2010, 56; a.mlf., 1997, 317-331)");
   });
 });
+
+describe("nisbede harf-i tarif (s. 91)", () => {
+  it("eksikse denetim önerir; eklenince ilk atıfta el-Keşşî, kısa atıfta Keşşî", async () => {
+    const { checkItem, applyFix } = await import("../src/core/isnad.js");
+    const base: Item = { ...items[0]!, key: "KESSI234", itemType: "manuscript", fields: { title: "et-Temhîd fî beyâni’t-tevḥîd", archive: "Süleymaniye Kütüphanesi", archiveLocation: "Şehit Ali Paşa, 1153", place: "İstanbul" }, creators: [{ creatorType: "author", lastName: "Keşşî", firstName: "Ebû Şekûr Muhammed b. Abdüsseyyid es-Sâlimî" }], notes: [], tags: [], collections: [], relations: [] };
+    const issue = checkItem(base).find((i) => i.code === "nisba-article")!;
+    expect(issue.fixLabel).toBe('"el-" ekle');
+    const fixed = applyFix(base, issue.fix!);
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales);
+    const st = emptyState();
+    putCitation(st, "a", [{ id: fixed.key, locator: "77b" }], { [fixed.key]: fixed });
+    putCitation(st, "b", [{ id: fixed.key, locator: "78a" }], { [fixed.key]: fixed });
+    const plan = planRefresh(st, [{ id: "a", noteIndex: 1, text: "" }, { id: "b", noteIndex: 2, text: "" }], r);
+    expect(htmlToText(plan.updates.get("a")!)).toMatch(/^Ebû Şekûr Muhammed b\. Abdüsseyyid es-Sâlimî el-Keşşî, et-Temhîd/);
+    expect(htmlToText(plan.updates.get("b")!)).toMatch(/^Keşşî, et-Temhîd/);
+  });
+});

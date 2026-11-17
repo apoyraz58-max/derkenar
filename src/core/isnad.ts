@@ -3,7 +3,7 @@
  * usual slips of hand-entered or imported records. Each finding says what is
  * wrong and, where the fix is mechanical, carries it ("Düzelt").
  */
-import { cleanYear, restoreTurkish, isTurkishPlace, isnadName, isnadPlace, isnadPublisher, isnadTitle, nameNeedsCase, publisherLooksShort, shortTitleOf } from "./isnadstyle.js";
+import { cleanYear, nisbaArticle, restoreTurkish, isTurkishPlace, isnadName, isnadPlace, isnadPublisher, isnadTitle, nameNeedsCase, publisherLooksShort, shortTitleOf } from "./isnadstyle.js";
 import { type Creator, type Item, baseField, containerOf, fieldLabel, parseDate, primaryCreators, typeField } from "./zotero.js";
 
 export type Level = "error" | "warning" | "info";
@@ -228,6 +228,11 @@ export function checkItem(item: Item): Issue[] {
     if (fixedEnc !== full) {
       add({ code: "encoding", level: "error", message: `Kişi adı: bozuk Türkçe karakter (${full}).`, creatorIndex: i, fix: { creatorIndex: i, creator: mapCreator(c, fixEncoding) }, fixLabel: "Karakterleri düzelt" });
       return;
+    }
+    const withArticle = c.lastName && c.firstName ? nisbaArticle(c.lastName, c.firstName) : null;
+    if (withArticle) {
+      const art = withArticle.split(" ").pop()!;
+      add({ code: "nisba-article", level: "info", message: `Klasik müellifin nisbesinde harf-i tarif yok gibi: İSNAD "${art}${c.lastName}" yazar (${c.firstName} ${art}${c.lastName}). Harf-i tarif ad kutusunun sonuna yazılır; kısa atıfta düşer.`, creatorIndex: i, fix: { creatorIndex: i, creator: { ...c, firstName: withArticle } }, fixLabel: `"${art}" ekle` });
     }
     if (c.name !== undefined && restoreTurkish(c.name) !== c.name) {
       add({ code: "turkish-letters", level: "warning", message: `Kurum adı: Türkçe harfler eksik ("${restoreTurkish(c.name)}").`, creatorIndex: i, fix: { creatorIndex: i, creator: { ...c, name: restoreTurkish(c.name) } }, fixLabel: "Düzelt" });
