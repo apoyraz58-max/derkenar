@@ -385,6 +385,23 @@ try {
   await page.uncheck("#bib-sections");
   await page.waitForSelector("#message:has-text('tek liste')");
   if ((await page.evaluate(() => window.__text())).includes("Kitaplar ve Kitap Bölümleri")) fail("sections not removed");
+  // Kaynakçayı düzenle: leave a cited work out, add an uncited one.
+  await page.click("#bib-edit summary");
+  await page.locator("#bib-works li", { hasText: "Müstasfâ" }).locator("input").uncheck();
+  await page.waitForFunction(() => !window.__text().includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ"));
+  await page.locator("#bib-works li", { hasText: "Müstasfâ" }).locator("input").check();
+  await page.waitForFunction(() => window.__text().includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ"));
+  const bibBefore = await page.evaluate(() => window.__text());
+  await page.fill("#bib-add-q", "a");
+  const hit = page.locator("#bib-add-hits button").first();
+  if (await hit.count()) {
+    await hit.click();
+    await page.waitForSelector("#message:has-text('atıf yapılmadan')");
+    if ((await page.evaluate(() => window.__text())).length <= bibBefore.length) fail("uncited work not in the bibliography");
+    await page.locator("#bib-works button", { hasText: "atıfsız" }).first().click();
+    await page.waitForFunction((n) => window.__text().length === n, bibBefore.length);
+  }
+  await page.click("#bib-edit summary");
   if ((await page.locator("#doc-citations li").count()) !== 5) fail("document list should show 5 citations");
   if (shots) await page.screenshot({ path: `${shots}/belge.png`, fullPage: true });
 

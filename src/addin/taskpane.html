@@ -238,6 +238,13 @@
         <button id="bibliography" type="button">Kaynakça ekle / güncelle</button>
       </div>
       <p id="refresh-stat" class="muted small"></p>
+      <details id="bib-edit" class="section-like">
+        <summary>Kaynakçayı düzenle</summary>
+        <p class="muted small">İşareti kaldırılan eser kaynakçada yer almaz. Atıf yapılmayan ama yararlanılan bir eseri kaynakçaya eklemek için arayın.</p>
+        <ul id="bib-works" class="plain"></ul>
+        <input id="bib-add-q" type="search" placeholder="Atıf yapılmamış eser ekle: yazar, başlık…" autocomplete="off" />
+        <ul id="bib-add-hits" class="plain hits"></ul>
+      </details>
       <section>
         <h2>Belgedeki atıflar</h2>
         <ol id="doc-citations" class="doc-list"></ol>

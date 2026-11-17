@@ -244,3 +244,9 @@ code { font-size: 12px; background: rgba(127,127,127,.15); padding: 0 3px; borde
 .prefix-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
 .prefix-chips .chip { min-height: 24px; padding: 1px 8px; font-size: 12px; border-radius: 12px; }
 .prefix-chips .chip.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+/* Kaynakçayı düzenle */
+details.section-like { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; }
+details.section-like summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+#bib-works li { display: flex; gap: 6px; align-items: baseline; font-size: 13px; padding: 2px 0; }
+#bib-works li.out span { color: var(--muted); text-decoration: line-through; }

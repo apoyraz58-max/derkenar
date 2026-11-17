@@ -12,7 +12,7 @@
 import { type FoundCitation, commitPlan, newCitationId, planRefresh, signature, syncWorks } from "../../core/docstate.js";
 import { htmlToSegments, htmlToText } from "../../core/html.js";
 import { BUILTIN_STYLES } from "../../core/styles.js";
-import { type Item, now } from "../../core/zotero.js";
+import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { $, S, doc, getRenderer, h, putItems, renderSummary, run, saveLibraryCopy, serial, setMessage, styleTitle } from "./core.js";
 
@@ -60,6 +60,7 @@ export function refresh(force = false, quiet = false): Promise<void> {
     const secs = ((performance.now() - started) / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 2 });
     $("refresh-stat").textContent = `${result.citations} atıf ${secs} sn'de denetlendi; ${result.written} tanesi yeniden yazıldı. ${watcherInfo()}`.trim();
     renderDocList();
+    if (($("bib-edit") as HTMLDetailsElement).open) renderBibEdit();
     const edited = Object.keys(d.edited ?? {}).length;
     if (edited && !quiet) $("refresh-stat").textContent += ` ${edited} atıf Word'de elle değiştirildiği için güncellenmedi (Denetim'de seçin).`;
     if (!quiet) {
@@ -158,6 +159,79 @@ export function citedKeys(): Set<string> {
   const d = doc();
   const ids = order.length ? order.map((o) => o.id) : Object.keys(d.citations);
   return new Set(ids.flatMap((id) => d.citations[id]?.items.map((r) => r.id) ?? []));
+}
+
+// ---------------------------------------------------------------- Kaynakçayı düzenle
+
+function renderBibEdit(): void {
+  const d = doc();
+  const excluded = new Set(d.bibExcluded ?? []);
+  const uncited = new Set(d.bibUncited ?? []);
+  const cited = [...new Set(order.flatMap((o) => d.citations[o.id]?.items.map((r) => r.id) ?? []))];
+  const keys = [...cited, ...[...uncited].filter((k) => !cited.includes(k))].filter((k) => d.items[k]);
+  const name = (k: string) => {
+    const it = S.byKey.get(k) ?? d.items[k]!;
+    return `${creatorLine(it) || "—"}, ${titleOf(it) || "(başlıksız)"}`;
+  };
+  $("bib-works").replaceChildren(
+    ...keys
+      .sort((a, b) => name(a).localeCompare(name(b), "tr"))
+      .map((k) => {
+        const box = h("input", { type: "checkbox", checked: !excluded.has(k), "aria-label": "Kaynakçada" });
+        box.onchange = () =>
+          void run("Kaynakça yenileniyor", async () => {
+            const set = new Set(doc().bibExcluded ?? []);
+            if (box.checked) set.delete(k);
+            else set.add(k);
+            doc().bibExcluded = [...set];
+            await refresh(false, true);
+          });
+        return h(
+          "li",
+          { class: excluded.has(k) ? "out" : "" },
+          box,
+          h("span", {}, name(k)),
+          uncited.has(k)
+            ? h("button", {
+                type: "button",
+                class: "link",
+                title: "Kaynakçadan çıkar",
+                onclick: () =>
+                  void run("Kaynakça yenileniyor", async () => {
+                    doc().bibUncited = (doc().bibUncited ?? []).filter((x) => x !== k);
+                    await refresh(false, true);
+                  }),
+              }, "(atıfsız) ✕")
+            : null,
+        );
+      }),
+  );
+  if (!keys.length) $("bib-works").append(h("li", { class: "muted" }, "Henüz atıf yok."));
+}
+
+function searchUncited(): void {
+  const q = $<HTMLInputElement>("bib-add-q").value.trim();
+  const d = doc();
+  const have = new Set([...Object.keys(d.citations).flatMap((id) => d.citations[id]!.items.map((r) => r.id)), ...(d.bibUncited ?? [])]);
+  const hits = q ? S.index.search(q, 8, (i) => !have.has(i.key)) : [];
+  $("bib-add-hits").replaceChildren(
+    ...hits.map(({ item }) =>
+      h("li", {}, h("button", {
+        type: "button",
+        class: "link",
+        onclick: () =>
+          void run("Kaynakçaya ekleniyor", async () => {
+            const dd = doc();
+            dd.items[item.key] = JSON.parse(JSON.stringify(item)) as Item;
+            dd.bibUncited = [...(dd.bibUncited ?? []), item.key];
+            $<HTMLInputElement>("bib-add-q").value = "";
+            $("bib-add-hits").replaceChildren();
+            await refresh(false, true);
+            setMessage(dd.bibliographyHtml ? "Eser kaynakçaya eklendi (atıf yapılmadan)." : "Eser eklendi; kaynakçayı Kaynakça Ekle/Düzenle ile belgeye koyun.", "success");
+          }),
+      }, `+ ${creatorLine(item) || "—"}, ${titleOf(item)}`)),
+    ),
+  );
 }
 
 function renderPrefs(): void {
@@ -263,6 +337,8 @@ export function wireDocument(): void {
       setMessage(doc().bibSections ? "Kaynakça türlere ayrıldı (Yazma Eserler, Kitaplar, Makaleler …)." : "Kaynakça tek liste oldu.", "success");
     });
   $("refresh").onclick = () => void run("Belge güncelleniyor", () => refresh(true));
+  $<HTMLInputElement>("bib-add-q").oninput = searchUncited;
+  $("bib-edit").addEventListener("toggle", renderBibEdit);
   $("bibliography").onclick = () => void run("Kaynakça hazırlanıyor", bibliography);
   $("unlink").onclick = unlink;
   $("import-doc").onclick = () =>

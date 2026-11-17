@@ -640,3 +640,22 @@ describe("atıf denetimi", async () => {
     expect(out.map((i) => `${i.noteIndex}:${i.code}`)).toEqual(["1:no-place", "2:repeated", "4:hand-edited"]);
   });
 });
+
+describe("kaynakçayı düzenle", () => {
+  it("atıfsız eser kaynakçaya girer, çıkarılan eser girmez; atıflar değişmez", () => {
+    const r = new Renderer(style("isnad-dipnotlu"), locales);
+    const st = emptyState();
+    const a = { ...emptyItem("book", "m"), key: "AAAA1111", fields: { title: "Birinci Kitap", place: "Ankara", publisher: "Beta Yayınları", date: "2001" }, creators: [{ creatorType: "author", lastName: "Akın", firstName: "Ali" }] };
+    const b = { ...emptyItem("book", "m"), key: "BBBB1111", fields: { title: "İkinci Kitap", place: "Ankara", publisher: "Beta Yayınları", date: "2002" }, creators: [{ creatorType: "author", lastName: "Bulut", firstName: "Can" }] };
+    const c = { ...emptyItem("book", "m"), key: "CCCC1111", fields: { title: "Üçüncü Kitap", place: "Ankara", publisher: "Beta Yayınları", date: "2003" }, creators: [{ creatorType: "author", lastName: "Cengiz", firstName: "Dilek" }] };
+    putCitation(st, "x", [{ id: a.key, locator: "1" }, { id: b.key, locator: "2" }], { [a.key]: a, [b.key]: b });
+    st.items[c.key] = c;
+    st.bibUncited = [c.key];
+    st.bibExcluded = [b.key];
+    const plan = planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r);
+    const bib = plan.bibliography!.entries.map((e) => htmlToText(e.html));
+    expect(bib.map((x) => x.split(",")[0])).toEqual(["Akın", "Cengiz"]);
+    expect(htmlToText(plan.updates.get("x")!)).toContain("Can Bulut, İkinci Kitap");
+    expect(plan.unused).not.toContain(c.key);
+  });
+});

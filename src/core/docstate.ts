@@ -91,7 +91,8 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
     ordered.push({ id: f.id, items: renderer.meta.isnad ? withSameAuthor(c.items, state.items) : c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
   }
   renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items)), renderer.meta.isnad));
-  const html = renderer.renderCitations(ordered);
+  const uncited = (state.bibUncited ?? []).filter((k) => state.items[k]);
+  const html = renderer.renderCitations(ordered, uncited);
   const updates = new Map<string, string>();
   const edited = new Map<string, string>();
   const texts = new Map(found.map((f) => [f.id, f.text]));
@@ -109,9 +110,11 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
   }
   // Data of citations no longer in the text stays (undo can bring them back);
   // unused lists the works nothing in the text cites now.
-  const cited = new Set(ordered.flatMap((c) => c.items.map((r) => r.id)));
+  const cited = new Set([...ordered.flatMap((c) => c.items.map((r) => r.id)), ...uncited]);
   const unused = Object.keys(state.items).filter((k) => !cited.has(k));
-  const raw = renderer.bibliography();
+  const excluded = new Set(state.bibExcluded ?? []);
+  const all = renderer.bibliography();
+  const raw = all && excluded.size ? { ...all, entries: all.entries.filter((e) => !e.ids.length || !e.ids.every((id) => excluded.has(id))) } : all;
   const bibliography = raw && state.bibSections ? withSections(raw, state.items) : raw;
   const bibHtml = bibliography?.entries.map((e) => (e.heading ? `<h>${e.html}</h>` : e.html)).join("") ?? "";
   const bibliographyChanged = force || bibHtml !== (state.bibliographyHtml ?? "");

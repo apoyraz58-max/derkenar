@@ -88,6 +88,9 @@ export interface DocState {
   bibTitle?: string;
   /** Citations changed by hand in Word (id → their text), found by the last refresh. */
   edited?: Record<string, string>;
+  /** Kaynakçayı düzenle: works listed though not cited, and cited works left out. */
+  bibUncited?: string[];
+  bibExcluded?: string[];
   /** Bibliography divided by kind (Yazma Eserler, Kitaplar, Makaleler …). */
   bibSections?: boolean;
 }

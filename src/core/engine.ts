@@ -79,14 +79,14 @@ export class Renderer {
   }
 
   /** Renders every citation, in order, so ibid./short forms come out right. Returns id → HTML. */
-  renderCitations(citations: readonly OrderedCitation[]): Map<string, string> {
+  renderCitations(citations: readonly OrderedCitation[], uncited: readonly string[] = []): Map<string, string> {
     const input = citations.map((c) => ({
       citationID: c.id,
       citationItems: c.items.map((r, i) => this.citeItem(r, i === 0)),
       properties: { noteIndex: c.noteIndex },
     }));
     const out = new Map<string, string>();
-    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html")) out.set(id, this.tidy(html));
+    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html", [...uncited])) out.set(id, this.tidy(html));
     return out;
   }
 
