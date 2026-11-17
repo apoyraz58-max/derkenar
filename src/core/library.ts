@@ -167,3 +167,36 @@ export function mergeItems(master: Item, others: readonly Item[]): Item {
   m.dateModified = now();
   return m;
 }
+
+/** ISBN as 13 digits (ISBN-10 converted), for comparing. */
+function isbn13(raw: string): string {
+  const d = raw.replace(/[^0-9X]/gi, "").toUpperCase();
+  if (d.length !== 10) return d;
+  const core = "978" + d.slice(0, 9);
+  let sum = 0;
+  for (let i = 0; i < 12; i++) sum += Number(core[i]) * (i % 2 ? 3 : 1);
+  return core + String((10 - (sum % 10)) % 10);
+}
+
+/**
+ * The library's record of the same work, if there is one: same DOI, same
+ * ISBN (10 or 13), or the same title, year and first creator. Used when a
+ * work is added, so the library does not get it twice.
+ */
+export function existingCopy(candidate: Item, items: readonly Item[]): Item | undefined {
+  const doi = candidate.fields.DOI?.trim().toLowerCase();
+  const isbns = new Set((candidate.fields.ISBN ?? "").split(/[\s,;]+/).filter((x) => x.replace(/[^0-9X]/gi, "").length >= 10).map(isbn13));
+  const t = normTitle(candidate);
+  const y = yearOf(candidate);
+  const f = firstFamily(candidate);
+  return items.find((i) => {
+    if (i.deleted) return false;
+    if (i.key === candidate.key) return true;
+    if (doi && i.fields.DOI?.trim().toLowerCase() === doi) return true;
+    if (isbns.size && (i.fields.ISBN ?? "").split(/[\s,;]+/).some((x) => isbns.has(isbn13(x)))) return true;
+    if (t.length < 4 || normTitle(i) !== t) return false;
+    const yi = yearOf(i);
+    const fi = firstFamily(i);
+    return !(y && yi && y !== yi) && !(f && fi && f !== fi) && Boolean(f || fi || y || yi);
+  });
+}

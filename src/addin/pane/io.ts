@@ -12,6 +12,7 @@ import { getMeta, setMeta } from "../store.js";
 import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
 import { currentView, inCurrentView } from "./library.js";
+import { existingCopy } from "../../core/library.js";
 
 
 /** Imports keep existing items: a re-import of the same Zotero export updates them in place. */
@@ -88,6 +89,27 @@ function isnadFix(items: Item[]): string {
   return (all.size ? ` İSNAD'a göre düzeltildi: ${[...all].join(", ")}.` : "") + (left ? ` ${left} uyarı düzenleyicide (yayınevi adı, eksik bilgi …).` : "");
 }
 
+/** Works the library has already (same DOI, ISBN, or title, year and author) are not added twice. */
+function splitExisting(items: readonly Item[]): { fresh: Item[]; already: Item[] } {
+  const fresh: Item[] = [];
+  const already: Item[] = [];
+  for (const it of items) {
+    const old = existingCopy(it, [...S.items, ...fresh]);
+    if (old) already.push(old);
+    else fresh.push(it);
+  }
+  return { fresh, already };
+}
+
+function alreadyNote(already: readonly Item[]): string {
+  return already.length ? ` ${already.length} kaynak zaten kütüphanedeydi, ikinci kez eklenmedi: ${already.slice(0, 3).map((i) => `${creatorLine(i) || "—"}, ${titleOf(i)}`).join("; ")}${already.length > 3 ? "…" : ""}.` : "";
+}
+
+function showAlready(already: readonly Item[]): void {
+  if (already.length === 1) openEditor(already[0]!.key);
+  setMessage(already.length === 1 ? `Bu kaynak zaten kütüphanede: ${creatorLine(already[0]!) || "—"}, ${titleOf(already[0]!)}. Kaydı açtım; ikinci kez eklenmedi.` : `Bu ${already.length} kaynağın hepsi zaten kütüphanede; ikinci kez eklenmedi.`, "info");
+}
+
 /** Adds records pasted as RIS, BibTeX or CSL JSON text. */
 async function pasteRecords(): Promise<void> {
   const box = $<HTMLTextAreaElement>("new-paste");
@@ -99,9 +121,12 @@ async function pasteRecords(): Promise<void> {
   const v = currentView();
   const items = r.items.map((i) => ({ ...i, source: "manual", collections: v.kind === "collection" ? [v.key] : i.collections }));
   const fixedNote = isnadFix(items);
-  await putItems(items);
+  const { fresh, already } = splitExisting(items);
   box.value = "";
-  setMessage(`${items.length} kaynak eklendi${items.length === 1 ? `: ${creatorLine(items[0]!)}, ${titleOf(items[0]!)}` : ""}.${fixedNote}`, "success");
+  if (!fresh.length) return showAlready(already);
+  items.splice(0, items.length, ...fresh);
+  await putItems(items);
+  setMessage(`${items.length} kaynak eklendi${items.length === 1 ? `: ${creatorLine(items[0]!)}, ${titleOf(items[0]!)}` : ""}.${fixedNote}${alreadyNote(already)}`, already.length ? "warning" : "success");
   if (items.length === 1) openEditor(items[0]!.key);
 }
 
@@ -223,12 +248,20 @@ async function lookup(box = "new-lookup"): Promise<void> {
   const v = currentView();
   if (v.kind === "collection") for (const f of found) f.collections = [v.key];
   const fixedNote = isnadFix(found);
+  const { fresh, already } = splitExisting(found);
+  found.splice(0, found.length, ...fresh);
+  if (!found.length && already.length && !failed.length) {
+    $<HTMLTextAreaElement>(box).value = "";
+    return showAlready(already);
+  }
   await putItems(found);
   $<HTMLTextAreaElement>(box).value = failed.join("\n");
   // A single ISBN no catalogue knows: open a book record with the ISBN in it.
   if (!found.length && lines.length === 1 && cleanIsbn(lines[0]!) && !cleanDoi(lines[0]!)) {
     const book = emptyItem("book", "manual");
     book.fields.ISBN = cleanIsbn(lines[0]!)!;
+    const old = existingCopy(book, S.items);
+    if (old) return showAlready([old]);
     if (v.kind === "collection") book.collections = [v.key];
     await putItems([book]);
     $<HTMLTextAreaElement>(box).value = "";
@@ -237,7 +270,7 @@ async function lookup(box = "new-lookup"): Promise<void> {
     return;
   }
   if (!found.length) throw new Error(reasons.join(" "));
-  setMessage(`${found.length} kaynak eklendi${found.length === 1 ? `: ${creatorLine(found[0]!)}, ${titleOf(found[0]!)}` : ""}.${fixedNote}${failed.length ? ` Eklenemeyen ${failed.length} satır kutuda bırakıldı: ${reasons.join(" ")}` : ""}`, failed.length ? "warning" : "success");
+  setMessage(`${found.length} kaynak eklendi${found.length === 1 ? `: ${creatorLine(found[0]!)}, ${titleOf(found[0]!)}` : ""}.${fixedNote}${alreadyNote(already)}${failed.length ? ` Eklenemeyen ${failed.length} satır kutuda bırakıldı: ${reasons.join(" ")}` : ""}`, failed.length || already.length ? "warning" : "success");
   // One work found: open it, so it can be checked and completed at once.
   if (found.length === 1) openEditor(found[0]!.key);
 }

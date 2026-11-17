@@ -497,6 +497,14 @@ try {
   const pastedTitle = await page.inputValue('[data-field="title"]');
   if (pastedTitle !== "Tasavvuf ve Tarikatlar Tarihi") fail(`İSNAD title case on paste: ${pastedTitle}`);
   if (!(await page.textContent("#message")).includes("İSNAD'a göre düzeltildi")) fail("no İSNAD note in the message");
+  // The same record again: not added twice, the existing one opens.
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-new", "__ways");
+  await page.fill("#new-paste", "TY  - BOOK\nAU  - Kara, Mustafa\nTI  - Tasavvuf ve tarikatlar tarihi\nCY  - İstanbul\nPB  - Dergâh Yayınları\nPY  - 1985\nER  - \n");
+  await page.click("#new-paste-form button[type=submit]");
+
+  await page.waitForSelector("#message:has-text('zaten kütüphanede')");
+  if (!(await page.isVisible("#view-kaynak"))) fail("existing record not opened");
 
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");

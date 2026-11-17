@@ -579,3 +579,29 @@ describe("kaynakça türlere ayrılır", async () => {
     expect(out).toEqual(["# Arşiv Belgeleri", "D", "# Yazma Eserler", "C", "# Kitaplar ve Kitap Bölümleri", "A", "# Makaleler ve Bildiriler", "B", "# Elektronik Kaynaklar", "E"]);
   });
 });
+
+describe("eklerken yineleme", async () => {
+  const { existingCopy } = await import("../src/core/library.js");
+  const mk = (key: string, fields: Record<string, string>, last = "Kara"): Item => ({ ...emptyItem("book", "m"), key, fields, creators: [{ creatorType: "author", lastName: last, firstName: "Mustafa" }] });
+  const lib = [mk("A", { title: "Tasavvuf ve Tarikatlar Tarihi", date: "1985", ISBN: "975-437-076-1" }), mk("B", { title: "Başka", DOI: "10.1/abc" })];
+  it("aynı ISBN (10 ya da 13), aynı DOI, aynı başlık-yıl-yazar", () => {
+    expect(existingCopy(mk("x", { title: "X", ISBN: "9789754370768" }), lib)?.key).toBe("A");
+    expect(existingCopy(mk("x", { title: "Y", DOI: "10.1/ABC" }), lib)?.key).toBe("B");
+    expect(existingCopy(mk("x", { title: "Tasavvuf ve tarikatlar tarihi", date: "1985" }), lib)?.key).toBe("A");
+  });
+  it("başka yıl ya da başka yazar: ayrı eser", () => {
+    expect(existingCopy(mk("x", { title: "Tasavvuf ve Tarikatlar Tarihi", date: "2012" }), lib)).toBeUndefined();
+    expect(existingCopy(mk("x", { title: "Tasavvuf ve Tarikatlar Tarihi", date: "1985" }, "Yılmaz"), lib)).toBeUndefined();
+  });
+});
+
+describe("eklerken yineleme: yapıştırılan aynı künye", () => {
+  it("ikinci yapıştırma ilk kaydı bulur", async () => {
+    const { existingCopy } = await import("../src/core/library.js");
+    const { autoFix } = await import("../src/core/isnad.js");
+    const ris = "TY  - BOOK\nAU  - Kara, Mustafa\nTI  - Tasavvuf ve tarikatlar tarihi\nCY  - İstanbul\nPB  - Dergâh Yayınları\nPY  - 1985\nER  - \n";
+    const a = autoFix((await parseFile(ris, "y")).items[0]!).item;
+    const b = autoFix((await parseFile(ris, "y")).items[0]!).item;
+    expect(existingCopy(b, [a])?.key, JSON.stringify([a.key, b.key, a.fields, a.creators])).toBe(a.key);
+  });
+});
