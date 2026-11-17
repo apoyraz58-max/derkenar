@@ -11,8 +11,8 @@ import { type Condition, type SavedSearch, OPS, SEARCH_FIELDS, describe, matches
 import { report } from "../../core/zoteroexport.js";
 import { type Item, emptyItem, itemTypeLabel, itemTypes, newKey, now } from "../../core/zotero.js";
 import { addToBasket, resultRow } from "./cite.js";
-import { citedKeys } from "./document.js";
-import { $, S, copyText, download, getRenderer, h, putCollections, putItems, putSearches, run, setMessage, setTagColors, showView } from "./core.js";
+import { citedKeys, refresh } from "./document.js";
+import { $, S, copyText, doc, download, getRenderer, h, putCollections, putItems, putSearches, run, setMessage, setTagColors, showView } from "./core.js";
 import { openEditor } from "./editor.js";
 
 let sortKey: SortKey = "creator";
@@ -221,6 +221,7 @@ function row(item: Item): HTMLLIElement {
   if (dots) li.querySelector(".r-title")?.prepend(dots);
   if (item.dirty) li.querySelector(".r-author")?.append(h("span", { class: "r-dirty", title: "Çevrimiçi kütüphaneye gönderilmedi" }, " ●"));
   li.prepend(cb);
+  li.dataset.key = item.key;
   li.onclick = (e) => (e.detail === 2 ? (addToBasket(item), showView("atif")) : openEditor(item.key));
   return li;
 }
@@ -272,8 +273,27 @@ function renderDuplicates(): void {
 async function merge(master: Item, others: Item[]): Promise<void> {
   const merged = mergeItems(master, others);
   await putItems([merged, ...others.map((o) => ({ ...o, deleted: true, dateModified: now(), fields: { ...o.fields, extra: [o.fields.extra, `Derkenar: ${master.key} ile birleştirildi`].filter(Boolean).join("\n") } }))], [], true);
-  // Citations in this document that point at a merged-away item keep working (the document has its copy).
-  setMessage(`${others.length + 1} kayıt birleştirildi; diğerleri çöp kutusunda.`, "success");
+  // Citations in this document that cited a merged-away record now cite the merged one:
+  // one work, one first citation, one bibliography line.
+  const d = doc();
+  const gone = new Set(others.map((o) => o.key));
+  let moved = 0;
+  for (const c of Object.values(d.citations)) {
+    const seen = new Set<string>();
+    const next = c.items.flatMap((r) => {
+      const id = gone.has(r.id) ? merged.key : r.id;
+      if (id !== r.id) moved++;
+      if (seen.has(id) && !r.locator) return [];
+      seen.add(id);
+      return [{ ...r, id }];
+    });
+    c.items.splice(0, c.items.length, ...next);
+  }
+  if (moved) {
+    d.items[merged.key] = JSON.parse(JSON.stringify(merged)) as Item;
+    await refresh(false, true);
+  }
+  setMessage(`${others.length + 1} kayıt birleştirildi; diğerleri çöp kutusunda.${moved ? ` Bu belgedeki ${moved} atıf birleştirilen kayda bağlandı.` : ""}`, "success");
 }
 
 // ---------------------------------------------------------------- bulk actions

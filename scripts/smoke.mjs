@@ -506,6 +506,22 @@ try {
   await page.waitForSelector("#message:has-text('zaten kütüphanede')");
   if (!(await page.isVisible("#view-kaynak"))) fail("existing record not opened");
 
+  // 9c. Merging a cited record into its copy: the document's citations follow the merged record.
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-view", "all");
+  const rowKeys = () => page.$$eval("#lib-list li.item-row", (ls) => ls.filter((l) => l.textContent.includes("Kelâm ilminin doğuşu")).map((l) => l.dataset.key));
+  const [origKey] = await rowKeys();
+  await page.click(`#lib-list li.item-row[data-key="${origKey}"]`);
+  await page.click("#view-kaynak details.menu summary");
+  await page.click("#ed-duplicate");
+  await page.waitForSelector("#message:has-text('çoğaltıldı')");
+  await page.click("#ed-back");
+  const copyKey = (await rowKeys()).find((k) => k !== origKey);
+  await page.click(`#lib-list li.item-row[data-key="${copyKey}"] input[type=checkbox]`);
+  await page.click(`#lib-list li.item-row[data-key="${origKey}"] input[type=checkbox]`);
+  await page.click('[data-bulk="merge"]');
+  await page.waitForSelector("#message:has-text('birleştirilen kayda bağlandı')");
+
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");
   await page.waitForSelector("#info-document dd:has-text('kaynak,')");
