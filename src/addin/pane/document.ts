@@ -56,7 +56,7 @@ export function refresh(force = false, quiet = false): Promise<void> {
     });
     await word.saveState(d);
     const secs = ((performance.now() - started) / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 2 });
-    $("refresh-stat").textContent = `${result.citations} atıf ${secs} sn'de denetlendi; ${result.written} tanesi yeniden yazıldı.`;
+    $("refresh-stat").textContent = `${result.citations} atıf ${secs} sn'de denetlendi; ${result.written} tanesi yeniden yazıldı. ${watcherInfo()}`.trim();
     renderDocList();
     if (!quiet) {
       const warn = orphans.size ? ` ${orphans.size} atıfın verisi bu belgede yok (başka belgeden kopyalanmış olabilir).` : "";
@@ -69,35 +69,64 @@ export function refresh(force = false, quiet = false): Promise<void> {
 
 let watching = false;
 let ticking = false;
+let tickTimer = 0;
+let quietTicks = 0;
+/** Last time a read of the citation order took (ms); the pace follows it. */
+let lastCost = 0;
+
+/**
+ * The pace of the watcher: every 1.5 s in a small document; in a long thesis
+ * where one read takes long, so many times that read's length that Word stays
+ * free for typing (at most 8 s); slower again after half a minute without a
+ * change. Adding, deleting or moving a footnote moves the cursor, and a
+ * cursor move asks for a read at once (nudge), so changes are still caught
+ * straight away.
+ */
+function nextDelay(): number {
+  const byCost = Math.min(8000, Math.max(1500, lastCost * 8));
+  return quietTicks > 20 ? Math.max(byCost, 4000) : byCost;
+}
+
+function schedule(ms = nextDelay()): void {
+  window.clearTimeout(tickTimer);
+  tickTimer = window.setTimeout(() => void tick(), ms);
+}
 
 async function tick(): Promise<void> {
-  if (ticking || document.hidden || doc().auto === false) return;
+  if (ticking || document.hidden || doc().auto === false) return schedule();
   ticking = true;
   try {
+    const started = performance.now();
     const found = await serial(() => word.readOrder());
+    lastCost = performance.now() - started;
     const sig = signature(found);
     if (lastSignature === null || sig !== lastSignature) {
       const first = lastSignature === null;
+      quietTicks = 0;
       await refresh(false, true);
       if (!first && found.length) $("refresh-stat").textContent += " (otomatik)";
-    }
+    } else quietTicks++;
   } catch {
     /* the document may be busy (typing, dialog): try again on the next tick */
   } finally {
     ticking = false;
+    schedule();
   }
 }
 
-let tickTimer = 0;
 export function nudge(): void {
-  window.clearTimeout(tickTimer);
-  tickTimer = window.setTimeout(() => void tick(), 300);
+  quietTicks = 0;
+  schedule(300);
+}
+
+/** How the watcher is doing, for the Belge tab. */
+export function watcherInfo(): string {
+  return lastCost ? `Otomatik denetim ${Math.round(nextDelay() / 100) / 10} sn'de bir (bir okuma ${Math.round(lastCost)} ms).` : "";
 }
 
 export function startWatcher(): void {
   if (watching) return;
   watching = true;
-  window.setInterval(() => void tick(), 1500);
   document.addEventListener("visibilitychange", nudge);
   void tick();
 }
