@@ -560,6 +560,17 @@ try {
   await page.waitForSelector("#message:has-text('Çağrıcı, Gazzâlî')");
   if ((await page.inputValue('[data-field="pages"]')) !== "489-505") fail("DİA pages");
 
+  // Serbest künye: a list copied from another thesis's bibliography and a footnote.
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-new", "__ways");
+  await page.fill("#new-paste", "Kutlu, Sönmez. Türklerin İslâmlaşma Sürecinde Mürcie ve Tesirleri. Ankara: TDV Yayınları, 2000.\nRecep Eren, Mâtürîdî'nin Müteşâbih Âyetlere Yaklaşımı (Sivas: Cumhuriyet Üniversitesi, Sosyal Bilimler Enstitüsü, Yüksek Lisans Tezi, 2017), 45.\nbu bir künye değil");
+  await page.click("#new-paste-form button[type=submit]");
+  await page.waitForSelector("#message:has-text('2 kaynak eklendi')");
+  if ((await page.inputValue("#new-paste")).trim() !== "bu bir künye değil") fail("unreadable line should stay in the box");
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-view", "all");
+  if (!(await page.locator("#lib-list li.item-row", { hasText: "Müteşâbih Âyetlere" }).count())) fail("free-text thesis not in the library");
+
   // The same record again: not added twice, the existing one opens.
   await page.click("#tab-kutuphane");
   await page.selectOption("#lib-new", "__ways");

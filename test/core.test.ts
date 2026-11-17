@@ -753,3 +753,44 @@ describe("kısaltmalar listesi", async () => {
     expect(usedAbbreviations("Id., Kitāb (s.l.: s.n., n.d.), 4; cf. al-Rāzī", "en-US").map((x) => x[0])).toEqual(["cf.", "Id.", "n.d.", "s.l.", "s.n."]);
   });
 });
+
+describe("serbest künye", async () => {
+  const { parseReference, splitReferences } = await import("../src/core/freetext.js");
+  const p = (s: string) => parseReference(s)!;
+  it("İSNAD dipnot: kitap (tahkik, hicrî/milâdî), makale, ansiklopedi", () => {
+    const a = p("Ebû Hâmid Muhammed b. Muhammed el-Gazzâlî, el-Mustasfâ min ʿilmi’l-uṣûl, thk. Hamza b. Züheyr Hâfız (Medine: el-Câmiatü’l-İslâmiyye, 1413/1993), 1/45.");
+    expect(a.item.itemType).toBe("book");
+    expect(a.item.creators[0]).toEqual({ creatorType: "author", lastName: "Gazzâlî", firstName: "Ebû Hâmid Muhammed b. Muhammed el-" });
+    expect(a.item.creators[1]).toMatchObject({ creatorType: "muhakkik", lastName: "Hâfız" });
+    expect(a.item.fields).toMatchObject({ title: "el-Mustasfâ min ʿilmi’l-uṣûl", place: "Medine", publisher: "el-Câmiatü’l-İslâmiyye", date: "1413/1993" });
+    const b = p("Sönmez Kutlu, “İlk Mürciî Metinler ve Kitâbü’l-İrcâ”, Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37/1 (1997), 320.");
+    expect(b.item.itemType).toBe("journalArticle");
+    expect(b.item.fields).toMatchObject({ title: "İlk Mürciî Metinler ve Kitâbü’l-İrcâ", publicationTitle: "Ankara Üniversitesi İlahiyat Fakültesi Dergisi", volume: "37", issue: "1", date: "1997" });
+    const c = p("Mustafa Çağrıcı, “Gazzâlî”, Türkiye Diyanet Vakfı İslâm Ansiklopedisi (İstanbul: TDV Yayınları, 1996), 13/490.");
+    expect(c.item.itemType).toBe("encyclopediaArticle");
+    expect(c.item.fields).toMatchObject({ encyclopediaTitle: "Türkiye Diyanet Vakfı İslâm Ansiklopedisi", volume: "13", place: "İstanbul", date: "1996" });
+  });
+  it("İSNAD kaynakça: kitap (cilt sayısı, baskı), bölüm, makale", () => {
+    const a = p("Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. 2 Cilt. İstanbul: Dergâh Yayınları, 3. Basım, 2005.");
+    expect(a.item.creators[0]).toEqual({ creatorType: "author", lastName: "Kara", firstName: "Mustafa" });
+    expect(a.item.fields).toMatchObject({ title: "Tasavvuf ve Tarikatlar Tarihi", numberOfVolumes: "2", place: "İstanbul", publisher: "Dergâh Yayınları", edition: "3", date: "2005" });
+    const b = p("Rudolph, Ulrich. “Mâtürîdîliğin Ortaya Çıkışı”. çev. Ali Dere. İmam Mâturîdî ve Mâturidilik. haz. Sönmez Kutlu. 295-304. Ankara: Kitâbiyât Yayınları, 2003.");
+    expect(b.item.itemType).toBe("bookSection");
+    expect(b.item.fields).toMatchObject({ title: "Mâtürîdîliğin Ortaya Çıkışı", bookTitle: "İmam Mâturîdî ve Mâturidilik", pages: "295-304", publisher: "Kitâbiyât Yayınları" });
+    expect(b.item.creators.map((x) => x.creatorType)).toEqual(["author", "translator", "hazirlayan"]);
+    const c = p("Kutlu, Sönmez. “İlk Mürciî Metinler”. Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 317-331.");
+    expect(c.item.fields).toMatchObject({ publicationTitle: "Ankara Üniversitesi İlahiyat Fakültesi Dergisi", volume: "37", pages: "317-331" });
+  });
+  it("APA ve tez", () => {
+    const a = p("Hoover, J., & Yücedoğru, Z. (2019). İslâmî monoteizm ve teslîs. Oksident, 1(1), 117–143. https://doi.org/10.5281/zenodo.3360748");
+    expect(a.form).toBe("apa");
+    expect(a.item.fields).toMatchObject({ title: "İslâmî monoteizm ve teslîs", publicationTitle: "Oksident", volume: "1", issue: "1", pages: "117-143", DOI: "10.5281/zenodo.3360748", date: "2019" });
+    expect(a.item.creators.map((x) => x.lastName)).toEqual(["Hoover", "Yücedoğru"]);
+    const t = p("Recep Eren, Mâtürîdî'nin Müteşâbih Âyetlere Yaklaşımı (Sivas: Cumhuriyet Üniversitesi, Sosyal Bilimler Enstitüsü, Yüksek Lisans Tezi, 2017), 45.");
+    expect(t.item.itemType).toBe("thesis");
+    expect(t.item.fields).toMatchObject({ university: "Cumhuriyet Üniversitesi, Sosyal Bilimler Enstitüsü", thesisType: "Yüksek Lisans Tezi", place: "Sivas" });
+  });
+  it("liste: numaralı ve satıra bölünmüş künyeler", () => {
+    expect(splitReferences("1. Kara, Mustafa. Tasavvuf ve Tarikatlar\nTarihi. İstanbul: Dergâh Yayınları, 2005.\n2. Kutlu, Sönmez. Türklerin İslâmlaşma Sürecinde Mürcie. Ankara: TDV Yayınları, 2010.")).toHaveLength(2);
+  });
+});

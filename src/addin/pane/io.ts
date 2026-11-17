@@ -114,21 +114,50 @@ function showAlready(already: readonly Item[]): void {
 async function pasteRecords(): Promise<void> {
   const box = $<HTMLTextAreaElement>("new-paste");
   const text = box.value.trim();
-  if (!text) throw new Error("RIS, BibTeX ya da CSL JSON metnini yapıştırın.");
+  if (!text) throw new Error("Künyeyi ya da künye listesini yapıştırın (İSNAD, APA …; RIS, BibTeX, DİA Atıf metni de olur).");
   const { isDia, parseDia } = await import("../../core/dia.js");
   const dia = isDia(text) ? parseDia(text) : null;
-  if (!dia && detectFormat(text) === "unknown") throw new Error("Metin tanınmadı. RIS satırları \"TY  - \" ile, BibTeX kayıtları \"@book{\" gibi, CSL JSON \"[\" ya da \"{\" ile başlar.");
-  const r = dia ? { items: [dia], collections: [] } : await parseFile(text, "yapıştırılan");
-  if (!r.items.length) throw new Error("Metinde kaynak bulunamadı.");
+  let items: Item[];
+  let source = "manual";
+  let left: string[] = [];
+  const unsureNotes: string[] = [];
+  if (dia) {
+    items = [dia];
+    source = "dia";
+  } else if (detectFormat(text) !== "unknown") {
+    const r = await parseFile(text, "yapıştırılan");
+    items = r.items;
+  } else {
+    // Serbest künye: each line a reference in İSNAD, APA … — split into fields.
+    const { parseReference, splitReferences } = await import("../../core/freetext.js");
+    items = [];
+    for (const line of splitReferences(text)) {
+      const r = parseReference(line);
+      if (!r) {
+        left.push(line);
+        continue;
+      }
+      items.push(r.item);
+      if (r.unsure.length) unsureNotes.push(`${creatorLine(r.item) || titleOf(r.item).slice(0, 30)}: ${r.unsure.join(", ")}`);
+    }
+    source = "serbest";
+    if (!items.length) throw new Error("Künye okunamadı. Her satıra bir künye yazın (ör. İSNAD: \"Ad Soyad, Başlık (Yer: Yayınevi, Yıl).\" ya da \"Soyad, Ad. Başlık. Yer: Yayınevi, Yıl.\").");
+  }
+  if (!items.length) throw new Error("Metinde kaynak bulunamadı.");
   const v = currentView();
-  const items = r.items.map((i) => ({ ...i, source: dia ? "dia" : "manual", collections: v.kind === "collection" ? [v.key] : i.collections }));
+  items = items.map((i) => ({ ...i, source, collections: v.kind === "collection" ? [v.key] : i.collections }));
   const fixedNote = isnadFix(items);
   const { fresh, already } = splitExisting(items);
-  box.value = "";
-  if (!fresh.length) return showAlready(already);
-  items.splice(0, items.length, ...fresh);
+  box.value = left.join("\n");
+  if (!fresh.length) {
+    if (left.length) throw new Error(`Okunamayan ${left.length} satır kutuda kaldı.`);
+    return showAlready(already);
+  }
+  items = fresh;
   await putItems(items);
-  setMessage(`${items.length} kaynak eklendi${items.length === 1 ? `: ${creatorLine(items[0]!)}, ${titleOf(items[0]!)}` : ""}.${fixedNote}${alreadyNote(already)}`, already.length ? "warning" : "success");
+  const unsure = unsureNotes.length ? ` Bakmanız gerekenler — ${unsureNotes.slice(0, 4).join("; ")}${unsureNotes.length > 4 ? " …" : ""}.` : "";
+  const leftNote = left.length ? ` Okunamayan ${left.length} satır kutuda kaldı.` : "";
+  setMessage(`${items.length} kaynak eklendi${items.length === 1 ? `: ${creatorLine(items[0]!)}, ${titleOf(items[0]!)}` : ""}.${fixedNote}${alreadyNote(already)}${unsure}${leftNote}`, already.length || left.length || unsure ? "warning" : "success");
   if (items.length === 1) openEditor(items[0]!.key);
 }
 
@@ -337,7 +366,7 @@ export function renderSources(): void {
 export function sourceName(source: string): string {
   if (source.startsWith("zotero:")) return `Çevrimiçi kütüphane (${source.slice(7)})`;
   if (source.startsWith("file:")) return `Dosya: ${source.slice(5)}`;
-  return ({ doi: "DOI ile eklenenler", isbn: "ISBN ile eklenenler", manual: "Elle girilenler", belge: "Belgelerden alınanlar", dia: "DİA maddeleri" } as Record<string, string>)[source] ?? source;
+  return ({ doi: "DOI ile eklenenler", isbn: "ISBN ile eklenenler", manual: "Elle girilenler", belge: "Belgelerden alınanlar", dia: "DİA maddeleri", serbest: "Yapıştırılan künyeler" } as Record<string, string>)[source] ?? source;
 }
 
 export async function restoreZoteroForm(): Promise<void> {

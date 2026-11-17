@@ -1,0 +1,502 @@
+/**
+ * Serbest künye: a reference copied from anywhere (another thesis's
+ * bibliography, a footnote, a PDF, a web page) split into a record.
+ *
+ * İSNAD is read first, both ways it is written:
+ *   dipnot    Ebû Hâmid Muhammed el-Gazzâlî, el-Mustasfâ, thk. Hamza b. Züheyr Hâfız (Medine: el-Câmiatü'l-İslâmiyye, 1413/1993), 1/45.
+ *             Sönmez Kutlu, “İlk Mürciî Metinler”, Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 320.
+ *   kaynakça  Gazzâlî, Ebû Hâmid Muhammed. el-Mustasfâ. thk. Hamza b. Züheyr Hâfız. 4 Cilt. Medine: el-Câmiatü'l-İslâmiyye, 1413/1993.
+ *             Kutlu, Sönmez. “İlk Mürciî Metinler”. Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 317-331.
+ * then APA ("Kutlu, S. (1997). Başlık. Dergi, 37(1), 317–331.") and the
+ * plain "Yer: Yayınevi, Yıl" of other styles. What could not be told for sure
+ * is listed in `unsure`, so the user looks only at that.
+ */
+import { type Creator, type Item, emptyItem, typeField } from "./zotero.js";
+
+/** Writes a base field ("publicationTitle", "publisher" …) under the name the item type gives it. */
+function put(item: Item, base: string, value: string): void {
+  if (value) item.fields[typeField(item.itemType, base) ?? base] = value;
+}
+
+/** Fields set before the type was known move to the type's own names (publicationTitle → encyclopediaTitle …); authors come first. */
+function settle(item: Item): Item {
+  const rank = (t: string) => (t === "author" ? 0 : t === "editor" && !item.creators.some((c) => c.creatorType === "author") ? 0 : 1);
+  item.creators = item.creators.map((c, i) => ({ c, i })).sort((a, b) => rank(a.c.creatorType) - rank(b.c.creatorType) || a.i - b.i).map((x) => x.c);
+  for (const base of ["publicationTitle", "publisher", "place", "type"]) {
+    const v = item.fields[base];
+    const own = typeField(item.itemType, base);
+    if (v !== undefined && own && own !== base) {
+      item.fields[own] = v;
+      delete item.fields[base];
+    }
+  }
+  return item;
+}
+
+export interface ParsedReference {
+  readonly item: Item;
+  readonly form: "isnad-dipnot" | "isnad-kaynakca" | "apa" | "diger";
+  /** Fields worth a look ("yazar", "yer", …). */
+  readonly unsure: string[];
+}
+
+const ROLE: Record<string, string> = {
+  "thk.": "muhakkik",
+  "nşr.": "nasir",
+  "haz.": "hazirlayan",
+  "sad.": "sadelestiren",
+  "mlf.": "muellif",
+  "çev.": "translator",
+  "trans.": "translator",
+  "ed.": "editor",
+  "eds.": "editor",
+  "critical ed.": "muhakkik",
+  "Türkçeye çev.": "turkceye",
+};
+const ROLE_RE = /^(Türkçeye çev\.|critical ed\.|thk\.|nşr\.|haz\.|sad\.|mlf\.|çev\.|trans\.|eds?\.)\s+(.+)$/i;
+
+const MONTHS: Record<string, number> = { ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6, temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12, january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12 };
+
+const DATE = String.raw`(?:\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4}(?:-\d{2,4})?)?(?:\s*\[\d{4}\])?|ts\.|n\.d\.)`;
+const ARTICLES = /^(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|al|ad|an|ar|as|at|az)-/i;
+
+/** "12 Mart 2024" → "2024-03-12". */
+function dayMonthYear(s: string): string | undefined {
+  const m = /(\d{1,2})\s+([\p{L}]+)\s+(\d{4})/u.exec(s);
+  const mo = m ? MONTHS[m[2]!.toLocaleLowerCase("tr")] : undefined;
+  return m && mo ? `${m[3]}-${String(mo).padStart(2, "0")}-${m[1]!.padStart(2, "0")}` : undefined;
+}
+
+/** "Ebû Hâmid Muhammed b. Muhammed el-Gazzâlî": the last word is the surname, its article stays with the given name (İSNAD's Zotero rule). */
+function nameInOrder(raw: string, creatorType: string): Creator {
+  const n = raw.trim().replace(/\s+/g, " ").replace(/[,;]$/, "");
+  // "Türkiye Yazma Eserler Kurumu Başkanlığı (TYEKB)": İSNAD's Zotero rule keeps the acronym as the surname.
+  const acr = /^(.+?)\s+\((\p{Lu}[\p{Lu}.\s]{1,9})\)$/u.exec(n);
+  if (acr) return { creatorType, lastName: acr[2]!, firstName: acr[1]! };
+  if (!/\s/.test(n)) return { creatorType, name: n };
+  // A title of honour ends the name: "Taşköprizâde Ahmed Efendi", "Ahmed Cevdet Paşa".
+  if (/\s(Efendi|Paşa|Bey|Hanım|Ağa|Çelebi|Hoca|Dede)$/u.test(n)) return { creatorType, name: n };
+  // An institution: "Türk Standardları Enstitüsü".
+  if (/\b(Enstitüsü|Üniversitesi|Başkanlığı|Bakanlığı|Kurumu|Vakfı|Derneği|Merkezi|University|Institute|Foundation|Ministry)\b/.test(n)) return { creatorType, name: n };
+  const words = n.split(" ");
+  const last = words.pop()!;
+  const art = ARTICLES.exec(last);
+  if (art) return { creatorType, lastName: last.slice(art[0].length), firstName: `${words.join(" ")} ${art[0].toLocaleLowerCase("tr")}` };
+  return { creatorType, lastName: last, firstName: words.join(" ") };
+}
+
+/** "Gazzâlî, Ebû Hâmid Muhammed el-" (kaynakça order). */
+function nameInverted(raw: string, creatorType: string): Creator {
+  const [last, ...first] = raw.split(",");
+  const firstName = first.join(",").trim().replace(/[.]$/, (m) => (/\b\p{Lu}$/u.test(first.join(",").trim().slice(0, -1)) ? m : ""));
+  return firstName ? { creatorType, lastName: last!.trim(), firstName } : { creatorType, name: last!.trim() };
+}
+
+/** "A - B", "A-B", "A ve B", "A vd." → names; "vd." / "et al." are dropped (the record cannot hold the others). */
+function splitNames(s: string): { names: string[]; more: boolean } {
+  let t = s.trim();
+  const more = /\s(vd\.|et al\.?)$/i.test(t);
+  t = t.replace(/\s(vd\.|et al\.?)$/i, "").trim();
+  const names = t.split(/\s+[-–]\s+|\s+ve\s+|\s+and\s+|\s*&\s*|(?<=\p{Ll}{3})-(?=\p{Lu}\p{Ll}{2})/u).map((x) => x.trim()).filter(Boolean);
+  return { names, more };
+}
+
+function setDate(item: Item, d: string): void {
+  const t = d.trim().replace(/\s*\[\d{4}\]$/, "");
+  if (t && !/^(ts\.|n\.d\.)$/i.test(t)) item.fields.date = t;
+}
+
+/** "Medine: el-Câmiatü'l-İslâmiyye, 2. Basım, 1413/1993" (also "Bursa: Uludağ Üniversitesi, İlahiyat Fakültesi, Lisans Tezi, 2002"). */
+function readImprint(item: Item, s: string): boolean {
+  const m = new RegExp(String.raw`^\s*(?:([^:]{2,60}?):\s*)?(.+?),\s*(?:(\d+)\.\s*(?:Basım|bs\.|ed\.|edition),\s*)?(${DATE})\s*$`, "iu").exec(s);
+  if (!m) return false;
+  const [, place, middle, edition, date] = m;
+  if (place && !/^(b\.y\.|s\.l\.)$/i.test(place.trim())) item.fields.place = place.trim();
+  const parts = middle!.split(/,\s*/);
+  // A thesis: "Üniversite, Enstitü, Doktora Tezi".
+  const thesisAt = parts.findIndex((p) => /\b(Tezi|Thesis|Dissertation|Habilitation)\b/i.test(p));
+  if (thesisAt >= 0) {
+    item.itemType = "thesis";
+    item.fields.thesisType = parts[thesisAt]!.trim();
+    item.fields.university = parts.slice(0, thesisAt).join(", ").trim();
+  } else {
+    const pub = middle!.trim();
+    if (!/^(y\.y\.|s\.n\.)$/i.test(pub)) item.fields.publisher = pub;
+  }
+  if (edition) item.fields.edition = edition;
+  setDate(item, date!);
+  return true;
+}
+
+/** "thk. A - B", "çev. C", "Türkçeye çev. D" … after the title. */
+function readRoles(item: Item, parts: string[]): string[] {
+  const rest: string[] = [];
+  for (const p of parts) {
+    const m = ROLE_RE.exec(p.trim());
+    if (!m) {
+      rest.push(p);
+      continue;
+    }
+    const role = ROLE[m[1]!] ?? ROLE[m[1]!.toLowerCase()] ?? "editor";
+    for (const n of splitNames(m[2]!).names) item.creators.push(/,/.test(n) ? nameInverted(n, role) : nameInOrder(n, role));
+  }
+  return rest;
+}
+
+function stripLeading(s: string): string {
+  return s
+    .trim()
+    .replace(/^(\[\d+\]|\d+[.)]\s|\d+\s+(?=\p{Lu}))/u, "")
+    .replace(/\s+/g, " ")
+    .replace(/[„"]([^"“”]+?)["“”]/g, "“$1”")
+    .replace(/[‘']{2}([^'’]+?)[’']{2}/g, "“$1”")
+    .trim();
+}
+
+function readUrl(item: Item, s: string): string {
+  let t = s;
+  // A DOI, also written as an address ("https://doi.org/10.…").
+  const doiUrl = /https?:\/\/(?:dx\.)?doi\.org\/(10\.\d{4,9}\/\S+?)[.,;]?(?=\s|$)/i.exec(t);
+  if (doiUrl) {
+    item.fields.DOI = doiUrl[1]!;
+    t = t.replace(doiUrl[0], "").trim();
+  }
+  const url = /(https?:\/\/\S+?)[.,;)]?(?=\s|$)/.exec(t);
+  if (url) {
+    item.fields.url = url[1]!;
+    t = t.replace(url[0], "").trim();
+  }
+  const doi = /\b(?:doi:\s*|https?:\/\/(?:dx\.)?doi\.org\/)?(10\.\d{4,9}\/[^\s,;]+?)[.,;]?(?=\s|$)/i.exec(t + " ");
+  if (doi) {
+    item.fields.DOI = doi[1]!;
+    t = t.replace(doi[0], "").trim();
+    if (item.fields.url && /doi\.org/.test(item.fields.url)) delete item.fields.url;
+  }
+  const access = /\(?(?:Erişim|Access(?:ed)?)(?: Tarihi)?:?\s+([^)]+?)\)?(?=[.,]?\s*$|[.,]\s)/i.exec(t);
+  if (access) {
+    const d = dayMonthYear(access[1]!);
+    if (d) item.fields.accessDate = d;
+    t = t.replace(access[0], "").trim();
+  }
+  return t.replace(/[.,;:\s]+$/, "");
+}
+
+// ---------------------------------------------------------------- İSNAD dipnot
+
+/** "Ad Soyad, Başlık, thk. X (Yer: Yayınevi, Yıl), 45." and the article / web forms. */
+function isnadNote(s: string): ParsedReference | null {
+  const item = emptyItem("book", "serbest");
+  const unsure: string[] = [];
+  let t = readUrl(item, s);
+
+  // Article: Ad Soyad, “Makale”, Dergi 37/1 (Haziran 1997), 320.
+  const art = /^(.*?),?\s*“([^”]+)”,\s*(.+?)\s+(\d+)(?:\/(\d+))?\s+\(([^)]*?\d{4})\)(?:,\s*([\d\-–]+))?\.?$/u.exec(t);
+  if (art && !/:/.test(art[3]!)) {
+    item.itemType = "journalArticle";
+    authorsInOrder(item, art[1]!);
+    item.fields.title = art[2]!;
+    const container = readRoles(item, art[3]!.split(/,\s*/));
+    item.fields.publicationTitle = container.join(", ");
+    item.fields.volume = art[4]!;
+    if (art[5]) item.fields.issue = art[5];
+    const d = /(\p{L}+)?\s*(\d{4})$/u.exec(art[6]!);
+    item.fields.date = d![2]!;
+    if (d![1]) {
+      const mo = MONTHS[d![1].toLocaleLowerCase("tr")];
+      if (mo) item.fields.date = `${d![2]}-${String(mo).padStart(2, "0")}`;
+    }
+    unsure.push("sayfa aralığı");
+    return { item: settle(item), form: "isnad-dipnot", unsure };
+  }
+
+  // Book, chapter, encyclopedia: everything before "(Yer: Yayınevi, Yıl)" — the last parenthesis that is an imprint.
+  let imp: RegExpExecArray | null = null;
+  for (const m of t.matchAll(/\(([^()]*?(?:\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4}(?:-\d{2,4})?)?|ts\.|n\.d\.))\)/gu)) {
+    if (/[:,]/.test(m[1]!)) imp = Object.assign([m[0], t.slice(0, m.index).trim(), m[1]!, t.slice(m.index! + m[0].length)], { index: m.index!, input: t }) as unknown as RegExpExecArray;
+  }
+  if (imp) {
+    if (!readImprint(item, imp[2]!)) return null;
+    const head = imp[1]!;
+    const after = imp[3]!.replace(/^[,\s]+/, "").replace(/\.$/, "");
+    const quoted = /^(.*?),?\s*“([^”]+)”,\s*(.+)$/u.exec(head);
+    if (quoted) {
+      authorsInOrder(item, quoted[1]!);
+      item.fields.title = quoted[2]!;
+      const parts = readRoles(item, quoted[3]!.split(/,\s*/));
+      const container = parts.join(", ").trim();
+      if (/Ansiklopedi|Encyclop/i.test(container)) {
+        item.itemType = "encyclopediaArticle";
+        item.fields.publicationTitle = container;
+        const vp = /^(\d+)\/([\d\-–]+)/.exec(after);
+        if (vp) item.fields.volume = vp[1]!;
+        unsure.push("sayfa aralığı");
+      } else {
+        item.itemType = "bookSection";
+        item.fields.publicationTitle = container;
+        unsure.push("sayfa aralığı");
+      }
+    } else {
+      let parts = splitHead(head);
+      // A title with a subtitle ("Kutsal Kitap: Tevrat, Zebur, İncil") is not an author.
+      if (/:/.test(parts[0]!)) parts = [parts.filter((p) => !ROLE_RE.test(p)).join(", "), ...parts.filter((p) => ROLE_RE.test(p))].filter(Boolean);
+      // İSNAD: "Yazar, Başlık[, roller]". With one part only, the work has no author ("Kitâb-ı Mukaddes").
+      const roles = readRoles(item, parts.slice(1));
+      if (roles.length >= 1) {
+        authorsInOrder(item, parts[0]!);
+        item.fields.title = roles.join(", ");
+        if (!looksLikeName(parts[0]!.replace(/\s*\([^)]*\)$/, "")) && !/\(/.test(parts[0]!)) unsure.push("yazar");
+      } else {
+        item.fields.title = parts[0]!;
+      }
+    }
+    if (item.itemType === "book" && !item.creators.length) unsure.push("yazar");
+    return { item: settle(item), form: "isnad-dipnot", unsure };
+  }
+
+  // Web: Ad Soyad, “Başlık”, Site (Erişim 12 Mart 2024) — a quoted title is a page; an italic one a book or portal online.
+  if (item.fields.accessDate || item.fields.url) {
+    const q = /^(.*?),?\s*“([^”]+)”(?:,\s*(.+))?$/u.exec(t);
+    if (q) {
+      const site = readRoles(item, (q[3] ?? "").split(/,\s*/)).join(", ");
+      item.itemType = /Ansiklopedi|Encyclop/i.test(site) ? "encyclopediaArticle" : "webpage";
+      authorsInOrder(item, q[1]!);
+      item.fields.title = q[2]!;
+      if (site) put(item, "publicationTitle", site);
+    } else {
+      const parts = splitHead(t);
+      if (parts.length > 1) {
+        authorsInOrder(item, parts[0]!);
+        item.fields.title = parts.slice(1).join(", ");
+      } else item.fields.title = t;
+    }
+    return { item: settle(item), form: "isnad-dipnot", unsure };
+  }
+  return null;
+}
+
+/**
+ * Sentences of a kaynakça entry: split at ". " but not after an abbreviation
+ * that belongs to the text ("b. Muhammed", "3. Basım", "thk. X", "M. Sait",
+ * "s.a.v.") nor inside parentheses or quotes.
+ */
+function sentencesOf(s: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let quote = false;
+  let cur = "";
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]!;
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    else if (ch === "“") quote = true;
+    else if (ch === "”") quote = false;
+    if (ch === "." && s[i + 1] === " " && depth === 0 && !quote) {
+      const word = /(\S+)$/.exec(cur)?.[1] ?? "";
+      const abbrev = /^(b|bin|bnt|\d{1,3}|\p{Lu}|thk|nşr|haz|çev|ed|eds|sad|mlf|Türkçeye|trans|s\.a|r\.a|Hz|St|Dr|Prof|Doç|vol|no|No)$/u.test(word) && !/^\d{4}$/.test(word) && s[i + 2] !== "“";
+      if (!abbrev) {
+        out.push(cur.trim());
+        cur = "";
+        i++;
+        continue;
+      }
+    }
+    cur += ch;
+  }
+  if (cur.trim()) out.push(cur.trim().replace(/\.$/, ""));
+  return out.filter(Boolean);
+}
+
+/** "A (B, C), D" → ["A (B, C)", "D"]: commas inside parentheses do not split. */
+function splitHead(s: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let cur = "";
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]!;
+    if (ch === "(") depth++;
+    if (ch === ")") depth = Math.max(0, depth - 1);
+    if (ch === "," && depth === 0 && s[i + 1] === " ") {
+      out.push(cur.trim());
+      cur = "";
+      i++;
+      continue;
+    }
+    cur += ch;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+function looksLikeName(s: string): boolean {
+  const w = s.trim().split(/\s+/);
+  return w.length >= 2 && w.length <= 9 && /^\p{Lu}/u.test(w[0]!) && !/[:“”]/.test(s) && w.filter((x) => /^\p{Lu}|^(b\.|bin|ibn|el-|er-|ez-|es-|et-|en-|ed-|eş-|al-)/u.test(x)).length >= w.length - 1;
+}
+
+function authorsInOrder(item: Item, s: string): void {
+  let t = s.trim().replace(/,$/, "");
+  if (!t) return;
+  // "Geoffrey Roper (ed.)", "Ahmet Hamdi Furat vd. (ed.)": editors of the whole book.
+  const ed = /\s*\((eds?\.|ed\.|haz\.)\)$/i.exec(t);
+  const role = ed ? (/haz/i.test(ed[1]!) ? "hazirlayan" : "editor") : "author";
+  if (ed) t = t.slice(0, ed.index).trim();
+  for (const n of splitNames(t).names) item.creators.push(nameInOrder(n, role));
+}
+
+// ---------------------------------------------------------------- İSNAD kaynakça
+
+/** "Soyad, Ad. Başlık. thk. X. Yer: Yayınevi, Yıl." and the article / chapter / encyclopedia forms. */
+function isnadBib(s: string): ParsedReference | null {
+  const item = emptyItem("book", "serbest");
+  const unsure: string[] = [];
+  const t = readUrl(item, s);
+  let rest = t;
+  const sents = sentencesOf(t);
+  const first = sents[0] ?? "";
+  // "Soyad, Ad" (and "Soyad, Ad - Soyad2, Ad2", "… vd.", "… (ed.)"); an honorific single name ("Taşköprizâde Ahmed Efendi").
+  const ed = /\s*\((eds?\.|haz\.)\)$/i.exec(first);
+  const who = ed ? first.slice(0, ed.index) : first;
+  const role = ed ? (/haz/i.test(ed[1]!) ? "hazirlayan" : "editor") : "author";
+  const enough = sents.length > 2 || (sents.length === 2 && Boolean(item.fields.url || item.fields.accessDate));
+  const inverted = /^[^,“”]+,\s*[^,“”]+(\s+[-–]\s+[^,“”]+,\s*[^,“”]+)*(\s+vd\.?)?$/u.test(who) && enough;
+  const honour = /^[^,“”]+\s(Efendi|Paşa|Bey|Hanım|Ağa|Çelebi|Hoca|Dede)$/u.test(who) && enough;
+  if (inverted || honour) {
+    for (const n of splitNames(who).names) item.creators.push(inverted ? nameInverted(n, role) : { creatorType: role, name: n });
+    rest = sents.slice(1).join(". ");
+  }
+  // Article: “Makale”. Dergi 37/1 (1997), 317-331.
+  const art = /^“([^”]+)”\.?\s*(.+?)\s+(\d+)(?:\/(\d+))?\s+\(([^)]*?\d{4})\),\s*([\d\-–]+)\.?$/u.exec(rest);
+  if (art && !/:\s/.test(art[2]!)) {
+    item.itemType = "journalArticle";
+    item.fields.title = art[1]!;
+    const container = readRoles(item, sentencesOf(art[2]!));
+    item.fields.publicationTitle = container.join(". ").replace(/\.$/, "");
+    item.fields.volume = art[3]!;
+    if (art[4]) item.fields.issue = art[4];
+    const d = /(\d{4})$/.exec(art[5]!);
+    item.fields.date = d![1]!;
+    item.fields.pages = art[6]!.replace("–", "-");
+    return { item: settle(item), form: "isnad-kaynakca", unsure };
+  }
+  // The imprint is the last sentence: "Yer: Yayınevi, Yıl." — a web source may have none.
+  const sentences = sentencesOf(rest);
+  const last = sentences[sentences.length - 1]!.replace(/\.$/, "");
+  let parts: string[];
+  if (readImprint(item, last)) parts = sentences.slice(0, -1);
+  else if (item.fields.url || item.fields.accessDate) parts = sentences;
+  else return null;
+  if (!parts.length) return null;
+  let title = parts.shift()!;
+  const quoted = /^“([^”]+)”$/u.exec(title.trim());
+  if (quoted) {
+    item.fields.title = quoted[1]!;
+    // Roles of the chapter come first ("çev. Ali Dere"), then the book.
+    while (parts.length && ROLE_RE.test(parts[0]!.trim())) readRoles(item, [parts.shift()!]);
+    let container = (parts.shift() ?? "").replace(/\.$/, "");
+    // "The Encyclopaedia of Islam (New Edition)", "Encyclopaedia of Islam (3. Edisyon)": the edition goes to its field.
+    const ed = /\s*\(((?:New|\d+\.?)\s*(?:Edition|Edisyon|Baskı|ed\.)|(?:Yeni|İkinci|Üçüncü)\s+(?:Edisyon|Baskı))\)$/i.exec(container);
+    if (ed) {
+      item.fields.edition = ed[1]!;
+      container = container.slice(0, ed.index);
+    }
+    item.fields.publicationTitle = container;
+    item.itemType = /Ansiklopedi|Encyclop/i.test(container) ? "encyclopediaArticle" : "bookSection";
+  } else item.fields.title = title.replace(/\.$/, "");
+  parts = readRoles(item, parts);
+  for (const p of parts) {
+    const vols = /^(\d+)\s+(Cilt|Volumes?|vols?\.?)$/i.exec(p.trim());
+    const pages = /^(?:(\d+)\/)?(\d+[-–]\d+)$/.exec(p.trim());
+    if (vols) item.fields.numberOfVolumes = vols[1]!;
+    else if (pages) {
+      if (pages[1]) item.fields.volume = pages[1];
+      item.fields.pages = pages[2]!.replace("–", "-");
+    } else if (/^\d+\.\s*(Basım|bs\.)$/i.test(p.trim())) item.fields.edition = /^\d+/.exec(p.trim())![0];
+    else unsure.push(`tanınmayan kısım: "${p.trim()}"`);
+  }
+  title = item.fields.title ?? "";
+  if (!item.creators.length && item.itemType === "book") unsure.push("yazar");
+  return { item: settle(item), form: "isnad-kaynakca", unsure };
+}
+
+// ---------------------------------------------------------------- APA
+
+function apa(s: string): ParsedReference | null {
+  const item = emptyItem("book", "serbest");
+  const t = readUrl(item, s);
+  const m = /^(.+?)\s+\((\d{4}|n\.d\.|t\.y\.)[a-z]?(?:,\s*[^)]+)?\)\.\s+(.+)$/u.exec(t);
+  if (!m) return null;
+  for (const n of m[1]!.split(/,\s*(?:&\s*)?(?=\p{Lu}[^,]*,\s*\p{Lu}\.)|\s*&\s*/u)) {
+    const c = n.trim().replace(/,$/, "");
+    if (c) item.creators.push(nameInverted(c, "author"));
+  }
+  setDate(item, m[2]!);
+  const rest = m[3]!;
+  const art = /^(.+?)\.\s+([^.]+?),\s*(\d+)(?:\((\d+)\))?,\s*([\d\-–]+)\.?$/u.exec(rest);
+  if (art) {
+    item.itemType = "journalArticle";
+    item.fields.title = art[1]!;
+    item.fields.publicationTitle = art[2]!;
+    item.fields.volume = art[3]!;
+    if (art[4]) item.fields.issue = art[4];
+    item.fields.pages = art[5]!.replace("–", "-");
+    return { item: settle(item), form: "apa", unsure: [] };
+  }
+  const book = /^(.+?)\.\s+(?:\(([^)]+)\)\.\s+)?([^.]+)\.?$/u.exec(rest);
+  if (!book) return null;
+  item.fields.title = book[1]!;
+  item.fields.publisher = book[3]!.trim();
+  return { item: settle(item), form: "apa", unsure: ["yer"] };
+}
+
+// ---------------------------------------------------------------- entry points
+
+/** How sensible a reading is: filled fields count, odd ones (a title of digits, a name with ":" or ".") cost. */
+function plausibility(r: ParsedReference): number {
+  const f = r.item.fields;
+  let p = 0;
+  const title = f.title ?? "";
+  if (title.length > 3 && !/^\d+$/.test(title)) p += 3;
+  if (/^[\d\s/.-]+$/.test(title)) p -= 6;
+  for (const c of r.item.creators) {
+    const n = `${c.firstName ?? ""} ${c.lastName ?? c.name ?? ""}`;
+    p += /[:]|\.\s\p{Lu}\p{Ll}+\s\p{Lu}/u.test(n) || n.length > 80 ? -4 : 1;
+  }
+  if (f.date) p += 1;
+  for (const k of Object.keys(f)) if (/publisher|place|university|Title$|volume|pages/.test(k)) p += 1;
+  return p - r.unsure.length * 0.5;
+}
+
+/** One reference (a line) → a record, or null when it cannot be read. Every reading is tried; the most sensible wins. */
+export function parseReference(raw: string): ParsedReference | null {
+  const s = stripLeading(raw);
+  if (s.length < 8) return null;
+  let best: ParsedReference | null = null;
+  let bestScore = -Infinity;
+  for (const f of [isnadBib, isnadNote, apa]) {
+    let r: ParsedReference | null = null;
+    try {
+      r = f(s);
+    } catch {
+      r = null;
+    }
+    if (!r?.item.fields.title) continue;
+    const score = plausibility(r);
+    if (score > bestScore) {
+      best = r;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+/** A pasted list: one reference per line (a reference broken over lines is joined back when a line does not end a sentence). */
+export function splitReferences(text: string): string[] {
+  const lines = text.replace(/\r/g, "").split("\n").map((l) => l.trim());
+  const out: string[] = [];
+  for (const l of lines) {
+    if (!l) continue;
+    const prev = out[out.length - 1];
+    if (prev !== undefined && !/[.)\]]$/.test(prev) && !/^(\[\d+\]|\d+[.)])\s/.test(l)) out[out.length - 1] = `${prev} ${l}`;
+    else out.push(l);
+  }
+  return out;
+}
