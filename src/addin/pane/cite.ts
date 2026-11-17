@@ -13,6 +13,7 @@ import { citeMode } from "../../core/isnadmodes.js";
 import { BIBLE_BOOKS, SURES } from "../../core/scripture.js";
 import { parseQuick } from "../../core/search.js";
 import { $, S, doc, getRenderer, h, run, serial, setMessage, showView, work } from "./core.js";
+import { getMeta, setMeta } from "../store.js";
 
 let results: Item[] = [];
 let cursor = 0;
@@ -318,7 +319,94 @@ export async function onSelection(open = false): Promise<void> {
   }
 }
 
+// ---------------------------------------------------------------- atıf kalıpları
+
+/** A saved series of works with their places (a hadith's tahrîc, a recurring group of sources). */
+interface CiteTemplate {
+  name: string;
+  refs: CiteRef[];
+}
+
+let templates: CiteTemplate[] = [];
+
+async function loadTemplates(): Promise<void> {
+  templates = (await getMeta<CiteTemplate[]>("citeTemplates").catch(() => undefined)) ?? [];
+  renderTemplates();
+}
+
+async function saveTemplates(): Promise<void> {
+  await setMeta("citeTemplates", templates);
+  renderTemplates();
+}
+
+function renderTemplates(): void {
+  $("tpl-box").hidden = templates.length === 0;
+  $("tpl-count").textContent = `(${templates.length})`;
+  $("tpl-list").replaceChildren(
+    ...templates.map((t, i) => {
+      const names = t.refs.map((r) => {
+        const w = work(r.id);
+        return w ? creatorLine(w) || titleOf(w) : "?";
+      });
+      return h(
+        "li",
+        {},
+        h("button", {
+          type: "button",
+          class: "link",
+          title: names.join("; "),
+          onclick: () => {
+            const missing = t.refs.filter((r) => !work(r.id)).length;
+            for (const r of t.refs) if (work(r.id) && !S.basket.some((b) => b.id === r.id && (b.locator ?? "") === (r.locator ?? ""))) S.basket.push({ ...r });
+            S.basketDirty = true;
+            renderBasket();
+            renderResults();
+            if (missing) setMessage(`Kalıptaki ${missing} eser kütüphanede yok; diğerleri sepete eklendi.`, "warning");
+          },
+        }, `${t.name} (${t.refs.length})`),
+        " ",
+        h("button", {
+          type: "button",
+          class: "link danger-text",
+          title: "Kalıbı sil",
+          onclick: () => void run("Siliniyor", async () => {
+            templates.splice(i, 1);
+            await saveTemplates();
+          }),
+        }, "✕"),
+      );
+    }),
+  );
+}
+
+function wireTemplates(): void {
+  $("tpl-save-open").onclick = () => {
+    $("tpl-form").hidden = false;
+    $<HTMLInputElement>("tpl-name").focus();
+  };
+  $("tpl-cancel").onclick = () => ($("tpl-form").hidden = true);
+  $<HTMLFormElement>("tpl-form").onsubmit = (e) => {
+    e.preventDefault();
+    void run("Kaydediliyor", async () => {
+      const name = $<HTMLInputElement>("tpl-name").value.trim();
+      if (!name) throw new Error("Kalıba bir ad verin.");
+      if (!S.basket.length) throw new Error("Sepet boş.");
+      const refs = S.basket.map((r) => JSON.parse(JSON.stringify(r)) as CiteRef);
+      const at = templates.findIndex((t) => t.name.toLocaleLowerCase("tr") === name.toLocaleLowerCase("tr"));
+      if (at >= 0) templates[at] = { name, refs };
+      else templates.push({ name, refs });
+      templates.sort((a, b) => a.name.localeCompare(b.name, "tr"));
+      await saveTemplates();
+      $("tpl-form").hidden = true;
+      $<HTMLInputElement>("tpl-name").value = "";
+      setMessage(`"${name}" kalıbı kaydedildi; Atıf sekmesindeki "Atıf kalıpları"ndan çağırılır.`, "success");
+    });
+  };
+  void loadTemplates();
+}
+
 export function wireCite(): void {
+  wireTemplates();
   const q = $<HTMLInputElement>("q");
   q.oninput = search;
   q.onkeydown = (e) => {

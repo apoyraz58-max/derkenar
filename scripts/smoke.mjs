@@ -589,6 +589,25 @@ try {
   const converted = (await notes()).filter((n) => n.includes("Zoteroda Eklenmiş Kitap"));
   if (converted.length !== 2 || !converted[0].startsWith("Selim Ekinci, Zoteroda Eklenmiş Kitap (İstanbul: Dergâh Yayınları, 2011), 10.") || converted[1] !== "Ekinci, Zoteroda Eklenmiş Kitap, 11.") fail(`converted fields: ${JSON.stringify(converted)}`);
 
+  // 9e. Atıf kalıbı: a series of works saved by name and called back into the basket.
+  await page.click("#tab-atif");
+  await page.evaluate(() => (window.__doc.cursor = window.__doc.flow.length));
+  await page.fill("#q", "yilmaz 50");
+  await page.press("#q", "Enter");
+  await page.fill("#q", "kemalpasazade");
+  await page.press("#q", "Enter");
+  if ((await page.locator("#basket > li").count()) !== 2) fail("basket for the template");
+  await page.click("#tpl-save-open");
+  await page.fill("#tpl-name", "Deneme tahrîci");
+  await page.click("#tpl-form button[type=submit]");
+  await page.waitForSelector("#message:has-text('kalıbı kaydedildi')");
+  await page.click("#clear-basket");
+  await page.click("#tpl-box summary");
+  await page.locator("#tpl-list button", { hasText: "Deneme tahrîci" }).click();
+  if ((await page.locator("#basket > li").count()) !== 2) fail("template did not fill the basket");
+  if ((await page.inputValue('#basket li:first-child [data-f="locator"]')) !== "50") fail("template lost the page");
+  await page.click("#clear-basket");
+
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");
   await page.waitForSelector("#info-document dd:has-text('kaynak,')");

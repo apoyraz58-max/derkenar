@@ -35,6 +35,10 @@
       </section>
       <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Yazar, başlık, yıl; sayfayla: gazzali 1/45" aria-label="Kütüphanede ara" />
       <p class="hint">↑↓ seç · Enter sepete ekle · Ctrl+Enter atıfı ekle · "gazzali 1/45", "s. 45", "vr. 12b", "md. 4" yeri de yazar</p>
+      <details id="tpl-box" hidden>
+        <summary class="small">Atıf kalıpları <span id="tpl-count" class="muted"></span></summary>
+        <ul id="tpl-list" class="plain"></ul>
+      </details>
       <ol id="results" class="results" role="listbox" aria-label="Sonuçlar"></ol>
       <p id="empty-library" class="notice" hidden>
         <span>Kütüphane boş.</span>
@@ -48,7 +52,13 @@
         <div class="actions">
           <button id="insert" type="button" class="primary">Atıf ekle</button>
           <button id="clear-basket" type="button" class="link">Temizle</button>
+          <button id="tpl-save-open" type="button" class="link" title="Bu kaynak dizisini (ör. bir hadisin tahrîci) adıyla kaydeder">Kalıp olarak kaydet</button>
         </div>
+        <form id="tpl-form" class="row inline-form" hidden>
+          <input id="tpl-name" placeholder="Kalıp adı (ör. Niyet hadisi)" autocomplete="off" />
+          <button type="submit" class="primary">Kaydet</button>
+          <button type="button" id="tpl-cancel" class="link">Vazgeç</button>
+        </form>
       </section>
     </div>
 
