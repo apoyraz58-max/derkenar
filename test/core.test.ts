@@ -554,3 +554,17 @@ describe("Mevzuat: madde (md.)", async () => {
     expect(parseQuick("fsek md. 35/4")).toEqual({ words: "fsek", locator: "35/4", label: "sub verbo" });
   });
 });
+
+describe("hicrî/milâdî", async () => {
+  const { hijriToGregorian, hijriPair } = await import("../src/core/isnadstyle.js");
+  it("the guide's pairs", () => {
+    for (const [h, g] of [[1408, 1988], [1364, 1945], [1431, 2010], [1432, 2011], [1424, 2003]]) expect(hijriToGregorian(h)).toBe(g);
+  });
+  it("a lone hicrî year on an Arabic print gets its milâdî pair; Turkish prints and pairs are left alone", () => {
+    expect(hijriPair("1408", "Kahire", "Mektebetü’l-Külliyyâti’l-Ezheriyye")).toBe("1408/1988");
+    expect(hijriPair("1418", "", "Dâru’l-Kütübi’l-İlmiyye")).toMatch(/^1418\/199[78]$/);
+    expect(hijriPair("1408/1988", "Kahire", "")).toBeNull();
+    expect(hijriPair("1988", "Kahire", "")).toBeNull();
+    expect(hijriPair("1325", "İstanbul", "Matbaa-i Âmire")).toBeNull();
+  });
+});

@@ -425,8 +425,35 @@ export function nisbaArticle(lastName: string, firstName: string): string | null
   if (/^(ibn|ibnü|ibni|ebû|ebü|ebi|abd|abdül|abdür|abdu)/i.test(last)) return null;
   if (!/[îīiy]$/.test(last) || !/[^aeıioöuüâîûāīū][îī]$/.test(last)) return null;
   // A classical name chain: "b." (bin) or a kunya.
-  if (!/(^|\s)(b\.|bin|ibn)\s/i.test(first) && !/^(ebû|ebü|ebu)\s/i.test(first)) return null;
+  // Turkish İSNAD spelling only: "ibn … Birgiwī" (Western transliteration) and "Şeyh Zindânî" stay as written.
+  if (/\s/.test(last) || /(^|\s)ibn\s/i.test(first) || /[āīūḥṣṭẓ]/.test(first + last) && !/[âîû]/.test(first + last)) return null;
+  if (!/(^|\s)(b\.|bin)\s/i.test(first) && !/^(ebû|ebü|ebu)\s/i.test(first)) return null;
   const c = last.normalize("NFD").charAt(0).toLocaleLowerCase("tr");
   const article = SUN.test(c) ? `e${c === "s" && /^ş/i.test(last) ? "ş" : last.charAt(0).toLocaleLowerCase("tr")}-` : "el-";
   return `${first} ${article}`;
+}
+
+// ---------------------------------------------------------------- hicrî years
+
+/** Milâdî year in which most of a hicrî year falls (1408 → 1988, 1364 → 1945). */
+export function hijriToGregorian(h: number): number {
+  const start = 622.5378 + (h - 1) * 0.970224;
+  return Math.floor(start + 0.485);
+}
+
+const ARAB_PLACES = new Set(["Beyrut", "Kahire", "Riyad", "Bağdat", "Dımaşk", "Mekke", "Medine", "Cidde", "Kuveyt", "Tunus", "Amman", "Bulak", "Lahor", "Karaçi", "Haydarabad", "Rabat", "Fas", "Sana", "Doha", "Halep", "Musul", "Necef", "Kerbelâ", "Kerbela", "İskenderiye", "Trablus", "Cezayir", "Abu Dabi", "Dubai", "Şârika", "Ebûzabî"]);
+
+/**
+ * A lone hicrî year on an Arabic print ("Beyrut: Dâru’l-Maʿrife, 1408"):
+ * İSNAD writes both, "1408/1988". Returns the suggested date or null.
+ */
+export function hijriPair(date: string, place: string, publisher: string): string | null {
+  const d = date.trim();
+  if (!/^1[0-4]\d\d$/.test(d)) return null;
+  const h = Number(d);
+  if (h < 1100 || h > 1460) return null;
+  const arabic = ARAB_PLACES.has(isnadPlace(place)) || /^(dâr|dār|dar|mektebe|mektebet|müessese|muessese|el-|al-)/i.test(publisher.trim());
+  if (!arabic) return null;
+  // A Gregorian year in the same range (1100–1460) on an Arabic print is very unlikely after the 1800s.
+  return `${h}/${hijriToGregorian(h)}`;
 }

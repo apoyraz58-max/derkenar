@@ -3,7 +3,7 @@
  * usual slips of hand-entered or imported records. Each finding says what is
  * wrong and, where the fix is mechanical, carries it ("Düzelt").
  */
-import { cleanYear, nisbaArticle, restoreTurkish, isTurkishPlace, isnadName, isnadPlace, isnadPublisher, isnadTitle, nameNeedsCase, publisherLooksShort, shortTitleOf } from "./isnadstyle.js";
+import { cleanYear, hijriPair, nisbaArticle, restoreTurkish, isTurkishPlace, isnadName, isnadPlace, isnadPublisher, isnadTitle, nameNeedsCase, publisherLooksShort, shortTitleOf } from "./isnadstyle.js";
 import { type Creator, type Item, baseField, containerOf, fieldLabel, parseDate, primaryCreators, typeField } from "./zotero.js";
 
 export type Level = "error" | "warning" | "info";
@@ -280,6 +280,8 @@ export function checkItem(item: Item): Issue[] {
     }
   }
   if (f.date && isBookish) {
+    const pair = hijriPair(f.date, place ?? "", publisher ?? "");
+    if (pair) add({ code: "date-hijri", level: "warning", message: `Arapça baskıda yalnız hicrî yıl (${f.date}): İSNAD hicrî/milâdî birlikte yazar, "${pair}". (Hicrî yıl iki milâdî yıla taşar; kitapta başka yıl yazıyorsa onu yazın.)`, field: "date", fix: { field: "date", value: pair }, fixLabel: `"${pair}" yap` });
     const y = cleanYear(f.date);
     if (y) add({ code: "date-clean", level: "warning", message: `Tarih alanına yalnız yıl yazılır ("${f.date}" → "${y}").`, field: "date", fix: { field: "date", value: y }, fixLabel: `"${y}" yap` });
     const year = Number(/^\d{4}/.exec(f.date.trim())?.[0] ?? (/\/(\d{4})$/.exec(f.date.trim())?.[1] ?? 0));
