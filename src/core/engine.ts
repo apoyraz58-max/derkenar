@@ -120,7 +120,10 @@ export class Renderer {
   }
 
   private tidy(html: string): string {
-    return this.meta.isnad ? isnadTidy(html) : html;
+    if (!this.meta.isnad) return html;
+    const out = isnadTidy(html);
+    // ISNAD Citation Style 2nd Edition writes "no. 18138" inside a reference (the style has "No." built in).
+    return /^en/.test(this.lang) ? out.replace(/(,\s|\(|:\s)No\.(\s|&#160;)/g, "$1no.$2") : out;
   }
 
   /** Bibliography of the works cited by the last renderCitations; null when the style has none. */
@@ -134,7 +137,7 @@ export class Renderer {
     const seen = new Set<string>();
     // İSNAD keeps the period after a title ending in ? or ! ("Nedir?”. Sabah", guide s. 112).
     const keepPeriod = (h: string) => h.replace(/([?!])”(\s|&#160;)(?=[\p{Lu}<])/gu, "$1”.$2");
-    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html: this.meta.isnad ? keepPeriod(isnadTidy(stripArticle(html))) : html })).filter((e) => {
+    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html: this.meta.isnad ? keepPeriod(this.tidy(stripArticle(html))) : html })).filter((e) => {
       const k = e.html.replace(/\s+/g, " ").trim();
       if (seen.has(k)) return false;
       seen.add(k);

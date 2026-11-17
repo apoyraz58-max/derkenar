@@ -197,7 +197,7 @@ export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet
       delete csl.volume;
     }
     // citeproc title-cases titles of English-language works; a transliterated or Turkish title is not one ("Kitāb al-Tawḥīd").
-    if (isnad && !csl.language && /^en/.test(lang) && (isArabicTitle(String(csl.title ?? "")) || /[çğışöüÇĞİŞÖÜâîû]/.test(String(csl.title ?? "")))) csl.language = isArabicTitle(String(csl.title ?? "")) ? "ar" : "tr";
+    if (isnad && /^en/.test(lang)) englishIsnad(csl);
     out[k] = isnad ? fillImprint(articleToGiven(csl), lang) : plainRoles(csl);
   }
   return out;
@@ -335,4 +335,47 @@ export function revertEdited(state: DocState, id: string): void {
   if (c) delete c.override;
   delete state.rendered[id];
   if (state.edited) delete state.edited[id];
+}
+
+/** Turkish words in a record that the ISNAD Citation Style 2nd Edition writes in English. */
+const EN_GENRE: Record<string, string> = {
+  "lisans tezi": "Undergraduate Thesis",
+  "yüksek lisans tezi": "Master’s Thesis",
+  "doktora tezi": "Ph.D. Dissertation",
+  "sanatta yeterlik tezi": "Thesis in Proficiency in Art",
+  "tıpta uzmanlık tezi": "Thesis in Specialization in Medicine",
+  "tıpta yan dal uzmanlık tezi": "Thesis in Minor Specialization in Medicine",
+  "diş hekimliğinde uzmanlık tezi": "Thesis in Specialization in Dentistry",
+  "diş hekimliği uzmanlık tezi": "Thesis in Specialization in Dentistry",
+  "doçentlik tezi": "Habilitation",
+  fotoğraf: "Photograph",
+  film: "Movie",
+  yazılım: "Software",
+  "sınav kağıdı": "Exam Paper",
+  "sınav kâğıdı": "Exam Paper",
+  "nota kağıdı": "Music Paper",
+  "nota kâğıdı": "Music Paper",
+  afiş: "Poster",
+  "görüşme transkripsiyonu": "Transcribed Interview",
+  "e-posta": "E-mail",
+};
+const EN_CONTAINER: Record<string, string> = { "resmî gazete": "Official Gazette", "resmi gazete": "Official Gazette" };
+
+/**
+ * A work cited in an English text (ISNAD Citation Style 2nd Edition): thesis
+ * types, kinds of work and the Official Gazette in English; an "y.y." or
+ * "b.y." typed into the record as s.n. / s.l.; and no English title casing
+ * by citeproc ("und": titles keep their own spelling, "Kitāb al-Tawḥīd",
+ * "Geschichte des arabischen Schrifttums"; a Turkish code would make citeproc
+ * capitalise English terms the Turkish way, "İnterviewer").
+ */
+export function englishIsnad(csl: CslItem): CslItem {
+  const c = csl as CslItem & Record<string, unknown>;
+  const low = (v: unknown) => String(v ?? "").trim().toLocaleLowerCase("tr");
+  for (const k of ["genre", "medium"]) if (typeof c[k] === "string" && EN_GENRE[low(c[k])]) c[k] = EN_GENRE[low(c[k])];
+  if (typeof c["container-title"] === "string" && EN_CONTAINER[low(c["container-title"])]) c["container-title"] = EN_CONTAINER[low(c["container-title"])];
+  if (/^b\.?\s?y\.?$/i.test(String(c["publisher-place"] ?? "").trim())) c["publisher-place"] = "s.l.";
+  if (/^y\.?\s?y\.?$/i.test(String(c.publisher ?? "").trim())) c.publisher = "s.n.";
+  if (!c.language) c.language = "und";
+  return csl;
 }

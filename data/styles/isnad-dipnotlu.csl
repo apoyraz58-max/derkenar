@@ -94,7 +94,8 @@
     </terms>
   </locale>
   <locale xml:lang="en">
-    <!-- Derkenar: ISNAD Citation Style 2nd Edition writes "Access 16 April 2019". -->
+    <!-- Derkenar: ISNAD Citation Style 2nd Edition: "Title", (comma outside the quotes), pages 175-193, "Access 16 April 2019". -->
+    <style-options punctuation-in-quote="false"/>
     <date form="text">
       <date-part name="day" suffix=" "/>
       <date-part name="month" suffix=" "/>
@@ -102,6 +103,7 @@
     </date>
     <terms>
       <term name="accessed">access</term>
+      <term name="page-range-delimiter">-</term>
       <term name="sub-verbo" form="short">
         <single>art.</single>
         <multiple>art.</multiple>

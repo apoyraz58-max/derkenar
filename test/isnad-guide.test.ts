@@ -491,3 +491,23 @@ describe("İSNAD İngilizce: madde (art.) ve ön ek (See)", () => {
     expect(out).toMatch(/art\. 4\.$/);
   });
 });
+
+describe("ISNAD Citation Style 2nd Edition (İngilizce kılavuz) örnekleri", () => {
+  const rdfItems = parseZoteroRdf(readFileSync(new URL("./fixtures/isnad/isnad2-eserler.rdf", import.meta.url), "utf8").normalize("NFC"), "g").items;
+  const first = (title: string) => {
+    const it = rdfItems.find((i) => i.fields.title === title)!;
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales, "en-US");
+    const st = emptyState();
+    putCitation(st, "x", [{ id: it.key }], { [it.key]: it });
+    return htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!);
+  };
+  it("makale: tırnak dışında virgül, kısa tire", () => {
+    expect(first("Kelâm’ın Meşrûiyeti Sorunu: Ehl-i Sünnet Kelâmı ve Olgusal Gerçeklik Arasındaki İlişki")).toBe("Galip Türcan, “Kelâm’ın Meşrûiyeti Sorunu: Ehl-i Sünnet Kelâmı ve Olgusal Gerçeklik Arasındaki İlişki”, Marife 5/3 (2005), 175-193.");
+  });
+  it("ansiklopedi web: Access 12 July 2019", () => {
+    expect(first("İhsan")).toBe("Mustafa Çağrıcı, “İhsan”, Türkiye Diyanet Vakfı İslâm Ansiklopedisi (Access 12 July 2019).");
+  });
+  it("tez türü İngilizce", () => {
+    expect(first("Mâtürîdî Kelâm Ekolünde Nesefîler ve Ebû Hafs Ömer en-Nesefî’nin İtikâdî Görüşleri")).toContain("Undergraduate Thesis, 2002)");
+  });
+});
