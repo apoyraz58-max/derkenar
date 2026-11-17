@@ -33,8 +33,8 @@ export interface HandNote {
   readonly reason?: string;
 }
 
-const PREFIX = /^(ayrıca\s+bk\.|ayrıca\s+bkz\.|ayrıca\s+bakınız|bk\.|bkz\.|bakınız|krş\.|karş\.|karşılaştırınız|mesela|örnek\s+olarak|see\s+also|see|cf\.|vgl\.)\s*/i;
-const SAME = /^(a\.?\s?g\.?\s?e\.?|a\.?\s?g\.?\s?m\.?|a\.?\s?e\.?|age\.?|agm\.?|aynı\s+eser|aynı\s+yer|a\.?\s?y\.?|ibid\.?|ibidem|ay\.?\s?e\.?|aynı\s+makale)(?=[\s,.]|$)\s*,?\s*/i;
+const PREFIX = /^((?:[\p{L}\s,]{0,60}?\s)?(?:bk\.|bkz\.|bakınız|krş\.|karş\.)|ayrıca\s+bk\.|ayrıca\s+bkz\.|ayrıca\s+bakınız|bk\.|bkz\.|bakınız|krş\.|karş\.|karşılaştırınız|mesela|örnek\s+olarak|see\s+also|see|cf\.|vgl\.)\s*/iu;
+const SAME = /^(op\.?\s*cit\.?|a\.?\s?g\.?\s?e\.?|a\.?\s?g\.?\s?m\.?|a\.?\s?e\.?|age\.?|agm\.?|aynı\s+eser|aynı\s+yer|a\.?\s?y\.?|ibid\.?|ibidem|ay\.?\s?e\.?|aynı\s+makale)(?=[\s,.]|$)\s*,?\s*/i;
 /** The cited place at the end: "45", "1/45", "45-47", "45 vd.", "vr. 12b", "II/45". */
 const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?(\d+(?:\s*[-–]\s*\d+)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|s\.\s*\d+(?:\s*[-–]\s*\d+)?)\.?\s*$/i;
 
@@ -58,7 +58,12 @@ export function splitNote(text: string): string[] {
   return out.map((s) => s.trim()).filter(Boolean);
 }
 
+/** "…, c. I, s. 245" · "…, C. 2, s. 45" · "…, I, 245" (eski usul cilt ve sayfa). */
+const VOL_PAGE = /,\s*(?:c\.|cilt)?\s*([IVXLC]+|(?<=(?:c\.|cilt)\s*)\d+)\s*,\s*(?:s\.|ss\.)?\s*(\d+(?:\s*[-–]\s*\d+)?(?:\s*vd\.)?)\.?\s*$/i;
+
 function cut(s: string): { body: string; volume?: string; locator?: string } {
+  const vp = VOL_PAGE.exec(s);
+  if (vp) return { body: s.slice(0, vp.index).trim(), volume: vp[1]!, locator: vp[2]!.replace(/\s*[-–]\s*/g, "-") };
   const m = LOCATOR.exec(s);
   // "…, İstanbul, 2005." ends with the year, not a page.
   if (!m || (!m[1] && /^(1[0-9]|20)\d{2}$/.test(m[2]!) && !/\b(1[0-9]|20)\d{2}\b/.test(s.slice(0, m.index)))) return { body: s.replace(/\.\s*$/, "") };
@@ -79,7 +84,7 @@ function findShort(body: string, pool: readonly Item[]): Item | null {
   const author = comma > 0 ? fold(body.slice(0, comma)) : "";
   const title = fold((comma > 0 ? body.slice(comma + 1) : body).replace(/[“”"«»]/g, ""));
   if (!title) return null;
-  const hits = pool.filter((it) => {
+  const hits = [...new Set(pool)].filter((it) => {
     if (author && !surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`))) return false;
     const t = fold(titleOf(it));
     const st = fold(it.fields.shortTitle ?? "");
@@ -106,6 +111,23 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       const pm = PREFIX.exec(part);
       const prefix = pm ? pm[1]!.replace(/^\p{Lu}/u, (c) => c.toLocaleLowerCase("tr")).replace(/\s+/g, " ") : undefined;
       const rest = pm ? part.slice(pm[0].length) : part;
+      // "Kara, a.g.e., s. 47": the work of that author cited last.
+      const named = /^((?:İbn\s|el-|eş-|er-)?\p{Lu}[\p{L}'’-]*(?:\s\p{Lu}[\p{L}'’-]*){0,2}),\s*(?=a\.?\s?g\.?\s?[em]\.?|age\.?|agm\.?|aynı\s+eser|op\.?\s*cit\.?)/iu.exec(rest);
+      if (named) {
+        const who = fold(named[1]!);
+        const work = [...seen].reverse().find((it) => surnames(it).some((sn) => sn === who || sn.endsWith(` ${who}`) || who.endsWith(` ${sn}`)));
+        if (!work) {
+          reason = `${named[1]} için daha önce anılmış bir eser yok`;
+          break;
+        }
+        const tail = rest.slice(named[0].length).replace(/^(a\.?\s?g\.?\s?[em]\.?|age\.?|agm\.?|aynı\s+eser|op\.?\s*cit\.?)\s*,?\s*/i, "");
+        const c: { volume?: string; locator?: string } = tail ? cut(`, ${tail}`) : {};
+        const ref: HandRef = { item: work, isNew: created.includes(work), ...(c.volume ? { volume: c.volume } : {}), ...(c.locator ? { locator: c.locator } : {}), ...(prefix ? { prefix } : {}) };
+        refs.push(ref);
+        seen.splice(seen.indexOf(work), 1);
+        seen.push(work);
+        continue;
+      }
       const sm = SAME.exec(rest);
       if (sm) {
         if (!previous) {
@@ -141,7 +163,9 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           isNew = true;
         }
       }
-      if (!seen.includes(item)) seen.push(item);
+      // Kept in the order last cited ("Kara, a.g.e." is Kara's work cited last).
+      if (seen.includes(item)) seen.splice(seen.indexOf(item), 1);
+      seen.push(item);
       const ref: HandRef = { item, isNew: isNew || created.includes(item), ...(volume ? { volume } : {}), ...(locator ? { locator } : {}), ...(prefix ? { prefix } : {}) };
       refs.push(ref);
     }

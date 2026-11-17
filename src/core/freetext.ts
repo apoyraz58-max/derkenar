@@ -447,6 +447,109 @@ function apa(s: string): ParsedReference | null {
   return { item: settle(item), form: "apa", unsure: ["yer"] };
 }
 
+// ---------------------------------------------------------------- eski usul
+
+/** Splits on `sep` outside quotes and parentheses. */
+function topSplit(s: string, sep: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let quote = false;
+  let cur = "";
+  for (const ch of s) {
+    if (ch === "(" || ch === "[") depth++;
+    else if ((ch === ")" || ch === "]") && depth) depth--;
+    else if (ch === "“") quote = true;
+    else if (ch === "”") quote = false;
+    if (ch === sep && !depth && !quote) {
+      out.push(cur.trim());
+      cur = "";
+    } else cur += ch;
+  }
+  out.push(cur.trim());
+  return out.filter(Boolean);
+}
+
+const YEAR_END = /^(.*?)[\s,]*\(?((?:1[0-9]|20)\d{2}(?:\s*\/\s*(?:1[0-9]|20)\d{2})?|\d{3,4}\s*\/\s*(?:1[0-9]|20)\d{2})\)?$/;
+
+/**
+ * Eski usul, Turkish theses' most common form before İSNAD:
+ *   Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi, Dergâh Yay., İstanbul 2005
+ *   KARA, Mustafa, Tasavvuf ve Tarikatlar Tarihi, 2. bs., Dergâh Yayınları, İstanbul, 2005
+ *   İbn Haldun, Mukaddime, çev. Süleyman Uludağ, Dergâh Yayınları, İstanbul 1982
+ *   Ahmet Yaşar Ocak, “Kalenderîler”, Belleten, XLV/1 (1981)          (article)
+ */
+function oldStyle(s: string): ParsedReference | null {
+  const item = emptyItem("book", "serbest");
+  const unsure: string[] = [];
+  const parts = topSplit(readUrl(item, s).replace(/\.$/, ""), ",");
+  if (parts.length < 3) return null;
+  let i = 1;
+  const first = parts[0]!;
+  // "KARA, Mustafa" or "Kara, Mustafa" (surname first) when the next part is a given name.
+  const given = parts[1]!;
+  if (/^[\p{L}'’ -]+$/u.test(first) && !/\s/.test(first.trim()) && /^(\p{Lu}[\p{Ll}âîûÂÎÛ'’.-]*\s?){1,4}$/u.test(given) && !/^["“]/.test(given) && given.split(" ").length <= 4 && parts.length >= 4) {
+    const last = first === first.toLocaleUpperCase("tr") ? first.charAt(0) + first.slice(1).toLocaleLowerCase("tr") : first;
+    item.creators.push({ creatorType: "author", lastName: last, firstName: given });
+    i = 2;
+  } else {
+    if (/\d/.test(first) || first.split(" ").length > 7) return null;
+    for (const n of splitNames(first).names) item.creators.push(nameInOrder(n, "author"));
+  }
+  const title = parts[i]!;
+  if (!title || /^\d/.test(title)) return null;
+  const quoted = /^“(.+)”$/.exec(title);
+  item.fields.title = quoted ? quoted[1]! : title;
+  const rest = readRoles(item, parts.slice(i + 1));
+  if (quoted) {
+    // “Makale”, Dergi, XLV/1 (1981)  ·  “Madde”, DİA, XIII, İstanbul 1996
+    const journal = rest[0];
+    if (!journal) return null;
+    const enc = /ansiklopedi|encyclopa?edia|DİA\b/i.test(journal);
+    item.itemType = enc ? "encyclopediaArticle" : "journalArticle";
+    item.fields.publicationTitle = journal === "DİA" ? "Türkiye Diyanet Vakfı İslâm Ansiklopedisi" : journal;
+    const tail = rest.slice(1).join(", ");
+    const y = /\b((?:1[0-9]|20)\d{2})\b/.exec(tail);
+    if (y) item.fields.date = y[1]!;
+    const vi = /^(?:c\.|cilt|vol\.)?\s*([IVXLC]+|\d+)(?:\s*\/\s*|,\s*(?:sy\.|sayı|s\.|no\.?)\s*)(\d+)/i.exec(tail) ?? /^(?:c\.|cilt|vol\.)?\s*([IVXLC]+|\d+)\b/i.exec(tail);
+    if (vi) {
+      item.fields.volume = vi[1]!;
+      if (vi[2] && !enc) item.fields.issue = vi[2];
+    }
+    if (enc) {
+      const pl = /([\p{Lu}][\p{Ll}]+)\s+(?:1[0-9]|20)\d{2}/u.exec(tail);
+      if (pl) item.fields.place = pl[1]!;
+    }
+    if (!item.fields.date) unsure.push("yıl");
+    return { item: settle(item), form: "diger", unsure };
+  }
+  // Book: the imprint is at the end ("İstanbul 2005", "İstanbul, 2005", "2005").
+  let k = rest.length - 1;
+  const ym = k >= 0 ? YEAR_END.exec(rest[k]!) : null;
+  if (!ym) return null;
+  setDate(item, ym[2]!.replace(/\s+/g, ""));
+  let place = ym[1]!.trim();
+  if (!place && k > 0 && /^\p{Lu}[\p{L}\s-]{1,25}$/u.test(rest[k - 1]!) && !/\b(yay|yayın|neşriyat|kitabevi|matbaa|press|vakfı)/i.test(rest[k - 1]!)) place = rest[--k]!;
+  if (place) item.fields.place = place;
+  const before = rest.slice(0, k);
+  for (const p of before) {
+    const ed = /^(\d+)\.\s*(?:bs|baskı|basım|ed)\.?$/i.exec(p);
+    if (ed) item.fields.edition = ed[1]!;
+    else if (/^(?:[IVX]+-[IVX]+|\d+\s*c(?:ilt)?\.?)$/i.test(p)) item.fields.numberOfVolumes = p;
+    else if (/\b(tezi|thesis|dissertation)\b/i.test(p)) {
+      item.itemType = "thesis";
+      item.fields.thesisType = p;
+    } else if (!item.fields.publisher) item.fields.publisher = p.replace(/\bYay\.$/, "Yayınları");
+    else item.fields.publisher += `, ${p}`;
+  }
+  if (item.itemType === "thesis" && item.fields.publisher) {
+    item.fields.university = item.fields.publisher;
+    delete item.fields.publisher;
+  }
+  if (!item.fields.place) unsure.push("yer");
+  if (!item.fields.publisher && item.itemType === "book") unsure.push("yayınevi");
+  return { item: settle(item), form: "diger", unsure };
+}
+
 // ---------------------------------------------------------------- entry points
 
 /** How sensible a reading is: filled fields count, odd ones (a title of digits, a name with ":" or ".") cost. */
@@ -471,7 +574,7 @@ export function parseReference(raw: string): ParsedReference | null {
   if (s.length < 8) return null;
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;
-  for (const f of [isnadBib, isnadNote, apa]) {
+  for (const f of [isnadBib, isnadNote, apa, oldStyle]) {
     let r: ParsedReference | null = null;
     try {
       r = f(s);
@@ -479,7 +582,8 @@ export function parseReference(raw: string): ParsedReference | null {
       r = null;
     }
     if (!r?.item.fields.title) continue;
-    const score = plausibility(r);
+    // The old form is a fallback: an İSNAD or APA reading of the same line wins on a tie and a bit more.
+    const score = plausibility(r) - (f === oldStyle ? 3 : 0);
     if (score > bestScore) {
       best = r;
       bestScore = score;

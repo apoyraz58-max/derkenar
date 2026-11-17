@@ -45,3 +45,35 @@ describe("hand-typed footnotes", () => {
     expect(r[0]!.refs![0]!.item).toBe(r[1]!.refs![0]!.item);
   });
 });
+
+describe("hand-typed footnotes, eski usul", () => {
+  it("reads the pre-İSNAD form of Turkish theses", () => {
+    expect(
+      show([
+        "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi, Dergâh Yay., İstanbul 2005, s. 45.",
+        "Kara, a.g.e., s. 47.",
+        "Süleyman Uludağ, Tasavvuf Terimleri Sözlüğü, Marifet Yayınları, İstanbul 1995, s. 12-13.",
+        "Kara, a.g.e., s. 50; Uludağ, a.g.e., s. 14.",
+        'Ahmet Yaşar Ocak, "Kalenderîler", Belleten, XLV/1 (1981), s. 45.',
+        "Ocak, a.g.m., s. 47.",
+        "Uludağ, Tasavvuf Terimleri, s. 20.",
+        "İbn Haldun, Mukaddime, çev. Süleyman Uludağ, Dergâh Yayınları, İstanbul 1982, I, 245.",
+        "Geniş bilgi için bk. Kara, a.g.e., s. 60.",
+        "KARA, Mustafa, Tasavvuf ve Tarikatlar Tarihi, Dergâh Yayınları, İstanbul, 2005, c. II, s. 12.",
+        "Bu konuda Kara'nın görüşleri tartışmalıdır.",
+      ]),
+    ).toEqual([
+      "Tasavvuf ve Tarikatlar Tarihi* s.45",
+      "Tasavvuf ve Tarikatlar Tarihi* s.47",
+      "Tasavvuf Terimleri Sözlüğü* s.12-13",
+      "Tasavvuf ve Tarikatlar Tarihi* s.50 ; Tasavvuf Terimleri Sözlüğü* s.14",
+      "Kalenderîler* s.45",
+      "Kalenderîler* s.47",
+      "Tasavvuf Terimleri Sözlüğü* s.20",
+      "Mukaddime* c.I s.245",
+      "geniş bilgi için bk. Tasavvuf ve Tarikatlar Tarihi* s.60",
+      "Tasavvuf ve Tarikatlar Tarihi* c.II s.12",
+      "KALDI: künye olarak okunamadı",
+    ]);
+  });
+});
