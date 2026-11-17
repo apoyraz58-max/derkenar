@@ -380,6 +380,12 @@
         <p class="muted small">Kütüphane bu bilgisayarda, Word'ün eklenti deposunda (IndexedDB) durur; hiçbir sunucuya gönderilmez. Office önbelleği temizlenirse ya da eklenti yeniden eklenirse, belgedeki kopyadan kendiliğinden geri yüklenir. Asıl güvence için ara ara <b>Dışa Aktar → Derkenar yedeği</b> alın.</p>
       </section>
       <section>
+        <h2>Geri yükleme noktaları</h2>
+        <p class="muted small">Kütüphane her gün bir kez kendiliğinden saklanır; son yedi gün durur. Yanlışlıkla silinen ya da bozulan kayıtlar için o güne dönebilirsiniz: o günden sonra eklenenler silinmez, çöp kutusuna gider. Dönmeden önce bugünkü hâl de saklanır.</p>
+        <ul id="snap-list" class="plain"></ul>
+        <button id="snap-now" type="button" class="link">Şimdi bir geri yükleme noktası oluştur</button>
+      </section>
+      <section>
         <h2>Ağ bağlantıları</h2>
         <p class="muted small">Derkenar yalnız siz istediğinizde dışarıya bağlanır: DOI için Crossref, doi.org ve DataCite; ISBN için K10plus, Alman Millî Kütüphanesi, Crossref, Google Books ve Open Library; PMID için PubMed; arXiv; eşitleme için çevrimiçi kütüphanenin sunucusu ya da bilgisayarınızdaki atıf programı. Belge metni hiçbir yere gönderilmez.</p>
       </section>
@@ -439,7 +445,7 @@
           <li>Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …) için pencerenin üstündeki <strong>ʿâ</strong> düğmesi.</li>
           <li>Başka bir belgeden kopyalanan atıfın verisi yoksa: <strong>Belge → Belgedeki kaynakları kütüphaneye al</strong>.</li>
           <li>Word eski sürümü açıyorsa: Dosya → Seçenekler → Güven Merkezi → Güvenilen Eklenti Katalogları → "önbelleği temizle", sonra Word'ü yeniden başlatın.</li>
-          <li>Kütüphanenizin nerede durduğu ve kaç kaynak olduğu: <strong>Veri bilgisi</strong>.</li>
+          <li>Kütüphanenizin nerede durduğu ve kaç kaynak olduğu: <strong>Veri bilgisi</strong>. Kütüphane her gün kendiliğinden saklanır; yanlışlıkla silinen ya da bozulan kayıtlar için <strong>Veri bilgisi → Geri yükleme noktaları</strong>'ndan son yedi günden birine dönülür.</li>
         </ul>
         <p><a href="https://github.com/apoyraz58-max/derkenar/blob/main/docs/WORD-DENEME.md" target="_blank" rel="noopener noreferrer">Ayrıntılı kılavuz</a>
           · <a href="https://www.isnadsistemi.org/guide/isnad2/" target="_blank" rel="noopener noreferrer">İSNAD 2 kılavuzu</a></p>

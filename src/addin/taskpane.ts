@@ -9,7 +9,7 @@ import { $, doc, loadLibrary, setMessage, onLibraryChange, onShow, renderSummary
 import { bibliography, changeStyle, checkForeign, nudge, refresh, renderDocList, startWatcher, wireDocument } from "./pane/document.js";
 import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
-import { renderInfo } from "./pane/info.js";
+import { renderInfo, wireInfo } from "./pane/info.js";
 import { refreshLibraryView, wireLibrary } from "./pane/library.js";
 import { wireTranslit } from "./pane/translit.js";
 
@@ -104,6 +104,7 @@ Office.onReady(async () => {
   wireCheck();
   wireIo();
   wireTranslit();
+  wireInfo();
   onShow("atif", () => ($<HTMLInputElement>("q").focus({ preventScroll: true }), void onSelection()));
   // Alt+1 … Alt+5: Atıf, Kütüphane, Belge, Denetim, Aktar.
   const tabs = [...document.querySelectorAll<HTMLButtonElement>(".tabs button")];

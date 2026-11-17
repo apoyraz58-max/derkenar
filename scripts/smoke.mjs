@@ -621,6 +621,25 @@ try {
   await page.click("#csl-remove");
   await page.waitForSelector("#message:has-text('listeden kaldırıldı')");
 
+  // 9g. Restore points: take one, break a record, go back to it.
+  await page.click("#go-info");
+  await page.click("#snap-now");
+  await page.waitForSelector("#message:has-text('şimdiki hâli saklandı')");
+  const brokenKey = await page.evaluate(() => document.querySelectorAll("#snap-list li").length);
+  if (brokenKey < 1) fail("restore point not listed");
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-view", "all");
+  await page.locator("#lib-list li.item-row", { hasText: "Zoteroda Eklenmiş Kitap" }).first().click();
+  await page.fill('[data-field="title"]', "Bozulmuş başlık");
+  await page.waitForTimeout(800);
+  await page.click("#go-info");
+  const firstSnap = page.locator("#snap-list li", { hasText: "elle" }).first().locator("button", { hasText: "Bu güne dön" });
+  await firstSnap.click();
+  await page.locator("#snap-list li", { hasText: "elle" }).first().locator("button", { hasText: "Emin misiniz" }).click();
+  await page.waitForSelector("#message:has-text('hâline döndü')");
+  await page.click("#tab-kutuphane");
+  if (!(await page.locator("#lib-list li.item-row", { hasText: "Zoteroda Eklenmiş Kitap" }).count())) fail("restore did not bring the title back");
+
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");
   await page.waitForSelector("#info-document dd:has-text('kaynak,')");

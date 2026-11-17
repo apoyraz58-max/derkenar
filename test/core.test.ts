@@ -717,3 +717,25 @@ describe("Zotero ile yazılmış belge", async () => {
     expect(parseZoteroField("PAGE \\* MERGEFORMAT")).toBeNull();
   });
 });
+
+describe("geri yükleme noktaları", async () => {
+  const { snapshotDue, pruneSnapshots, restorePlan } = await import("../src/core/snapshots.js");
+  const snap = (saved: string, reason = "daily") => ({ saved, count: 1, reason, packed: "" });
+  it("günde bir; son yedi gün ve son üç geri yükleme öncesi kalır", () => {
+    expect(snapshotDue([snap("2026-11-17T08:00:00Z")], new Date("2026-11-17T20:00:00Z"))).toBe(false);
+    expect(snapshotDue([snap("2026-11-16T08:00:00Z")], new Date("2026-11-17T20:00:00Z"))).toBe(true);
+    const list = Array.from({ length: 10 }, (_, i) => snap(`2026-11-${String(10 + i).padStart(2, "0")}T08:00:00Z`));
+    const kept = pruneSnapshots([...list, snap("2026-11-19T09:00:00Z"), ...[1, 2, 3, 4].map((n) => snap(`2026-11-1${n}T10:00:00Z`, "before-restore"))]);
+    expect(kept.filter((s) => s.reason === "daily").map((s) => s.saved.slice(8, 10))).toEqual(["19", "18", "17", "16", "15", "14", "13"]);
+    expect(kept.filter((s) => s.reason !== "daily")).toHaveLength(3);
+  });
+  it("geri yükleme: o günün kayıtları geri gelir, sonra eklenenler çöpe gider", () => {
+    const a = { ...emptyItem("book", "m"), key: "AAAA0001", fields: { title: "Eski hâli" } };
+    const aNow = { ...a, fields: { title: "Sonra bozulan" } };
+    const b = { ...emptyItem("book", "m"), key: "BBBB0001", fields: { title: "Sonra eklenen" } };
+    const plan = restorePlan({ items: [aNow, b] }, { v: 1, saved: "", items: [a], collections: [], searches: [], tagColors: [] }, "2026-11-17T00:00:00Z");
+    expect(plan.items.find((i) => i.key === "AAAA0001")!.fields.title).toBe("Eski hâli");
+    expect(plan.items.find((i) => i.key === "BBBB0001")!.deleted).toBe(true);
+    expect(plan.trashed).toBe(1);
+  });
+});

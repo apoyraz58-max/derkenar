@@ -9,6 +9,7 @@ import { BUILTIN_STYLES } from "../../core/styles.js";
 import type { CiteRef, DocState } from "../../core/types.js";
 import type { SavedSearch } from "../../core/searchquery.js";
 import { type Collection, type Item, now } from "../../core/zotero.js";
+import type { Snapshot } from "../../core/snapshots.js";
 import * as store from "../store.js";
 import * as word from "../word.js";
 
@@ -181,6 +182,8 @@ export async function loadLibrary(): Promise<void> {
   copyReady = true;
   libraryChanged();
   if (restored) setMessage(restored, "success");
+  // A restore point a day (kept a week): Veri bilgisi → Geri yükleme noktaları.
+  window.setTimeout(() => void takeSnapshot("daily").catch(() => undefined), 3000);
   // Ask the browser not to evict the add-in's storage under disk pressure.
   void navigator.storage?.persist?.().catch(() => undefined);
 }
@@ -332,4 +335,48 @@ export function download(name: string, text: string, type = "application/json"):
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// ---------------------------------------------------------------- restore points
+
+export async function snapshots(): Promise<Snapshot[]> {
+  return (await store.getMeta<Snapshot[]>("snapshots")) ?? [];
+}
+
+/** Keeps the library as it is now ("daily": only when none was taken today). */
+export async function takeSnapshot(reason: "daily" | "before-restore" | "manual"): Promise<void> {
+  const { snapshotDue, pruneSnapshots } = await import("../../core/snapshots.js");
+  const list = await snapshots();
+  if (reason === "daily" && (!snapshotDue(list) || !S.items.length)) return;
+  const { packLibrary } = await import("../../core/librarycopy.js");
+  const packed = packLibrary({ items: S.items, collections: S.collections, searches: S.searches, tagColors: S.tagColors });
+  await store.setMeta("snapshots", pruneSnapshots([...list, { saved: new Date().toISOString(), count: S.items.filter((i) => !i.deleted).length, reason, packed }]));
+}
+
+/** Back to a restore point; the library as it is now is kept first, so this can be undone too. */
+export async function restoreSnapshot(saved: string): Promise<{ trashed: number; count: number }> {
+  const snap = (await snapshots()).find((s) => s.saved === saved);
+  if (!snap) throw new Error("Geri yükleme noktası bulunamadı.");
+  const { unpackLibrary } = await import("../../core/librarycopy.js");
+  const { restorePlan } = await import("../../core/snapshots.js");
+  const copy = unpackLibrary(snap.packed);
+  if (!copy) throw new Error("Geri yükleme noktası okunamadı.");
+  await takeSnapshot("before-restore");
+  const plan = restorePlan({ items: S.items }, copy, now());
+  await putItems(plan.items);
+  const keepC = new Set(plan.collections.map((c) => c.key));
+  await putCollections(plan.collections, S.collections.filter((c) => !keepC.has(c.key)).map((c) => c.key));
+  const keepS = new Set(plan.searches.map((x) => x.key));
+  await putSearches(plan.searches, S.searches.filter((x) => !keepS.has(x.key)).map((x) => x.key));
+  return { trashed: plan.trashed, count: copy.items.filter((i) => !i.deleted).length };
+}
+
+/** A restore point as a Derkenar backup file (İçe Aktar reads it back). */
+export async function snapshotBackup(saved: string): Promise<string> {
+  const snap = (await snapshots()).find((s) => s.saved === saved);
+  const { unpackLibrary } = await import("../../core/librarycopy.js");
+  const copy = snap ? unpackLibrary(snap.packed) : null;
+  if (!copy) throw new Error("Geri yükleme noktası okunamadı.");
+  const { backup } = await import("../../core/exporters.js");
+  return backup(copy.items, copy.collections);
 }

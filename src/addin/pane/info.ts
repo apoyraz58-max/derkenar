@@ -5,7 +5,7 @@
 import { SCHEMA_VERSION, isNoteItem, itemTypeLabel } from "../../core/zotero.js";
 import { getMeta } from "../store.js";
 import * as word from "../word.js";
-import { $, S, doc, h, styleTitle } from "./core.js";
+import { $, S, doc, download, h, restoreSnapshot, run, setMessage, snapshotBackup, snapshots, styleTitle, takeSnapshot } from "./core.js";
 import { citedKeys } from "./document.js";
 import { sourceName } from "./io.js";
 
@@ -77,6 +77,7 @@ export async function renderInfo(): Promise<void> {
   if (zv) storage.push(["Son eşitleme", `${zv.library}, sürüm ${zv.version}`]);
   facts("info-storage", storage);
 
+  void renderSnapshots();
   facts("info-components", [
     ["Derkenar", __VERSION__],
     ["Biçimlendirici", "citeproc-js (CSL)"],
@@ -98,4 +99,63 @@ async function libraryCopyRow(keep: boolean): Promise<string> {
   } catch {
     return "Okunamadı";
   }
+}
+
+// ---------------------------------------------------------------- restore points
+
+let armed = "";
+
+export async function renderSnapshots(): Promise<void> {
+  const list = await snapshots();
+  const label = (r: string) => (r === "daily" ? "günlük" : r === "manual" ? "elle" : "geri yüklemeden önce");
+  $("snap-list").replaceChildren(
+    ...list.map((sn) =>
+      h(
+        "li",
+        {},
+        `${when(sn.saved)} · ${n(sn.count)} kaynak · ${label(sn.reason)} `,
+        h("button", {
+          type: "button",
+          class: "link",
+          onclick: (e: Event) => {
+            const b = e.target as HTMLButtonElement;
+            if (armed !== sn.saved) {
+              armed = sn.saved;
+              b.textContent = "Emin misiniz? Tekrar tıklayın";
+              window.setTimeout(() => {
+                if (armed === sn.saved) armed = "";
+                b.textContent = "Bu güne dön";
+              }, 4000);
+              return;
+            }
+            armed = "";
+            void run("Geri yükleniyor", async () => {
+              const r = await restoreSnapshot(sn.saved);
+              setMessage(`Kütüphane ${when(sn.saved)} hâline döndü (${n(r.count)} kaynak).${r.trashed ? ` Sonra eklenen ${n(r.trashed)} kaynak çöp kutusunda.` : ""} Geri almak için listedeki "geri yüklemeden önce" noktasını kullanın.`, "success");
+              await renderInfo();
+            });
+          },
+        }, "Bu güne dön"),
+        " · ",
+        h("button", {
+          type: "button",
+          class: "link",
+          onclick: () =>
+            void run("Hazırlanıyor", async () => {
+              download(`derkenar-yedek-${sn.saved.slice(0, 10)}.json`, await snapshotBackup(sn.saved));
+            }),
+        }, "İndir"),
+      ),
+    ),
+  );
+  if (!list.length) $("snap-list").append(h("li", { class: "muted" }, "Henüz yok; kütüphanede kaynak varken her gün bir tane oluşur."));
+}
+
+export function wireInfo(): void {
+  $("snap-now").onclick = () =>
+    void run("Saklanıyor", async () => {
+      await takeSnapshot("manual");
+      await renderSnapshots();
+      setMessage("Kütüphanenin şimdiki hâli saklandı.", "success");
+    });
 }
