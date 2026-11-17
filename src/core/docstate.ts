@@ -85,9 +85,9 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
     }
     seen.add(f.id);
     // a.mlf. in footnotes and in in-text citations alike (guide s. 65 and s. 139).
-    ordered.push({ id: f.id, items: withSameAuthor(c.items, state.items), noteIndex: renderer.meta.note ? f.noteIndex : 0 });
+    ordered.push({ id: f.id, items: renderer.meta.isnad ? withSameAuthor(c.items, state.items) : c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
   }
-  renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items))));
+  renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items)), renderer.meta.isnad));
   const html = renderer.renderCitations(ordered);
   const updates = new Map<string, string>();
   const texts = new Map(found.map((f) => [f.id, f.text]));
@@ -167,7 +167,7 @@ export function volumesCited(refs: readonly CiteRef[]): Set<string> {
  * Items as CSL. A book cited with its own cilt ("1/80") must not also print
  * the record's Cilt ("6/1/80"): for those works the record's volume is left out.
  */
-export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set()): Record<string, CslItem> {
+export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set(), isnad = true): Record<string, CslItem> {
   const out: Record<string, CslItem> = {};
   for (const [k, v] of Object.entries(items)) {
     const csl: CslItem = { ...toCsl(v), id: k };
@@ -176,9 +176,41 @@ export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet
       if (csl["number-of-volumes"] === undefined) csl["number-of-volumes"] = csl.volume;
       delete csl.volume;
     }
-    out[k] = fillImprint(csl);
+    out[k] = isnad ? fillImprint(csl) : plainRoles(csl);
   }
   return out;
+}
+
+/**
+ * Other styles (APA, Chicago …) know no muhakkik, nâşir, hazırlayan or
+ * sadeleştiren: they read them as editors ("Ed."). Film and broadcast
+ * directors stay directors.
+ */
+export function plainRoles(csl: CslItem): CslItem {
+  const c = csl as CslItem & Record<string, unknown>;
+  const moved: unknown[] = [];
+  const roles = ["collection-editor", "editorial-director", "reviewed-author", ...(["motion_picture", "broadcast"].includes(csl.type) ? [] : ["director"])];
+  for (const role of roles) {
+    const names = c[role];
+    if (Array.isArray(names) && names.length) {
+      moved.push(...names);
+      delete c[role];
+    }
+  }
+  if (moved.length) c.editor = [...(c.editor ?? []), ...(moved as NonNullable<CslItem["editor"]>)];
+  // The Arabic article İSNAD keeps at the end of the given name ("Fahreddin … er-") is a particle here: "er-Râzî".
+  for (const value of Object.values(c)) {
+    if (!Array.isArray(value)) continue;
+    for (const n of value as Record<string, unknown>[]) {
+      const given = typeof n?.given === "string" ? n.given : "";
+      const m = /\s+((?:el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|al|ar|az|as|an|at|ad)-)$/i.exec(given);
+      if (m && typeof n.family === "string" && !n["non-dropping-particle"]) {
+        n.given = given.slice(0, m.index);
+        n["non-dropping-particle"] = m[1];
+      }
+    }
+  }
+  return csl;
 }
 
 /** Order of citations and their notes: when it changes, the text must be re-rendered. */

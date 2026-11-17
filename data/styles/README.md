@@ -16,3 +16,11 @@ details without parentheses ("…hk. E-Posta 2 Eylül 2019, Alıcı Emrah Kaya."
 - `isnad-dipnotlu.csl`: Mevzuat-Diğer (Resmî Gazete dışı yönerge, ilke vb.) dipnotta
   "Yükseköğretim Kurulu (2016)" biçiminde (kılavuz s. 122); kaynakça değişmedi
   ("Türkiye: Yükseköğretim Kurulu, 2016"). Dipnot için `legal-cites-note` makrosu eklendi.
+
+## APA ve Chicago
+
+`apa.csl` (APA Style 7th edition) ve `chicago-notes-bibliography.csl` (Chicago Manual of
+Style 18th edition, notes and bibliography) citation-style-language/styles deposundan
+değiştirilmeden alındı (CC BY-SA 3.0). Derkenar'ın İSNAD kuralları (a.mlf., b.y./y.y., çıktı
+düzeltmeleri) bu stillerde uygulanmaz; muhakkik, nâşir, hazırlayan ve sadeleştiren editör
+olarak okunur.

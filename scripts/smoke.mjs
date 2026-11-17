@@ -469,6 +469,14 @@ try {
   if ((await notes()).length !== notesBefore) fail(`back to notes: ${(await notes()).length} vs ${notesBefore}`);
   if (!(await notes()).some((n) => n.startsWith("Ebû Hâmid") || n.startsWith("Ahmet Yılmaz"))) fail("notes not re-rendered");
 
+  // 9b. APA: in-text, no İSNAD abbreviations; back to İSNAD.
+  await page.selectOption("#style", "apa");
+  await page.waitForSelector("#message:has-text('Stil: APA')");
+  const apa = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).map((x) => x.cc.text));
+  if (!apa.length || apa.some((t) => /a\.mlf\.|b\.y\.|y\.y\./.test(t)) || !apa.every((t) => /^\(.+\)$/.test(t))) fail(`APA citations: ${JSON.stringify(apa)}`);
+  await page.selectOption("#style", "isnad-dipnotlu");
+  await page.waitForSelector("#message:has-text('dipnota taşındı')");
+
   // 9a. Yeni kaynak: ekleme yolları; RIS metni yapıştırarak ekleme.
   await page.click("#tab-kutuphane");
   await page.selectOption("#lib-new", "__ways");

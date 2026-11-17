@@ -11,13 +11,15 @@ export interface StyleMeta {
   readonly note: boolean;
   readonly defaultLocale?: string;
   readonly hasBibliography: boolean;
+  /** An İSNAD style: Derkenar's İSNAD rules (a.mlf., b.y./y.y., output tidying) apply only to these. */
+  readonly isnad: boolean;
 }
 
 export function styleMeta(xml: string): StyleMeta {
   const title = /<title>([^<]*)<\/title>/.exec(xml)?.[1]?.trim() ?? "Adsız stil";
   const cls = /<style\b[^>]*\bclass="([^"]+)"/.exec(xml)?.[1];
   const defaultLocale = /<style\b[^>]*\bdefault-locale="([^"]+)"/.exec(xml)?.[1];
-  return { title: decodeXml(title), note: cls === "note", defaultLocale, hasBibliography: /<bibliography\b/.test(xml) };
+  return { title: decodeXml(title), note: cls === "note", defaultLocale, hasBibliography: /<bibliography\b/.test(xml), isnad: /İSNAD|ISNAD/i.test(title) };
 }
 
 function decodeXml(text: string): string {
@@ -56,8 +58,11 @@ export class Renderer {
   private items: Record<string, CslItem> = {};
   private readonly engine: Engine;
 
+  private readonly lang: string;
+
   constructor(styleXml: string, locales: Locales, lang?: string) {
     this.meta = styleMeta(styleXml);
+    this.lang = lang ?? this.meta.defaultLocale ?? "tr-TR";
     const sys = {
       retrieveLocale: (l: string) => locales(l) ?? locales(l.split("-")[0] ?? l) ?? locales("en-US"),
       retrieveItem: (id: string) => this.items[id] ?? { id, type: "document", title: MISSING },
@@ -76,18 +81,38 @@ export class Renderer {
   renderCitations(citations: readonly OrderedCitation[]): Map<string, string> {
     const input = citations.map((c) => ({
       citationID: c.id,
-      citationItems: c.items.map((r) => toCiteItem(r)),
+      citationItems: c.items.map((r) => this.citeItem(r)),
       properties: { noteIndex: c.noteIndex },
     }));
     const out = new Map<string, string>();
-    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html")) out.set(id, isnadTidy(html));
+    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html")) out.set(id, this.tidy(html));
     return out;
   }
 
   /** What a new citation would look like (does not change the processor state). */
   preview(refs: readonly CiteRef[], noteIndex = 1): string {
-    const citation = { citationItems: refs.map(toCiteItem), properties: { noteIndex } };
-    return isnadTidy(this.engine.previewCitationCluster(citation, [], [], "html"));
+    const citation = { citationItems: refs.map((r) => this.citeItem(r)), properties: { noteIndex } };
+    return this.tidy(this.engine.previewCitationCluster(citation, [], [], "html"));
+  }
+
+  /**
+   * Cilt and sayfa: İSNAD writes "1/45"; a note style otherwise "1:45"
+   * (Chicago); an in-text style "Cilt 1, s. 45" (APA).
+   */
+  private citeItem(r: CiteRef): Record<string, unknown> {
+    const item = toCiteItem(r);
+    const vol = r.volume?.trim();
+    if (this.meta.isnad || !vol || !r.locator || (r.label ?? "page") !== "page" || composeLocator(r)) return item;
+    if (this.meta.note) item.locator = `${vol}:${r.locator}`;
+    else {
+      item.locator = `${vol}, ${/^en/.test(this.lang) ? "p." : "s."} ${r.locator}`;
+      item.label = "volume";
+    }
+    return item;
+  }
+
+  private tidy(html: string): string {
+    return this.meta.isnad ? isnadTidy(html) : html;
   }
 
   /** Bibliography of the works cited by the last renderCitations; null when the style has none. */
@@ -101,7 +126,7 @@ export class Renderer {
     const seen = new Set<string>();
     // İSNAD keeps the period after a title ending in ? or ! ("Nedir?”. Sabah", guide s. 112).
     const keepPeriod = (h: string) => h.replace(/([?!])”(\s|&#160;)(?=[\p{Lu}<])/gu, "$1”.$2");
-    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html: keepPeriod(isnadTidy(stripArticle(html))) })).filter((e) => {
+    const unique = entries.map((html, i) => ({ ids: ids[i] ?? [], html: this.meta.isnad ? keepPeriod(isnadTidy(stripArticle(html))) : html })).filter((e) => {
       const k = e.html.replace(/\s+/g, " ").trim();
       if (seen.has(k)) return false;
       seen.add(k);

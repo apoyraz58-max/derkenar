@@ -55,7 +55,7 @@ açılınca kütüphane kendiliğinden geri gelir.
 | Word eklentisi: Atıf ekle/düzenle (hızlı biçim), Kaynakça, Belge tercihleri, Güncelle, Bağlantıyı kaldır | Var; "gazzali 1/45" yazınca cilt/sayfa ayrılır; dipnot ya da sonnot |
 | PDF okuyucu ve işaretleme, tarayıcı eklentisi, RSS beslemeleri, tam metin dizini | Yok (Word penceresinde yapılamaz) |
 
-Stil şimdilik yalnız İSNAD 2 (dipnotlu ve metin içi). APA ve diğerleri sonraki iş.
+Stiller: İSNAD 2 (dipnotlu ve metin içi), APA 7 (metin içi), Chicago 18 (dipnotlu). İSNAD kuralları (a.mlf., b.y./y.y., cilt/sayfa "1/45") yalnız İSNAD stillerinde uygulanır; APA "Cilt 1, s. 45", Chicago "1:45" yazar.
 
 ## Depo yapısı
 

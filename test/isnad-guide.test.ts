@@ -379,3 +379,29 @@ describe("Mevzuat-Diğer (s. 122)", () => {
     expect(htmlToText(plan.bibliography!.entries[0]!.html)).toBe("YKBAYEY, Yükseköğretim Kurulu Bilimsel Araştırma ve Yayın Etiği Yönergesi. Türkiye: Yükseköğretim Kurulu, 2016.");
   });
 });
+
+describe("APA ve Chicago: İSNAD kuralları karışmaz", () => {
+  const razi: Item = { ...items[0]!, key: "RAZI0001", itemType: "book", fields: { title: "el-Maḥsûl fî ʿilmi uṣûli’l-fıḳh", place: "Beyrut", publisher: "Müessesetü’r-Risâle", date: "1418/1997" }, creators: [{ creatorType: "author", lastName: "Râzî", firstName: "Fahreddin Muhammed b. Ömer er-" }, { creatorType: "muhakkik", lastName: "Alvânî", firstName: "Tâhâ Câbir" }], notes: [], tags: [], collections: [], relations: [] };
+  const anon: Item = { ...razi, key: "NOPLACE1", fields: { title: "Kelam ve Akaid Risaleleri", date: "2016" }, creators: [{ creatorType: "author", lastName: "Râzî", firstName: "Fahreddin Muhammed b. Ömer er-" }] };
+  const run = (style: string) => {
+    const r = new Renderer(readFileSync(new URL(`${style}.csl`, styles), "utf8"), locales);
+    const st = emptyState();
+    const W = { [razi.key]: razi, [anon.key]: anon };
+    putCitation(st, "x", [{ id: razi.key, volume: "1", locator: "45" }, { id: anon.key, locator: "12" }], W);
+    const plan = planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r);
+    return { note: htmlToText(plan.updates.get("x")!), bib: plan.bibliography!.entries.map((e) => htmlToText(e.html)).join(" | ") };
+  };
+  it("APA: Cilt 1, s. 45; muhakkik editör; b.y./y.y. ve a.mlf. yok", () => {
+    const o = run("apa");
+    expect(o.note).toContain("Cilt 1, s. 45");
+    expect(o.note).not.toMatch(/a\.mlf\.|b\.y\.|y\.y\./);
+    expect(o.bib).toContain("(T. C. Alvânî, Ed.)");
+    expect(o.bib).toContain("er-Râzî, F. M. b. Ö.");
+  });
+  it("Chicago: 1:45, ed.; İSNAD kısaltmaları yok", () => {
+    const o = run("chicago-notes-bibliography");
+    expect(o.note).toContain("ed. Tâhâ Câbir Alvânî");
+    expect(o.note).toContain("1:45");
+    expect(o.note + o.bib).not.toMatch(/a\.mlf\.|b\.y\.|y\.y\.|thk\./);
+  });
+});
