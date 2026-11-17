@@ -33,7 +33,9 @@ stilleri); başka stiller sonra eklenecek.
 
 **Zotero'daki Word eklentisinin işleri de var:** Kaynakçayı düzenle (atıfsız eser ekleme,
 eser çıkarma), Word'de elle değiştirilen atıfı koruma, bk./krş. ön ekleri, kaynakçayı türlere
-ayırma, eklerken yineleme denetimi, birleştirilen kayda atıfları bağlama.
+ayırma, eklerken yineleme denetimi, birleştirilen kayda atıfları bağlama. Zotero'nun Word
+eklentisiyle yazılmış belgelerin atıfları (ADDIN ZOTERO_ITEM alanları) ve kaynakçası Derkenar'a
+çevrilir (WordApi 1.5).
 
 **Kütüphane belgeyle taşınır:** kütüphanenin sıkıştırılmış bir kopyası çalışılan Word belgesinde
 saklanır; Office önbelleği silinse, eklenti yeniden eklense ya da başka bilgisayara geçilse de belge
