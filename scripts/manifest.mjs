@@ -44,8 +44,8 @@ const tab = [
   group("Library", "Kütüphane", "library", [
     button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede.", "library", "library"),
     button("New", "Yeni Kaynak", "Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar).", "bulk", "new"),
-    button("Import", "İçe Aktar", "Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler.", "csv", "import"),
-    button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "source", "export"),
+    button("Import", "İçe Aktar", "Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler.", "import", "import"),
+    button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "export", "export"),
   ]),
   group("Isnad", "İSNAD", "audit", [
     button("CheckDoc", "Belgeyi Denetle", "Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir.", "audit", "check-doc"),

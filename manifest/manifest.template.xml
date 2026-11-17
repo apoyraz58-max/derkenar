@@ -179,9 +179,9 @@
                     <Description resid="Import.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.csv.16"/>
-                    <bt:Image size="32" resid="Ic.csv.32"/>
-                    <bt:Image size="80" resid="Ic.csv.80"/>
+                    <bt:Image size="16" resid="Ic.import.16"/>
+                    <bt:Image size="32" resid="Ic.import.32"/>
+                    <bt:Image size="80" resid="Ic.import.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
@@ -195,9 +195,9 @@
                     <Description resid="Export.Tip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Ic.source.16"/>
-                    <bt:Image size="32" resid="Ic.source.32"/>
-                    <bt:Image size="80" resid="Ic.source.80"/>
+                    <bt:Image size="16" resid="Ic.export.16"/>
+                    <bt:Image size="32" resid="Ic.export.32"/>
+                    <bt:Image size="80" resid="Ic.export.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
@@ -351,12 +351,12 @@
         <bt:Image id="Ic.bulk.16" DefaultValue="{{BASE_URL}}assets/icons/bulk-16.png"/>
         <bt:Image id="Ic.bulk.32" DefaultValue="{{BASE_URL}}assets/icons/bulk-32.png"/>
         <bt:Image id="Ic.bulk.80" DefaultValue="{{BASE_URL}}assets/icons/bulk-80.png"/>
-        <bt:Image id="Ic.csv.16" DefaultValue="{{BASE_URL}}assets/icons/csv-16.png"/>
-        <bt:Image id="Ic.csv.32" DefaultValue="{{BASE_URL}}assets/icons/csv-32.png"/>
-        <bt:Image id="Ic.csv.80" DefaultValue="{{BASE_URL}}assets/icons/csv-80.png"/>
-        <bt:Image id="Ic.source.16" DefaultValue="{{BASE_URL}}assets/icons/source-16.png"/>
-        <bt:Image id="Ic.source.32" DefaultValue="{{BASE_URL}}assets/icons/source-32.png"/>
-        <bt:Image id="Ic.source.80" DefaultValue="{{BASE_URL}}assets/icons/source-80.png"/>
+        <bt:Image id="Ic.import.16" DefaultValue="{{BASE_URL}}assets/icons/import-16.png"/>
+        <bt:Image id="Ic.import.32" DefaultValue="{{BASE_URL}}assets/icons/import-32.png"/>
+        <bt:Image id="Ic.import.80" DefaultValue="{{BASE_URL}}assets/icons/import-80.png"/>
+        <bt:Image id="Ic.export.16" DefaultValue="{{BASE_URL}}assets/icons/export-16.png"/>
+        <bt:Image id="Ic.export.32" DefaultValue="{{BASE_URL}}assets/icons/export-32.png"/>
+        <bt:Image id="Ic.export.80" DefaultValue="{{BASE_URL}}assets/icons/export-80.png"/>
         <bt:Image id="Ic.audit.16" DefaultValue="{{BASE_URL}}assets/icons/audit-16.png"/>
         <bt:Image id="Ic.audit.32" DefaultValue="{{BASE_URL}}assets/icons/audit-32.png"/>
         <bt:Image id="Ic.audit.80" DefaultValue="{{BASE_URL}}assets/icons/audit-80.png"/>
