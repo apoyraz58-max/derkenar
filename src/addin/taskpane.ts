@@ -10,6 +10,7 @@ import { abbreviationsList, bibliography, changeStyle, checkForeign, nudge, refr
 import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
 import { wireScan } from "./pane/scan.js";
+import { wireHandNotes } from "./pane/handnotes.js";
 import { renderInfo, wireInfo } from "./pane/info.js";
 import { refreshLibraryView, wireLibrary } from "./pane/library.js";
 import { wireTranslit } from "./pane/translit.js";
@@ -108,6 +109,7 @@ Office.onReady(async () => {
   wireCheck();
   wireIo();
   wireScan();
+  wireHandNotes();
   wireTranslit();
   wireInfo();
   onShow("atif", () => ($<HTMLInputElement>("q").focus({ preventScroll: true }), void onSelection()));

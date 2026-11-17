@@ -150,7 +150,7 @@ const FAKE = String.raw`
         const ccs = collection(x.fn.controls);
         ccs.getByTag = (tag) => collection(x.fn.controls.filter((c) => c.tag === tag));
         return {
-          body: { contentControls: ccs, get fields() { return collection((x.fn.fields ?? []).map((f) => fieldProxy(f.code, (n) => { x.fn.fields.splice(x.fn.fields.indexOf(f), 1); x.fn.controls.push(n.cc); }))); }, get text() { return x.fn.controls.map((c) => c.text).join("") + x.fn.text + (x.fn.fields ?? []).map((f) => f.text).join(""); }, load() { return this; } },
+          body: { getRange() { return { insertText(t) { x.fn.text = ""; x.fn.controls = []; return { insertContentControl() { const n = makeCC("inline"); n.runs = [{ text: t, font: {} }]; x.fn.controls.push(n); return n; } }; } }; }, contentControls: ccs, get fields() { return collection((x.fn.fields ?? []).map((f) => fieldProxy(f.code, (n) => { x.fn.fields.splice(x.fn.fields.indexOf(f), 1); x.fn.controls.push(n.cc); }))); }, get text() { return x.fn.controls.map((c) => c.text).join("") + x.fn.text + (x.fn.fields ?? []).map((f) => f.text).join(""); }, load() { return this; } },
           delete() { doc.flow.splice(doc.flow.indexOf(x), 1); },
           reference: { insertText(t) { return { insertContentControl() { const n = makeCC("inline"); n.runs = [{ text: t, font: {} }]; doc.flow.splice(doc.flow.indexOf(x), 0, { cc: n }); return n; } }; } },
         };
@@ -738,6 +738,23 @@ try {
   await page.waitForSelector("#message:has-text('hâline döndü')");
   await page.click("#tab-kutuphane");
   if (!(await page.locator("#lib-list li.item-row", { hasText: "Zoteroda Eklenmiş Kitap" }).count())) fail("restore did not bring the title back");
+
+  // 9z. Footnotes typed by hand: read, shown, then turned into citations in place.
+  await page.evaluate(() => {
+    for (const t of ["Hasan Kâmil Yılmaz, Anahatlarıyla Tasavvuf ve Tarikatlar (İstanbul: Ensar Neşriyat, 2004), 45.", "a.g.e., 46.", "Bu görüş için ileride ayrıca durulacaktır.", "Bk. Yılmaz, Anahatlarıyla Tasavvuf, 50."]) window.__doc.flow.push({ fn: { controls: [], text: t } });
+  });
+  await page.click("#tab-belge");
+  await page.click("#hand-scan");
+  await page.waitForSelector("#hand-result:has-text('3 tanesi atıfa çevrilebilir')");
+  if (!(await page.textContent("#hand-result")).includes("kalır: künye olarak okunamadı")) fail("hand note with prose should stay");
+  await page.locator("#hand-result button", { hasText: "3 dipnotu atıfa çevir" }).click();
+  await page.waitForSelector("#message:has-text('3 dipnot Derkenar atıfına çevrildi')");
+  const hand = await page.evaluate(() => window.__doc.flow.filter((x) => x.fn).slice(-4).map((x) => ({ cc: x.fn.controls.map((c) => c.text).join(""), text: x.fn.text })));
+  if (!hand[0].cc.includes("Anahatlarıyla Tasavvuf ve Tarikatlar") || !hand[0].cc.includes("45")) fail(`hand note 1: ${JSON.stringify(hand[0])}`);
+  if (!hand[1].cc || hand[1].text) fail(`hand note 2: ${JSON.stringify(hand[1])}`);
+  if (hand[2].cc || !hand[2].text.startsWith("Bu görüş")) fail("prose note changed");
+  if (!/^bk\./i.test(hand[3].cc) || !hand[3].cc.includes("50")) fail(`hand note 4: ${JSON.stringify(hand[3])}`);
+  console.log("hand notes:", JSON.stringify(hand.map((x) => x.cc || x.text)));
 
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");

@@ -607,3 +607,44 @@ export function writeLibraryCopy(xml: string): Promise<void> {
     });
   });
 }
+
+// ---------------------------------------------------------------- footnotes typed by hand
+
+/** Footnotes with no Derkenar citation in them (index: the note's place among all footnotes). */
+export async function handNotes(): Promise<{ index: number; text: string }[]> {
+  if (!footnotesSupported()) return [];
+  return Word.run(async (context) => {
+    const notes = context.document.body.footnotes;
+    notes.load("items");
+    await context.sync();
+    const parts = notes.items.map((n) => {
+      const ccs = n.body.contentControls;
+      ccs.load("items/tag");
+      n.body.load("text");
+      return { n, ccs };
+    });
+    await context.sync();
+    return parts.map((p, index) => ({ index, text: p.n.body.text, mine: p.ccs.items.some((cc) => citationIdFromTag(cc.tag)) })).filter((x) => !x.mine).map(({ index, text }) => ({ index, text }));
+  });
+}
+
+/** Replaces each listed footnote's text with a citation (the note and its number stay). */
+export async function replaceNotes(writes: readonly { index: number; id: string; segments: readonly Segment[] }[]): Promise<number> {
+  return Word.run(async (context) => {
+    const notes = context.document.body.footnotes;
+    notes.load("items");
+    await context.sync();
+    let done = 0;
+    for (const w of writes) {
+      const n = notes.items[w.index];
+      if (!n) continue;
+      const range = n.body.getRange("Content").insertText(w.segments.map((s) => s.text).join("") || "…", "Replace");
+      const cc = range.insertContentControl();
+      setupControl(cc, w.id);
+      writeRuns(cc, w.segments, true);
+      done++;
+    }
+    await context.sync();
+    return done;
+  });
+}
