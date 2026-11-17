@@ -9,8 +9,8 @@
  */
 import { cleanIsbn, lookupIsbn } from "../../core/importers.js";
 import { completeFromPage, type PageLine, type PageReading, readPage } from "../../core/pagetext.js";
-import { type Item, creatorLine, titleOf } from "../../core/zotero.js";
-import { getMeta } from "../store.js";
+import { type Attachment, type Item, creatorLine, newKey, now, titleOf } from "../../core/zotero.js";
+import { getMeta, putFile } from "../store.js";
 import { $, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
 import { currentView } from "./library.js";
@@ -229,7 +229,15 @@ async function recordFrom(pages: PageLine[][]): Promise<{ item: Item | null; uns
   return { item: page, unsure, via: ranked[0]?.how === "atif" ? "sayfadaki atıf satırı" : "sayfanın düzeni", text, failed };
 }
 
-async function addFromPages(pages: PageLine[][], what: string): Promise<void> {
+/** The PDF the record was read from, kept with it (in this computer's storage), as a file added in the editor is. */
+async function asAttachment(file: File): Promise<Attachment | null> {
+  if (file.size > 200 * 1024 * 1024) return null;
+  const key = newKey();
+  await putFile(key, file);
+  return { key, kind: "file", title: file.name.replace(/\.[^.]+$/, ""), fileName: file.name, contentType: file.type || "application/pdf", size: file.size, dateAdded: now() };
+}
+
+async function addFromPages(pages: PageLine[][], what: string, file?: File): Promise<void> {
   if (!pages.some((p) => p.length)) throw new Error(`${what} metin bulunamadı. Fotoğraf net ve düz mü? Sayfayı ışığa tutup, yazıyı kadraja doldurarak yeniden çekin.`);
   const r = await recordFrom(pages);
   if (!r.item) {
@@ -241,13 +249,30 @@ async function addFromPages(pages: PageLine[][], what: string): Promise<void> {
   const items = [{ ...r.item, source: "sayfa", collections: v.kind === "collection" ? [v.key] : r.item.collections }];
   const fixedNote = isnadFix(items);
   const { fresh, already } = splitExisting(items);
-  if (!fresh.length) return showAlready(already);
+  if (!fresh.length) {
+    // The work is in the library already: its PDF goes to it, if it has none.
+    const old = already[0]!;
+    if (file && !(old.attachments ?? []).some((a) => a.kind === "file" && a.fileName === file.name)) {
+      const att = await asAttachment(file);
+      if (att) {
+        await putItems([{ ...old, attachments: [...(old.attachments ?? []), att], dateModified: now() }]);
+        openEditor(old.key);
+        setMessage(`Bu kaynak zaten kütüphanede: ${creatorLine(old) || "—"}, ${titleOf(old)}. PDF ona eklendi; ikinci kayıt açılmadı.`, "info");
+        return;
+      }
+    }
+    return showAlready(already);
+  }
+  if (file) {
+    const att = await asAttachment(file);
+    if (att) fresh[0] = { ...fresh[0]!, attachments: [...(fresh[0]!.attachments ?? []), att] };
+  }
   await putItems(fresh);
   const it = fresh[0]!;
   openEditor(it.key);
   const look = r.unsure.length ? ` Okunamayan ya da emin olunmayan: ${r.unsure.join(", ")}.` : "";
   const failNote = r.failed && !r.via.startsWith("DOI") && !r.via.startsWith("ISBN") ? ` (Sayfadaki numara kataloglarda bulunamadı: ${r.failed})` : "";
-  setMessage(`Eklendi (${r.via}): ${creatorLine(it) || "—"}, ${titleOf(it)}.${fixedNote}${alreadyNote(already)}${look}${failNote} Fotoğraftan okunan harfleri (â, î, ü …) önizlemede gözden geçirin.`, r.unsure.length || r.via.startsWith("sayfa") ? "warning" : "success");
+  setMessage(`Eklendi (${r.via}): ${creatorLine(it) || "—"}, ${titleOf(it)}.${fixedNote}${alreadyNote(already)}${look}${failNote} ${file ? " PDF kayda eklendi (Ekler)." : " Fotoğraftan okunan harfleri (â, î, ü …) önizlemede gözden geçirin."}`, r.unsure.length || r.via.startsWith("sayfa") ? "warning" : "success");
 }
 
 /** Photos, screenshots, PDFs: each PDF is one work; the photos together are one work (cover + künye page). */
@@ -255,7 +280,7 @@ export async function scanFiles(files: readonly File[]): Promise<void> {
   if (!files.length) return;
   const pdfs = files.filter((f) => f.type === "application/pdf" || /\.pdf$/i.test(f.name));
   const images = files.filter((f) => !pdfs.includes(f));
-  for (const f of pdfs) await addFromPages(await readPdf(f, f.name), `${f.name} içinde`);
+  for (const f of pdfs) await addFromPages(await readPdf(f, f.name), `${f.name} içinde`, f);
   if (images.length) {
     const pages: PageLine[][] = [];
     for (const [i, f] of images.entries()) pages.push(await ocr(f, images.length > 1 ? `${i + 1}. fotoğraf` : "Fotoğraf"));

@@ -595,6 +595,7 @@ try {
     await page.waitForSelector("#message:has-text('Eklendi (sayfadaki atıf satırı)')", { timeout: 60000 });
     if ((await page.inputValue('[data-field="title"]')) !== "Mâtürîdî’de İnsan Fiilleri") fail(`pdf title: ${await page.inputValue('[data-field="title"]')}`);
     if ((await page.inputValue('[data-field="pages"]')) !== "401-425") fail("pdf pages");
+    if (!(await page.textContent("#ed-attachments")).includes("makale")) fail("pdf not attached");
     await page.click("#tab-kutuphane");
     await page.selectOption("#lib-new", "__ways");
     await page.setInputFiles("#new-scan", { name: "kapak.jpg", mimeType: "image/jpeg", buffer: photo });
