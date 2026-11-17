@@ -61,6 +61,11 @@ export class Renderer {
 
   private readonly lang: string;
 
+  /** The language the citations are written in ("tr-TR", "en-US"). */
+  get language(): string {
+    return this.lang;
+  }
+
   constructor(styleXml: string, locales: Locales, lang?: string) {
     this.meta = styleMeta(styleXml);
     this.lang = lang ?? this.meta.defaultLocale ?? "tr-TR";

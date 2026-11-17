@@ -212,7 +212,7 @@ async function preview(): Promise<void> {
       if (w) items[b.id] = w;
     }
     const { cslMap, volumesCited } = await import("../../core/docstate.js");
-    r.setItems(cslMap(items, volumesCited([...S.basket, ...Object.values(doc().citations).flatMap((c) => c.items)]), r.meta.isnad));
+    r.setItems(cslMap(items, volumesCited([...S.basket, ...Object.values(doc().citations).flatMap((c) => c.items)]), r.meta.isnad, r.language));
     const p = $("preview");
     p.replaceChildren(...htmlToSegments(r.preview(S.basket)).map((seg) => h(seg.italic ? "i" : "span", { style: seg.bold ? "font-weight:bold" : undefined }, seg.text)));
   } catch (e) {
@@ -278,7 +278,7 @@ export async function insert(): Promise<void> {
       const id = newCitationId();
       putCitation(d, id, refs, works);
       const { cslMap, volumesCited } = await import("../../core/docstate.js");
-      r.setItems(cslMap(d.items, volumesCited(Object.values(d.citations).flatMap((c) => c.items)), r.meta.isnad));
+      r.setItems(cslMap(d.items, volumesCited(Object.values(d.citations).flatMap((c) => c.items)), r.meta.isnad, r.language));
       // Inside a note Word allows no new note: the citation is written in place.
       const want = r.meta.note && !point.inNote ? (d.notes ?? "footnote") : "text";
       const where = await serial(() => word.insertCitation(id, htmlToSegments(r.preview(refs)), want));

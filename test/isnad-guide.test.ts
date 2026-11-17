@@ -455,3 +455,17 @@ describe("Kur’ân atfı İngilizce çalışmada (s. 80-82)", () => {
     expect(composeLocator({ id: "x", kitap: "Yar.", bab: "1", cumle: "12" }, "en-US")?.locator).toBe("Gen.1:12");
   });
 });
+
+describe("İSNAD İngilizce: n.p., no date (resmî stil), idem", () => {
+  it("eksik künye ve aynı müellif İngilizce kısaltmalarla", () => {
+    const a: Item = { ...items[0]!, key: "ENGL0001", itemType: "book", fields: { title: "Kitāb al-Tawḥīd" }, creators: [{ creatorType: "author", lastName: "Māturīdī", firstName: "Abū Manṣūr al-" }], notes: [], tags: [], collections: [], relations: [] };
+    const b: Item = { ...a, key: "ENGL0002", fields: { title: "Taʾwīlāt al-Qurʾān", place: "Istanbul", publisher: "Mizan", date: "2005" } };
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales, "en-US");
+    const st = emptyState();
+    putCitation(st, "x", [{ id: a.key, locator: "4" }, { id: b.key, locator: "9" }], { [a.key]: a, [b.key]: b });
+    const out = htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!);
+    expect(out).toContain("Kitāb al-Tawḥīd (n.p.: n.p., no date), 4");
+    expect(out).toContain("; idem, ");
+    expect(out).not.toMatch(/b\.y\.|y\.y\.|a\.mlf\./);
+  });
+});

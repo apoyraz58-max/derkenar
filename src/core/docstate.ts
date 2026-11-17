@@ -7,6 +7,7 @@ import { type Bibliography, type OrderedCitation, Renderer } from "./engine.js";
 import type { CiteRef, CslItem, DocState, StoredCitation } from "./types.js";
 import { sameAuthors } from "./names.js";
 import { htmlToText } from "./html.js";
+import { isArabicTitle } from "./isnadstyle.js";
 import { fold } from "./search.js";
 import { type Item, toCsl } from "./zotero.js";
 
@@ -88,9 +89,9 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
     }
     seen.add(f.id);
     // a.mlf. in footnotes and in in-text citations alike (guide s. 65 and s. 139).
-    ordered.push({ id: f.id, items: renderer.meta.isnad ? withSameAuthor(c.items, state.items) : c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
+    ordered.push({ id: f.id, items: renderer.meta.isnad ? withSameAuthor(c.items, state.items, renderer.language) : c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
   }
-  renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items)), renderer.meta.isnad));
+  renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items)), renderer.meta.isnad, renderer.language));
   const uncited = (state.bibUncited ?? []).filter((k) => state.items[k]);
   const html = renderer.renderCitations(ordered, uncited);
   const updates = new Map<string, string>();
@@ -146,11 +147,12 @@ const NEEDS_IMPRINT = new Set(["book", "chapter", "entry-encyclopedia", "entry-d
  * Printed works only: an e-book ("PDF: Yayıncı, 2004") or a web source
  * ("Sözlük, “madde” (Erişim …)") has no place to report as missing.
  */
-export function fillImprint(csl: CslItem): CslItem {
+export function fillImprint(csl: CslItem, lang = "tr-TR"): CslItem {
+  const missing = /^en/.test(lang) ? { place: "n.p.", publisher: "n.p." } : ISNAD_MISSING;
   if (!NEEDS_IMPRINT.has(csl.type)) return csl;
   if (csl.medium || csl.accessed || (csl.URL && !csl.publisher && !csl["publisher-place"])) return csl;
-  if (!String(csl["publisher-place"] ?? "").trim()) csl["publisher-place"] = ISNAD_MISSING.place;
-  if (!String(csl.publisher ?? "").trim()) csl.publisher = ISNAD_MISSING.publisher;
+  if (!String(csl["publisher-place"] ?? "").trim()) csl["publisher-place"] = missing.place;
+  if (!String(csl.publisher ?? "").trim()) csl.publisher = missing.publisher;
   return csl;
 }
 
@@ -162,7 +164,7 @@ const authorsOf = (item: Item | undefined) => (item ? item.creators.filter((c) =
  * Mürciî…”". A second place in the same work is not a.mlf. (guide, s. 65;
  * changes list: "aynı yazara ait farklı eserlere").
  */
-export function withSameAuthor(refs: readonly CiteRef[], items: Record<string, Item>): CiteRef[] {
+export function withSameAuthor(refs: readonly CiteRef[], items: Record<string, Item>, lang = "tr-TR"): CiteRef[] {
   // Two records of one work (entered twice) are still one work.
   const title = (id: string) => fold(items[id]?.fields.title ?? "").replace(/[^\p{L}\p{N}]+/gu, "");
   return refs.map((r, i) => {
@@ -170,7 +172,8 @@ export function withSameAuthor(refs: readonly CiteRef[], items: Record<string, I
     if (i === 0 || !prev || r["suppress-author"] || r.prefix || r.id === prev.id || (title(r.id) && title(r.id) === title(prev.id))) return r;
     // The same author even when spelled differently in the two records ("Gazzâlî" / "Gazzali", fuller given name).
     if (!sameAuthors(authorsOf(items[r.id]), authorsOf(items[prev.id]))) return r;
-    return { ...r, "suppress-author": true, prefix: "a.mlf., " };
+    // İSNAD in English: "idem".
+    return { ...r, "suppress-author": true, prefix: /^en/.test(lang) ? "idem, " : "a.mlf., " };
   });
 }
 
@@ -183,7 +186,7 @@ export function volumesCited(refs: readonly CiteRef[]): Set<string> {
  * Items as CSL. A book cited with its own cilt ("1/80") must not also print
  * the record's Cilt ("6/1/80"): for those works the record's volume is left out.
  */
-export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set(), isnad = true): Record<string, CslItem> {
+export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set(), isnad = true, lang = "tr-TR"): Record<string, CslItem> {
   const out: Record<string, CslItem> = {};
   for (const [k, v] of Object.entries(items)) {
     const csl: CslItem = { ...toCsl(v), id: k };
@@ -192,7 +195,9 @@ export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet
       if (csl["number-of-volumes"] === undefined) csl["number-of-volumes"] = csl.volume;
       delete csl.volume;
     }
-    out[k] = isnad ? fillImprint(articleToGiven(csl)) : plainRoles(csl);
+    // citeproc title-cases titles of English-language works; a transliterated or Turkish title is not one ("Kitāb al-Tawḥīd").
+    if (isnad && !csl.language && /^en/.test(lang) && (isArabicTitle(String(csl.title ?? "")) || /[çğışöüÇĞİŞÖÜâîû]/.test(String(csl.title ?? "")))) csl.language = isArabicTitle(String(csl.title ?? "")) ? "ar" : "tr";
+    out[k] = isnad ? fillImprint(articleToGiven(csl), lang) : plainRoles(csl);
   }
   return out;
 }

@@ -383,7 +383,7 @@ async function bulk(action: string, value?: string): Promise<void> {
 /** Bibliography of arbitrary items (copy to clipboard), with the document's style. */
 async function bibliographyOf(r: Renderer, items: Item[]): Promise<{ text: string; html: string }> {
   const { cslMap } = await import("../../core/docstate.js");
-  const map = cslMap(Object.fromEntries(items.map((i) => [i.key, i])), new Set(), r.meta.isnad);
+  const map = cslMap(Object.fromEntries(items.map((i) => [i.key, i])), new Set(), r.meta.isnad, r.language);
   r.setItems(map);
   r.renderCitations(items.map((i, n) => ({ id: `__bib${n}`, items: [{ id: i.key }], noteIndex: n + 1 })));
   const bib = r.bibliography();
