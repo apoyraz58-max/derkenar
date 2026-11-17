@@ -185,12 +185,55 @@ const PUBLISHERS: Record<string, string> = {
   "ilem": "İLEM Yayınları",
   "kuramer": "KURAMER Yayınları",
   "tdv isam": "TDV İSAM Yayınları",
+  // İlahiyat ve sosyal bilimlerde sık geçenler.
+  fecr: "Fecr Yayınları",
+  nun: "Nun Yayıncılık",
+  pinar: "Pınar Yayınları",
+  hece: "Hece Yayınları",
+  "bilge kultur sanat": "Bilge Kültür Sanat",
+  kayihan: "Kayıhan Yayınları",
+  camlica: "Çamlıca Yayınları",
+  erkam: "Erkam Yayınları",
+  semerkand: "Semerkand Yayınları",
+  "sufi kitap": "Sufi Kitap",
+  ilke: "İlke Yayıncılık",
+  akcag: "Akçağ Yayınları",
+  kalem: "Kalem Yayınevi",
+  muhit: "Muhit Kitap",
+  isar: "İSAR Yayınları",
+  "isar vakfi": "İSAR Vakfı Yayınları",
+  yeditepe: "Yeditepe Yayınevi",
+  kaknus: "Kaknüs Yayınları",
+  "iz yayincilik": "İz Yayıncılık",
+  "insan yayinlari": "İnsan Yayınları",
+  "mahya yayincilik": "Mahya Yayıncılık",
+  "kitap dunyasi": "Kitap Dünyası",
+  "otto yayinlari": "Otto Yayınları",
+  "ayasofya": "Ayasofya Yayınları",
+  "eski yeni yayinlari": "Eski Yeni Yayınları",
+  "dib": "Diyanet İşleri Başkanlığı Yayınları",
+  "diyanet": "Diyanet İşleri Başkanlığı Yayınları",
+  "dergah yayinlari": "Dergâh Yayınları",
+  "tarih vakfi": "Tarih Vakfı Yurt Yayınları",
+  "turk tarih kurumu basimevi": "Türk Tarih Kurumu Basımevi",
+  "ttk": "Türk Tarih Kurumu Yayınları",
+  "tdk": "Türk Dil Kurumu Yayınları",
+  "yapi kredi yayinlari": "Yapı Kredi Yayınları",
+  "yky": "Yapı Kredi Yayınları",
+  "is bankasi": "Türkiye İş Bankası Kültür Yayınları",
+  "kultur bakanligi": "Kültür Bakanlığı Yayınları",
+  "vakiflar genel mudurlugu": "Vakıflar Genel Müdürlüğü Yayınları",
+  "ataturk kultur merkezi": "Atatürk Kültür Merkezi Yayınları",
+  "turk diyanet vakfi": "Türkiye Diyanet Vakfı Yayınları",
+  "ankara universitesi ilahiyat fakultesi": "Ankara Üniversitesi İlahiyat Fakültesi Yayınları",
+  "ataturk universitesi ilahiyat fakultesi": "Atatürk Üniversitesi İlahiyat Fakültesi Yayınları",
+  "inonu universitesi ilahiyat fakultesi": "İnönü Üniversitesi İlahiyat Fakültesi Yayınları",
 };
 
 const SUFFIX_WORDS = /\b(yayinlari|yayinlar|yayinevi|yayincilik|yayin|yay|nesriyat|nesriyati|kitabevi|press|publishing|publications|ltd|sti|as)\b/g;
 
 /** A publisher's name that already says what it is (Yayınları, Üniversitesi, Press, Dâr …). */
-const INSTITUTIONAL = /\b(yayin\w*|yay|nesriyat\w*|kitabevi|kitap|kitaplari|matbaa\w*|basimevi|press|verlag|publish\w*|publications?|books|editions?|dar\w*|mektebe\w*|muessese\w*|baskanligi|bakanligi|kurum\w*|vakf\w*|universite\w*|enstitu\w*|dernegi|merkez\w*|akademi\w*|belediye\w*|cemiyet\w*|sirket\w*|fakulte\w*|ltd|inc|company|corporation|kultur|tbmm|tasam|brill|routledge|springer)\b/;
+const INSTITUTIONAL = /\b(yayin\w*|yay|nesriyat\w*|kitabevi|kitap|kitaplari|matbaa\w*|basimevi|press|verlag|publish\w*|publications?|books|editions?|dar\w*|mektebe\w*|muessese\w*|baskanligi|bakanligi|mudurlug\w*|kurum\w*|vakf\w*|universite\w*|enstitu\w*|dernegi|merkez\w*|akademi\w*|belediye\w*|cemiyet\w*|sirket\w*|fakulte\w*|ltd|inc|company|corporation|kultur|tbmm|tasam|brill|routledge|springer)\b/;
 
 export interface PublisherFix {
   value: string;
