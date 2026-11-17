@@ -4,7 +4,7 @@
  */
 import { backup, cslJson, formatAs, isBackup, parseBackup } from "../../core/exporters.js";
 import { type ZoteroConfig, cleanArxiv, cleanDoi, cleanIsbn, cleanPmid, detectFormat, lookupArxiv, lookupDoi, lookupIsbn, lookupPmid, parseFile, pushToZotero, syncZotero } from "../../core/importers.js";
-import { autoFix, checkItem } from "../../core/isnad.js";
+import { AUTO, autoFix, checkItem } from "../../core/isnad.js";
 import { report, zoteroCsv, zoteroRdf } from "../../core/zoteroexport.js";
 import { type Collection, type Item, creatorLine, emptyItem, now, titleOf } from "../../core/zotero.js";
 import { citedKeys } from "./document.js";
@@ -34,6 +34,7 @@ async function importItems(items: Item[], collections: Collection[]): Promise<{ 
 }
 
 async function importFiles(files: File[]): Promise<void> {
+  const imported: Item[] = [];
   let added = 0;
   let updated = 0;
   let colls = 0;
@@ -42,6 +43,7 @@ async function importFiles(files: File[]): Promise<void> {
     if (isBackup(text)) {
       const b = parseBackup(text);
       const r = await importItems(b.items, b.collections);
+      imported.push(...b.items);
       added += r.added;
       updated += r.updated;
       colls += b.collections.length;
@@ -49,11 +51,24 @@ async function importFiles(files: File[]): Promise<void> {
     }
     const r = await parseFile(text, f.name);
     const x = await importItems(r.items, r.collections);
+    imported.push(...r.items);
     added += x.added;
     updated += x.updated;
     colls += r.collections.length;
   }
-  setMessage(`${added} kaynak eklendi${updated ? `, ${updated} kaynak güncellendi` : ""}${colls ? `, ${colls} koleksiyon alındı` : ""}.`, "success");
+  setMessage(`${added} kaynak eklendi${updated ? `, ${updated} kaynak güncellendi` : ""}${colls ? `, ${colls} koleksiyon alındı` : ""}.${pendingFixes(imported)}`, "success");
+}
+
+/** After a whole library comes in: how many safe İSNAD fixes wait in Denetim (nothing is changed by itself). */
+function pendingFixes(items: readonly Item[]): string {
+  let n = 0;
+  let works = 0;
+  for (const it of items) {
+    const k = checkItem(it).filter((i) => i.fix && AUTO.has(i.code)).length;
+    n += k;
+    if (k) works++;
+  }
+  return n ? ` İSNAD: ${works} kaynakta ${n} düzeltme öneriliyor (başlık harfleri, yayınevi, yer, yıl, kısa başlık …); Denetim → Bütün kütüphane → "Önerilen düzeltmeleri uygula".` : "";
 }
 
 /**

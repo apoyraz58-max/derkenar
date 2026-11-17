@@ -337,7 +337,7 @@ export function apostropheReport(items: readonly Item[]): { mark: string; count:
 export const LEVEL_LABEL: Record<Level, string> = { error: "Hata", warning: "Uyarı", info: "Bilgi" };
 
 /** Fixes applied by themselves when a work is added (DOI, ISBN, pasted record): mechanical, safe ones. */
-const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
+export const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
 const AUTO_LABEL: Record<string, string> = {
   "turkish-letters": "eksik Türkçe harfler",
   encoding: "bozuk karakterler",

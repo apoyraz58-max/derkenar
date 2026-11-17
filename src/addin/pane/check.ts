@@ -3,7 +3,7 @@
  * collection or the ticked items. Fixes go to the library record (and to the
  * document's copy), then the document refreshes.
  */
-import { type Issue, LEVEL_LABEL, applyFix, apostropheReport, checkItem } from "../../core/isnad.js";
+import { type Issue, LEVEL_LABEL, applyFix, apostropheReport, checkItem, AUTO } from "../../core/isnad.js";
 import { nameVariants, unifyName } from "../../core/names.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
@@ -13,7 +13,8 @@ import { openEditor } from "./editor.js";
 import { inCurrentView } from "./library.js";
 
 /** Fixes applied by "Önerilen düzeltmeleri uygula"; case changes stay manual. */
-const SAFE = new Set(["encoding", "spaces", "pages", "volume", "issue", "edition", "doi-url", "title-period", "name-comma", "url"]);
+/** "Önerilen düzeltmeleri uygula": the mechanical fixes also made when a work is added, and a few more. */
+const SAFE = new Set([...AUTO, "volume", "issue", "url"]);
 
 let lastItems: Item[] = [];
 let lastIssues: Issue[] = [];
