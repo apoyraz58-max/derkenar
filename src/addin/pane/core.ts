@@ -262,6 +262,20 @@ const locales: Record<string, string> = {};
 let rendererKey = "";
 let renderer: Renderer | null = null;
 
+let previewKey = "";
+let previewRenderer: Renderer | null = null;
+
+/** A renderer of its own for previews in the editor, so they never touch the document's. */
+export async function getPreviewRenderer(): Promise<Renderer> {
+  await getRenderer();
+  if (previewRenderer && previewKey === rendererKey) return previewRenderer;
+  const d = doc();
+  const xml = d.style.startsWith("custom:") ? (d.customStyle?.xml ?? "") : await fetchText(`styles/${d.style}.csl`);
+  previewRenderer = new Renderer(xml, (l) => locales[l], d.locale);
+  previewKey = rendererKey;
+  return previewRenderer;
+}
+
 export async function getRenderer(): Promise<Renderer> {
   const d = doc();
   const key = `${d.style}|${d.locale}`;

@@ -10,7 +10,10 @@ import {
   type Attachment,
   type Creator,
   type Item,
+  baseField,
   changeItemType,
+  emptyItem,
+  typeField,
   creatorTypeLabel,
   creatorTypesOf,
   fieldLabel,
@@ -33,13 +36,13 @@ import { richNote } from "./richnote.js";
 import * as store from "../store.js";
 import * as word from "../word.js";
 import { citedKeys, refresh } from "./document.js";
-import { $, S, h, putItems, run, setMessage, showView } from "./core.js";
+import { $, S, doc, getPreviewRenderer, h, putItems, run, setMessage, showView } from "./core.js";
 
 let current: Item | null = null;
 let saveTimer = 0;
 let docTimer = 0;
 
-const LONG = new Set(["title", "abstractNote", "extra", "bookTitle", "publicationTitle", "encyclopediaTitle"]);
+const LONG = new Set(["title", "abstractNote", "extra"]);
 /** Hints for fields İSNAD users fill differently. */
 const HINTS: Record<string, string> = {
   date: "Yıl, gün.ay.yıl, hicrî/milâdî (1413/1993); bilinmiyorsa boş (ts. yazılır)",
@@ -91,6 +94,102 @@ function update(fn: (item: Item) => Item, rerender = false): void {
   scheduleSave();
   if (rerender) render();
   else renderIssues();
+  schedulePreview();
+}
+
+// ---------------------------------------------------------------- live preview
+
+let previewTimer = 0;
+function schedulePreview(): void {
+  window.clearTimeout(previewTimer);
+  previewTimer = window.setTimeout(() => void renderPreview(), 250);
+}
+
+/** The record as the document's style prints it: first citation and bibliography entry. */
+async function renderPreview(): Promise<void> {
+  const item = current;
+  if (!item || isNoteItem(item)) {
+    $("ed-preview").hidden = true;
+    return;
+  }
+  $("ed-preview").hidden = false;
+  try {
+    const { emptyState, planRefresh, putCitation } = await import("../../core/docstate.js");
+    const r = await getPreviewRenderer();
+    const st = emptyState();
+    st.locale = doc().locale;
+    putCitation(st, "p", [{ id: item.key }], { [item.key]: item });
+    const plan = planRefresh(st, [{ id: "p", noteIndex: 1, text: "" }], r);
+    if (current?.key !== item.key) return;
+    $("ed-prev-note").innerHTML = plan.updates.get("p") ?? "";
+    $("ed-prev-bib").innerHTML = plan.bibliography?.entries[0]?.html ?? "";
+  } catch {
+    $("ed-prev-note").textContent = "";
+    $("ed-prev-bib").textContent = "";
+  }
+}
+
+// ---------------------------------------------------------------- suggestions from the library
+
+/** Fields whose earlier values are offered while typing (Ketebe Yayınları, Cumhuriyet İlahiyat Dergisi …). */
+const SUGGEST = new Set(["publisher", "place", "publicationTitle", "series", "seriesTitle", "archive"]);
+
+function suggestions(field: string): HTMLDataListElement | null {
+  const item = current!;
+  const base = baseField(item.itemType, field) ?? field;
+  if (!SUGGEST.has(base)) return null;
+  const id = `dl-${base}`;
+  let dl = document.getElementById(id) as HTMLDataListElement | null;
+  if (!dl) {
+    dl = h("datalist", { id });
+    document.body.append(dl);
+  }
+  const counts = new Map<string, number>();
+  for (const it of S.items) {
+    if (it.deleted) continue;
+    const f = typeField(it.itemType, base);
+    const v = f ? it.fields[f]?.trim() : "";
+    if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+  }
+  dl.replaceChildren(...[...counts].sort((a, b) => b[1] - a[1]).slice(0, 300).map(([v]) => h("option", { value: v })));
+  return dl;
+}
+
+/** Surnames and full names already in the library, for the people boxes. */
+function nameSuggestions(): void {
+  if (document.getElementById("dl-last")) return;
+  const last = new Map<string, number>();
+  const first = new Map<string, number>();
+  for (const it of S.items) for (const c of it.creators) {
+    if (c.lastName) last.set(c.lastName, (last.get(c.lastName) ?? 0) + 1);
+    if (c.firstName) first.set(c.firstName, (first.get(c.firstName) ?? 0) + 1);
+  }
+  const list = (id: string, m: Map<string, number>) => h("datalist", { id }, ...[...m].sort((a, b) => b[1] - a[1]).slice(0, 500).map(([v]) => h("option", { value: v })));
+  document.body.append(list("dl-last", last), list("dl-first", first));
+}
+
+// ---------------------------------------------------------------- same publication
+
+/** Fields that belong to the publication (journal issue, book, encyclopedia), not to the article or chapter. */
+const SHARED = ["publicationTitle", "volume", "issue", "date", "publisher", "place", "series", "seriesNumber", "seriesTitle", "edition", "numberOfVolumes", "ISSN", "ISBN", "language", "journalAbbreviation", "archive"];
+const BOOK_ROLES = new Set(["editor", "seriesEditor", "bookAuthor", "muhakkik", "nasir", "hazirlayan"]);
+
+/** "Aynı yayından yeni kayıt": a new article of the same journal issue, chapter of the same book, madde of the same encyclopedia. */
+async function samePublication(): Promise<void> {
+  if (!current) return;
+  const src = current;
+  const next = emptyItem(src.itemType, "manual");
+  for (const base of SHARED) {
+    const f = typeField(src.itemType, base);
+    if (f && src.fields[f]) next.fields[f] = src.fields[f]!;
+  }
+  // A chapter keeps the book's editors; an article or madde starts without people.
+  if (src.itemType === "bookSection") next.creators = src.creators.filter((c) => BOOK_ROLES.has(c.creatorType)).map((c) => ({ ...c }));
+  next.collections = [...src.collections];
+  await putItems([next]);
+  openEditor(next.key, true);
+  const what = src.itemType === "journalArticle" ? "aynı sayıdan yeni makale" : src.itemType === "bookSection" ? "aynı kitaptan yeni bölüm" : src.itemType === "encyclopediaArticle" ? "aynı ansiklopediden yeni madde" : "aynı yayından yeni kayıt";
+  setMessage(`${what[0]!.toLocaleUpperCase("tr") + what.slice(1)}: yayın bilgileri hazır; başlığı, yazarı ve sayfaları yazın.`, "success");
 }
 
 function render(): void {
@@ -118,6 +217,10 @@ function render(): void {
   renderCollections();
   renderIssues();
   renderMeta();
+  // People's lists are rebuilt once per opened record (names added meanwhile join them).
+  document.getElementById("dl-last")?.remove();
+  document.getElementById("dl-first")?.remove();
+  void renderPreview();
 }
 
 function fieldInput(field: string): HTMLElement {
@@ -139,7 +242,8 @@ function fieldInput(field: string): HTMLElement {
     el = h("textarea", { rows: field === "abstractNote" || field === "extra" ? 3 : 2, "data-field": field });
     el.value = value;
   } else {
-    el = h("input", { value, "data-field": field, placeholder: HINTS[field] ?? "" });
+    const dl = suggestions(field);
+    el = h("input", { value, "data-field": field, placeholder: HINTS[field] ?? "", ...(dl ? { list: dl.id, autocomplete: "off" } : {}) });
   }
   el.oninput = onInput(el);
   return h("label", { class: "field" }, fieldLabel(field), el, field === "extra" || field === "abstractNote" ? h("small", { class: "muted" }, HINTS[field] ?? "") : null, dateHint.textContent ? dateHint : isDateField(item.itemType, field) ? dateHint : null);
@@ -216,9 +320,10 @@ function renderCreators(): HTMLElement {
       }, rerender);
     const type = h("select", { "aria-label": "Rol", onchange: () => set({ creatorType: type.value }) }, ...[...new Set([...types, c.creatorType])].map((t) => h("option", { value: t, selected: t === c.creatorType }, creatorTypeLabel(t))));
     const single = c.name !== undefined;
-    const last = h("input", { value: single ? c.name : (c.lastName ?? ""), placeholder: single ? "Tam ad / kurum" : "Soyad / şöhret", "aria-label": "Soyad" });
+    nameSuggestions();
+    const last = h("input", { value: single ? c.name : (c.lastName ?? ""), placeholder: single ? "Tam ad / kurum" : "Soyad / şöhret", "aria-label": "Soyad", list: "dl-last", autocomplete: "off" });
     last.oninput = () => set(single ? { name: last.value } : { lastName: last.value });
-    const first = h("input", { value: c.firstName ?? "", placeholder: "Ad (ör. Ebû Hâmid Muhammed b. Muhammed)", "aria-label": "Ad" });
+    const first = h("input", { value: c.firstName ?? "", placeholder: "Ad (ör. Ebû Hâmid Muhammed b. Muhammed)", "aria-label": "Ad", list: "dl-first", autocomplete: "off" });
     first.oninput = () => set({ firstName: first.value });
     const toggle = h("button", {
       type: "button",
@@ -431,6 +536,7 @@ export function wireEditor(): void {
     update((it) => ({ ...it, attachments: [...(it.attachments ?? []), { key: newKey(), kind: "link", title: url.replace(/^https?:\/\//, "").slice(0, 80), url, dateAdded: now() }] }), true);
   };
   $("ed-note-add").onclick = () => update((it) => ({ ...it, notes: [...it.notes, { key: newKey(), note: "", dateModified: now() }] }), true);
+  $("ed-same").onclick = () => void run("Yeni kayıt", samePublication);
   $("ed-duplicate").onclick = () =>
     void run("Çoğaltılıyor", async () => {
       if (!current) return;

@@ -610,6 +610,19 @@ try {
   const converted = (await notes()).filter((n) => n.includes("Zoteroda Eklenmiş Kitap"));
   if (converted.length !== 2 || !converted[0].startsWith("Selim Ekinci, Zoteroda Eklenmiş Kitap (İstanbul: Dergâh Yayınları, 2011), 10.") || converted[1] !== "Ekinci, Zoteroda Eklenmiş Kitap, 11.") fail(`converted fields: ${JSON.stringify(converted)}`);
 
+  // 9d2. Editor: live İSNAD preview; a new article of the same journal issue.
+  await page.click("#tab-kutuphane");
+  await page.selectOption("#lib-view", "all");
+  await page.locator("#lib-list li.item-row", { hasText: "Kelâm ilminin doğuşu" }).first().click();
+  await page.waitForFunction(() => document.querySelector("#ed-prev-note")?.textContent?.includes("“Kelâm ilminin doğuşu”"));
+  if (!(await page.textContent("#ed-prev-bib")).includes("Yılmaz, Ahmet")) fail("preview bibliography");
+  const journal = await page.inputValue('[data-field="publicationTitle"]');
+  await page.evaluate(() => (document.querySelector("#view-kaynak details.menu").open = true));
+  await page.click("#ed-same");
+  await page.waitForSelector("#message:has-text('aynı sayıdan yeni makale')");
+  if ((await page.inputValue('[data-field="publicationTitle"]')) !== journal || (await page.inputValue('[data-field="title"]')) !== "") fail("same-publication record");
+  if ((await page.getAttribute('[data-field="publicationTitle"]', "list")) !== "dl-publicationTitle") fail("no suggestions on the journal box");
+
   // 9e. Atıf kalıbı: a series of works saved by name and called back into the basket.
   await page.click("#tab-atif");
   await page.evaluate(() => (window.__doc.cursor = window.__doc.flow.length));

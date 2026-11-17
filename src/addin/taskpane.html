@@ -145,6 +145,7 @@
         <details class="menu">
           <summary class="icon-btn" title="Diğer">⋯</summary>
           <div class="menu-body">
+            <button type="button" id="ed-same">Aynı yayından yeni kayıt</button>
             <button type="button" id="ed-duplicate">Çoğalt</button>
             <button type="button" id="ed-trash" class="danger-text">Çöpe at</button>
             <button type="button" id="ed-restore">Geri yükle</button>
@@ -152,6 +153,10 @@
         </details>
       </div>
       <p id="ed-deleted" class="message warning" hidden>Bu kaynak çöp kutusunda.</p>
+      <section id="ed-preview" class="ed-preview" aria-live="polite">
+        <div><span class="muted small">Dipnot</span><p id="ed-prev-note"></p></div>
+        <div><span class="muted small">Kaynakça</span><p id="ed-prev-bib"></p></div>
+      </section>
       <div id="ed-issues"></div>
       <section>
         <label id="ed-type-box">Kaynak türü <select id="ed-type"></select></label>
@@ -445,6 +450,7 @@
           <li>Başka bir atıf programıyla yazılmış belge açılınca <strong>Belge</strong> sekmesinde "Başka programla eklenmiş atıflar" bölümü çıkar; <strong>Derkenar atıflarına çevir</strong> ile atıflar ve kaynakça Derkenar'a geçer. Önce belgenin bir kopyasını alın.</li>
           <li>Stil: İSNAD 2 (dipnotlu, metin içi), APA 7, Chicago 18; başka bir dergi ya da üniversite stili için <strong>Belge → Stil dosyası yükle (.csl)</strong> (citationstyles.org'daki bağımsız stiller). Yüklenen stil belgede de saklanır. Stil değişince atıflar dipnot ile metin arasında kendiliğinden taşınır.</li>
           <li>Sekmeler arasında klavyeyle: <strong>Alt+1</strong> Atıf … <strong>Alt+5</strong> Aktar.</li>
+          <li><strong>Künye girmenin en kolay yolu:</strong> künyeyi nerede görüyorsanız (başka bir tezin kaynakçası, bir dipnot, PDF) kopyalayıp <strong>Yeni Kaynak → Künye yapıştır</strong>'a yapıştırın; liste hâlinde de olur. Elle girerken düzenleyicinin üstünde eserin dipnot ve kaynakça hâli canlı görünür; yayınevi, şehir, dergi ve kişi adları kütüphaneden önerilir; aynı dergiden ya da kitaptan yeni kayıt için ⋯ → <strong>Aynı yayından yeni kayıt</strong>.</li>
           <li>Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …) için pencerenin üstündeki <strong>ʿâ</strong> düğmesi.</li>
           <li>Başka bir belgeden kopyalanan atıfın verisi yoksa: <strong>Belge → Belgedeki kaynakları kütüphaneye al</strong>.</li>
           <li>Word eski sürümü açıyorsa: Dosya → Seçenekler → Güven Merkezi → Güvenilen Eklenti Katalogları → "önbelleği temizle", sonra Word'ü yeniden başlatın.</li>

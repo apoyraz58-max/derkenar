@@ -252,3 +252,8 @@ details.section-like summary { cursor: pointer; font-weight: 600; font-size: 13p
 #bib-works li.out span { color: var(--muted); text-decoration: line-through; }
 
 .link-like { color: var(--accent); cursor: pointer; text-decoration: underline; }
+
+/* Düzenleyicide canlı İSNAD önizlemesi */
+.ed-preview { display: grid; gap: 4px; padding: 8px 10px; }
+.ed-preview p { margin: 0; font-family: "Times New Roman", Georgia, serif; font-size: 13.5px; line-height: 1.35; }
+.ed-preview p:empty::before { content: "—"; color: var(--muted); }
