@@ -233,6 +233,8 @@
     <div id="view-belge" class="view" role="tabpanel" hidden>
       <section class="grid">
         <label>Atıf stili <select id="style"></select></label>
+        <div class="small"><label class="inline link-like">Stil dosyası yükle (.csl) <input id="csl-file" type="file" accept=".csl,.xml" hidden /></label>
+          <button id="csl-remove" type="button" class="link danger-text" hidden>Yüklenen stili listeden kaldır</button></div>
         <label>Dil
           <select id="locale"><option value="tr-TR">Türkçe</option><option value="en-US">İngilizce</option></select>
         </label>
@@ -432,7 +434,7 @@
           <li>Kaynakçayı Arşiv Belgeleri, Yazma Eserler, Kitaplar, Makaleler, Tezler … diye bölmek için: <strong>Belge → Kaynakçayı türlere ayır</strong>.</li>
           <li>Atıf yapılmayan bir eseri kaynakçaya eklemek ya da bir eseri kaynakçadan çıkarmak: <strong>Belge → Kaynakçayı düzenle</strong>.</li>
           <li>Başka bir atıf programıyla yazılmış belge açılınca <strong>Belge</strong> sekmesinde "Başka programla eklenmiş atıflar" bölümü çıkar; <strong>Derkenar atıflarına çevir</strong> ile atıflar ve kaynakça Derkenar'a geçer. Önce belgenin bir kopyasını alın.</li>
-          <li>Stil: İSNAD 2 (dipnotlu, metin içi), APA 7, Chicago 18. Stil değişince atıflar dipnot ile metin arasında kendiliğinden taşınır.</li>
+          <li>Stil: İSNAD 2 (dipnotlu, metin içi), APA 7, Chicago 18; başka bir dergi ya da üniversite stili için <strong>Belge → Stil dosyası yükle (.csl)</strong> (citationstyles.org'daki bağımsız stiller). Yüklenen stil belgede de saklanır. Stil değişince atıflar dipnot ile metin arasında kendiliğinden taşınır.</li>
           <li>Sekmeler arasında klavyeyle: <strong>Alt+1</strong> Atıf … <strong>Alt+5</strong> Aktar.</li>
           <li>Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …) için pencerenin üstündeki <strong>ʿâ</strong> düğmesi.</li>
           <li>Başka bir belgeden kopyalanan atıfın verisi yoksa: <strong>Belge → Belgedeki kaynakları kütüphaneye al</strong>.</li>

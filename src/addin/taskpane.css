@@ -250,3 +250,5 @@ details.section-like { background: var(--surface); border: 1px solid var(--borde
 details.section-like summary { cursor: pointer; font-weight: 600; font-size: 13px; }
 #bib-works li { display: flex; gap: 6px; align-items: baseline; font-size: 13px; padding: 2px 0; }
 #bib-works li.out span { color: var(--muted); text-decoration: line-through; }
+
+.link-like { color: var(--accent); cursor: pointer; text-decoration: underline; }

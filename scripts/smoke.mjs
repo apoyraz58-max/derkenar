@@ -608,6 +608,19 @@ try {
   if ((await page.inputValue('#basket li:first-child [data-f="locator"]')) !== "50") fail("template lost the page");
   await page.click("#clear-basket");
 
+  // 9f. A style loaded from a .csl file; a dependent style is refused; back to İSNAD.
+  await page.click("#tab-belge");
+  await page.setInputFiles("#csl-file", { name: "nature-communications.csl", mimeType: "application/xml", buffer: await readFile(new URL("../test/fixtures/csl/nature-communications.csl", import.meta.url)) });
+  await page.waitForSelector("#message:has-text('bağımlı')");
+  await page.setInputFiles("#csl-file", { name: "mla.csl", mimeType: "application/xml", buffer: await readFile(new URL("../test/fixtures/csl/modern-language-association.csl", import.meta.url)) });
+  await page.locator("#message", { hasText: "Stil: MLA Handbook" }).waitFor();
+  const mla = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).map((x) => x.cc.text));
+  if (!mla.length || mla.some((t) => /a\.mlf\.|b\.y\./.test(t))) fail(`MLA citations: ${JSON.stringify(mla)}`);
+  const stored2 = JSON.parse(await page.evaluate(() => window.__doc.settings.derkenar));
+  if (!stored2.customStyle?.xml?.includes("Modern Language Association")) fail("custom style not kept in the document");
+  await page.click("#csl-remove");
+  await page.waitForSelector("#message:has-text('listeden kaldırıldı')");
+
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");
   await page.waitForSelector("#info-document dd:has-text('kaynak,')");
@@ -624,7 +637,8 @@ try {
   await page.click("#unlink");
   await page.waitForSelector("#message:has-text('düz metne çevrildi')");
 
-  if (errors.length) fail(`page errors: ${errors.join(" | ")}`);
+  const unexpected = errors.filter((e) => !/bağımlı\) bir stil/.test(e));
+  if (unexpected.length) fail(`page errors: ${unexpected.join(" | ")}`);
   console.log("smoke ok");
 } finally {
   await browser.close();

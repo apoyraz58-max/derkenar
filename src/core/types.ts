@@ -88,6 +88,8 @@ export interface DocState {
   bibTitle?: string;
   /** Citations changed by hand in Word (id → their text), found by the last refresh. */
   edited?: Record<string, string>;
+  /** A style loaded from a .csl file (style id "custom:…"): kept in the document so it renders anywhere. */
+  customStyle?: { id: string; title: string; xml: string };
   /** Kaynakçayı düzenle: works listed though not cited, and cited works left out. */
   bibUncited?: string[];
   bibExcluded?: string[];

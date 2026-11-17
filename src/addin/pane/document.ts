@@ -15,7 +15,7 @@ import { htmlToSegments, htmlToText } from "../../core/html.js";
 import { BUILTIN_STYLES } from "../../core/styles.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
-import { $, S, doc, getRenderer, h, putItems, renderSummary, run, saveLibraryCopy, serial, setMessage, styleTitle } from "./core.js";
+import { $, type CustomStyle, S, customStyles, doc, getRenderer, h, putItems, renderSummary, run, saveCustomStyles, saveLibraryCopy, serial, setMessage, styleTitle } from "./core.js";
 
 let order: FoundCitation[] = [];
 let orphans = new Set<string>();
@@ -294,7 +294,13 @@ function searchUncited(): void {
 function renderPrefs(): void {
   const d = doc();
   const sel = $<HTMLSelectElement>("style");
-  sel.replaceChildren(...BUILTIN_STYLES.map((s) => h("option", { value: s.id, selected: s.id === d.style }, s.title)));
+  const custom = [...customListed];
+  if (d.customStyle && !custom.some((c) => c.id === d.customStyle!.id)) custom.push(d.customStyle);
+  sel.replaceChildren(
+    ...BUILTIN_STYLES.map((s) => h("option", { value: s.id, selected: s.id === d.style }, s.title)),
+    ...(custom.length ? [h("optgroup", { label: "Yüklenen stiller" }, ...custom.map((c) => h("option", { value: c.id, selected: c.id === d.style }, c.title)))] : []),
+  );
+  $("csl-remove").hidden = !d.style.startsWith("custom:");
   $<HTMLSelectElement>("locale").value = d.locale;
   $<HTMLSelectElement>("notes-kind").value = d.notes ?? "footnote";
   $<HTMLInputElement>("auto").checked = d.auto !== false;
@@ -303,9 +309,42 @@ function renderPrefs(): void {
   $<HTMLInputElement>("bib-sections").checked = d.bibSections === true;
 }
 
+let customListed: CustomStyle[] = [];
+
+/** A .csl file: an independent style is added to the list and chosen. */
+async function loadCsl(file: File): Promise<void> {
+  const xml = await file.text();
+  if (/rel="independent-parent"/.test(xml) && !/<citation\b/.test(xml)) {
+    const parent = /<link\s+href="([^"]+)"\s+rel="independent-parent"/.exec(xml)?.[1] ?? "";
+    throw new Error(`Bu, başka bir stile bağlı (bağımlı) bir stil; kendi biçim kuralları yok. Asıl stili yükleyin${parent ? ` ("${parent.replace(/^.*\//, "")}" adlı stil)` : ""}.`);
+  }
+  if (!/<style\b[^>]*xmlns="http:\/\/purl\.org\/net\/xbiblio\/csl"/.test(xml) || !/<citation\b/.test(xml)) throw new Error("Bu bir CSL stil dosyası değil.");
+  const { styleMeta } = await import("../../core/engine.js");
+  const meta = styleMeta(xml);
+  const slug = (/<id>([^<]+)<\/id>/.exec(xml)?.[1] ?? meta.title).replace(/^.*\//, "").replace(/[^A-Za-z0-9-]+/g, "-").toLowerCase();
+  const style: CustomStyle = { id: `custom:${slug}`, title: `${meta.title}${meta.note ? " (dipnotlu)" : ""}`, xml };
+  // A style Derkenar's own build cannot read is caught before it is chosen.
+  try {
+    const loc = await (await fetch("styles/locales-tr-TR.xml")).text();
+    new (await import("../../core/engine.js")).Renderer(xml, () => loc, "tr-TR");
+  } catch (e) {
+    throw new Error(`Stil dosyası okunamadı: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  const list = (await customStyles()).filter((c) => c.id !== style.id);
+  list.push(style);
+  await saveCustomStyles(list);
+  customListed = list;
+  await changeStyle(style.id);
+  renderPrefs();
+}
+
 async function changeStyle(id: string): Promise<void> {
   const d = doc();
   const before = await getRenderer();
+  if (id.startsWith("custom:")) {
+    const c = (await customStyles()).find((x) => x.id === id) ?? (d.customStyle?.id === id ? d.customStyle : undefined);
+    if (c) d.customStyle = c;
+  } else delete d.customStyle;
   d.style = id;
   d.rendered = {};
   const after = await getRenderer();
@@ -357,7 +396,26 @@ function unlink(): void {
 
 export function wireDocument(): void {
   renderPrefs();
-  $<HTMLSelectElement>("style").onchange = () => void run("Stil uygulanıyor", () => changeStyle($<HTMLSelectElement>("style").value));
+  $<HTMLSelectElement>("style").onchange = () => void run("Stil uygulanıyor", async () => {
+    await changeStyle($<HTMLSelectElement>("style").value);
+    renderPrefs();
+  });
+  void customStyles().then((l) => ((customListed = l), renderPrefs()));
+  $<HTMLInputElement>("csl-file").onchange = () =>
+    void run("Stil yükleniyor", async () => {
+      const f = $<HTMLInputElement>("csl-file").files?.[0];
+      $<HTMLInputElement>("csl-file").value = "";
+      if (f) await loadCsl(f);
+    });
+  $("csl-remove").onclick = () =>
+    void run("Kaldırılıyor", async () => {
+      const id = doc().style;
+      customListed = (await customStyles()).filter((c) => c.id !== id);
+      await saveCustomStyles(customListed);
+      await changeStyle("isnad-dipnotlu");
+      renderPrefs();
+      setMessage("Yüklenen stil listeden kaldırıldı; belge İSNAD 2 (dipnotlu) stiline döndü.", "success");
+    });
   $<HTMLSelectElement>("locale").onchange = () =>
     void run("Dil uygulanıyor", async () => {
       doc().locale = $<HTMLSelectElement>("locale").value;

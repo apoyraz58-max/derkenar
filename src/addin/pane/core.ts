@@ -263,8 +263,10 @@ export async function getRenderer(): Promise<Renderer> {
   const d = doc();
   const key = `${d.style}|${d.locale}`;
   if (renderer && rendererKey === key) return renderer;
+  const custom = d.style.startsWith("custom:") ? (d.customStyle?.id === d.style ? d.customStyle.xml : (await customStyles()).find((c) => c.id === d.style)?.xml) : undefined;
+  if (d.style.startsWith("custom:") && !custom) throw new Error("Bu belgenin stil dosyası bulunamadı; Belge sekmesinden stili yeniden yükleyin ya da başka stil seçin.");
   const [xml] = await Promise.all([
-    fetchText(`styles/${d.style}.csl`),
+    custom ?? fetchText(`styles/${d.style}.csl`),
     ...["tr-TR", "en-US"].map(async (l) => {
       locales[l] = await fetchText(`styles/locales-${l}.xml`);
     }),
@@ -275,7 +277,29 @@ export async function getRenderer(): Promise<Renderer> {
 }
 
 export function styleTitle(id: string): string {
+  if (id.startsWith("custom:")) return doc().customStyle?.id === id ? doc().customStyle!.title : (customCache.find((c) => c.id === id)?.title ?? "Yüklenen stil");
   return BUILTIN_STYLES.find((s) => s.id === id)?.title ?? id;
+}
+
+// ---------------------------------------------------------------- styles loaded from .csl files
+
+export interface CustomStyle {
+  id: string;
+  title: string;
+  xml: string;
+}
+
+let customCache: CustomStyle[] = [];
+
+/** Styles the user loaded from .csl files (kept on this computer). */
+export async function customStyles(): Promise<CustomStyle[]> {
+  customCache = (await store.getMeta<CustomStyle[]>("customStyles").catch(() => undefined)) ?? [];
+  return customCache;
+}
+
+export async function saveCustomStyles(list: CustomStyle[]): Promise<void> {
+  customCache = list;
+  await store.setMeta("customStyles", list);
 }
 
 export function renderSummary(): void {
