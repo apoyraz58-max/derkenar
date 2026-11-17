@@ -31,6 +31,10 @@ stilleri); başka stiller sonra eklenecek.
   (Ä±, Ã¼, ý, þ), DOI ve ISBN hataları, web kaynağında erişim tarihi, tez ve ansiklopedi
   maddesi için gerekli alanlar. Düzeltilebilenler tek tıkla ya da topluca düzeltilir.
 
+**Zotero'daki Word eklentisinin işleri de var:** Kaynakçayı düzenle (atıfsız eser ekleme,
+eser çıkarma), Word'de elle değiştirilen atıfı koruma, bk./krş. ön ekleri, kaynakçayı türlere
+ayırma, eklerken yineleme denetimi, birleştirilen kayda atıfları bağlama.
+
 **Kütüphane belgeyle taşınır:** kütüphanenin sıkıştırılmış bir kopyası çalışılan Word belgesinde
 saklanır; Office önbelleği silinse, eklenti yeniden eklense ya da başka bilgisayara geçilse de belge
 açılınca kütüphane kendiliğinden geri gelir.
