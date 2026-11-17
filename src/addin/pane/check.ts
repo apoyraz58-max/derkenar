@@ -7,7 +7,7 @@ import { type Issue, LEVEL_LABEL, applyFix, apostropheReport, checkItem, AUTO } 
 import { nameVariants, unifyName } from "../../core/names.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
-import { checkCitations } from "../../core/citecheck.js";
+import { ageCount, checkCitations } from "../../core/citecheck.js";
 import { keepEdited, revertEdited } from "../../core/docstate.js";
 import { citedKeys, currentOrder, refresh } from "./document.js";
 import { $, S, doc, h, putItems, run, setMessage } from "./core.js";
@@ -35,6 +35,25 @@ export function runCheck(): void {
   const withInfo = $<HTMLInputElement>("chk-info").checked;
   lastIssues = lastItems.flatMap((i) => checkItem(i)).filter((i) => withInfo || i.level !== "info");
   render();
+  if ($<HTMLSelectElement>("chk-scope").value === "document") void checkAge();
+}
+
+/** "a.g.e." typed by hand in the document (old footnotes): İSNAD writes a short reference. */
+async function checkAge(): Promise<void> {
+  const text = await word.documentText().catch(() => "");
+  const d = doc();
+  const inOwn = Object.entries(d.citations).reduce((n, [id, c]) => n + ageCount(c.override ?? d.edited?.[id] ?? ""), 0);
+  const n = ageCount(text) - inOwn;
+  if (n <= 0) return;
+  $("chk-list").prepend(
+    h(
+      "li",
+      {},
+      h("div", { class: "issue warning" }, h("span", { class: "lvl" }, "Uyarı"), ` Belgede elle yazılmış ${n} "a.g.e. / a.e. / a.g.m. / Ibid." var. İSNAD bu kısaltmaları kullanmaz; aynı esere yeniden atıfta kısa künye yazılır (ör. "Kara, Tasavvuf ve Tarikatlar, 47."). `),
+      h("button", { type: "button", class: "link", onclick: () => { $("tab-belge").click(); $("hand-scan").scrollIntoView({ block: "center" }); $("hand-scan").focus(); } }, "Dipnotları tara ile kısa künyeye çevir"),
+    ),
+  );
+  $("chk-summary").textContent += ` Elle yazılmış ${n} a.g.e.`;
 }
 
 function render(): void {

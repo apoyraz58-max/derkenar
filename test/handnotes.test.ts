@@ -107,3 +107,11 @@ describe("hand-typed in-text citations, hicrî and cilt", () => {
     expect(r.map((x) => [x.refs[0]!.volume, x.refs[0]!.locator])).toEqual([["1", "45"]]);
   });
 });
+
+import { ageCount } from "../src/core/citecheck.js";
+
+describe("a.g.e. typed by hand", () => {
+  it("is counted, words like 'age' in a sentence are not", () => {
+    expect(ageCount("a.g.e., s. 4. Kara, a.g.e., 5. A.e. 7. Ibid. a.g.m., 3. Bu çağda age değil; ae. hayır")).toBe(5);
+  });
+});

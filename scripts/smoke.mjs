@@ -779,7 +779,7 @@ try {
   await page.waitForSelector("#message:has-text('3 dipnot Derkenar atıfına çevrildi')");
   const hand = await page.evaluate(() => window.__doc.flow.filter((x) => x.fn).slice(-4).map((x) => ({ cc: x.fn.controls.map((c) => c.text).join(""), text: x.fn.text })));
   if (!hand[0].cc.includes("Anahatlarıyla Tasavvuf ve Tarikatlar") || !hand[0].cc.includes("45")) fail(`hand note 1: ${JSON.stringify(hand[0])}`);
-  if (!hand[1].cc || hand[1].text) fail(`hand note 2: ${JSON.stringify(hand[1])}`);
+  if (!hand[1].cc || hand[1].text || /a\.g\.e|a\.e\./i.test(hand[1].cc) || !hand[1].cc.startsWith("Yılmaz, Anahatlarıyla")) fail(`hand note 2 should be a short reference, not a.g.e.: ${JSON.stringify(hand[1])}`);
   if (hand[2].cc || !hand[2].text.startsWith("Bu görüş")) fail("prose note changed");
   if (!/^bk\./i.test(hand[3].cc) || !hand[3].cc.includes("50")) fail(`hand note 4: ${JSON.stringify(hand[3])}`);
   console.log("hand notes:", JSON.stringify(hand.map((x) => x.cc || x.text)));

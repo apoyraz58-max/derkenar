@@ -12,7 +12,7 @@ export interface CitationIssue {
   /** Position in the document (1 …), for in-text citations. */
   readonly position: number;
   readonly level: "warning" | "info";
-  readonly code: "no-place" | "repeated" | "hand-edited" | "edited-in-word";
+  readonly code: "no-place" | "repeated" | "hand-edited" | "edited-in-word" | "age";
   readonly message: string;
 }
 
@@ -21,6 +21,14 @@ const NEEDS_PLACE = new Set(["book", "bookSection", "journalArticle", "magazineA
 
 export function hasPlace(r: CiteRef): boolean {
   return Boolean(r.locator?.trim() || r.volume?.trim() || r.madde?.trim() || r.kitab?.trim() || r.bab?.trim() || r.hadisNo?.trim() || r.sure?.trim() || r.ayet?.trim() || r.kitap?.trim());
+}
+
+/** "a.g.e.", "a.e.", "a.g.m.", "age", "Ibid.", "op. cit.": İSNAD writes a short reference instead. */
+export const AGE = /(?:^|[\s(;,])(a\.\s?g\.\s?[em]\.|a\.\s?e\.|a\.\s?y\.\s?e\.|ag[em]\.|ibid\.?|ibidem|op\.\s?cit\.)(?=[\s,;.)]|$)/i;
+
+/** How many times the document's own text (outside Derkenar's citations) says a.g.e. and the like. */
+export function ageCount(text: string): number {
+  return (text.match(new RegExp(AGE.source, "gi")) ?? []).length;
 }
 
 export function checkCitations(order: readonly { id: string; noteIndex: number }[], state: DocState): CitationIssue[] {
@@ -32,6 +40,8 @@ export function checkCitations(order: readonly { id: string; noteIndex: number }
     if (c.override) out.push({ ...at, level: "info", code: "hand-edited", message: "Atıf metni elle yazılmış hâliyle korunuyor; Derkenar bu atıfı güncellemiyor." });
     const text = state.edited?.[f.id];
     if (text !== undefined) out.push({ ...at, level: "warning", code: "edited-in-word", message: `Atıf Word'de elle değiştirilmiş ("${text.length > 80 ? text.slice(0, 80) + "…" : text}"). Derkenar bu atıfı şimdilik güncellemiyor.` });
+    const own = c.override ?? text;
+    if (own !== undefined && AGE.test(own)) out.push({ ...at, level: "warning", code: "age", message: `Elle yazılmış metinde "${AGE.exec(own)![0].trim()}" var. İSNAD a.g.e., a.e., a.g.m., Ibid. gibi kısaltmaları kullanmaz; aynı esere yeniden atıfta kısa künye yazılır. "Derkenar'ın metnine dön" kısa künyeyi koyar.` });
     const seen = new Map<string, CiteRef>();
     for (const r of c.items) {
       const item = state.items[r.id];

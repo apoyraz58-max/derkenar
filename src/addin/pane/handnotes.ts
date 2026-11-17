@@ -68,11 +68,11 @@ async function convert(): Promise<void> {
   }
   const done = await serial(() => word.replaceNotes(writes));
   await word.saveState(d);
-  // İSNAD's first full, then short references, a.g.e. … are written by the refresh.
+  // İSNAD's first full, then short references (never a.g.e.) are written by the refresh.
   await refresh(false, true);
   plan = [];
   $("hand-result").replaceChildren();
-  setMessage(`${done} dipnot Derkenar atıfına çevrildi; ilk geçişler tam, sonrakiler kısa künye oldu.${fresh.length ? ` ${fresh.length} eser kütüphaneye eklendi.` : ""}${fixedNote} Eski elle yazılmış kaynakçayı silip Kaynakça ekle ile Derkenar'ınkini koyabilirsiniz.`, "success");
+  setMessage(`${done} dipnot Derkenar atıfına çevrildi; ilk geçişler tam, sonrakiler kısa künye oldu (İSNAD gereği a.g.e. kullanılmaz).${fresh.length ? ` ${fresh.length} eser kütüphaneye eklendi.` : ""}${fixedNote} Eski elle yazılmış kaynakçayı silip Kaynakça ekle ile Derkenar'ınkini koyabilirsiniz.`, "success");
 }
 
 // ---------------------------------------------------------------- a bibliography typed by hand
