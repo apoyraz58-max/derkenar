@@ -135,6 +135,8 @@ const FAKE = String.raw`
   // Fields of another citation program: in the text and in footnotes.
   const fieldProxy = (code, replace) => ({ code, select() { doc.fieldSel = { replace }; }, load() { return this; } });
   const body = {
+    get text() { return doc.flow.map((x) => (x.cc ? x.cc.text : x.fn ? "" : x.text ?? "")).join(""); },
+    load() { return this; },
     get fields() {
       return collection(doc.flow.filter((x) => x.field).map((x) => fieldProxy(x.field.code, (n) => { const i = doc.flow.indexOf(x); doc.flow[i] = n.block ? { cc: n.cc } : { cc: n.cc }; })));
     },
@@ -391,6 +393,14 @@ try {
   const text = await page.evaluate(() => window.__text());
   if (!text.includes("# Kaynakça\n")) fail(`bibliography heading: ${text}`);
   if (!text.includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ min ʿilmi’l-uṣûl. nşr. Ali Nâşir. thk. Hamza b. Züheyr Hâfız.")) fail(`bibliography: ${text}`);
+  // Kısaltmalar listesi: abbreviations of the citations and of the text typed by hand.
+  await page.evaluate(() => window.__doc.flow.unshift({ kind: "text", text: "Hz. Peygamber (s.a.v.) buyurdu. " }));
+  await page.evaluate(() => (window.__doc.cursor = 1));
+  await page.click("#abbreviations");
+  await page.waitForSelector("#message:has-text('Kısaltmalar listesi eklendi')");
+  const withAbbr = await page.evaluate(() => window.__text());
+  if (!withAbbr.includes("# Kısaltmalar") || !/thk\.\tTahkik eden/.test(withAbbr) || !/Hz\.\tHazreti/.test(withAbbr) || !/s\.a\.v\.\tSallallahu/.test(withAbbr)) fail(`abbreviations list: ${withAbbr.slice(0, 600)}`);
+
   // Divided by kind, and back to one list.
   await page.check("#bib-sections");
   await page.waitForSelector("#message:has-text('türlere ayrıldı')");

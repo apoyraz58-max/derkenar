@@ -13,6 +13,7 @@ import { type Item, toCsl } from "./zotero.js";
 
 export const TAG_CITATION = "DERKENAR:C:";
 export const TAG_BIBLIOGRAPHY = "DERKENAR:BIB";
+export const TAG_ABBREVIATIONS = "DERKENAR:ABBR";
 export const DEFAULT_STYLE = "isnad-dipnotlu";
 
 export function emptyState(style = DEFAULT_STYLE, locale = "tr-TR"): DocState {

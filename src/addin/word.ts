@@ -3,7 +3,7 @@
  * Word.run with as few context.sync() round trips as possible: that, not the
  * formatting, is where Word add-ins lose their time.
  */
-import { TAG_BIBLIOGRAPHY, TAG_CITATION, citationIdFromTag, parseState, type FoundCitation } from "../core/docstate.js";
+import { TAG_ABBREVIATIONS, TAG_BIBLIOGRAPHY, TAG_CITATION, citationIdFromTag, parseState, type FoundCitation } from "../core/docstate.js";
 import { LIBRARY_NS } from "../core/librarycopy.js";
 import type { DocState, Segment } from "../core/types.js";
 
@@ -165,7 +165,7 @@ interface Located {
  * citations, then those in the text. Without `withText` only tags are read,
  * which is what the automatic-update watcher needs.
  */
-async function locate(context: Word.RequestContext, withText = true): Promise<{ citations: Located[]; bibliography: Word.ContentControl[] }> {
+async function locate(context: Word.RequestContext, withText = true): Promise<{ citations: Located[]; bibliography: Word.ContentControl[]; abbreviations: Word.ContentControl[] }> {
   const props = withText ? "items/id,items/tag,items/text" : "items/id,items/tag";
   const bodyControls = context.document.body.contentControls;
   bodyControls.load(props);
@@ -195,13 +195,15 @@ async function locate(context: Word.RequestContext, withText = true): Promise<{ 
     }
   });
   const bibliography: Word.ContentControl[] = [];
+  const abbreviations: Word.ContentControl[] = [];
   for (const cc of bodyControls.items) {
     if (inNotes.has(cc.id)) continue;
     if (cc.tag === TAG_BIBLIOGRAPHY) bibliography.push(cc);
+    if (cc.tag === TAG_ABBREVIATIONS) abbreviations.push(cc);
     const id = citationIdFromTag(cc.tag);
     if (id) citations.push({ found: { id, noteIndex: 0, text: withText ? cc.text : "" }, control: cc });
   }
-  return { citations, bibliography };
+  return { citations, bibliography, abbreviations };
 }
 
 /** Citation ids and note numbers in document order (cheap: no text is read). */
@@ -215,6 +217,8 @@ export interface RefreshWrite {
   /** Bibliography entries; null leaves the bibliography as it is. */
   readonly bibliography: Segment[][] | null;
   readonly hangingIndent: boolean;
+  /** Kısaltmalar listesi lines; null leaves the list as it is. */
+  readonly abbreviations?: Segment[][] | null;
   /** Positions in `bibliography` that are section headings ("Kitaplar"). */
   readonly bibliographyHeadings?: ReadonlySet<number>;
   /** Position in the found list → new id (copies of another citation get their own). */
@@ -227,7 +231,7 @@ export interface RefreshWrite {
  */
 export async function refreshDocument(plan: (found: FoundCitation[]) => RefreshWrite | Promise<RefreshWrite>): Promise<{ citations: number; written: number; bibliography: boolean }> {
   return Word.run(async (context) => {
-    const { citations, bibliography } = await locate(context);
+    const { citations, bibliography, abbreviations } = await locate(context);
     const write = await plan(citations.map((c) => c.found));
     let written = 0;
     citations.forEach((c, i) => {
@@ -240,6 +244,7 @@ export async function refreshDocument(plan: (found: FoundCitation[]) => RefreshW
       }
     });
     if (write.bibliography && bibliography[0]) fillBibliography(bibliography[0], write.bibliography, write.hangingIndent, write.bibliographyHeadings);
+    if (write.abbreviations && abbreviations[0]) fillBibliography(abbreviations[0], write.abbreviations.length ? write.abbreviations : [[{ text: "(Atıflarda kısaltma yok.)" }]], false);
     await context.sync();
     return { citations: citations.length, written, bibliography: Boolean(write.bibliography && bibliography[0]) };
   });
@@ -368,10 +373,48 @@ export async function convertFields(turn: (code: string, inNote: boolean) => Fie
   });
 }
 
+/** The Kısaltmalar listesi under a heading after the cursor's paragraph (unless one exists). */
+export async function ensureAbbreviations(title = "Kısaltmalar"): Promise<"created" | "exists"> {
+  return Word.run(async (context) => {
+    const existing = context.document.body.contentControls.getByTag(TAG_ABBREVIATIONS);
+    existing.load("items");
+    await context.sync();
+    if (existing.items.length > 0) return "exists";
+    let para: Word.Paragraph = context.document.getSelection().paragraphs.getLast();
+    if (title.trim()) {
+      para = para.insertParagraph(title.trim(), "After");
+      para.styleBuiltIn = "Heading1" as Word.BuiltInStyleName;
+    }
+    const p = para.insertParagraph("Kısaltmalar hazırlanıyor…", "After");
+    p.styleBuiltIn = "Normal" as Word.BuiltInStyleName;
+    const cc = p.insertContentControl();
+    cc.tag = TAG_ABBREVIATIONS;
+    cc.title = "Kısaltmalar";
+    cc.appearance = "BoundingBox";
+    await context.sync();
+    return "created";
+  });
+}
+
+/** The document's whole text: body, footnotes, endnotes (to find abbreviations typed by hand). */
+export async function documentText(): Promise<string> {
+  return Word.run(async (context) => {
+    const body = context.document.body;
+    body.load("text");
+    const notes: Word.NoteItemCollection[] = [];
+    if (footnotesSupported()) {
+      notes.push(body.footnotes, body.endnotes);
+      for (const n of notes) n.load("items/body/text");
+    }
+    await context.sync();
+    return [body.text, ...notes.flatMap((n) => n.items.map((i) => i.body.text))].join("\n");
+  });
+}
+
 /** Turns every citation and the bibliography into plain text (for submission). Undo brings them back. */
 export async function unlinkAll(): Promise<number> {
   return Word.run(async (context) => {
-    const { citations, bibliography } = await locate(context);
+    const { citations, bibliography, abbreviations } = await locate(context);
     for (const c of citations) c.control.delete(true);
     for (const b of bibliography) b.delete(true);
     await context.sync();

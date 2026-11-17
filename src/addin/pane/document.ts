@@ -13,6 +13,7 @@ import { type FoundCitation, commitPlan, newCitationId, planRefresh, putCitation
 import type { CiteRef, CslItem } from "../../core/types.js";
 import { htmlToSegments, htmlToText } from "../../core/html.js";
 import { BUILTIN_STYLES } from "../../core/styles.js";
+import { abbreviationList, usedAbbreviations } from "../../core/abbreviations.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { $, type CustomStyle, S, customStyles, doc, getRenderer, h, putItems, renderSummary, run, saveCustomStyles, saveLibraryCopy, serial, setMessage, styleTitle } from "./core.js";
@@ -55,7 +56,13 @@ export function refresh(force = false, quiet = false): Promise<void> {
       const entries = plan.bibliographyChanged && plan.bibliography ? plan.bibliography.entries : null;
       const bib = entries ? entries.map((e) => (e.heading ? [{ text: e.html, bold: true }] : htmlToSegments(e.html))) : null;
       const bibliographyHeadings = new Set((entries ?? []).flatMap((e, i) => (e.heading ? [i] : [])));
-      return { citations, bibliography: bib, hangingIndent: plan.bibliography?.hangingIndent ?? true, bibliographyHeadings, retag };
+      // Kısaltmalar listesi: from the citations, the bibliography and the last scan of the text.
+      const citeText = [...list.map((f) => htmlToText(d.rendered[f.id] ?? "")), ...(plan.bibliography?.entries ?? []).filter((e) => !e.heading).map((e) => htmlToText(e.html))].join("\n");
+      const abbr = abbreviationList(citeText, d.abbrDoc ?? [], d.locale);
+      const abbrSig = abbr.map((x) => x.join("=")).join("|");
+      const abbreviations = abbrSig !== d.abbrSig ? abbr.map(([a, m]) => [{ text: a }, { text: `\t${m}` }]) : null;
+      d.abbrSig = abbrSig;
+      return { citations, bibliography: bib, hangingIndent: plan.bibliography?.hangingIndent ?? true, bibliographyHeadings, abbreviations, retag };
     });
     await word.saveState(d);
     const secs = ((performance.now() - started) / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 2 });
@@ -360,6 +367,17 @@ async function changeStyle(id: string): Promise<void> {
   setMessage(`Stil: ${styleTitle(id)}.${note}${note ? " Geri almak için Word'de Geri Al." : ""}`, note.includes("yerinde bırakıldı") ? "warning" : "success");
 }
 
+/** Kısaltmalar listesi: scans the whole text (abbreviations typed by hand, "Hz.", "s.a.v."), puts the list in, keeps it updated. */
+export async function abbreviationsList(): Promise<void> {
+  const d = doc();
+  const text = await serial(() => word.documentText());
+  d.abbrDoc = usedAbbreviations(text, d.locale).map(([a]) => a);
+  const made = await serial(() => word.ensureAbbreviations(/^en/.test(d.locale) ? "Abbreviations" : "Kısaltmalar"));
+  d.abbrSig = undefined;
+  await refresh(false, true);
+  setMessage(`${made === "created" ? "Kısaltmalar listesi eklendi" : "Kısaltmalar listesi güncellendi"} (${(d.abbrSig ?? "").split("|").filter(Boolean).length} kısaltma); atıflar değiştikçe kendiliğinden güncellenir. Metne elle yeni kısaltma yazarsanız düğmeye yeniden basın.`, "success");
+}
+
 export async function bibliography(): Promise<void> {
   const r = await getRenderer();
   if (!r.meta.hasBibliography) throw new Error("Bu stilin kaynakçası yok.");
@@ -456,6 +474,7 @@ export function wireDocument(): void {
   $("foreign-convert").onclick = () => void run("Atıflar çevriliyor", convertForeign);
   $("bib-edit").addEventListener("toggle", renderBibEdit);
   $("bibliography").onclick = () => void run("Kaynakça hazırlanıyor", bibliography);
+  $("abbreviations").onclick = () => void run("Kısaltmalar hazırlanıyor", abbreviationsList);
   $("unlink").onclick = unlink;
   $("import-doc").onclick = () =>
     void run("Aktarılıyor", async () => {

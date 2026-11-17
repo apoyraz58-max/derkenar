@@ -739,3 +739,17 @@ describe("geri yükleme noktaları", async () => {
     expect(plan.trashed).toBe(1);
   });
 });
+
+describe("kısaltmalar listesi", async () => {
+  const { usedAbbreviations } = await import("../src/core/abbreviations.js");
+  it("atıflarda geçenler, anlamlarıyla, alfabetik", () => {
+    const text = "Ebû Hâmid Muhammed b. Muhammed el-Gazzâlî, el-Mustasfâ, thk. Hamza b. Züheyr (b.y.: y.y., ts.), 1/45; a.mlf., İhyâ, 2/3. Bk. Râzî; krş. Hz. Peygamber (s.a.v.). vr. 12b";
+    expect(usedAbbreviations(text).map((x) => x[0])).toEqual(["a.mlf.", "b.", "b.y.", "bk.", "Hz.", "krş.", "s.a.v.", "thk.", "ts.", "vr.", "y.y."].sort((a, b) => a.replace(/[^\p{L}]/gu, "").localeCompare(b.replace(/[^\p{L}]/gu, ""), "tr")));
+    expect(usedAbbreviations(text).find((x) => x[0] === "thk.")![1]).toBe("Tahkik eden");
+  });
+  it("tek harfliler yalnız yerinde; İngilizce karşılıklar", () => {
+    expect(usedAbbreviations("Bu s. kelimesi").map((x) => x[0])).toEqual([]);
+    expect(usedAbbreviations("bk. s. 45").map((x) => x[0])).toEqual(["bk.", "s."]);
+    expect(usedAbbreviations("Id., Kitāb (s.l.: s.n., n.d.), 4; cf. al-Rāzī", "en-US").map((x) => x[0])).toEqual(["cf.", "Id.", "n.d.", "s.l.", "s.n."]);
+  });
+});

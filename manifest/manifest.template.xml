@@ -84,6 +84,22 @@
                     <SourceLocation resid="U.Bib"/>
                   </Action>
                 </Control>
+                <Control xsi:type="Button" id="Derkenar.Abbr">
+                  <Label resid="Abbr"/>
+                  <Supertip>
+                    <Title resid="Abbr"/>
+                    <Description resid="Abbr.Tip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Ic.abbr.16"/>
+                    <bt:Image size="32" resid="Ic.abbr.32"/>
+                    <bt:Image size="80" resid="Ic.abbr.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
+                    <SourceLocation resid="U.Abbr"/>
+                  </Action>
+                </Control>
                 <Control xsi:type="Button" id="Derkenar.Prefs">
                   <Label resid="Prefs"/>
                   <Supertip>
@@ -333,6 +349,9 @@
         <bt:Image id="Ic.index.16" DefaultValue="{{BASE_URL}}assets/icons/index-16.png"/>
         <bt:Image id="Ic.index.32" DefaultValue="{{BASE_URL}}assets/icons/index-32.png"/>
         <bt:Image id="Ic.index.80" DefaultValue="{{BASE_URL}}assets/icons/index-80.png"/>
+        <bt:Image id="Ic.abbr.16" DefaultValue="{{BASE_URL}}assets/icons/abbr-16.png"/>
+        <bt:Image id="Ic.abbr.32" DefaultValue="{{BASE_URL}}assets/icons/abbr-32.png"/>
+        <bt:Image id="Ic.abbr.80" DefaultValue="{{BASE_URL}}assets/icons/abbr-80.png"/>
         <bt:Image id="Ic.settings.16" DefaultValue="{{BASE_URL}}assets/icons/settings-16.png"/>
         <bt:Image id="Ic.settings.32" DefaultValue="{{BASE_URL}}assets/icons/settings-32.png"/>
         <bt:Image id="Ic.settings.80" DefaultValue="{{BASE_URL}}assets/icons/settings-80.png"/>
@@ -373,6 +392,7 @@
       <bt:Urls>
         <bt:Url id="U.Insert" DefaultValue="{{BASE_URL}}taskpane.html?action=insert"/>
         <bt:Url id="U.Bib" DefaultValue="{{BASE_URL}}taskpane.html?action=bib"/>
+        <bt:Url id="U.Abbr" DefaultValue="{{BASE_URL}}taskpane.html?action=abbr"/>
         <bt:Url id="U.Prefs" DefaultValue="{{BASE_URL}}taskpane.html?action=prefs"/>
         <bt:Url id="U.Refresh" DefaultValue="{{BASE_URL}}taskpane.html?action=refresh"/>
         <bt:Url id="U.Unlink" DefaultValue="{{BASE_URL}}taskpane.html?action=unlink"/>
@@ -394,6 +414,7 @@
         <bt:String id="Ctx" DefaultValue="Derkenar"/>
         <bt:String id="Insert" DefaultValue="Atıf Ekle/Düzenle"/>
         <bt:String id="Bib" DefaultValue="Kaynakça Ekle/Düzenle"/>
+        <bt:String id="Abbr" DefaultValue="Kısaltmalar Listesi"/>
         <bt:String id="Prefs" DefaultValue="Belge Tercihleri"/>
         <bt:String id="Refresh" DefaultValue="Güncelle"/>
         <bt:String id="Unlink" DefaultValue="Düz Metne Çevir"/>
@@ -415,6 +436,7 @@
         <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
         <bt:String id="Insert.Tip" DefaultValue="İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır."/>
         <bt:String id="Bib.Tip" DefaultValue="İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir."/>
+        <bt:String id="Abbr.Tip" DefaultValue="Atıflarda ve metinde geçen İSNAD kısaltmalarının (a.mlf., b.y., thk., Hz., s.a.v. …) listesini imlecin olduğu yere koyar; atıflar değiştikçe güncellenir."/>
         <bt:String id="Prefs.Tip" DefaultValue="Atıf stili (İSNAD 2 dipnotlu / metin içi), dil, dipnot ya da sonnot, otomatik güncelleme."/>
         <bt:String id="Refresh.Tip" DefaultValue="Bütün atıfları ve kaynakçayı yeniden yazar. Otomatik güncelleme açıkken genellikle gerekmez."/>
         <bt:String id="Unlink.Tip" DefaultValue="Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın."/>

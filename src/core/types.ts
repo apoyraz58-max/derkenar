@@ -93,6 +93,9 @@ export interface DocState {
   /** Kaynakçayı düzenle: works listed though not cited, and cited works left out. */
   bibUncited?: string[];
   bibExcluded?: string[];
+  /** Kısaltmalar listesi: abbreviations found in the document's own text at the last scan, and the list last written. */
+  abbrDoc?: string[];
+  abbrSig?: string;
   /** Bibliography divided by kind (Yazma Eserler, Kitaplar, Makaleler …). */
   bibSections?: boolean;
 }
