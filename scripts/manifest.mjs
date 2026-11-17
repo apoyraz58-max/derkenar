@@ -44,7 +44,6 @@ const tab = [
   group("Library", "Kütüphane", "catalog", [
     button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede.", "catalog", "library"),
     button("New", "Yeni Kaynak", "Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar).", "bulk", "new"),
-    button("Identifier", "Tanımlayıcıyla Ekle", "DOI veya ISBN ile kaynak ekler.", "search", "identifier"),
     button("Import", "İçe Aktar", "Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler.", "csv", "import"),
     button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "source", "export"),
   ]),

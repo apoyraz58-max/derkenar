@@ -48,7 +48,7 @@ açılınca kütüphane kendiliğinden geri gelir.
 | Ekler | Bağlantı ve dosya (PDF vb., bu bilgisayarda saklanır); çevrimiçi kütüphanedeki dosyaların bağlantısı |
 | İlgili kaynaklar | Var (iki yönlü) |
 | Bul (Locate) | URL, DOI, WorldCat, Google Akademik |
-| Tanımlayıcıyla ekleme | DOI, ISBN (Open Library + Google Books), PMID, arXiv |
+| Tanımlayıcıyla ekleme (Yeni Kaynak) | DOI, ISBN (K10plus, Alman Millî Kütüphanesi, Crossref, Google Books, Open Library), PMID, arXiv |
 | İçe aktarma | RDF, CSL JSON, BibTeX/BibLaTeX, RIS, Derkenar yedeği |
 | Çevrimiçi kütüphane eşitleme | Al (web API ya da bilgisayardaki programın yerel API'si) ve gönder (değişen ve yeni kaynaklar; çakışmada üzerine yazmaz) |
 | Dışa aktarma | RDF (koleksiyon ve notlarla), CSL JSON, CSV, RIS, BibTeX, Derkenar yedeği, HTML rapor; kaynakçayı panoya kopyalama |

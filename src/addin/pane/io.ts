@@ -194,7 +194,7 @@ async function lookupDoiOrIsbn(doi: string): Promise<Item> {
   }
 }
 
-async function lookup(box = "lookup"): Promise<void> {
+async function lookup(box = "new-lookup"): Promise<void> {
   const lines = $<HTMLTextAreaElement>(box).value.split(/\n+/).map((l) => l.trim()).filter(Boolean);
   if (!lines.length) throw new Error("DOI (10.xxxx/…), ISBN, PMID veya arXiv numarası yazın.");
   const found: Item[] = [];
@@ -331,10 +331,6 @@ export function wireIo(): void {
       await importFiles([...($<HTMLInputElement>("file").files ?? [])]);
       $<HTMLInputElement>("file").value = "";
     });
-  $<HTMLFormElement>("lookup-form").onsubmit = (e) => {
-    e.preventDefault();
-    void run("Aranıyor", lookup);
-  };
   // Yeni kaynak: the same ways of adding, in one place.
   $<HTMLFormElement>("new-lookup-form").onsubmit = (e) => {
     e.preventDefault();

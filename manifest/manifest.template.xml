@@ -172,22 +172,6 @@
                     <SourceLocation resid="U.New"/>
                   </Action>
                 </Control>
-                <Control xsi:type="Button" id="Derkenar.Identifier">
-                  <Label resid="Identifier"/>
-                  <Supertip>
-                    <Title resid="Identifier"/>
-                    <Description resid="Identifier.Tip"/>
-                  </Supertip>
-                  <Icon>
-                    <bt:Image size="16" resid="Ic.search.16"/>
-                    <bt:Image size="32" resid="Ic.search.32"/>
-                    <bt:Image size="80" resid="Ic.search.80"/>
-                  </Icon>
-                  <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>Office.AutoShowTaskpaneWithDocument</TaskpaneId>
-                    <SourceLocation resid="U.Identifier"/>
-                  </Action>
-                </Control>
                 <Control xsi:type="Button" id="Derkenar.Import">
                   <Label resid="Import"/>
                   <Supertip>
@@ -367,9 +351,6 @@
         <bt:Image id="Ic.bulk.16" DefaultValue="{{BASE_URL}}assets/icons/bulk-16.png"/>
         <bt:Image id="Ic.bulk.32" DefaultValue="{{BASE_URL}}assets/icons/bulk-32.png"/>
         <bt:Image id="Ic.bulk.80" DefaultValue="{{BASE_URL}}assets/icons/bulk-80.png"/>
-        <bt:Image id="Ic.search.16" DefaultValue="{{BASE_URL}}assets/icons/search-16.png"/>
-        <bt:Image id="Ic.search.32" DefaultValue="{{BASE_URL}}assets/icons/search-32.png"/>
-        <bt:Image id="Ic.search.80" DefaultValue="{{BASE_URL}}assets/icons/search-80.png"/>
         <bt:Image id="Ic.csv.16" DefaultValue="{{BASE_URL}}assets/icons/csv-16.png"/>
         <bt:Image id="Ic.csv.32" DefaultValue="{{BASE_URL}}assets/icons/csv-32.png"/>
         <bt:Image id="Ic.csv.80" DefaultValue="{{BASE_URL}}assets/icons/csv-80.png"/>
@@ -397,7 +378,6 @@
         <bt:Url id="U.Unlink" DefaultValue="{{BASE_URL}}taskpane.html?action=unlink"/>
         <bt:Url id="U.Library" DefaultValue="{{BASE_URL}}taskpane.html?action=library"/>
         <bt:Url id="U.New" DefaultValue="{{BASE_URL}}taskpane.html?action=new"/>
-        <bt:Url id="U.Identifier" DefaultValue="{{BASE_URL}}taskpane.html?action=identifier"/>
         <bt:Url id="U.Import" DefaultValue="{{BASE_URL}}taskpane.html?action=import"/>
         <bt:Url id="U.Export" DefaultValue="{{BASE_URL}}taskpane.html?action=export"/>
         <bt:Url id="U.CheckDoc" DefaultValue="{{BASE_URL}}taskpane.html?action=check-doc"/>
@@ -420,7 +400,6 @@
         <bt:String id="G.Cite" DefaultValue="Atıf"/>
         <bt:String id="Library" DefaultValue="Kütüphane"/>
         <bt:String id="New" DefaultValue="Yeni Kaynak"/>
-        <bt:String id="Identifier" DefaultValue="Tanımlayıcıyla Ekle"/>
         <bt:String id="Import" DefaultValue="İçe Aktar"/>
         <bt:String id="Export" DefaultValue="Dışa Aktar"/>
         <bt:String id="G.Library" DefaultValue="Kütüphane"/>
@@ -441,7 +420,6 @@
         <bt:String id="Unlink.Tip" DefaultValue="Teslimden önce atıfları ve kaynakçayı düz metne çevirir. Önce belgenin bir kopyasını alın."/>
         <bt:String id="Library.Tip" DefaultValue="Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede."/>
         <bt:String id="New.Tip" DefaultValue="Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar)."/>
-        <bt:String id="Identifier.Tip" DefaultValue="DOI veya ISBN ile kaynak ekler."/>
         <bt:String id="Import.Tip" DefaultValue="Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler."/>
         <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>
         <bt:String id="CheckDoc.Tip" DefaultValue="Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir."/>

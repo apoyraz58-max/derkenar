@@ -28,7 +28,7 @@ Vefeyât ile aynı anda kurulu olabilir; ikisinin sekmeleri ayrıdır.
 | Grup | Komutlar |
 | --- | --- |
 | Atıf | **Atıf Ekle/Düzenle**, **Kaynakça Ekle/Düzenle**, **Belge Tercihleri**, **Güncelle**, **Düz Metne Çevir** |
-| Kütüphane | **Kütüphane**, **Yeni Kaynak**, **Tanımlayıcıyla Ekle**, **İçe Aktar**, **Dışa Aktar** |
+| Kütüphane | **Kütüphane**, **Yeni Kaynak** (DOI, ISBN, RIS, dosya, elle), **İçe Aktar**, **Dışa Aktar** |
 | İSNAD | **Belgeyi Denetle**, **Kütüphaneyi Denetle** |
 | Veri ve yardım | **Veri bilgisi** (kaynak sayıları, saklama, belgedeki kopya, eşitleme, sürüm), **Kullanım kılavuzu** (kısa kılavuz ve Hakkında) |
 
