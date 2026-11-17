@@ -169,6 +169,7 @@ export const LOCATOR_LABELS: readonly (readonly [string, string])[] = [
   ["chapter", "Bölüm"],
   ["folio", "Varak"],
   ["section", "Kısım"],
+  ["sub verbo", "Madde (md.)"],
   ["paragraph", "Paragraf"],
   ["line", "Satır"],
   ["number", "Numara"],

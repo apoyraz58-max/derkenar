@@ -365,3 +365,17 @@ describe("nisbede harf-i tarif (s. 91)", () => {
     expect(htmlToText(plan.updates.get("b")!)).toMatch(/^Keşşî, et-Temhîd/);
   });
 });
+
+describe("Mevzuat-Diğer (s. 122)", () => {
+  it("dipnotta Kurum (yıl), md.; kaynakçada Türkiye: Kurum, yıl", () => {
+    const it2: Item = { ...items[0]!, key: "YKBAYEY1", itemType: "statute", fields: { title: "Yükseköğretim Kurulu Bilimsel Araştırma ve Yayın Etiği Yönergesi", shortTitle: "YKBAYEY", date: "2016", extra: "publisher-place: Türkiye\nauthority: Yükseköğretim Kurulu" }, creators: [], notes: [], tags: [], collections: [], relations: [] };
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales);
+    const st = emptyState();
+    putCitation(st, "a", [{ id: it2.key, locator: "4", label: "sub verbo" }], { [it2.key]: it2 });
+    putCitation(st, "b", [{ id: it2.key, locator: "3", label: "sub verbo" }], { [it2.key]: it2 });
+    const plan = planRefresh(st, [{ id: "a", noteIndex: 1, text: "" }, { id: "b", noteIndex: 2, text: "" }], r);
+    expect(htmlToText(plan.updates.get("a")!)).toBe("Yükseköğretim Kurulu Bilimsel Araştırma ve Yayın Etiği Yönergesi (YKBAYEY), Yükseköğretim Kurulu (2016), md. 4.");
+    expect(htmlToText(plan.updates.get("b")!)).toBe("YKBAYEY, md. 3.");
+    expect(htmlToText(plan.bibliography!.entries[0]!.html)).toBe("YKBAYEY, Yükseköğretim Kurulu Bilimsel Araştırma ve Yayın Etiği Yönergesi. Türkiye: Yükseköğretim Kurulu, 2016.");
+  });
+});

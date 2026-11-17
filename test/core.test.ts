@@ -547,3 +547,10 @@ describe("İSNAD spelling on the way in", async () => {
     expect(checkItem(short).some((i) => i.code === "publisher-short")).toBe(true);
   });
 });
+
+describe("Mevzuat: madde (md.)", async () => {
+  const { parseQuick } = await import("../src/core/search.js");
+  it("\"fsek md. 35/4\" is an article, not volume 35 page 4", () => {
+    expect(parseQuick("fsek md. 35/4")).toEqual({ words: "fsek", locator: "35/4", label: "sub verbo" });
+  });
+});

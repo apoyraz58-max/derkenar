@@ -13,3 +13,6 @@ printed the hazırlayan twice in book chapters; the duplicate is removed.
 
 Derkenar change: in isnad-dipnotlu.csl the bibliography writes e-mail and text message
 details without parentheses ("…hk. E-Posta 2 Eylül 2019, Alıcı Emrah Kaya.", guide s. 136-137).
+- `isnad-dipnotlu.csl`: Mevzuat-Diğer (Resmî Gazete dışı yönerge, ilke vb.) dipnotta
+  "Yükseköğretim Kurulu (2016)" biçiminde (kılavuz s. 122); kaynakça değişmedi
+  ("Türkiye: Yükseköğretim Kurulu, 2016"). Dipnot için `legal-cites-note` makrosu eklendi.

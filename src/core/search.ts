@@ -116,6 +116,9 @@ function compareItems(a: Item, b: Item): number {
 export function parseQuick(q: string): { words: string; volume?: string; locator?: string; label?: string } {
   const m = /^(.*?)[\s,]+(?:(s\.|ss\.|sayfa|vr\.|varak)\s*)?(\d+\/\d+[ab]?(?:-\d+[ab]?)?|\d{1,3}[ab]?(?:-\d+[ab]?)?|\d{4}[ab]?-\d+[ab]?)$/i.exec(q.trim());
   const prefixed = /^(.*?)[\s,]+(s\.|ss\.|sayfa|vr\.|varak)\s*(\d+[ab]?(?:-\d+[ab]?)?)$/i.exec(q.trim());
+  // "md. 35/4": an article of a law (İSNAD writes "md. 35/4"; the slash is not a volume here).
+  const article = /^(.*?)[\s,]+(md\.|madde)\s*(\d+(?:\/\d+)*(?:-\d+)?)$/i.exec(q.trim());
+  if (article && article[1]!.trim()) return { words: article[1]!, locator: article[3]!, label: "sub verbo" };
   const hit = prefixed ?? m;
   if (!hit || !hit[1]!.trim()) return { words: q };
   // İSNAD writes varak numbers without "vr." (77b): the prefix is only a typing aid.
