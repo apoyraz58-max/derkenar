@@ -605,6 +605,18 @@ try {
     if ((await page.inputValue('[data-field="publisher"]')) !== "Küre Yayınları") fail(`ocr publisher: ${await page.inputValue('[data-field="publisher"]')}`);
     if ((await page.inputValue('[data-field="date"]')) !== "2016") fail("ocr year");
     if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/fotograf.png`, fullPage: true });
+    // A place written another way: Denetim offers to write it one way across the library.
+    await page.fill('[data-field="place"]', "Istanbul");
+    await page.press('[data-field="place"]', "Tab");
+    await page.waitForTimeout(1500);
+    await page.click("#tab-denetim");
+    await page.selectOption("#chk-scope", "library");
+    await page.click("#chk-run");
+    const variant = page.locator("#chk-list li", { hasText: "Yer farklı yazılmış" });
+    await variant.waitFor();
+    await variant.locator("button", { hasText: "Hepsini bu yazıma çevir" }).click();
+    await page.waitForSelector("#message:has-text('yer \"İstanbul\" olarak birleştirildi')");
+    if (await page.locator("#chk-list li", { hasText: "Yer farklı yazılmış" }).count()) fail("place variants left after unifying");
   }
 
   // The same record again: not added twice, the existing one opens.

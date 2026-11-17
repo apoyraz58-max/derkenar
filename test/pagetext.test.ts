@@ -147,3 +147,25 @@ describe("library spelling", () => {
     expect(librarySpelling(it, [caps, caps]).changed).toEqual([]);
   });
 });
+
+import { fieldVariants, unifyField } from "../src/core/library.js";
+
+describe("field variants", () => {
+  const mk = (publisher: string, place: string) => {
+    const i = emptyItem("book");
+    i.fields = { title: "t", publisher, place };
+    return i;
+  };
+  it("finds one publisher and one place written differently, and unifies them", () => {
+    const items = [mk("Dergâh Yayınları", "İstanbul"), mk("Dergah Yay.", "Istanbul"), mk("Dergâh Yayınları", "İstanbul"), mk("Ötüken Neşriyat", "Beirut"), mk("Ötüken", "Beyrut")];
+    const v = fieldVariants(items);
+    expect(v.map((x) => `${x.what}: ${x.spellings.map((s) => s.value).join(" · ")}`)).toEqual([
+      "Yayınevi: Dergâh Yayınları · Dergah Yay.",
+      "Yayınevi: Ötüken Neşriyat · Ötüken",
+      "Yer: İstanbul · Istanbul",
+      "Yer: Beyrut · Beirut",
+    ]);
+    const changed = unifyField(items, v[0]!, "Dergâh Yayınları");
+    expect(changed.map((i) => i.fields.publisher)).toEqual(["Dergâh Yayınları"]);
+  });
+});

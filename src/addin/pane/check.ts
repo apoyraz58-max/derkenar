@@ -13,6 +13,7 @@ import { citedKeys, currentOrder, refresh } from "./document.js";
 import { $, S, doc, h, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
 import { inCurrentView } from "./library.js";
+import { fieldVariants, unifyField } from "../../core/library.js";
 
 /** Fixes applied by "Önerilen düzeltmeleri uygula"; case changes stay manual. */
 /** "Önerilen düzeltmeleri uygula": the mechanical fixes also made when a work is added, and a few more. */
@@ -72,6 +73,37 @@ function render(): void {
             ` ${i.message} `,
             i.fix ? h("button", { type: "button", class: "link", onclick: () => void run("Düzeltiliyor", () => fix([i])) }, i.fixLabel ?? "Düzelt") : null,
           ),
+        ),
+      ),
+    );
+  }
+  // One publisher, place, journal written in more than one way: the bibliography should write it one way.
+  for (const v of fieldVariants(lastItems)) {
+    const choice = h("select", { "aria-label": "Kullanılacak yazım" }, ...v.spellings.map((sp, i) => h("option", { value: String(i) }, `${sp.value} (${sp.count})`)));
+    list.prepend(
+      h(
+        "li",
+        {},
+        h("div", { class: "issue warning" }, h("span", { class: "lvl" }, "Uyarı"), ` ${v.what} farklı yazılmış: ${v.spellings.map((x) => x.value).join(" · ")}`),
+        h(
+          "div",
+          { class: "row small" },
+          choice,
+          h("button", {
+            type: "button",
+            onclick: () =>
+              void run("Yazımlar birleştiriliyor", async () => {
+                const target = v.spellings[Number(choice.value)]!.value;
+                const changed = unifyField(S.items, v, target).map((i) => ({ ...i, dateModified: now() }));
+                await putItems(changed, [], true);
+                const d = doc();
+                for (const it of changed) if (d.items[it.key]) d.items[it.key] = it;
+                await word.saveState(d);
+                await refresh(false, true);
+                setMessage(`${changed.length} kaynakta ${v.what.toLocaleLowerCase("tr")} "${target}" olarak birleştirildi.`, "success");
+                runCheck();
+              }),
+          }, "Hepsini bu yazıma çevir"),
         ),
       ),
     );

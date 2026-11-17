@@ -2,7 +2,7 @@
  * Library operations Zotero's middle pane offers: filtering by collection,
  * tag and trash, sorting, duplicate detection and merging, collection tree.
  */
-import { foldText } from "./isnadstyle.js";
+import { foldText, isnadPlace } from "./isnadstyle.js";
 import { fold } from "./search.js";
 import { type Collection, type Item, creatorLine, now, titleOf, yearOf } from "./zotero.js";
 
@@ -278,4 +278,55 @@ export function librarySpelling(item: Item, library: readonly Item[]): { item: I
     }
   }
   return changed.length ? { item: { ...item, creators, fields }, changed } : { item, changed };
+}
+
+// ---------------------------------------------------------------- one publisher, place, journal: one spelling
+
+export interface FieldVariant {
+  /** "Yayınevi", "Yer", "Dergi" … */
+  readonly what: string;
+  readonly fields: readonly string[];
+  readonly spellings: { value: string; count: number }[];
+}
+
+const FAMILIES: { what: string; fields: string[]; key: (v: string) => string }[] = [
+  { what: "Yayınevi", fields: ["publisher"], key: (v) => foldText(v).replace(/\b(yayinlari|yayinevi|yayincilik|yayinlar|yay|nesriyat|nesriyati|kitabevi|ltd|sti)\b/g, "").replace(/\s+/g, " ").trim() },
+  { what: "Yer", fields: ["place"], key: (v) => foldText(isnadPlace(v)) },
+  { what: "Dergi", fields: ["publicationTitle"], key: (v) => foldText(v) },
+  { what: "Üniversite", fields: ["university"], key: (v) => foldText(v) },
+];
+
+/** Values that are one publisher (place, journal, university) written in more than one way: "Dergah Yay." · "Dergâh Yayınları". */
+export function fieldVariants(items: readonly Item[]): FieldVariant[] {
+  const out: FieldVariant[] = [];
+  for (const fam of FAMILIES) {
+    const groups = new Map<string, Map<string, number>>();
+    for (const it of items) {
+      if (it.deleted) continue;
+      for (const f of fam.fields) {
+        const v = it.fields[f]?.trim();
+        if (!v) continue;
+        const k = fam.key(v);
+        if (k.length < 3) continue;
+        const g = groups.get(k) ?? new Map<string, number>();
+        g.set(v, (g.get(v) ?? 0) + 1);
+        groups.set(k, g);
+      }
+    }
+    for (const g of groups.values()) {
+      if (g.size < 2) continue;
+      // The careful, full spelling first: marks, then length, then how often.
+      const spellings = [...g].map(([value, count]) => ({ value, count })).sort((a, b) => Number(fam.what === "Yer" && isnadPlace(b.value) === b.value) - Number(fam.what === "Yer" && isnadPlace(a.value) === a.value) || marks(b.value) - marks(a.value) || b.value.length - a.value.length || b.count - a.count);
+      out.push({ what: fam.what, fields: fam.fields, spellings });
+    }
+  }
+  return out;
+}
+
+/** Every item with one of the variants gets `target`. */
+export function unifyField(items: readonly Item[], variant: FieldVariant, target: string): Item[] {
+  const values = new Set(variant.spellings.map((s) => s.value));
+  return items
+    .filter((it) => !it.deleted && variant.fields.some((f) => it.fields[f] !== undefined && values.has(it.fields[f]!.trim()) && it.fields[f] !== target))
+    .map((it) => ({ ...it, fields: { ...it.fields, ...Object.fromEntries(variant.fields.filter((f) => it.fields[f] !== undefined && values.has(it.fields[f]!.trim())).map((f) => [f, target])) } }));
 }
