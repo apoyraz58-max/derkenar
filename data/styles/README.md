@@ -30,3 +30,4 @@ olarak okunur.
   b.y. → s.l., y.y. → s.n., a.mlf. → Id. yazar (aynı tablo).
 - İki İSNAD stilinin İngilizce bölümüne tarih biçimi "16 April 2019" ve "Access" terimi eklendi
   (İngilizce kılavuz: "Kur’ân Yolu (Access 16 April 2019), al-Baqara 2/12.").
+- İki İSNAD stilinin İngilizce bölümünde kanun maddesi kısaltması "art." (İngilizce kılavuz: md. → art.).

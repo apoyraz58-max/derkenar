@@ -479,3 +479,15 @@ describe("İSNAD İngilizce: web kaynağı erişim tarihi", () => {
     expect(htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!)).toBe("Kur’ân Yolu (Access 16 April 2019), al-Baqara 2/12.");
   });
 });
+
+describe("İSNAD İngilizce: madde (art.) ve ön ek (See)", () => {
+  it("…, art. 4; dipnot başında See", () => {
+    const law: Item = { ...items[0]!, key: "LAWEN001", itemType: "statute", fields: { title: "Higher Education Law", shortTitle: "HEL", date: "1981", extra: "authority: Grand National Assembly" }, creators: [], notes: [], tags: [], collections: [], relations: [] };
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales, "en-US");
+    const st = emptyState();
+    putCitation(st, "x", [{ id: law.key, locator: "4", label: "sub verbo", prefix: "see" }], { [law.key]: law });
+    const out = htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!);
+    expect(out).toMatch(/^See Higher Education Law/);
+    expect(out).toMatch(/art\. 4\.$/);
+  });
+});

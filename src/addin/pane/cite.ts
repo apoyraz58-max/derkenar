@@ -133,7 +133,7 @@ export function renderBasket(): void {
         h(
           "div",
           { class: "chips prefix-chips" },
-          ...["bk.", "krş.", "ayrıca bk.", "geniş bilgi için bk."].map((p) =>
+          ...prefixChoices().map((p) =>
             h("button", {
               type: "button",
               class: (ref.prefix ?? "").trim() === p ? "chip on" : "chip",
@@ -147,11 +147,16 @@ export function renderBasket(): void {
             }, p),
           ),
         ),
-        h("details", { open: Boolean(ref.prefix && !["bk.", "krş.", "ayrıca bk.", "geniş bilgi için bk."].includes(ref.prefix.trim())) || Boolean(ref.suffix) || Boolean(ref["suppress-author"]) }, h("summary", { class: "muted" }, "Ön ek, arka ek, yazar"), h("div", { class: "b-extra" }, prefix, suffix), h("div", { class: "b-flags" }, h("label", {}, hide, " Yazarı gizle"))),
+        h("details", { open: Boolean(ref.prefix && !prefixChoices().includes(ref.prefix.trim())) || Boolean(ref.suffix) || Boolean(ref["suppress-author"]) }, h("summary", { class: "muted" }, "Ön ek, arka ek, yazar"), h("div", { class: "b-extra" }, prefix, suffix), h("div", { class: "b-flags" }, h("label", {}, hide, " Yazarı gizle"))),
       ),
     );
   });
   schedulePreview();
+}
+
+/** One-click prefixes: İSNAD's "bk.", "krş." (in English "see", "cf.", ISNAD Citation Style 2nd ed.). */
+function prefixChoices(): string[] {
+  return /^en/.test(doc().locale) ? ["see", "cf.", "see also", "for more information see"] : ["bk.", "krş.", "ayrıca bk.", "geniş bilgi için bk."];
 }
 
 /** The locator boxes: olağan cilt/sayfa, or İSNAD's hadith and dictionary systems. */

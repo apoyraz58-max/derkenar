@@ -102,6 +102,10 @@
     </date>
     <terms>
       <term name="accessed">access</term>
+      <term name="sub-verbo" form="short">
+        <single>art.</single>
+        <multiple>art.</multiple>
+      </term>
       <term name="no date" form="short">n.d.</term>
       <term name="et-al">et al.</term>
       <term name="edition" form="verb">ed.</term>
