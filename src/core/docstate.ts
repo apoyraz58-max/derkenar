@@ -148,7 +148,8 @@ const NEEDS_IMPRINT = new Set(["book", "chapter", "entry-encyclopedia", "entry-d
  * ("Sözlük, “madde” (Erişim …)") has no place to report as missing.
  */
 export function fillImprint(csl: CslItem, lang = "tr-TR"): CslItem {
-  const missing = /^en/.test(lang) ? { place: "n.p.", publisher: "n.p." } : ISNAD_MISSING;
+  // İSNAD in English (ISNAD Citation Style 2nd ed., abbreviations): s.l. (sine loco), s.n. (sine nomine).
+  const missing = /^en/.test(lang) ? { place: "s.l.", publisher: "s.n." } : ISNAD_MISSING;
   if (!NEEDS_IMPRINT.has(csl.type)) return csl;
   if (csl.medium || csl.accessed || (csl.URL && !csl.publisher && !csl["publisher-place"])) return csl;
   if (!String(csl["publisher-place"] ?? "").trim()) csl["publisher-place"] = missing.place;
@@ -172,8 +173,8 @@ export function withSameAuthor(refs: readonly CiteRef[], items: Record<string, I
     if (i === 0 || !prev || r["suppress-author"] || r.prefix || r.id === prev.id || (title(r.id) && title(r.id) === title(prev.id))) return r;
     // The same author even when spelled differently in the two records ("Gazzâlî" / "Gazzali", fuller given name).
     if (!sameAuthors(authorsOf(items[r.id]), authorsOf(items[prev.id]))) return r;
-    // İSNAD in English: "idem".
-    return { ...r, "suppress-author": true, prefix: /^en/.test(lang) ? "idem, " : "a.mlf., " };
+    // İSNAD in English: "Id." (ISNAD Citation Style 2nd ed.: "…, 56; Id., “İlk Mürciî…”").
+    return { ...r, "suppress-author": true, prefix: /^en/.test(lang) ? "Id., " : "a.mlf., " };
   });
 }
 

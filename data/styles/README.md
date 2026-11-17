@@ -24,3 +24,9 @@ Style 18th edition, notes and bibliography) citation-style-language/styles depos
 değiştirilmeden alındı (CC BY-SA 3.0). Derkenar'ın İSNAD kuralları (a.mlf., b.y./y.y., çıktı
 düzeltmeleri) bu stillerde uygulanmaz; muhakkik, nâşir, hazırlayan ve sadeleştiren editör
 olarak okunur.
+
+- İki İSNAD stilinde İngilizce "no date" kısaltması "n.d." yapıldı: ISNAD Citation Style 2nd
+  Edition (İngilizce kılavuz) kısaltma tablosu "ts. → n.d." der. Derkenar İngilizce belgede
+  b.y. → s.l., y.y. → s.n., a.mlf. → Id. yazar (aynı tablo).
+- İki İSNAD stilinin İngilizce bölümüne tarih biçimi "16 April 2019" ve "Access" terimi eklendi
+  (İngilizce kılavuz: "Kur’ân Yolu (Access 16 April 2019), al-Baqara 2/12.").

@@ -456,7 +456,7 @@ describe("Kur’ân atfı İngilizce çalışmada (s. 80-82)", () => {
   });
 });
 
-describe("İSNAD İngilizce: n.p., no date (resmî stil), idem", () => {
+describe("İSNAD İngilizce (ISNAD Citation Style 2nd ed.): s.l., s.n., n.d., Id.", () => {
   it("eksik künye ve aynı müellif İngilizce kısaltmalarla", () => {
     const a: Item = { ...items[0]!, key: "ENGL0001", itemType: "book", fields: { title: "Kitāb al-Tawḥīd" }, creators: [{ creatorType: "author", lastName: "Māturīdī", firstName: "Abū Manṣūr al-" }], notes: [], tags: [], collections: [], relations: [] };
     const b: Item = { ...a, key: "ENGL0002", fields: { title: "Taʾwīlāt al-Qurʾān", place: "Istanbul", publisher: "Mizan", date: "2005" } };
@@ -464,8 +464,18 @@ describe("İSNAD İngilizce: n.p., no date (resmî stil), idem", () => {
     const st = emptyState();
     putCitation(st, "x", [{ id: a.key, locator: "4" }, { id: b.key, locator: "9" }], { [a.key]: a, [b.key]: b });
     const out = htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!);
-    expect(out).toContain("Kitāb al-Tawḥīd (n.p.: n.p., no date), 4");
-    expect(out).toContain("; idem, ");
+    expect(out).toContain("Kitāb al-Tawḥīd (s.l.: s.n., n.d.), 4");
+    expect(out).toContain("; Id., ");
     expect(out).not.toMatch(/b\.y\.|y\.y\.|a\.mlf\./);
+  });
+});
+
+describe("İSNAD İngilizce: web kaynağı erişim tarihi", () => {
+  it("Kur’ân Yolu (Access 16 April 2019), al-Baqara 2/12.", () => {
+    const w: Item = { ...items[0]!, key: "KYOLU001", itemType: "book", fields: { title: "Kur’ân Yolu", url: "https://kuran.diyanet.gov.tr/tefsir", accessDate: "2019-04-16" }, creators: [], notes: [], tags: [], collections: [], relations: [] };
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales, "en-US");
+    const st = emptyState();
+    putCitation(st, "x", [{ id: w.key, sure: "2", ayet: "12" }], { [w.key]: w });
+    expect(htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!)).toBe("Kur’ân Yolu (Access 16 April 2019), al-Baqara 2/12.");
   });
 });

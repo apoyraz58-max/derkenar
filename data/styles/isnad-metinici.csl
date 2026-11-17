@@ -94,8 +94,15 @@
     </terms>
   </locale>
   <locale xml:lang="en">
+    <!-- Derkenar: ISNAD Citation Style 2nd Edition writes "Access 16 April 2019". -->
+    <date form="text">
+      <date-part name="day" suffix=" "/>
+      <date-part name="month" suffix=" "/>
+      <date-part name="year"/>
+    </date>
     <terms>
-      <term name="no date" form="short">no date</term>
+      <term name="accessed">access</term>
+      <term name="no date" form="short">n.d.</term>
       <term name="et-al">et al.</term>
       <term name="edition" form="verb">ed.</term>
       <term name="editor" form="verb-short">ed.</term>
