@@ -82,7 +82,7 @@ export class Renderer {
   renderCitations(citations: readonly OrderedCitation[]): Map<string, string> {
     const input = citations.map((c) => ({
       citationID: c.id,
-      citationItems: c.items.map((r) => this.citeItem(r)),
+      citationItems: c.items.map((r, i) => this.citeItem(r, i === 0)),
       properties: { noteIndex: c.noteIndex },
     }));
     const out = new Map<string, string>();
@@ -92,7 +92,7 @@ export class Renderer {
 
   /** What a new citation would look like (does not change the processor state). */
   preview(refs: readonly CiteRef[], noteIndex = 1): string {
-    const citation = { citationItems: refs.map((r) => this.citeItem(r)), properties: { noteIndex } };
+    const citation = { citationItems: refs.map((r, i) => this.citeItem(r, i === 0)), properties: { noteIndex } };
     return this.tidy(this.engine.previewCitationCluster(citation, [], [], "html"));
   }
 
@@ -100,8 +100,10 @@ export class Renderer {
    * Cilt and sayfa: İSNAD writes "1/45"; a note style otherwise "1:45"
    * (Chicago); an in-text style "Cilt 1, s. 45" (APA).
    */
-  private citeItem(r: CiteRef): Record<string, unknown> {
+  private citeItem(r: CiteRef, first = false): Record<string, unknown> {
     const item = toCiteItem(r);
+    // A footnote starts a sentence: "Bk. Gazzâlî, …" (the user types "bk.").
+    if (first && this.meta.note && typeof item.prefix === "string") item.prefix = item.prefix.replace(/^(\s*)(\p{Ll})/u, (_, sp: string, c: string) => sp + c.toLocaleUpperCase("tr"));
     const vol = r.volume?.trim();
     if (this.meta.isnad || !vol || !r.locator || (r.label ?? "page") !== "page" || composeLocator(r)) return item;
     if (this.meta.note) item.locator = `${vol}:${r.locator}`;

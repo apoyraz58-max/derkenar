@@ -405,3 +405,15 @@ describe("APA ve Chicago: İSNAD kuralları karışmaz", () => {
     expect(o.note + o.bib).not.toMatch(/a\.mlf\.|b\.y\.|y\.y\.|thk\./);
   });
 });
+
+describe("ön ek: bk., krş.", () => {
+  it("dipnot başında büyük harfle (Bk.), sonraki eserde küçük (krş.)", () => {
+    const a: Item = { ...items[0]!, key: "PREF0001", itemType: "book", fields: { title: "el-Mustasfâ", place: "Beyrut", publisher: "Dâru’l-Kütübi’l-İlmiyye", date: "1993" }, creators: [{ creatorType: "author", lastName: "Gazzâlî", firstName: "Ebû Hâmid" }], notes: [], tags: [], collections: [], relations: [] };
+    const b: Item = { ...a, key: "PREF0002", fields: { ...a.fields, title: "el-Mahsûl" }, creators: [{ creatorType: "author", lastName: "Râzî", firstName: "Fahreddin" }] };
+    const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales);
+    const st = emptyState();
+    putCitation(st, "x", [{ id: a.key, locator: "4", prefix: "bk." }, { id: b.key, locator: "9", prefix: "krş." }], { [a.key]: a, [b.key]: b });
+    const out = htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!);
+    expect(out).toMatch(/^Bk\. Ebû Hâmid Gazzâlî, el-Mustasfâ .*; krş\. Fahreddin Râzî, el-Mahsûl/);
+  });
+});

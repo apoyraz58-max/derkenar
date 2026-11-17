@@ -129,7 +129,24 @@ export function renderBasket(): void {
         ),
         locatorRow(ref, citeMode(w), { label, vol, loc, showVolume, set, enter }),
         recordVolume && showVolume && citeMode(w) === "normal" ? h("p", { class: "muted small" }, ref.volume ? `Atıftaki cilt (${ref.volume}) kullanılır; kayıttaki cilt (${recordVolume}) bu eserin atıflarında yazılmaz.` : `Kayıtta Cilt: ${recordVolume}. Cilt kutusu boş kalırsa atıfta "${recordVolume}/sayfa" yazılır.`) : null,
-        h("details", {}, h("summary", { class: "muted" }, "Ön ek, arka ek, yazar"), h("div", { class: "b-extra" }, prefix, suffix), h("div", { class: "b-flags" }, h("label", {}, hide, " Yazarı gizle"))),
+        h(
+          "div",
+          { class: "chips prefix-chips" },
+          ...["bk.", "krş.", "ayrıca bk.", "geniş bilgi için bk."].map((p) =>
+            h("button", {
+              type: "button",
+              class: (ref.prefix ?? "").trim() === p ? "chip on" : "chip",
+              title: `Ön ek: ${p}`,
+              onclick: () => {
+                const next = (ref.prefix ?? "").trim() === p ? "" : p;
+                set("prefix", next);
+                prefix.value = next;
+                renderBasket();
+              },
+            }, p),
+          ),
+        ),
+        h("details", { open: Boolean(ref.prefix && !["bk.", "krş.", "ayrıca bk.", "geniş bilgi için bk."].includes(ref.prefix.trim())) || Boolean(ref.suffix) || Boolean(ref["suppress-author"]) }, h("summary", { class: "muted" }, "Ön ek, arka ek, yazar"), h("div", { class: "b-extra" }, prefix, suffix), h("div", { class: "b-flags" }, h("label", {}, hide, " Yazarı gizle"))),
       ),
     );
   });
