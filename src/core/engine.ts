@@ -101,7 +101,7 @@ export class Renderer {
    * (Chicago); an in-text style "Cilt 1, s. 45" (APA).
    */
   private citeItem(r: CiteRef, first = false): Record<string, unknown> {
-    const item = toCiteItem(r);
+    const item = toCiteItem(r, this.lang);
     // A footnote starts a sentence: "Bk. Gazzâlî, …" (the user types "bk.").
     if (first && this.meta.note && typeof item.prefix === "string") item.prefix = item.prefix.replace(/^(\s*)(\p{Ll})/u, (_, sp: string, c: string) => sp + c.toLocaleUpperCase("tr"));
     const vol = r.volume?.trim();
@@ -161,9 +161,9 @@ export function stripArticle(html: string): string {
   return html.replace(/\s(?:[ae][lrsztdnş]|eş|ed|el)-(?=\.)/gu, "");
 }
 
-function toCiteItem(r: CiteRef): Record<string, unknown> {
+function toCiteItem(r: CiteRef, lang = "tr-TR"): Record<string, unknown> {
   const item: Record<string, unknown> = { id: r.id };
-  const special = composeLocator(r);
+  const special = composeLocator(r, lang);
   if (special) {
     if (special.locator) item.locator = special.locator;
     if (special.label) item.label = special.label;

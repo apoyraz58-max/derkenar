@@ -2,7 +2,7 @@
  * İSNAD citation systems that are not "cilt/sayfa": hadith collections cited
  * by kitâb and bâb or hadith number, dictionaries cited by madde.
  */
-import { SURES } from "./scripture.js";
+import { BIBLE_BOOKS, SURES, SURES_EN } from "./scripture.js";
 import { fold } from "./search.js";
 import type { CiteRef } from "./types.js";
 import type { Item } from "./zotero.js";
@@ -45,17 +45,22 @@ export function citeMode(item: Item | undefined): CiteMode {
  * Hadith kitâb/bâb uses CSL's "book" label: the İSNAD style then drops the
  * work's title in later notes ("Buhârî, “Menâḳıb”, 24").
  */
-export function composeLocator(r: CiteRef): { locator?: string; label?: string } | null {
+export function composeLocator(r: CiteRef, lang = "tr-TR"): { locator?: string; label?: string } | null {
   // Kur’ân and the Bible: CSL "verse" — the İSNAD style then prints only the place in later notes ("el-Enfâl 8/6.").
   if (r.sure) {
     const s = SURES.find(([n]) => String(n) === r.sure);
     const ayet = r.ayet?.trim();
-    return { locator: `${s ? s[2] : r.sure} ${s ? s[0] : ""}${ayet ? `/${ayet}` : ""}`.replace(/\s+/g, " ").replace(" /", "/").trim(), label: "verse" };
+    // A work written in English uses the English names of the same İSNAD table ("al-Baqara 2/4").
+    const name = s ? (/^en/.test(lang) ? SURES_EN[s[0]] ?? s[2] : s[2]) : r.sure;
+    return { locator: `${name} ${s ? s[0] : ""}${ayet ? `/${ayet}` : ""}`.replace(/\s+/g, " ").replace(" /", "/").trim(), label: "verse" };
   }
   if (r.kitap?.trim()) {
     const bab = r.bab?.trim();
     const cumle = r.cumle?.trim();
-    return { locator: `${r.kitap.trim()}${bab ?? ""}${cumle ? `:${cumle}` : ""}`, label: "verse" };
+    // English works: the English abbreviation of the same table ("Gen.1:12" for "Yar.1:12").
+    const book = BIBLE_BOOKS.find((b) => b[1] === r.kitap!.trim());
+    const abbr = book && /^en/.test(lang) ? book[3] : r.kitap.trim();
+    return { locator: `${abbr}${bab ?? ""}${cumle ? `:${cumle}` : ""}`, label: "verse" };
   }
   const vp = (vol?: string, page?: string) => (vol && page ? `${vol}/${page}` : (page ?? vol ?? ""));
   if (r.kitab?.trim()) {

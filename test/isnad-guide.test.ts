@@ -436,3 +436,22 @@ describe("soyadına yazılmış harf-i tarif (Zotero alışkanlığı)", () => {
     expect(run("isnad-metinici")[1]).toBe("(Gazzâlî, 1982, 5)");
   });
 });
+
+describe("Kur’ân atfı İngilizce çalışmada (s. 80-82)", () => {
+  it("dil İngilizce: al-Baqara 2/4; Türkçe: el-Bakara 2/4", () => {
+    const q: Item = { ...items[0]!, key: "KURAN001", itemType: "book", fields: { title: "Kur’ân-ı Kerîm Meâli", place: "Ankara", publisher: "Diyanet İşleri Başkanlığı Yayınları", date: "2009" }, creators: [{ creatorType: "translator", lastName: "Altuntaş", firstName: "Halil" }], notes: [], tags: [], collections: [], relations: [] };
+    const out = (lang: string) => {
+      const r = new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", styles), "utf8"), locales, lang);
+      const st = emptyState();
+      putCitation(st, "x", [{ id: q.key, sure: "2", ayet: "4" }], { [q.key]: q });
+      return htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!);
+    };
+    expect(out("tr-TR")).toMatch(/, el-Bakara 2\/4\.$/);
+    expect(out("en-US")).toMatch(/, al-Baqara 2\/4\.$/);
+  });
+  it("Kitâb-ı Mukaddes: Yar.1:12 / Gen.1:12", async () => {
+    const { composeLocator } = await import("../src/core/isnadmodes.js");
+    expect(composeLocator({ id: "x", kitap: "Yar.", bab: "1", cumle: "12" }, "tr-TR")?.locator).toBe("Yar.1:12");
+    expect(composeLocator({ id: "x", kitap: "Yar.", bab: "1", cumle: "12" }, "en-US")?.locator).toBe("Gen.1:12");
+  });
+});
