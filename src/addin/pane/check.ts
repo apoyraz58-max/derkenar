@@ -7,7 +7,8 @@ import { type Issue, LEVEL_LABEL, applyFix, apostropheReport, checkItem, AUTO } 
 import { nameVariants, unifyName } from "../../core/names.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
-import { citedKeys, refresh } from "./document.js";
+import { checkCitations } from "../../core/citecheck.js";
+import { citedKeys, currentOrder, refresh } from "./document.js";
 import { $, S, doc, h, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
 import { inCurrentView } from "./library.js";
@@ -95,6 +96,30 @@ function render(): void {
         ),
       ),
     );
+  }
+  // The citations themselves (this document only): pages missing, a work twice, text edited by hand.
+  if ($<HTMLSelectElement>("chk-scope").value === "document") {
+    const withInfo = $<HTMLInputElement>("chk-info").checked;
+    const cites = checkCitations(currentOrder(), doc()).filter((c) => withInfo || c.level !== "info");
+    if (cites.length) {
+      list.prepend(
+        h(
+          "li",
+          {},
+          h("span", { class: "r-title" }, `Atıflar (${cites.length})`),
+          ...cites.map((c) =>
+            h(
+              "div",
+              { class: `issue ${c.level}` },
+              h("span", { class: "lvl" }, c.level === "warning" ? "Uyarı" : "Bilgi"),
+              ` ${c.noteIndex ? `dn. ${c.noteIndex}` : `${c.position}. atıf`}: ${c.message} `,
+              h("button", { type: "button", class: "link", onclick: () => void run("Atıf seçiliyor", () => word.selectCitation(c.citationId)) }, "Atıfa git"),
+            ),
+          ),
+        ),
+      );
+      $("chk-summary").textContent += ` Atıflarda ${cites.filter((c) => c.level === "warning").length} uyarı.`;
+    }
   }
   if (!byItem.size && !list.children.length) list.append(h("li", { class: "muted" }, lastItems.length ? "İSNAD açısından sorun bulunmadı." : "Denetlenecek kaynak yok."));
 }

@@ -605,3 +605,20 @@ describe("eklerken yineleme: yapıştırılan aynı künye", () => {
     expect(existingCopy(b, [a])?.key, JSON.stringify([a.key, b.key, a.fields, a.creators])).toBe(a.key);
   });
 });
+
+describe("atıf denetimi", async () => {
+  const { checkCitations } = await import("../src/core/citecheck.js");
+  it("sayfasız kitap atıfı, aynı eser iki kez, elle değiştirilmiş metin; web sayfası sayfa istemez", () => {
+    const st = emptyState();
+    const book = { ...emptyItem("book", "m"), key: "BOOK1234", fields: { title: "Kitap" } };
+    const web = { ...emptyItem("webpage", "m"), key: "WEB12345", fields: { title: "Site" } };
+    const W = { [book.key]: book, [web.key]: web };
+    putCitation(st, "a", [{ id: book.key }], W);
+    putCitation(st, "b", [{ id: book.key, locator: "4" }, { id: book.key, locator: "4" }], W);
+    putCitation(st, "c", [{ id: web.key }], W);
+    putCitation(st, "d", [{ id: book.key, locator: "9" }], W);
+    st.citations.d!.override = "elle";
+    const out = checkCitations([{ id: "a", noteIndex: 1 }, { id: "b", noteIndex: 2 }, { id: "c", noteIndex: 3 }, { id: "d", noteIndex: 4 }], st);
+    expect(out.map((i) => `${i.noteIndex}:${i.code}`)).toEqual(["1:no-place", "2:repeated", "4:hand-edited"]);
+  });
+});

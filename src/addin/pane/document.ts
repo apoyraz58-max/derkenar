@@ -147,6 +147,11 @@ export function renderDocList(): void {
   if (!order.length) ol.append(h("li", { class: "muted" }, "Henüz atıf yok."));
 }
 
+/** Citations in document order, as last read. */
+export function currentOrder(): readonly FoundCitation[] {
+  return order;
+}
+
 export function citedKeys(): Set<string> {
   const d = doc();
   const ids = order.length ? order.map((o) => o.id) : Object.keys(d.citations);
