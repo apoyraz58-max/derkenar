@@ -4,7 +4,7 @@
  * related items, collections. Saves as you type, like Zotero; a cited work's
  * citations in the document follow at once.
  */
-import { LEVEL_LABEL, applyFix, checkItem } from "../../core/isnad.js";
+import { AUTO, LEVEL_LABEL, applyFix, checkItem } from "../../core/isnad.js";
 import { collectionTree, tagCounts } from "../../core/library.js";
 import {
   type Attachment,
@@ -477,6 +477,7 @@ function renderIssues(): void {
   box.replaceChildren();
   if (!item) return;
   const issues = checkItem(item).filter((i) => i.level !== "info");
+  renderReview();
   if (!issues.length) return;
   box.append(
     h(
@@ -494,6 +495,55 @@ function renderIssues(): void {
       ),
     ),
   );
+}
+
+// ---------------------------------------------------------------- Sırayla düzelt
+
+function renderReview(): void {
+  const r = S.review;
+  const at = r && current ? r.keys.indexOf(current.key) : -1;
+  $("ed-review").hidden = at < 0;
+  if (at < 0 || !r) return;
+  r.at = at;
+  const left = checkItem(current!).filter((i) => i.level !== "info").length;
+  $("ed-review-pos").textContent = `Kayıt ${at + 1}/${r.keys.length}${left ? ` · ${left} uyarı` : " · sorun kalmadı ✓"}`;
+  $<HTMLButtonElement>("ed-review-prev").disabled = at === 0;
+  $<HTMLButtonElement>("ed-review-fix").disabled = !checkItem(current!).some((i) => i.fix && AUTO.has(i.code));
+  $("ed-review-next").textContent = at === r.keys.length - 1 ? "Bitir ✓" : "Sonraki →";
+}
+
+/** Opens the record `step` away in the queue; records that have no warnings left are passed by. */
+async function reviewGo(step: number): Promise<void> {
+  const r = S.review;
+  if (!r) return;
+  await save();
+  let i = r.at + step;
+  while (i >= 0 && i < r.keys.length) {
+    const it = S.byKey.get(r.keys[i]!);
+    if (it && !it.deleted && checkItem(it).some((x) => x.level !== "info")) break;
+    i += step;
+  }
+  if (i < 0 || i >= r.keys.length) {
+    S.review = null;
+    $("ed-review").hidden = true;
+    setMessage("Sıradaki bütün kayıtlar gözden geçirildi.", "success");
+    showView("denetim");
+    return;
+  }
+  r.at = i;
+  openEditor(r.keys[i]!);
+}
+
+/** The mechanical fixes of this record (title case, publisher, place, year …) at once. */
+function reviewFix(): void {
+  if (!current) return;
+  let item = current;
+  for (let n = 0; n < 40; n++) {
+    const issue = checkItem(item).find((i) => i.fix && AUTO.has(i.code));
+    if (!issue) break;
+    item = applyFix(item, issue.fix!);
+  }
+  update(() => item, true);
 }
 
 function renderMeta(): void {
@@ -537,6 +587,14 @@ export function wireEditor(): void {
   };
   $("ed-note-add").onclick = () => update((it) => ({ ...it, notes: [...it.notes, { key: newKey(), note: "", dateModified: now() }] }), true);
   $("ed-same").onclick = () => void run("Yeni kayıt", samePublication);
+  $("ed-review-prev").onclick = () => void run("Açılıyor", () => reviewGo(-1));
+  $("ed-review-next").onclick = () => void run("Açılıyor", () => reviewGo(1));
+  $("ed-review-fix").onclick = reviewFix;
+  $("ed-review-end").onclick = () => {
+    S.review = null;
+    $("ed-review").hidden = true;
+    showView("denetim");
+  };
   $("ed-duplicate").onclick = () =>
     void run("Çoğaltılıyor", async () => {
       if (!current) return;

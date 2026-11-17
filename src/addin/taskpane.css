@@ -257,3 +257,6 @@ details.section-like summary { cursor: pointer; font-weight: 600; font-size: 13p
 .ed-preview { display: grid; gap: 4px; padding: 8px 10px; }
 .ed-preview p { margin: 0; font-family: "Times New Roman", Georgia, serif; font-size: 13.5px; line-height: 1.35; }
 .ed-preview p:empty::before { content: "—"; color: var(--muted); }
+
+/* Sırayla düzelt */
+.review-bar { position: sticky; top: 38px; z-index: 15; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; }

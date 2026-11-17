@@ -45,6 +45,15 @@ function render(): void {
   const marks = apostropheReport(lastItems);
   $("chk-summary").textContent = `${lastItems.length} kaynak denetlendi: ${errors} hata, ${warnings} uyarı.` + (marks.length > 1 ? ` Başlıklarda farklı kesme/ayın işaretleri kullanılmış: ${marks.map((m) => `${m.mark} (${m.count})`).join(", ")}.` : "");
   $("chk-fixall").hidden = safe.length === 0;
+  const reviewKeys = [...byItem.keys()].filter((k) => S.byKey.has(k) && byItem.get(k)!.some((i) => i.level !== "info"));
+  $("chk-review").hidden = reviewKeys.length === 0;
+  $("chk-review").textContent = `Sırayla düzelt (${reviewKeys.length} kayıt)`;
+  $("chk-review").onclick = () => {
+    // Errors first, then warnings.
+    const rank = (k: string) => (byItem.get(k)!.some((i) => i.level === "error") ? 0 : 1);
+    S.review = { keys: [...reviewKeys].sort((a, b) => rank(a) - rank(b)), at: 0 };
+    openEditor(S.review.keys[0]!);
+  };
   $("chk-fixall").textContent = `Önerilen düzeltmeleri uygula (${safe.length})`;
   const list = $("chk-list");
   list.replaceChildren();

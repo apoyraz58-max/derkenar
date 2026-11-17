@@ -642,6 +642,23 @@ try {
   if ((await page.inputValue('#basket li:first-child [data-f="locator"]')) !== "50") fail("template lost the page");
   await page.click("#clear-basket");
 
+  // 9e2. Sırayla düzelt: the records with warnings one after another in the editor.
+  await page.click("#tab-denetim");
+  await page.selectOption("#chk-scope", "library");
+  await page.click("#chk-run");
+  await page.waitForSelector("#chk-review:not([hidden])");
+  await page.click("#chk-review");
+  await page.waitForSelector("#ed-review:not([hidden])");
+  if (!/^Kayıt 1\/\d+/.test(await page.textContent("#ed-review-pos"))) fail("review position");
+  if (!(await page.isDisabled("#ed-review-fix"))) {
+    await page.click("#ed-review-fix");
+    await page.waitForTimeout(300);
+  }
+  await page.click("#ed-review-next");
+  await page.waitForTimeout(300);
+  await page.click("#ed-review-end");
+  if (!(await page.isVisible("#view-denetim"))) fail("review end returns to Denetim");
+
   // 9f. A style loaded from a .csl file; a dependent style is refused; back to İSNAD.
   await page.click("#tab-belge");
   await page.setInputFiles("#csl-file", { name: "nature-communications.csl", mimeType: "application/xml", buffer: await readFile(new URL("../test/fixtures/csl/nature-communications.csl", import.meta.url)) });

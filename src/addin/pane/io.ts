@@ -69,7 +69,7 @@ function pendingFixes(items: readonly Item[]): string {
     n += k;
     if (k) works++;
   }
-  return n ? ` İSNAD: ${works} kaynakta ${n} düzeltme öneriliyor (başlık harfleri, yayınevi, yer, yıl, kısa başlık …); Denetim → Bütün kütüphane → "Önerilen düzeltmeleri uygula".` : "";
+  return n ? ` İSNAD: ${works} kaynakta ${n} düzeltme öneriliyor (başlık harfleri, yayınevi, yer, yıl, kısa başlık …); Denetim → Bütün kütüphane → "Önerilen düzeltmeleri uygula", kalanlar için "Sırayla düzelt".` : "";
 }
 
 /**

@@ -30,6 +30,8 @@ export const S = {
   selected: new Set<string>(),
   /** Library view value ("all", "c:KEY", "trash" …). */
   libView: "all",
+  /** "Sırayla düzelt": the records to go through, and where we are. */
+  review: null as { keys: string[]; at: number } | null,
 };
 
 export const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;

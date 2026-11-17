@@ -152,6 +152,14 @@
           </div>
         </details>
       </div>
+      <div id="ed-review" class="review-bar" hidden>
+        <span id="ed-review-pos" class="small"></span>
+        <span class="grow"></span>
+        <button id="ed-review-prev" type="button" class="link">← Önceki</button>
+        <button id="ed-review-fix" type="button">Önerilenleri uygula</button>
+        <button id="ed-review-next" type="button" class="primary">Sonraki →</button>
+        <button id="ed-review-end" type="button" class="link">Bitir</button>
+      </div>
       <p id="ed-deleted" class="message warning" hidden>Bu kaynak çöp kutusunda.</p>
       <section id="ed-preview" class="ed-preview" aria-live="polite">
         <div><span class="muted small">Dipnot</span><p id="ed-prev-note"></p></div>
@@ -299,6 +307,7 @@
       <div class="actions">
         <button id="chk-run" type="button" class="primary">İSNAD denetimi yap</button>
         <button id="chk-fixall" type="button" hidden>Önerilen düzeltmeleri uygula</button>
+        <button id="chk-review" type="button" hidden title="Sorunlu kayıtları düzenleyicide sırayla açar">Sırayla düzelt</button>
       </div>
       <p id="chk-summary" class="muted"></p>
       <ol id="chk-list" class="check-list"></ol>
@@ -437,7 +446,7 @@
           <li><strong>Mevzuat:</strong> Madde için atıf yerinde <b>Madde (md.)</b> ya da aramada <code>fsek md. 35/4</code>.</li>
           <li><strong>Eklerken düzeltme:</strong> DOI, ISBN ya da yapıştırılan künye eklenirken kitap adının büyük-küçük harfi, kişi adları, yayınevinin tam adı, şehir, yıl, eksik Türkçe harfler ve kısa başlık İSNAD'a göre düzeltilir; Arapça baskıda yalnız hicrî yıl varsa milâdî karşılığı, klasik müellifte eksik harf-i tarif (el-, et-, es-…) önerilir.</li>
           <li><strong>Eksik künye:</strong> Basılı eserde yer yoksa b.y., yayıncı yoksa y.y., tarih yoksa ts. kendiliğinden eklenir.</li>
-          <li><strong>Denetim:</strong> <strong>Belgeyi Denetle</strong> İSNAD yazım kurallarına aykırı alanları gösterir; düzeltilebilenleri tek tıkla düzeltir.</li>
+          <li><strong>Denetim:</strong> <strong>Belgeyi Denetle</strong> İSNAD yazım kurallarına aykırı alanları gösterir; düzeltilebilenleri tek tıkla düzeltir. Dışarıdan alınmış bir kütüphaneyi temizlemek için <strong>Sırayla düzelt</strong>: sorunlu kayıtlar düzenleyicide birer birer açılır, önizleme ve uyarılarla.</li>
         </ul>
       </section>
       <section>
