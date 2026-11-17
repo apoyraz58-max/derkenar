@@ -86,6 +86,8 @@ export interface DocState {
   keepLibrary?: boolean;
   /** Heading put above a new bibliography ("Kaynakça"); empty string: no heading. */
   bibTitle?: string;
+  /** Citations changed by hand in Word (id → their text), found by the last refresh. */
+  edited?: Record<string, string>;
   /** Bibliography divided by kind (Yazma Eserler, Kitaplar, Makaleler …). */
   bibSections?: boolean;
 }

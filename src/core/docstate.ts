@@ -6,6 +6,7 @@
 import { type Bibliography, type OrderedCitation, Renderer } from "./engine.js";
 import type { CiteRef, CslItem, DocState, StoredCitation } from "./types.js";
 import { sameAuthors } from "./names.js";
+import { htmlToText } from "./html.js";
 import { fold } from "./search.js";
 import { type Item, toCsl } from "./zotero.js";
 
@@ -66,6 +67,8 @@ export interface RefreshPlan {
   readonly bibliographyChanged: boolean;
   /** Works stored in the document that no citation in the text cites. */
   readonly unused: string[];
+  /** Citations whose text was changed by hand in Word (id → that text): left as they are. */
+  readonly edited: Map<string, string>;
 }
 
 export function planRefresh(state: DocState, found: readonly FoundCitation[], renderer: Renderer, force = false): RefreshPlan {
@@ -90,11 +93,19 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
   renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items)), renderer.meta.isnad));
   const html = renderer.renderCitations(ordered);
   const updates = new Map<string, string>();
+  const edited = new Map<string, string>();
   const texts = new Map(found.map((f) => [f.id, f.text]));
   for (const [id, h] of html) {
     const c = state.citations[id] as StoredCitation;
     const out = c.override ?? h;
-    if (force || state.rendered[id] !== out || (texts.get(id) ?? "").trim() === "") updates.set(id, out);
+    const inWord = texts.get(id) ?? "";
+    // Text changed by hand in Word since Derkenar wrote it: kept (Zotero asks the same).
+    const before = state.rendered[id];
+    if (before && !c.override && inWord.trim() && sameText(htmlToText(before)) !== sameText(inWord)) {
+      edited.set(id, inWord);
+      continue;
+    }
+    if (force || before !== out || inWord.trim() === "") updates.set(id, out);
   }
   // Data of citations no longer in the text stays (undo can bring them back);
   // unused lists the works nothing in the text cites now.
@@ -104,11 +115,12 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
   const bibliography = raw && state.bibSections ? withSections(raw, state.items) : raw;
   const bibHtml = bibliography?.entries.map((e) => (e.heading ? `<h>${e.html}</h>` : e.html)).join("") ?? "";
   const bibliographyChanged = force || bibHtml !== (state.bibliographyHtml ?? "");
-  return { updates, orphans, duplicates, bibliography, bibliographyChanged, unused };
+  return { updates, orphans, duplicates, bibliography, bibliographyChanged, unused, edited };
 }
 
 export function commitPlan(state: DocState, plan: RefreshPlan): void {
   for (const [id, html] of plan.updates) state.rendered[id] = html;
+  state.edited = Object.fromEntries(plan.edited);
   state.bibliographyHtml = plan.bibliography?.entries.map((e) => (e.heading ? `<h>${e.html}</h>` : e.html)).join("") ?? "";
 }
 
@@ -265,4 +277,27 @@ export function withSections(bib: Bibliography, items: Record<string, Item>): Bi
     if (list?.length) entries.push({ ids: [], html: title, heading: true }, ...list);
   }
   return { ...bib, entries };
+}
+
+/** Text compared without regard to spaces (Word may give non-breaking ones back). */
+function sameText(s: string): string {
+  return s.normalize("NFC").replace(/[\s\u00a0\u202f]+/g, "");
+}
+
+/** "Elle yazılanı koru": the hand-written text becomes the citation's own text. */
+export function keepEdited(state: DocState, id: string): void {
+  const text = state.edited?.[id];
+  const c = state.citations[id];
+  if (text === undefined || !c) return;
+  c.override = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  state.rendered[id] = c.override;
+  delete state.edited![id];
+}
+
+/** "Derkenar'ın metnine dön": the next refresh writes the generated text again. */
+export function revertEdited(state: DocState, id: string): void {
+  const c = state.citations[id];
+  if (c) delete c.override;
+  delete state.rendered[id];
+  if (state.edited) delete state.edited[id];
 }

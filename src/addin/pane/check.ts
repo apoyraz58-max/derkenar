@@ -8,6 +8,7 @@ import { nameVariants, unifyName } from "../../core/names.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { checkCitations } from "../../core/citecheck.js";
+import { keepEdited, revertEdited } from "../../core/docstate.js";
 import { citedKeys, currentOrder, refresh } from "./document.js";
 import { $, S, doc, h, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
@@ -114,6 +115,16 @@ function render(): void {
               h("span", { class: "lvl" }, c.level === "warning" ? "Uyarı" : "Bilgi"),
               ` ${c.noteIndex ? `dn. ${c.noteIndex}` : `${c.position}. atıf`}: ${c.message} `,
               h("button", { type: "button", class: "link", onclick: () => void run("Atıf seçiliyor", () => word.selectCitation(c.citationId)) }, "Atıfa git"),
+              ...(c.code === "edited-in-word"
+                ? [
+                    " · ",
+                    h("button", { type: "button", class: "link", onclick: () => void run("Kaydediliyor", () => editedChoice(c.citationId, true)) }, "Elle yazılanı koru"),
+                    " · ",
+                    h("button", { type: "button", class: "link", onclick: () => void run("Yenileniyor", () => editedChoice(c.citationId, false)) }, "Derkenar'ın metnine dön"),
+                  ]
+                : c.code === "hand-edited"
+                  ? [" · ", h("button", { type: "button", class: "link", onclick: () => void run("Yenileniyor", () => editedChoice(c.citationId, false)) }, "Derkenar'ın metnine dön")]
+                  : []),
             ),
           ),
         ),
@@ -122,6 +133,17 @@ function render(): void {
     }
   }
   if (!byItem.size && !list.children.length) list.append(h("li", { class: "muted" }, lastItems.length ? "İSNAD açısından sorun bulunmadı." : "Denetlenecek kaynak yok."));
+}
+
+/** A citation changed by hand in Word: keep that text, or let Derkenar write its own again. */
+async function editedChoice(id: string, keep: boolean): Promise<void> {
+  const d = doc();
+  if (keep) keepEdited(d, id);
+  else revertEdited(d, id);
+  await word.saveState(d);
+  await refresh(false, true);
+  setMessage(keep ? "Elle yazılan metin korunacak; bu atıf artık güncellenmez." : "Atıf Derkenar'ın metnine döndü; bundan sonra kendiliğinden güncellenir.", "success");
+  runCheck();
 }
 
 async function fix(issues: Issue[]): Promise<void> {

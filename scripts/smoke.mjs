@@ -462,6 +462,20 @@ try {
   const stored = JSON.parse(await page.evaluate(() => window.__doc.settings.derkenar));
   if (stored.style !== "isnad-dipnotlu" || !stored.items[Object.keys(stored.items)[0]].itemType) fail("document state");
   if (!(await page.evaluate(() => window.__doc.settings["Office.AutoShowTaskpaneWithDocument"]))) fail("auto-open not set");
+  if (Object.keys(stored.edited ?? {}).length) fail(`citations wrongly taken as edited by hand: ${JSON.stringify(stored.edited)}`);
+
+  // 8b. A citation typed over in Word: kept, reported in Denetim, reverted on request.
+  await page.evaluate(() => { const fn = window.__doc.flow.filter((x) => x.fn)[1].fn; fn.controls[0].runs = [{ text: "Elle yazılmış atıf.", font: {} }]; });
+  await page.click("#tab-belge");
+  await page.click("#refresh");
+  await page.waitForSelector("#message:has-text('elle değiştirilmiş')");
+  if (!(await notes())[1].startsWith("Elle yazılmış")) fail("hand-edited citation overwritten");
+  await page.click("#tab-denetim");
+  await page.selectOption("#chk-scope", "document");
+  await page.click("#chk-run");
+  await page.locator("#chk-list button", { hasText: "metnine dön" }).first().click();
+  await page.waitForSelector("#message:has-text('metnine döndü')");
+  if ((await notes())[1].startsWith("Elle yazılmış")) fail("revert did not rewrite the citation");
 
   // 9. İSNAD dipnotlu → metin içi: citations alone in a footnote move into the text; back again.
   await page.click("#tab-belge");

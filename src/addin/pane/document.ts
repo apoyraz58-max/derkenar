@@ -60,8 +60,10 @@ export function refresh(force = false, quiet = false): Promise<void> {
     const secs = ((performance.now() - started) / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 2 });
     $("refresh-stat").textContent = `${result.citations} atıf ${secs} sn'de denetlendi; ${result.written} tanesi yeniden yazıldı. ${watcherInfo()}`.trim();
     renderDocList();
+    const edited = Object.keys(d.edited ?? {}).length;
+    if (edited && !quiet) $("refresh-stat").textContent += ` ${edited} atıf Word'de elle değiştirildiği için güncellenmedi (Denetim'de seçin).`;
     if (!quiet) {
-      const warn = orphans.size ? ` ${orphans.size} atıfın verisi bu belgede yok (başka belgeden kopyalanmış olabilir).` : "";
+      const warn = (orphans.size ? ` ${orphans.size} atıfın verisi bu belgede yok (başka belgeden kopyalanmış olabilir).` : "") + (edited ? ` ${edited} atıf Word'de elle değiştirilmiş; korunuyor (Denetim → Bu belgede atıf yapılan kaynaklar).` : "");
       setMessage(`Belge güncellendi.${warn}`, warn ? "warning" : "success");
     }
   });

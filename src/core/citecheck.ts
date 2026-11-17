@@ -12,7 +12,7 @@ export interface CitationIssue {
   /** Position in the document (1 …), for in-text citations. */
   readonly position: number;
   readonly level: "warning" | "info";
-  readonly code: "no-place" | "repeated" | "hand-edited";
+  readonly code: "no-place" | "repeated" | "hand-edited" | "edited-in-word";
   readonly message: string;
 }
 
@@ -29,7 +29,9 @@ export function checkCitations(order: readonly { id: string; noteIndex: number }
     const c = state.citations[f.id];
     if (!c) return;
     const at = { citationId: f.id, noteIndex: f.noteIndex, position: i + 1 };
-    if (c.override) out.push({ ...at, level: "info", code: "hand-edited", message: "Atıf metni elle değiştirilmiş; Derkenar bu atıfı güncellemiyor." });
+    if (c.override) out.push({ ...at, level: "info", code: "hand-edited", message: "Atıf metni elle yazılmış hâliyle korunuyor; Derkenar bu atıfı güncellemiyor." });
+    const text = state.edited?.[f.id];
+    if (text !== undefined) out.push({ ...at, level: "warning", code: "edited-in-word", message: `Atıf Word'de elle değiştirilmiş ("${text.length > 80 ? text.slice(0, 80) + "…" : text}"). Derkenar bu atıfı şimdilik güncellemiyor.` });
     const seen = new Map<string, CiteRef>();
     for (const r of c.items) {
       const item = state.items[r.id];

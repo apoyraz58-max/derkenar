@@ -106,13 +106,31 @@ describe("İSNAD rendering", () => {
     commitPlan(st, plan);
     expect(htmlToText(st.rendered.a!)).toContain("Ahmet Yılmaz, “Kelâm");
     putCitation(st, "b", [{ id: "YIL", locator: "46" }], {});
-    plan = planRefresh(st, [{ id: "b", noteIndex: 1, text: "" }, { id: "a", noteIndex: 2, text: "x" }], r);
+    plan = planRefresh(st, [{ id: "b", noteIndex: 1, text: "" }, { id: "a", noteIndex: 2, text: htmlToText(st.rendered.a!) }], r);
     expect(htmlToText(plan.updates.get("b")!)).toContain("Ahmet Yılmaz, “Kelâm");
     expect(htmlToText(plan.updates.get("a")!)).toBe("Yılmaz, “Kelâm ilminin tarihî gelişimi”, 50.");
     commitPlan(st, plan);
     // Deleting the first one: the remaining one is full again.
-    plan = planRefresh(st, [{ id: "a", noteIndex: 1, text: "x" }], r);
+    plan = planRefresh(st, [{ id: "a", noteIndex: 1, text: htmlToText(st.rendered.a!) }], r);
     expect(htmlToText(plan.updates.get("a")!)).toContain("Ahmet Yılmaz, “Kelâm");
+  });
+  it("a citation changed by hand in Word is kept; keep or revert", async () => {
+    const { keepEdited, revertEdited } = await import("../src/core/docstate.js");
+    const r = isnad();
+    const st = emptyState();
+    putCitation(st, "a", [{ id: "YIL", locator: "50" }], { YIL: YILMAZ });
+    commitPlan(st, planRefresh(st, [{ id: "a", noteIndex: 1, text: "" }], r));
+    putCitation(st, "b", [{ id: "YIL", locator: "46" }], {});
+    // The user typed over citation a; then a citation before it would shorten it.
+    let plan = planRefresh(st, [{ id: "b", noteIndex: 1, text: "" }, { id: "a", noteIndex: 2, text: "Yılmaz, elle yazdım, 50." }], r);
+    expect(plan.updates.has("a")).toBe(false);
+    expect(plan.edited.get("a")).toBe("Yılmaz, elle yazdım, 50.");
+    commitPlan(st, plan);
+    keepEdited(st, "a");
+    expect(htmlToText(st.citations.a!.override!)).toBe("Yılmaz, elle yazdım, 50.");
+    revertEdited(st, "a");
+    plan = planRefresh(st, [{ id: "b", noteIndex: 1, text: htmlToText(st.rendered.b!) }, { id: "a", noteIndex: 2, text: "Yılmaz, elle yazdım, 50." }], r);
+    expect(htmlToText(plan.updates.get("a")!)).toBe("Yılmaz, “Kelâm ilminin tarihî gelişimi”, 50.");
   });
   it("cilt sayısı in the Cilt field: the citation's cilt wins, the check moves it", () => {
     const mahsul = item("MAH", "book", { title: "el-Maḥsûl", publisher: "Müʾessesetüʾr-Risâle", place: "Riyaḍ", date: "1997", volume: "6" }, [
