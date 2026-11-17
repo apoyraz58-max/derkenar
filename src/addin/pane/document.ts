@@ -9,7 +9,8 @@
  * pasted, or moved, the order changes and the citations are re-rendered: the
  * first citation of a work becomes the full form, later ones the short form.
  */
-import { type FoundCitation, commitPlan, newCitationId, planRefresh, signature, syncWorks } from "../../core/docstate.js";
+import { type FoundCitation, commitPlan, newCitationId, planRefresh, putCitation, signature, syncWorks } from "../../core/docstate.js";
+import type { CiteRef, CslItem } from "../../core/types.js";
 import { htmlToSegments, htmlToText } from "../../core/html.js";
 import { BUILTIN_STYLES } from "../../core/styles.js";
 import { type Item, creatorLine, now, titleOf } from "../../core/zotero.js";
@@ -159,6 +160,62 @@ export function citedKeys(): Set<string> {
   const d = doc();
   const ids = order.length ? order.map((o) => o.id) : Object.keys(d.citations);
   return new Set(ids.flatMap((id) => d.citations[id]?.items.map((r) => r.id) ?? []));
+}
+
+// ---------------------------------------------------------------- documents of another citation program
+
+/** Shows the conversion box when the document has citation fields of another program. */
+export async function checkForeign(): Promise<void> {
+  if (!word.fieldsSupported()) return;
+  try {
+    const { isZoteroFieldCode } = await import("../../core/zoterodoc.js");
+    const codes = (await serial(() => word.fieldCodes())).filter((f) => isZoteroFieldCode(f.code));
+    const cites = codes.filter((f) => /ZOTERO_ITEM/.test(f.code)).length;
+    $("foreign-box").hidden = !codes.length;
+    if (!codes.length) return;
+    $("foreign-info").textContent = `Bu belgede başka bir atıf programıyla eklenmiş ${cites} atıf${codes.length > cites ? " ve bir kaynakça" : ""} var. Derkenar onları güncelleyemez.`;
+  } catch {
+    /* fields cannot be read here */
+  }
+}
+
+async function convertForeign(): Promise<void> {
+  const { parseZoteroField } = await import("../../core/zoterodoc.js");
+  const { existingCopy } = await import("../../core/library.js");
+  const { fromCsl } = await import("../../core/zotero.js");
+  const d = doc();
+  const fresh = new Map<string, Item>();
+  let inNotes = 0;
+  let inText = 0;
+  const keyFor = (w: { key?: string; data: CslItem }): string => {
+    if (w.key && (S.byKey.has(w.key) || d.items[w.key] || fresh.has(w.key))) return w.key;
+    const candidate = fromCsl({ ...w.data }, "belge", w.key);
+    const old = existingCopy(candidate, [...S.items, ...fresh.values()]);
+    if (old) return old.key;
+    fresh.set(candidate.key, candidate);
+    return candidate.key;
+  };
+  const result = await serial(() =>
+    word.convertFields((code, inNote) => {
+      const f = parseZoteroField(code);
+      if (!f) return null;
+      if (f.kind === "bibliography") return { kind: "bibliography" };
+      const refs: CiteRef[] = f.works.map((w) => ({ ...w.ref, id: keyFor(w) }));
+      const works = Object.fromEntries(refs.map((r) => [r.id, S.byKey.get(r.id) ?? fresh.get(r.id) ?? d.items[r.id]!]));
+      const id = newCitationId();
+      putCitation(d, id, refs, works);
+      if (inNote) inNotes++;
+      else inText++;
+      return { kind: "citation", id, segments: [{ text: f.text || "…" }] };
+    }),
+  );
+  if (fresh.size) await putItems([...fresh.values()]);
+  await word.saveState(d);
+  await refresh(false, true);
+  $("foreign-box").hidden = true;
+  const r = await getRenderer();
+  const styleNote = r.meta.note && inText && !inNotes ? " Atıflar metin içindeydi; stili metin içi bir stile (İSNAD metin içi ya da APA) çevirmek isteyebilirsiniz." : !r.meta.note && inNotes ? " Atıflar dipnottaydı; dipnotlu bir stil seçmek isteyebilirsiniz." : "";
+  setMessage(`${result.converted} alan Derkenar'a çevrildi${result.bibliography ? " (kaynakça dahil)" : ""}; ${fresh.size} eser kütüphaneye eklendi.${result.failed ? ` ${result.failed} alan çevrilemedi, yerinde bırakıldı.` : ""}${styleNote}`, result.failed ? "warning" : "success");
 }
 
 // ---------------------------------------------------------------- Kaynakçayı düzenle
@@ -338,6 +395,7 @@ export function wireDocument(): void {
     });
   $("refresh").onclick = () => void run("Belge güncelleniyor", () => refresh(true));
   $<HTMLInputElement>("bib-add-q").oninput = searchUncited;
+  $("foreign-convert").onclick = () => void run("Atıflar çevriliyor", convertForeign);
   $("bib-edit").addEventListener("toggle", renderBibEdit);
   $("bibliography").onclick = () => void run("Kaynakça hazırlanıyor", bibliography);
   $("unlink").onclick = unlink;

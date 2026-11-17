@@ -698,3 +698,22 @@ describe("DİA web maddesi (kılavuz s. 97)", () => {
     expect(htmlToText(planRefresh(st, [{ id: "x", noteIndex: 1, text: "" }], r).updates.get("x")!)).toBe("M. Sait Özervarlı, “Gazzâlî”, TDV İslâm Ansiklopedisi (Erişim 17 Kasım 2026).");
   });
 });
+
+describe("Zotero ile yazılmış belge", async () => {
+  const { parseZoteroField } = await import("../src/core/zoterodoc.js");
+  const code = 'ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":"a1","properties":{"formattedCitation":"Gazzâlî, {\\\\i{}İhyâ}, 1/45.","plainCitation":"Gazzâlî, İhyâ, 1/45.","noteIndex":3},"citationItems":[{"id":12,"uris":["http://zotero.org/users/local/xyz/items/ABCD1234"],"itemData":{"id":12,"type":"book","title":"İhyâü ulûmi\\u2019d-dîn","author":[{"family":"Gazzâlî","given":"Ebû Hâmid Muhammed el-"}],"issued":{"date-parts":[["1982"]]},"publisher":"Dâru\\u2019l-Maʿrife","publisher-place":"Beyrut"},"locator":"1/45","label":"page","prefix":"bk."},{"id":13,"uris":["http://zotero.org/users/local/xyz/items/WXYZ5678"],"itemData":{"id":13,"type":"article-journal","title":"Bir \\"tırnaklı\\" makale {x}"},"locator":"12","label":"page","suppress-author":true}],"schema":"https://github.com/citation-style-language/schema/raw/master/csl-citation.json"}';
+  it("atıf: eserler, Zotero anahtarları, cilt/sayfa, ön ek", () => {
+    const f = parseZoteroField(code)!;
+    expect(f.kind).toBe("citation");
+    if (f.kind !== "citation") return;
+    expect(f.noteIndex).toBe(3);
+    expect(f.works.map((w) => w.key)).toEqual(["ABCD1234", "WXYZ5678"]);
+    expect(f.works[0]!.ref).toEqual({ volume: "1", locator: "45", prefix: "bk." });
+    expect(f.works[1]!.ref).toEqual({ locator: "12", "suppress-author": true });
+    expect(f.works[1]!.data.title).toBe('Bir "tırnaklı" makale {x}');
+  });
+  it("kaynakça alanı; başka alanlar değil", () => {
+    expect(parseZoteroField('ADDIN ZOTERO_BIBL {"uncited":[],"omitted":[],"custom":[]} CSL_BIBLIOGRAPHY')).toEqual({ kind: "bibliography" });
+    expect(parseZoteroField("PAGE \\* MERGEFORMAT")).toBeNull();
+  });
+});

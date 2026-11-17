@@ -297,6 +297,77 @@ export async function ensureBibliography(title = "Kaynakça"): Promise<"created"
   });
 }
 
+// ---------------------------------------------------------------- documents of another citation program
+
+/** Reading and replacing Word fields needs WordApi 1.5 (current Word for Windows, Mac and the web). */
+export function fieldsSupported(): boolean {
+  return Office.context.requirements.isSetSupported("WordApi", "1.5");
+}
+
+export type FieldTurn = { kind: "citation"; id: string; segments: Segment[] } | { kind: "bibliography" } | null;
+
+async function allFields(context: Word.RequestContext): Promise<{ field: Word.Field; inNote: boolean }[]> {
+  const sets: { coll: Word.FieldCollection; inNote: boolean }[] = [{ coll: context.document.body.fields, inNote: false }];
+  const notes: Word.NoteItemCollection[] = [];
+  if (footnotesSupported()) {
+    notes.push(context.document.body.footnotes, context.document.body.endnotes);
+    for (const n of notes) n.load("items");
+  }
+  await context.sync();
+  for (const set of notes) for (const n of set.items) sets.push({ coll: n.body.fields, inNote: true });
+  for (const s of sets) s.coll.load("items/code");
+  await context.sync();
+  return sets.flatMap((s) => s.coll.items.map((field) => ({ field, inNote: s.inNote })));
+}
+
+/** Codes of the citation fields in the document (to count them before converting). */
+export async function fieldCodes(): Promise<{ code: string; inNote: boolean }[]> {
+  return Word.run(async (context) => (await allFields(context)).map((f) => ({ code: f.field.code, inNote: f.inNote })));
+}
+
+/**
+ * Replaces each field `turn` recognises with a Derkenar citation (or the
+ * bibliography) where it stands: in its footnote or in the text. Last field
+ * first, so positions do not move. A field Word refuses to replace is left.
+ */
+export async function convertFields(turn: (code: string, inNote: boolean) => FieldTurn): Promise<{ converted: number; failed: number; bibliography: boolean }> {
+  return Word.run(async (context) => {
+    const fields = await allFields(context);
+    let converted = 0;
+    let failed = 0;
+    let bibliography = false;
+    for (const { field, inNote } of fields.reverse()) {
+      const t = turn(field.code, inNote);
+      if (!t) continue;
+      try {
+        field.select("Select");
+        await context.sync();
+        const sel = context.document.getSelection();
+        if (t.kind === "citation") {
+          const range = sel.insertText(t.segments.map((x) => x.text).join("") || "…", "Replace");
+          const cc = range.insertContentControl();
+          setupControl(cc, t.id);
+          writeRuns(cc, t.segments, true);
+        } else {
+          const range = sel.insertText("Kaynakça hazırlanıyor…", "Replace");
+          const p = range.paragraphs.getFirst();
+          p.styleBuiltIn = "Normal" as Word.BuiltInStyleName;
+          const cc = p.insertContentControl();
+          cc.tag = TAG_BIBLIOGRAPHY;
+          cc.title = "Kaynakça";
+          cc.appearance = "BoundingBox";
+          bibliography = true;
+        }
+        await context.sync();
+        converted++;
+      } catch {
+        failed++;
+      }
+    }
+    return { converted, failed, bibliography };
+  });
+}
+
 /** Turns every citation and the bibliography into plain text (for submission). Undo brings them back. */
 export async function unlinkAll(): Promise<number> {
   return Word.run(async (context) => {

@@ -6,7 +6,7 @@ import * as word from "./word.js";
 import { clearBasket, onSelection, search, wireCite } from "./pane/cite.js";
 import { runCheck, wireCheck } from "./pane/check.js";
 import { $, doc, loadLibrary, setMessage, onLibraryChange, onShow, renderSummary, run, showView } from "./pane/core.js";
-import { bibliography, changeStyle, nudge, refresh, renderDocList, startWatcher, wireDocument } from "./pane/document.js";
+import { bibliography, changeStyle, checkForeign, nudge, refresh, renderDocList, startWatcher, wireDocument } from "./pane/document.js";
 import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
 import { renderInfo } from "./pane/info.js";
@@ -115,7 +115,7 @@ Office.onReady(async () => {
     }
   });
   onShow("kutuphane", refreshLibraryView);
-  onShow("belge", renderDocList);
+  onShow("belge", () => (renderDocList(), void checkForeign()));
   onShow("veri", () => void renderInfo());
   onShow("aktar", () => (renderSources(), renderPushCount()));
   onLibraryChange(() => {

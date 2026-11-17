@@ -79,6 +79,15 @@ const FAKE = String.raw`
   function insertAtCursor(entry) { doc.flow.splice(doc.cursor, 0, entry); doc.cursor++; }
   const noteAtCursor = () => (doc.noteCursor == null ? null : doc.flow.filter((x) => x.fn)[doc.noteCursor].fn);
   const selection = {
+    insertText(t) {
+      const sel = doc.fieldSel;
+      if (!sel) throw new Error("no field selected");
+      doc.fieldSel = null;
+      return {
+        insertContentControl() { const cc = makeCC("inline"); cc.runs = [{ text: t, font: {} }]; sel.replace({ cc }); return cc; },
+        paragraphs: { getFirst() { return { styleBuiltIn: "", insertContentControl() { const cc = makeCC("block"); cc.paras = [[{ text: t, font: {} }]]; sel.replace({ cc, block: true }); return cc; } }; } },
+      };
+    },
     get parentBody() {
       const fn = noteAtCursor();
       return {
@@ -123,7 +132,12 @@ const FAKE = String.raw`
       return { getLast: () => paragraph() };
     },
   };
+  // Fields of another citation program: in the text and in footnotes.
+  const fieldProxy = (code, replace) => ({ code, select() { doc.fieldSel = { replace }; }, load() { return this; } });
   const body = {
+    get fields() {
+      return collection(doc.flow.filter((x) => x.field).map((x) => fieldProxy(x.field.code, (n) => { const i = doc.flow.indexOf(x); doc.flow[i] = n.block ? { cc: n.cc } : { cc: n.cc }; })));
+    },
     get contentControls() {
       const c = collection(bodyControls());
       c.getByTag = (tag) => collection(bodyControls().filter((x) => x.tag === tag));
@@ -134,7 +148,7 @@ const FAKE = String.raw`
         const ccs = collection(x.fn.controls);
         ccs.getByTag = (tag) => collection(x.fn.controls.filter((c) => c.tag === tag));
         return {
-          body: { contentControls: ccs, get text() { return x.fn.controls.map((c) => c.text).join("") + x.fn.text; }, load() { return this; } },
+          body: { contentControls: ccs, get fields() { return collection((x.fn.fields ?? []).map((f) => fieldProxy(f.code, (n) => { x.fn.fields.splice(x.fn.fields.indexOf(f), 1); x.fn.controls.push(n.cc); }))); }, get text() { return x.fn.controls.map((c) => c.text).join("") + x.fn.text + (x.fn.fields ?? []).map((f) => f.text).join(""); }, load() { return this; } },
           delete() { doc.flow.splice(doc.flow.indexOf(x), 1); },
           reference: { insertText(t) { return { insertContentControl() { const n = makeCC("inline"); n.runs = [{ text: t, font: {} }]; doc.flow.splice(doc.flow.indexOf(x), 0, { cc: n }); return n; } }; } },
         };
@@ -171,7 +185,7 @@ const FAKE = String.raw`
     },
   };
   window.__select = (cc) => { doc.selected = cc; selHandler && selHandler(); };
-  window.__text = () => doc.flow.map((x) => x.cc ? (x.cc.kind === "block" ? "\n[KAYNAKÇA]\n" + x.cc.paras.map(runText).join("\n") + "\n" : "{" + x.cc.text + "}") : x.fn ? "[^" + x.fn.controls.map((c) => c.text).join("") + x.fn.text + "]" : x.text).join("");
+  window.__text = () => doc.flow.map((x) => x.cc ? (x.cc.kind === "block" ? "\n[KAYNAKÇA]\n" + x.cc.paras.map(runText).join("\n") + "\n" : "{" + x.cc.text + "}") : x.fn ? "[^" + x.fn.controls.map((c) => c.text).join("") + x.fn.text + (x.fn.fields ?? []).map((f) => "<" + f.text + ">").join("") + "]" : x.field ? "<" + x.field.text + ">" : x.text).join("");
   window.__notes = () => doc.flow.filter((x) => x.fn).map((x) => x.fn.controls.map((c) => c.text).join(" | ") + x.fn.text);
 })();
 `;
@@ -560,6 +574,20 @@ try {
   await page.click(`#lib-list li.item-row[data-key="${origKey}"] input[type=checkbox]`);
   await page.click('[data-bulk="merge"]');
   await page.waitForSelector("#message:has-text('birleştirilen kayda bağlandı')");
+
+  // 9d. A document of another citation program: its fields become Derkenar citations.
+  await page.evaluate(() => {
+    const field = (loc) => ({ code: 'ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":"z' + loc + '","properties":{"plainCitation":"Eski metin ' + loc + '","noteIndex":1},"citationItems":[{"id":1,"uris":["http://zotero.org/users/1/items/ZOTKEY01"],"itemData":{"id":1,"type":"book","title":"Zoteroda Eklenmiş Kitap","author":[{"family":"Ekinci","given":"Selim"}],"issued":{"date-parts":[["2011"]]},"publisher":"Dergâh Yayınları","publisher-place":"İstanbul"},"locator":"' + loc + '","label":"page"}]}', text: "Eski metin " + loc });
+    const at = window.__doc.flow.findIndex((x) => x.cc && x.cc.kind === "block");
+    window.__doc.flow.splice(at, 0, { fn: { controls: [], text: "", fields: [field("10")] } }, { fn: { controls: [], text: "", fields: [field("11")] } });
+  });
+  await page.click("#tab-kutuphane");
+  await page.click("#tab-belge");
+  await page.waitForSelector("#foreign-box:not([hidden])");
+  await page.click("#foreign-convert");
+  await page.locator("#message", { hasText: "alan Derkenar" }).waitFor();
+  const converted = (await notes()).filter((n) => n.includes("Zoteroda Eklenmiş Kitap"));
+  if (converted.length !== 2 || !converted[0].startsWith("Selim Ekinci, Zoteroda Eklenmiş Kitap (İstanbul: Dergâh Yayınları, 2011), 10.") || converted[1] !== "Ekinci, Zoteroda Eklenmiş Kitap, 11.") fail(`converted fields: ${JSON.stringify(converted)}`);
 
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");
