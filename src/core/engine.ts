@@ -34,7 +34,8 @@ export interface OrderedCitation {
 }
 
 export interface Bibliography {
-  readonly entries: { readonly ids: string[]; readonly html: string }[];
+  /** heading: a section title ("Kitaplar") when the bibliography is divided by kind. */
+  readonly entries: { readonly ids: string[]; readonly html: string; readonly heading?: boolean }[];
   readonly hangingIndent: boolean;
   readonly lineSpacing: number;
   readonly entrySpacing: number;

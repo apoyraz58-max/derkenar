@@ -86,6 +86,8 @@ export interface DocState {
   keepLibrary?: boolean;
   /** Heading put above a new bibliography ("Kaynakça"); empty string: no heading. */
   bibTitle?: string;
+  /** Bibliography divided by kind (Yazma Eserler, Kitaplar, Makaleler …). */
+  bibSections?: boolean;
 }
 
 /** Formatted run of text produced from citeproc HTML. */

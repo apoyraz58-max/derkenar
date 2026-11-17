@@ -215,6 +215,8 @@ export interface RefreshWrite {
   /** Bibliography entries; null leaves the bibliography as it is. */
   readonly bibliography: Segment[][] | null;
   readonly hangingIndent: boolean;
+  /** Positions in `bibliography` that are section headings ("Kitaplar"). */
+  readonly bibliographyHeadings?: ReadonlySet<number>;
   /** Position in the found list → new id (copies of another citation get their own). */
   readonly retag?: Map<number, string>;
 }
@@ -237,13 +239,13 @@ export async function refreshDocument(plan: (found: FoundCitation[]) => RefreshW
         written++;
       }
     });
-    if (write.bibliography && bibliography[0]) fillBibliography(bibliography[0], write.bibliography, write.hangingIndent);
+    if (write.bibliography && bibliography[0]) fillBibliography(bibliography[0], write.bibliography, write.hangingIndent, write.bibliographyHeadings);
     await context.sync();
     return { citations: citations.length, written, bibliography: Boolean(write.bibliography && bibliography[0]) };
   });
 }
 
-function fillBibliography(cc: Word.ContentControl, entries: readonly Segment[][], hanging: boolean): void {
+function fillBibliography(cc: Word.ContentControl, entries: readonly Segment[][], hanging: boolean, headings: ReadonlySet<number> = new Set()): void {
   cc.clear();
   const list = entries.length ? entries : [[{ text: "(Kaynakça boş: belgede atıf yok.)" }]];
   list.forEach((segs, i) => {
@@ -256,8 +258,12 @@ function fillBibliography(cc: Word.ContentControl, entries: readonly Segment[][]
       r.font.subscript = Boolean(seg.subscript);
       r.font.underline = seg.underline ? "Single" : "None";
     }
-    p.leftIndent = hanging ? 36 : 0;
-    p.firstLineIndent = hanging ? -36 : 0;
+    const heading = headings.has(i);
+    p.leftIndent = hanging && !heading ? 36 : 0;
+    p.firstLineIndent = hanging && !heading ? -36 : 0;
+    // A section title: bold, a line of space above (none above the first).
+    p.spaceBefore = heading && i > 0 ? 12 : 0;
+    p.spaceAfter = heading ? 6 : 0;
   });
 }
 

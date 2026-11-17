@@ -377,6 +377,14 @@ try {
   const text = await page.evaluate(() => window.__text());
   if (!text.includes("# Kaynakça\n")) fail(`bibliography heading: ${text}`);
   if (!text.includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ min ʿilmi’l-uṣûl. nşr. Ali Nâşir. thk. Hamza b. Züheyr Hâfız.")) fail(`bibliography: ${text}`);
+  // Divided by kind, and back to one list.
+  await page.check("#bib-sections");
+  await page.waitForSelector("#message:has-text('türlere ayrıldı')");
+  const sections = await page.evaluate(() => window.__text());
+  if (!/Kitaplar ve Kitap Bölümleri\n/.test(sections) || !sections.includes("Gazzâlî, Ebû Hâmid Muhammed b. Muhammed. el-Müstasfâ")) fail(`bibliography sections: ${sections}`);
+  await page.uncheck("#bib-sections");
+  await page.waitForSelector("#message:has-text('tek liste')");
+  if ((await page.evaluate(() => window.__text())).includes("Kitaplar ve Kitap Bölümleri")) fail("sections not removed");
   if ((await page.locator("#doc-citations li").count()) !== 5) fail("document list should show 5 citations");
   if (shots) await page.screenshot({ path: `${shots}/belge.png`, fullPage: true });
 

@@ -51,8 +51,10 @@ export function refresh(force = false, quiet = false): Promise<void> {
       orphans = new Set(plan.orphans);
       lastSignature = signature(list);
       const citations = new Map([...plan.updates].map(([id, html]) => [id, htmlToSegments(html)]));
-      const bib = plan.bibliographyChanged && plan.bibliography ? plan.bibliography.entries.map((e) => htmlToSegments(e.html)) : null;
-      return { citations, bibliography: bib, hangingIndent: plan.bibliography?.hangingIndent ?? true, retag };
+      const entries = plan.bibliographyChanged && plan.bibliography ? plan.bibliography.entries : null;
+      const bib = entries ? entries.map((e) => (e.heading ? [{ text: e.html, bold: true }] : htmlToSegments(e.html))) : null;
+      const bibliographyHeadings = new Set((entries ?? []).flatMap((e, i) => (e.heading ? [i] : [])));
+      return { citations, bibliography: bib, hangingIndent: plan.bibliography?.hangingIndent ?? true, bibliographyHeadings, retag };
     });
     await word.saveState(d);
     const secs = ((performance.now() - started) / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 2 });
@@ -160,6 +162,7 @@ function renderPrefs(): void {
   $<HTMLInputElement>("auto").checked = d.auto !== false;
   $<HTMLInputElement>("keep-library").checked = d.keepLibrary !== false;
   $<HTMLInputElement>("bib-title").value = d.bibTitle ?? "Kaynakça";
+  $<HTMLInputElement>("bib-sections").checked = d.bibSections === true;
 }
 
 async function changeStyle(id: string): Promise<void> {
@@ -245,6 +248,12 @@ export function wireDocument(): void {
     void run("Kaydediliyor", async () => {
       doc().bibTitle = $<HTMLInputElement>("bib-title").value.trim();
       await word.saveState(doc());
+    });
+  $<HTMLInputElement>("bib-sections").onchange = () =>
+    void run("Kaynakça yenileniyor", async () => {
+      doc().bibSections = $<HTMLInputElement>("bib-sections").checked;
+      await refresh(false, true);
+      setMessage(doc().bibSections ? "Kaynakça türlere ayrıldı (Yazma Eserler, Kitaplar, Makaleler …)." : "Kaynakça tek liste oldu.", "success");
     });
   $("refresh").onclick = () => void run("Belge güncelleniyor", () => refresh(true));
   $("bibliography").onclick = () => void run("Kaynakça hazırlanıyor", bibliography);

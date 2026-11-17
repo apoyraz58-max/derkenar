@@ -100,15 +100,16 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
   // unused lists the works nothing in the text cites now.
   const cited = new Set(ordered.flatMap((c) => c.items.map((r) => r.id)));
   const unused = Object.keys(state.items).filter((k) => !cited.has(k));
-  const bibliography = renderer.bibliography();
-  const bibHtml = bibliography?.entries.map((e) => e.html).join("") ?? "";
+  const raw = renderer.bibliography();
+  const bibliography = raw && state.bibSections ? withSections(raw, state.items) : raw;
+  const bibHtml = bibliography?.entries.map((e) => (e.heading ? `<h>${e.html}</h>` : e.html)).join("") ?? "";
   const bibliographyChanged = force || bibHtml !== (state.bibliographyHtml ?? "");
   return { updates, orphans, duplicates, bibliography, bibliographyChanged, unused };
 }
 
 export function commitPlan(state: DocState, plan: RefreshPlan): void {
   for (const [id, html] of plan.updates) state.rendered[id] = html;
-  state.bibliographyHtml = plan.bibliography?.entries.map((e) => e.html).join("") ?? "";
+  state.bibliographyHtml = plan.bibliography?.entries.map((e) => (e.heading ? `<h>${e.html}</h>` : e.html)).join("") ?? "";
 }
 
 function structuredCloneItem(item: Item): Item {
@@ -229,4 +230,39 @@ export function syncWorks(state: DocState, library: (key: string) => Item | unde
     }
   }
   return changed;
+}
+
+/** Sections of a bibliography divided by kind, in the order Turkish theses use. */
+export const BIB_SECTIONS: readonly { title: string; types: readonly string[] }[] = [
+  { title: "Arşiv Belgeleri", types: [] },
+  { title: "Yazma Eserler", types: ["manuscript"] },
+  { title: "Kitaplar ve Kitap Bölümleri", types: ["book", "bookSection"] },
+  { title: "Ansiklopedi ve Sözlük Maddeleri", types: ["encyclopediaArticle", "dictionaryEntry"] },
+  { title: "Makaleler ve Bildiriler", types: ["journalArticle", "magazineArticle", "newspaperArticle", "conferencePaper"] },
+  { title: "Tezler", types: ["thesis"] },
+  { title: "Mevzuat", types: ["statute", "bill", "case", "hearing"] },
+  { title: "Elektronik Kaynaklar", types: ["webpage", "blogPost", "forumPost", "podcast", "videoRecording", "film", "tvBroadcast", "radioBroadcast", "computerProgram", "dataset", "audioRecording", "instantMessage", "email"] },
+  { title: "Diğer Kaynaklar", types: [] },
+];
+
+function sectionOf(item: Item | undefined): string {
+  if (!item) return "Diğer Kaynaklar";
+  // Archival documents: letters, documents, maps … kept in an archive.
+  if (!["manuscript", "book", "bookSection", "thesis"].includes(item.itemType) && item.fields.archive?.trim()) return "Arşiv Belgeleri";
+  return BIB_SECTIONS.find((s) => s.types.includes(item.itemType))?.title ?? "Diğer Kaynaklar";
+}
+
+/** The same entries, in sections with a heading each; each section keeps the style's order. */
+export function withSections(bib: Bibliography, items: Record<string, Item>): Bibliography {
+  const by = new Map<string, Bibliography["entries"][number][]>();
+  for (const e of bib.entries) {
+    const s = sectionOf(items[e.ids[0] ?? ""]);
+    by.set(s, [...(by.get(s) ?? []), e]);
+  }
+  const entries: Bibliography["entries"][number][] = [];
+  for (const { title } of BIB_SECTIONS) {
+    const list = by.get(title);
+    if (list?.length) entries.push({ ids: [], html: title, heading: true }, ...list);
+  }
+  return { ...bib, entries };
 }

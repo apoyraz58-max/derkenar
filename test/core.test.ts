@@ -568,3 +568,14 @@ describe("hicrî/milâdî", async () => {
     expect(hijriPair("1325", "İstanbul", "Matbaa-i Âmire")).toBeNull();
   });
 });
+
+describe("kaynakça türlere ayrılır", async () => {
+  const { withSections } = await import("../src/core/docstate.js");
+  it("bölüm başlıkları, sırayla; boş bölüm yok; arşiv belgesi ayrı", () => {
+    const mk = (key: string, itemType: string, fields: Record<string, string> = {}): Item => ({ ...emptyItem(itemType, "m"), key, fields: { title: key, ...fields } });
+    const items = { A: mk("A", "book"), B: mk("B", "journalArticle"), C: mk("C", "manuscript"), D: mk("D", "letter", { archive: "BOA" }), E: mk("E", "webpage") };
+    const bib = { entries: ["A", "B", "C", "D", "E"].map((k) => ({ ids: [k], html: k })), hangingIndent: true, lineSpacing: 1, entrySpacing: 0, secondFieldAlign: false };
+    const out = withSections(bib, items).entries.map((e) => (e.heading ? `# ${e.html}` : e.html));
+    expect(out).toEqual(["# Arşiv Belgeleri", "D", "# Yazma Eserler", "C", "# Kitaplar ve Kitap Bölümleri", "A", "# Makaleler ve Bildiriler", "B", "# Elektronik Kaynaklar", "E"]);
+  });
+});
