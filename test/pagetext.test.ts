@@ -118,3 +118,32 @@ describe("pagetext on OCR output", () => {
     expect(r.item?.fields).toMatchObject({ publisher: "Dergâh Yayınları", edition: "8", date: "2005", place: "İstanbul" });
   });
 });
+
+import { librarySpelling } from "../src/core/library.js";
+import { emptyItem } from "../src/core/zotero.js";
+
+describe("library spelling", () => {
+  const old = emptyItem("book");
+  old.creators = [{ creatorType: "author", firstName: "Ebû Hâmid", lastName: "Gazzâlî" }];
+  old.fields = { title: "x", publisher: "Dergâh Yayınları", place: "İstanbul" };
+  it("takes the library's careful spelling", () => {
+    const it = emptyItem("book");
+    it.creators = [{ creatorType: "author", firstName: "Ebu Hamid", lastName: "Gazzâli" }];
+    it.fields = { title: "y", publisher: "Dergah Yayinlari" };
+    const r = librarySpelling(it, [old]);
+    expect(r.item.creators[0]).toMatchObject({ firstName: "Ebû Hâmid", lastName: "Gazzâlî" });
+    expect(r.item.fields.publisher).toBe("Dergâh Yayınları");
+  });
+  it("never goes towards a plainer spelling or other letters", () => {
+    const it = emptyItem("book");
+    it.creators = [{ creatorType: "author", firstName: "Ebû Hâmid", lastName: "Gazzâlî" }, { creatorType: "author", firstName: "Ebu Hamid", lastName: "Gazali" }];
+    expect(librarySpelling(it, [old]).changed).toEqual([]);
+  });
+  it("does not take a spelling in capitals", () => {
+    const caps = emptyItem("book");
+    caps.creators = [{ creatorType: "author", firstName: "HÜSEYİN", lastName: "YILMAZ" }];
+    const it = emptyItem("book");
+    it.creators = [{ creatorType: "author", firstName: "Hüseyin", lastName: "Yılmaz" }];
+    expect(librarySpelling(it, [caps, caps]).changed).toEqual([]);
+  });
+});

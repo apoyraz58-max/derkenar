@@ -2,6 +2,7 @@
  * Library operations Zotero's middle pane offers: filtering by collection,
  * tag and trash, sorting, duplicate detection and merging, collection tree.
  */
+import { foldText } from "./isnadstyle.js";
 import { fold } from "./search.js";
 import { type Collection, type Item, creatorLine, now, titleOf, yearOf } from "./zotero.js";
 
@@ -199,4 +200,82 @@ export function existingCopy(candidate: Item, items: readonly Item[]): Item | un
     const fi = firstFamily(i);
     return !(y && yi && y !== yi) && !(f && fi && f !== fi) && Boolean(f || fi || y || yi);
   });
+}
+
+// ---------------------------------------------------------------- the library's own spelling
+
+const SPELLED_FIELDS = ["publisher", "place", "publicationTitle", "university", "bookTitle", "encyclopediaTitle", "dictionaryTitle", "proceedingsTitle", "series"];
+
+/** Letters a careful spelling has and a quick one leaves out (â î û ā ʿ ḥ …). */
+function marks(s: string): number {
+  return (s.normalize("NFD").match(/[̀-ͯ]|[ʿʾ’]/g) ?? []).length;
+}
+
+const bare = (s: string) => s.normalize("NFC").replace(/[ʿʾ’'‘`]/g, "").replace(/\s+/g, " ").trim();
+
+function spellings(items: readonly Item[]): Map<string, Map<string, number>> {
+  const m = new Map<string, Map<string, number>>();
+  const add = (kind: string, v: string | undefined) => {
+    if (!v || v.length < 3) return;
+    const k = `${kind}|${foldText(v)}`;
+    const variants = m.get(k) ?? new Map<string, number>();
+    variants.set(v, (variants.get(v) ?? 0) + 1);
+    m.set(k, variants);
+  };
+  for (const it of items) {
+    if (it.deleted) continue;
+    for (const c of it.creators) {
+      add("name", c.name);
+      if (c.lastName && c.firstName) add("person", `${c.lastName}\u0000${c.firstName}`);
+    }
+    for (const f of SPELLED_FIELDS) add("field", it.fields[f]);
+  }
+  return m;
+}
+
+/**
+ * A new record written the way the library already writes the same person,
+ * publisher, place or journal: "Gazzâli" (read from a photo) → "Gazzâlî",
+ * "Dergah Yayinlari" → "Dergâh Yayınları". Only spellings that differ in
+ * marks and case, never in letters; and never towards a plainer spelling.
+ */
+export function librarySpelling(item: Item, library: readonly Item[]): { item: Item; changed: string[] } {
+  const known = spellings(library.filter((i) => i.key !== item.key));
+  const changed: string[] = [];
+  const best = (kind: string, v: string): string | null => {
+    const variants = known.get(`${kind}|${foldText(v)}`);
+    if (!variants) return null;
+    const caps = (x: string) => x === x.toLocaleUpperCase("tr") && /\p{L}{2}/u.test(x);
+    const [top] = [...variants.entries()].filter(([x]) => !caps(x) || caps(v)).sort((a, b) => marks(b[0]) - marks(a[0]) || b[1] - a[1]);
+    if (!top) return null;
+    const w = top[0];
+    return w !== v && marks(w) >= marks(v) && bare(w).length === bare(v).length ? w : null;
+  };
+  const creators = item.creators.map((c) => {
+    if (c.name) {
+      const w = best("name", c.name);
+      if (w) {
+        changed.push(w);
+        return { ...c, name: w };
+      }
+      return c;
+    }
+    if (!c.lastName || !c.firstName) return c;
+    const w = best("person", `${c.lastName}\u0000${c.firstName}`);
+    if (!w) return c;
+    const [lastName, firstName] = w.split("\u0000") as [string, string];
+    changed.push(`${firstName} ${lastName}`);
+    return { ...c, lastName, firstName };
+  });
+  const fields = { ...item.fields };
+  for (const f of SPELLED_FIELDS) {
+    const v = fields[f];
+    if (!v) continue;
+    const w = best("field", v);
+    if (w) {
+      fields[f] = w;
+      changed.push(w);
+    }
+  }
+  return changed.length ? { item: { ...item, creators, fields }, changed } : { item, changed };
 }

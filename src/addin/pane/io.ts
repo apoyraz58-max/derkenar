@@ -12,7 +12,7 @@ import { getMeta, setMeta } from "../store.js";
 import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
 import { currentView, inCurrentView } from "./library.js";
-import { existingCopy } from "../../core/library.js";
+import { existingCopy, librarySpelling } from "../../core/library.js";
 
 
 /** Imports keep existing items: a re-import of the same Zotero export updates them in place. */
@@ -80,13 +80,17 @@ function pendingFixes(items: readonly Item[]): string {
  */
 export function isnadFix(items: Item[]): string {
   const all = new Set<string>();
+  const spelled = new Set<string>();
   items.forEach((it, i) => {
     const r = autoFix(it);
-    items[i] = r.item;
     for (const c of r.changed) all.add(c);
+    // Then the library's own spelling of the same names ("Gazzâli" → "Gazzâlî").
+    const l = librarySpelling(r.item, S.items);
+    items[i] = l.item;
+    for (const c of l.changed) spelled.add(c);
   });
   const left = items.reduce((n, it) => n + checkItem(it).filter((x) => x.level !== "info").length, 0);
-  return (all.size ? ` İSNAD'a göre düzeltildi: ${[...all].join(", ")}.` : "") + (left ? ` ${left} uyarı düzenleyicide (yayınevi adı, eksik bilgi …).` : "");
+  return (all.size ? ` İSNAD'a göre düzeltildi: ${[...all].join(", ")}.` : "") + (spelled.size ? ` Kütüphanedeki yazımla: ${[...spelled].slice(0, 4).join(", ")}.` : "") + (left ? ` ${left} uyarı düzenleyicide (yayınevi adı, eksik bilgi …).` : "");
 }
 
 /** Works the library has already (same DOI, ISBN, or title, year and author) are not added twice. */
