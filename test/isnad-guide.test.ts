@@ -417,3 +417,22 @@ describe("ön ek: bk., krş.", () => {
     expect(out).toMatch(/^Bk\. Ebû Hâmid Gazzâlî, el-Mustasfâ .*; krş\. Fahreddin Râzî, el-Mahsûl/);
   });
 });
+
+describe("soyadına yazılmış harf-i tarif (Zotero alışkanlığı)", () => {
+  it("“el-Gazzâlî” soyadı: ilk atıfta el-Gazzâlî, kısa atıfta ve metin içinde Gazzâlî, kaynakçada G harfinde", () => {
+    const g: Item = { ...items[0]!, key: "GAZEL001", itemType: "book", fields: { title: "İhyâü ulûmi’d-dîn", place: "Beyrut", publisher: "Dâru’l-Maʿrife", date: "1982" }, creators: [{ creatorType: "author", lastName: "el-Gazzâlî", firstName: "Ebû Hâmid Muhammed b. Muhammed" }], notes: [], tags: [], collections: [], relations: [] };
+    const run = (style: string) => {
+      const r = new Renderer(readFileSync(new URL(`${style}.csl`, styles), "utf8"), locales);
+      const st = emptyState();
+      putCitation(st, "a", [{ id: g.key, locator: "4" }], { [g.key]: g });
+      putCitation(st, "b", [{ id: g.key, locator: "5" }], { [g.key]: g });
+      const p = planRefresh(st, [{ id: "a", noteIndex: 1, text: "" }, { id: "b", noteIndex: 2, text: "" }], r);
+      return [htmlToText(p.updates.get("a")!), htmlToText(p.updates.get("b")!), htmlToText(p.bibliography!.entries[0]!.html)];
+    };
+    const [first, short, bib] = run("isnad-dipnotlu");
+    expect(first).toMatch(/^Ebû Hâmid Muhammed b\. Muhammed el-Gazzâlî, /);
+    expect(short).toBe("Gazzâlî, İhyâü ulûmi’d-dîn, 5.");
+    expect(bib).toMatch(/^Gazzâlî, Ebû Hâmid Muhammed b\. Muhammed\. /);
+    expect(run("isnad-metinici")[1]).toBe("(Gazzâlî, 1982, 5)");
+  });
+});

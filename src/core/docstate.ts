@@ -192,9 +192,35 @@ export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet
       if (csl["number-of-volumes"] === undefined) csl["number-of-volumes"] = csl.volume;
       delete csl.volume;
     }
-    out[k] = isnad ? fillImprint(csl) : plainRoles(csl);
+    out[k] = isnad ? fillImprint(articleToGiven(csl)) : plainRoles(csl);
   }
   return out;
+}
+
+/** "el-Gazzâlî" in the surname box (as Zotero users often write it). */
+const SURNAME_ARTICLE = /^((?:el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|eż|al)-)(\p{L}.*)$/iu;
+
+/**
+ * İSNAD: the article goes with the given name, so the first citation reads
+ * "Ebû Hâmid … el-Gazzâlî", later ones and the in-text form "Gazzâlî", and the
+ * bibliography "Gazzâlî, Ebû Hâmid …" under G (guide s. 87). A surname typed
+ * as "el-Gazzâlî" is read the same way; the record is not changed.
+ */
+export function articleToGiven(csl: CslItem): CslItem {
+  const c = csl as CslItem & Record<string, unknown>;
+  for (const value of Object.values(c)) {
+    if (!Array.isArray(value)) continue;
+    for (const n of value as Record<string, unknown>[]) {
+      const family = typeof n?.family === "string" ? n.family : "";
+      const m = SURNAME_ARTICLE.exec(family);
+      if (!m || n.literal) continue;
+      const article = m[1]!.toLocaleLowerCase("tr");
+      const given = typeof n.given === "string" ? n.given.trim() : "";
+      n.family = m[2]!.charAt(0).toLocaleUpperCase("tr") + m[2]!.slice(1);
+      n.given = given ? `${given} ${article}` : article;
+    }
+  }
+  return csl;
 }
 
 /**
