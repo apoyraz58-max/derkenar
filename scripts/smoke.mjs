@@ -79,6 +79,8 @@ const FAKE = String.raw`
   function insertAtCursor(entry) { doc.flow.splice(doc.cursor, 0, entry); doc.cursor++; }
   const noteAtCursor = () => (doc.noteCursor == null ? null : doc.flow.filter((x) => x.fn)[doc.noteCursor].fn);
   const selection = {
+    get text() { return doc.selText ?? ""; },
+    load() { return this; },
     insertText(t) {
       const sel = doc.fieldSel;
       if (!sel) throw new Error("no field selected");
@@ -755,6 +757,16 @@ try {
   if (hand[2].cc || !hand[2].text.startsWith("Bu görüş")) fail("prose note changed");
   if (!/^bk\./i.test(hand[3].cc) || !hand[3].cc.includes("50")) fail(`hand note 4: ${JSON.stringify(hand[3])}`);
   console.log("hand notes:", JSON.stringify(hand.map((x) => x.cc || x.text)));
+  // A bibliography typed by hand: selected, read, its works go into the library and the bibliography.
+  await page.evaluate(() => {
+    window.__doc.selText = "KAYNAKÇA\rYılmaz, Hasan Kâmil. Anahatlarıyla Tasavvuf ve Tarikatlar. İstanbul: Ensar Neşriyat, 2004.\rOcak, Ahmet Yaşar. Türk Sufîliğine Bakışlar. İstanbul: İletişim Yayınları, 1996.\r";
+  });
+  await page.click("#hand-bib-scan");
+  await page.waitForSelector("#hand-bib-result:has-text('2 künyeden 2 tanesi okundu (1 eser kütüphanede yok')", { timeout: 4000 }).catch(async () => fail(`typed bibliography: ${await page.textContent("#hand-bib-result")} / ${await page.textContent("#message")}`));
+  await page.locator("#hand-bib-result button").click();
+  await page.waitForSelector("#message:has-text('2 eser kaynakçaya alındı')");
+  const bibText = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag === "DERKENAR:BIB").map((x) => x.cc.text).join(""));
+  if (!bibText.includes("Türk Sufîliğine Bakışlar")) fail(`uncited work from the typed bibliography missing: ${bibText.slice(0, 300)}`);
 
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");

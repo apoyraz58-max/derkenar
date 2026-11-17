@@ -648,3 +648,32 @@ export async function replaceNotes(writes: readonly { index: number; id: string;
     return done;
   });
 }
+
+/** The selected text (paragraphs on their own lines). */
+export async function selectionText(): Promise<string> {
+  return Word.run(async (context) => {
+    const sel = context.document.getSelection();
+    sel.load("text");
+    await context.sync();
+    return sel.text.replace(/\r\n?/g, "\n");
+  });
+}
+
+/** Puts the Derkenar bibliography in place of the selection (a bibliography typed by hand); not when there is one already. */
+export async function selectionToBibliography(): Promise<boolean> {
+  return Word.run(async (context) => {
+    const existing = context.document.body.contentControls.getByTag(TAG_BIBLIOGRAPHY);
+    existing.load("items");
+    await context.sync();
+    if (existing.items.length > 0) return false;
+    const range = context.document.getSelection().insertText("Kaynakça hazırlanıyor…", "Replace");
+    const p = range.paragraphs.getFirst();
+    p.styleBuiltIn = "Normal" as Word.BuiltInStyleName;
+    const cc = p.insertContentControl();
+    cc.tag = TAG_BIBLIOGRAPHY;
+    cc.title = "Kaynakça";
+    cc.appearance = "BoundingBox";
+    await context.sync();
+    return true;
+  });
+}

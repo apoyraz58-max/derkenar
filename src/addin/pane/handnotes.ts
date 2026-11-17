@@ -11,6 +11,8 @@ import * as word from "../word.js";
 import { $, S, doc, h, putItems, run, serial, setMessage } from "./core.js";
 import { refresh } from "./document.js";
 import { isnadFix } from "./io.js";
+import { existingCopy } from "../../core/library.js";
+import { parseReference, splitReferences } from "../../core/freetext.js";
 
 let plan: HandNote[] = [];
 
@@ -73,6 +75,92 @@ async function convert(): Promise<void> {
   setMessage(`${done} dipnot Derkenar atıfına çevrildi; ilk geçişler tam, sonrakiler kısa künye oldu.${fresh.length ? ` ${fresh.length} eser kütüphaneye eklendi.` : ""}${fixedNote} Eski elle yazılmış kaynakçayı silip Kaynakça ekle ile Derkenar'ınkini koyabilirsiniz.`, "success");
 }
 
+// ---------------------------------------------------------------- a bibliography typed by hand
+
+interface BibLine {
+  text: string;
+  item: Item | null;
+  isNew: boolean;
+}
+let bib: { text: string; lines: BibLine[] } | null = null;
+
+/** A heading inside the list ("KAYNAKÇA", "Makaleler", "B. Arşiv Belgeleri"): no year, no punctuation of a reference. */
+const isHeading = (l: string) => l.length < 60 && !/\d{3,4}|[“”"]|:\s/.test(l);
+
+function readBibliography(text: string): BibLine[] {
+  const created: Item[] = [];
+  // Headings out first (a heading has no full stop and would be joined to the next reference).
+  const raw = text.split("\n").map((l) => l.trim());
+  const kept = raw.filter((l, i) => l && !(isHeading(l) && !/[.)]$/.test(l) && (i === 0 || !raw[i - 1] || /[.)\]]$/.test(raw[i - 1]!))));
+  return splitReferences(kept.join("\n"))
+    .map((l) => {
+      const r = parseReference(l);
+      if (!r || !r.item.fields.title) return { text: l, item: null, isNew: false };
+      const old = existingCopy(r.item, [...S.items, ...created]);
+      if (old) return { text: l, item: old, isNew: created.includes(old) };
+      const item = { ...r.item, source: "kaynakca" };
+      created.push(item);
+      return { text: l, item, isNew: true };
+    });
+}
+
+async function scanBibliography(): Promise<void> {
+  const text = (await serial(() => word.selectionText())).trim();
+  if (text.length < 20) throw new Error("Önce Word'de elle yazılmış kaynakçanın tamamını seçin (başlığıyla ya da başlıksız), sonra yeniden basın.");
+  const lines = readBibliography(text);
+  bib = { text, lines };
+  const read = lines.filter((l) => l.item);
+  const unread = lines.filter((l) => !l.item);
+  const fresh = read.filter((l) => l.isNew).length;
+  $("hand-bib-result").replaceChildren(
+    h("p", { class: "small" }, `${lines.length} künyeden ${read.length} tanesi okundu${fresh ? ` (${fresh} eser kütüphanede yok, eklenecek)` : ""}.${unread.length ? ` ${unread.length} satır okunamadı; seçili metin bu yüzden yerinde bırakılacak, eserler yine de kütüphaneye ve kaynakçaya girer.` : " Seçili metnin yerine Derkenar kaynakçası gelecek."}`),
+    h(
+      "ol",
+      { class: "hand-list small" },
+      ...lines.slice(0, 300).map((l) => h("li", { class: l.item ? "" : "muted" }, h("div", { class: "hand-src" }, short(l.text, 140)), h("div", { class: l.item ? "hand-to" : "hand-keep" }, l.item ? `→ ${creatorLine(l.item) || "—"}, ${short(titleOf(l.item), 60)}${l.isNew ? " (yeni)" : ""}` : "okunamadı"))),
+    ),
+    read.length ? h("button", { type: "button", class: "primary", onclick: () => void run("Kaynakça çevriliyor", convertBibliography) }, unread.length ? `${read.length} eseri kütüphaneye ve kaynakçaya al` : "Derkenar kaynakçasına çevir") : h("p", { class: "muted small" }, "Okunan künye yok."),
+  );
+}
+
+async function convertBibliography(): Promise<void> {
+  if (!bib) return;
+  const now = (await serial(() => word.selectionText())).trim();
+  if (now !== bib.text) {
+    bib = null;
+    $("hand-bib-result").replaceChildren();
+    throw new Error("Seçim değişti. Kaynakçayı yeniden seçip Seçili kaynakçayı oku'ya basın.");
+  }
+  const d = doc();
+  const read = bib.lines.filter((l) => l.item);
+  const fresh = [...new Set(read.filter((l) => l.isNew).map((l) => l.item!))];
+  const fixedNote = isnadFix(fresh);
+  if (fresh.length) await putItems(fresh);
+  const fixed = new Map(fresh.map((i) => [i.key, i]));
+  // Works listed though not cited stay in the bibliography.
+  const cited = new Set(Object.values(d.citations).flatMap((c) => c.items.map((r) => r.id)));
+  const uncited = new Set(d.bibUncited ?? []);
+  for (const l of read) {
+    const it = fixed.get(l.item!.key) ?? S.byKey.get(l.item!.key) ?? l.item!;
+    if (!cited.has(it.key)) {
+      uncited.add(it.key);
+      d.items[it.key] = it;
+    }
+  }
+  d.bibUncited = [...uncited];
+  const unread = bib.lines.length - read.length;
+  const replaced = unread ? false : await serial(() => word.selectionToBibliography());
+  await word.saveState(d);
+  await refresh(false, true);
+  bib = null;
+  $("hand-bib-result").replaceChildren();
+  setMessage(
+    `${read.length} eser kaynakçaya alındı${fresh.length ? `, ${fresh.length} tanesi kütüphaneye eklendi` : ""}.${fixedNote} ${replaced ? "Elle yazılmış kaynakçanın yerinde artık Derkenar kaynakçası var." : unread ? `Okunamayan ${unread} satır yüzünden elle yazılmış kaynakça yerinde bırakıldı; Kaynakça ekle ile Derkenar'ınkini koyup eskisini silin.` : "Belgede zaten bir Derkenar kaynakçası var; elle yazılmış olanı silebilirsiniz."}`,
+    unread ? "warning" : "success",
+  );
+}
+
 export function wireHandNotes(): void {
+  $("hand-bib-scan").onclick = () => void run("Kaynakça okunuyor", scanBibliography);
   $("hand-scan").onclick = () => void run("Dipnotlar okunuyor", scan);
 }
