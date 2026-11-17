@@ -768,6 +768,15 @@ try {
   const bibText = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag === "DERKENAR:BIB").map((x) => x.cc.text).join(""));
   if (!bibText.includes("Türk Sufîliğine Bakışlar")) fail(`uncited work from the typed bibliography missing: ${bibText.slice(0, 300)}`);
 
+  // 9y. A reference pasted into the citation search: added to the library and to the citation at once.
+  await page.click("#tab-atif");
+  await page.fill("#q", "Reşat Öngören, Osmanlılar'da Tasavvuf: Anadolu'da Sûfîler, Devlet ve Ulemâ (İstanbul: İz Yayıncılık, 2000), 45.");
+  await page.locator("#outside-offer button", { hasText: "Bu künyeyi kütüphaneye ekle" }).click();
+  await page.waitForSelector("#message:has-text('Atıfa eklendi: Öngören')");
+  if (!(await page.textContent("#basket")).includes("Osmanlılar")) fail("pasted reference not in the citation");
+  if ((await page.inputValue('#basket [data-f="locator"]')) !== "45") fail("page of the pasted reference not taken");
+  await page.click("#clear-basket");
+
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");
   await page.waitForSelector("#info-document dd:has-text('kaynak,')");

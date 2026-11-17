@@ -61,7 +61,8 @@ export function splitNote(text: string): string[] {
 /** "…, c. I, s. 245" · "…, C. 2, s. 45" · "…, I, 245" (eski usul cilt ve sayfa). */
 const VOL_PAGE = /,\s*(?:c\.|cilt)?\s*([IVXLC]+|(?<=(?:c\.|cilt)\s*)\d+)\s*,\s*(?:s\.|ss\.)?\s*(\d+(?:\s*[-–]\s*\d+)?(?:\s*vd\.)?)\.?\s*$/i;
 
-function cut(s: string): { body: string; volume?: string; locator?: string } {
+/** The cited place at the end of a footnote reference ("…, 45." · "…, 1/45." · "…, c. II, s. 12."), and the rest. */
+export function cut(s: string): { body: string; volume?: string; locator?: string } {
   const vp = VOL_PAGE.exec(s);
   if (vp) return { body: s.slice(0, vp.index).trim(), volume: vp[1]!, locator: vp[2]!.replace(/\s*[-–]\s*/g, "-") };
   const m = LOCATOR.exec(s);

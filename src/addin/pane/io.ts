@@ -310,6 +310,23 @@ async function lookup(box = "new-lookup"): Promise<void> {
   if (found.length === 1) openEditor(found[0]!.key);
 }
 
+/** Added from the citation search: by DOI or ISBN; an existing copy is used instead of a second one. */
+export async function addByIdentifier(id: string): Promise<Item[]> {
+  const doi = cleanDoi(id);
+  const googleKey = (await getMeta<string>("googleBooksKey").catch(() => undefined)) || undefined;
+  const found = doi ? await lookupDoiOrIsbn(doi) : await lookupIsbn(cleanIsbn(id)!, fetch, googleKey);
+  return addParsed([found]);
+}
+
+/** Records read elsewhere (search box, a pasted reference): İSNAD fixes, no duplicates; the library's own copy when it has one. */
+export async function addParsed(items: Item[]): Promise<Item[]> {
+  const list = items.map((i) => ({ ...i }));
+  isnadFix(list);
+  const { fresh, already } = splitExisting(list);
+  if (fresh.length) await putItems(fresh);
+  return [...already, ...fresh];
+}
+
 function exportScope(): Item[] {
   const scope = $<HTMLSelectElement>("ex-scope").value;
   if (scope === "collection") return S.items.filter(inCurrentView);

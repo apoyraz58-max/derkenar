@@ -14,6 +14,7 @@ import { BIBLE_BOOKS, SURES } from "../../core/scripture.js";
 import { parseQuick } from "../../core/search.js";
 import { $, S, doc, getRenderer, h, run, serial, setMessage, showView, work } from "./core.js";
 import { getMeta, setMeta } from "../store.js";
+import { cleanDoi, cleanIsbn } from "../../core/importers.js";
 
 let results: Item[] = [];
 let cursor = 0;
@@ -47,8 +48,73 @@ export function resultRow(item: Item, extra: Record<string, unknown> = {}): HTML
   );
 }
 
+// ---------------------------------------------------------------- not in the library yet
+
+type Freetext = typeof import("../../core/freetext.js");
+let freetext: Freetext | null = null;
+let freetextLoading = false;
+
+/** A DOI, an ISBN or a whole reference typed or pasted into the search box: it can be added and cited in one go. */
+function outsideOffer(): HTMLElement | null {
+  const q = $<HTMLInputElement>("q").value.trim();
+  if (!q) return null;
+  const doi = cleanDoi(q);
+  const isbn = doi ? null : /^[\dXx\s-]{10,17}$/.test(q) ? cleanIsbn(q) : null;
+  let label = "";
+  let add: (() => Promise<Item[]>) | null = null;
+  if (doi || isbn) {
+    label = doi ? `DOI ile bul, kütüphaneye ekle ve atıfa koy: ${doi}` : `ISBN ile bul, kütüphaneye ekle ve atıfa koy: ${isbn}`;
+    add = async () => {
+      const io = await import("./io.js");
+      return io.addByIdentifier(doi ?? isbn!);
+    };
+  } else if (q.length > 35 && /[,.]/.test(q) && /\p{L}{3}/u.test(q)) {
+    if (!freetext) {
+      if (!freetextLoading) {
+        freetextLoading = true;
+        void import("../../core/freetext.js").then((m) => {
+          freetext = m;
+          renderResults();
+        });
+      }
+      return null;
+    }
+    const r = freetext.parseReference(q);
+    if (!r || !r.item.fields.title || (!r.item.creators.length && !r.item.fields.date)) return null;
+    label = `Bu künyeyi kütüphaneye ekle ve atıfa koy: ${creatorLine(r.item) || "—"}, ${titleOf(r.item)}${r.item.fields.date ? ` (${r.item.fields.date})` : ""}`;
+    add = async () => {
+      const io = await import("./io.js");
+      const { cut } = await import("../../core/handnotes.js");
+      // The page at the end of a footnote reference goes to the citation.
+      place = cut(q.replace(/\.$/, ""));
+      return io.addParsed([r.item]);
+    };
+  }
+  if (!add) return null;
+  const go = add;
+  let place: { volume?: string; locator?: string } = {};
+  const li = h("button", { type: "button", class: "outside" }, h("div", { class: "r-title" }, `＋ ${label}`), h("div", { class: "r-more" }, "Kütüphanede yoksa eklenir (İSNAD düzeltmeleriyle); varsa var olan kullanılır."));
+  li.onclick = () =>
+    void run("Ekleniyor", async () => {
+      const items = await go();
+      for (const it of items) addToBasket(it);
+      const last = S.basket[S.basket.length - 1];
+      if (last && items.length === 1 && last.id === items[0]!.key && (place.locator || place.volume)) {
+        if (place.locator) last.locator = place.locator;
+        if (place.volume && !OWN_VOLUME.has(items[0]!.itemType)) last.volume = place.volume;
+        renderBasket();
+      }
+      $<HTMLInputElement>("q").value = "";
+      search();
+      if (items.length) setMessage(`Atıfa eklendi: ${creatorLine(items[0]!) || "—"}, ${titleOf(items[0]!)}. Sayfayı yazıp Ekle'ye basın.`, "success");
+    });
+  return li;
+}
+
 function renderResults(): void {
   const inBasket = new Set(S.basket.map((b) => b.id));
+  const offer = results.length < 3 ? outsideOffer() : null;
+  $("outside-offer").replaceChildren(...(offer ? [offer] : []));
   $("results").replaceChildren(
     ...results.map((item, i) => {
       const li = resultRow(item, { role: "option", "aria-selected": String(i === cursor), class: inBasket.has(item.key) ? "in-basket" : "" });
