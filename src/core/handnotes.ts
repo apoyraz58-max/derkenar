@@ -521,9 +521,6 @@ const sameWork = (a: Item, b: Item): boolean => {
  * reference lines of the bibliography (headings already left out).
  */
 export function checkBibliography(notes: readonly string[], bibliography: readonly string[], library: readonly Item[] = [], alsoCited: readonly Item[] = []): BibCheck {
-  const read = readHandNotes(notes, library);
-  const cited = new Map<Item, number[]>(alsoCited.map((it) => [it, []]));
-  for (const n of read) for (const r of n.refs ?? []) cited.set(r.item, [...(cited.get(r.item) ?? []), n.index + 1]);
   const listed: { line: string; item: Item }[] = [];
   const unreadLines: string[] = [];
   for (const line of bibliography) {
@@ -531,6 +528,10 @@ export function checkBibliography(notes: readonly string[], bibliography: readon
     if (r?.item.fields.title || r?.item.fields.docketNumber) listed.push({ line, item: r!.item });
     else unreadLines.push(line);
   }
+  // Short references ("Buhârî, “Îmân”, 2") may have their full form only in the bibliography.
+  const read = readHandNotes(notes, [...library, ...listed.map((l) => l.item)]);
+  const cited = new Map<Item, number[]>(alsoCited.map((it) => [it, []]));
+  for (const n of read) for (const r of n.refs ?? []) cited.set(r.item, [...(cited.get(r.item) ?? []), n.index + 1]);
   const missing = [...cited].filter(([it]) => !listed.some((l) => sameWork(it, l.item))).map(([item, ns]) => ({ item, notes: [...new Set(ns)] }));
   const uncited = listed.filter((l) => ![...cited.keys()].some((it) => sameWork(it, l.item))).map((l) => l.line);
   // A work already cited with Derkenar may have had its full reference there.

@@ -318,3 +318,11 @@ describe("short reference to a work not known", () => {
     expect(readHandNotes(["Bu görüş için ileride bakılacaktır."], [])[0]!.reason).toBe("künye olarak okunamadı");
   });
 });
+
+describe("uyum: short references resolved through the bibliography", () => {
+  it("a hadith collection given in full only in the bibliography counts as cited", () => {
+    const r = checkBibliography(["Buhârî, “Îmân”, 2.", "Buhârî, “Menâḳıb”, 24."], ["Buhârî, Ebû Abdillâh Muhammed b. İsmâîl. el-Câmiʿu’ṣ-ṣaḥîḥ. İstanbul: Çağrı Yayınları, 1992."]);
+    expect([r.citedCount, r.missing.length, r.uncited.length]).toEqual([1, 0, 0]);
+    expect(r.shortFirst.length).toBe(1);
+  });
+});
