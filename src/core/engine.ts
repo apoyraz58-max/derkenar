@@ -159,7 +159,13 @@ export class Renderer {
  * İSNAD: no comma before a parenthesis ("…Defteri (1334-1336), 61a", guide s. 67).
  */
 export function isnadTidy(html: string): string {
-  return html.replace(/,(\s|&#160;)+\(/g, " (").replace(/,(\s|&#160;)*\./g, ".");
+  return (
+    html
+      // A web source dated by its access only: "…, Ansiklopedisi (Erişim 12 Temmuz 2019)", no "ts." before it.
+      .replace(/,(?:\s|&#160;)+(?:ts\.|n\.d\.)(?=(?:\s|&#160;)*\((?:Erişim|Access))/g, "")
+      .replace(/,(\s|&#160;)+\(/g, " (")
+      .replace(/,(\s|&#160;)*\./g, ".")
+  );
 }
 
 /**

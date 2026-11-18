@@ -30,11 +30,18 @@ export interface HandRef {
   readonly madde?: string;
   /** CSL locator label: "sub verbo" for a law's madde (md. 35/4). */
   readonly label?: string;
+  /** Kitâb-ı Mukaddes: book abbreviation, bab and cümle ("Yar.1:12"). */
+  readonly kitap?: string;
+  readonly bab?: string;
+  readonly cumle?: string;
 }
 
 /** Where in the work: what `cut` reads at the end of a reference. */
 interface Place {
   label?: string;
+  kitap?: string;
+  bab?: string;
+  cumle?: string;
   volume?: string;
   locator?: string;
   sure?: string;
@@ -91,6 +98,9 @@ export function cut(s0: string): { body: string } & Place {
 }
 
 function cutPlace(s: string): { body: string } & Place {
+  // Kitâb-ı Mukaddes: "…, Yar.1:12.", "…, Elç.12:10-12."
+  const bible = /(?:^|,\s*)((?:[1-3]\s?)?\p{Lu}\p{Ll}{1,4}\.)\s*(\d{1,3}):(\d{1,3}(?:\s*[-–]\s*\d{1,3})?)\.?\s*$/u.exec(s);
+  if (bible) return { body: s.slice(0, bible.index).trim(), kitap: bible[1]!.replace(/\s/g, ""), bab: bible[2]!, cumle: bible[3]!.replace(/\s*[-–]\s*/g, "-") };
   // A law's article: "…, md. 35/4.", "…, md. 53/2-b."
   const md = /,\s*(?:md|madde|art)\.\s*([\d][\w/-]*)\.?\s*$/i.exec(s);
   if (md) return { body: s.slice(0, md.index).trim(), locator: md[1]!, label: "sub verbo" };
@@ -176,7 +186,7 @@ function findDictionary(body: string, pool: readonly Item[]): { item: Item; madd
   return works.length === 1 ? { item: works[0]!, madde: m[2]! } : null;
 }
 
-const place = (p: Place): Place => ({ ...(p.label ? { label: p.label } : {}), ...(p.volume ? { volume: p.volume } : {}), ...(p.locator ? { locator: p.locator } : {}), ...(p.sure ? { sure: p.sure, ayet: p.ayet } : {}), ...(p.madde ? { madde: p.madde } : {}) });
+const place = (p: Place): Place => ({ ...(p.kitap ? { kitap: p.kitap, bab: p.bab, cumle: p.cumle } : {}), ...(p.label ? { label: p.label } : {}), ...(p.volume ? { volume: p.volume } : {}), ...(p.locator ? { locator: p.locator } : {}), ...(p.sure ? { sure: p.sure, ayet: p.ayet } : {}), ...(p.madde ? { madde: p.madde } : {}) });
 
 /** A Kur’ân meâl or tefsir: "el-Bakara 2/14" alone in a later note points to it. */
 const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(titleOf(it));
@@ -236,6 +246,16 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       const c = cut(restOwn);
       const { body } = c;
       let where = place(c);
+      // "Yar.1:12." alone: the Bible cited before.
+      if (!body && c.kitap) {
+        const k = [...seen].reverse().find((it) => /mukaddes|kutsal kitap|bible|incil|tevrat/i.test(titleOf(it)));
+        if (!k) {
+          reason = "Kitâb-ı Mukaddes atfı önceki bir esere bağlanamadı";
+          break;
+        }
+        refs.push({ item: k, isNew: created.includes(k), ...where, ...(prefix ? { prefix } : {}) });
+        continue;
+      }
       // "el-Bakara 2/14." alone: the Kur’ân meâl cited before.
       if (!body && c.sure) {
         const q = [...seen].reverse().find(isQuran);

@@ -60,7 +60,7 @@ async function convert(): Promise<void> {
   if (fixed.length) await putItems(fixed);
   const writes: { index: number; id: string; segments: { text: string }[] }[] = [];
   for (const p of ok) {
-    const refs: CiteRef[] = p.refs!.map((r) => ({ id: r.item.key, ...(r.volume ? { volume: r.volume } : {}), ...(r.locator ? { locator: r.locator } : {}), ...(r.label ? { label: r.label } : {}), ...(r.sure ? { sure: r.sure, ayet: r.ayet } : {}), ...(r.madde ? { madde: r.madde } : {}), ...(r.prefix ? { prefix: r.prefix } : {}) }));
+    const refs: CiteRef[] = p.refs!.map((r) => ({ id: r.item.key, ...(r.volume ? { volume: r.volume } : {}), ...(r.locator ? { locator: r.locator } : {}), ...(r.label ? { label: r.label } : {}), ...(r.kitap ? { kitap: r.kitap, bab: r.bab, cumle: r.cumle } : {}), ...(r.sure ? { sure: r.sure, ayet: r.ayet } : {}), ...(r.madde ? { madde: r.madde } : {}), ...(r.prefix ? { prefix: r.prefix } : {}) }));
     const works = Object.fromEntries(refs.map((r) => [r.id, byKey.get(r.id) ?? S.byKey.get(r.id) ?? d.items[r.id]!]));
     const id = newCitationId();
     putCitation(d, id, refs, works);

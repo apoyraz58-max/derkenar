@@ -75,7 +75,8 @@ function nameInOrder(raw: string, creatorType: string): Creator {
   if (acr) return { creatorType, lastName: acr[2]!, firstName: acr[1]! };
   if (!/\s/.test(n)) return { creatorType, name: n };
   // A title of honour ends the name: "Taşköprizâde Ahmed Efendi", "Ahmed Cevdet Paşa".
-  if (/\s(Efendi|Paşa|Bey|Hanım|Ağa|Çelebi|Hoca|Dede)$/u.test(n)) return { creatorType, name: n };
+  // ("Çelebi", "Dede", "Hoca" are also today's surnames: "İlyas Çelebi"; a title only after an Ottoman name: "Kâtib Çelebi", "Evliyâ Çelebi".)
+  if (/\s(Efendi|Paşa|Bey|Hanım|Ağa)$/u.test(n) || (/\s(Çelebi|Hoca|Dede)$/u.test(n) && /[âîûÂÎÛ]|^(Evliya|Kâtib|Katib|Âşık|Aşık|Şeyh|Molla|Hacı|Hoca|Lâmiî|Sâî)\s/u.test(n))) return { creatorType, name: n };
   // An institution: "Türk Standardları Enstitüsü".
   if (/\b(Enstitüsü|Üniversitesi|Başkanlığı|Bakanlığı|Kurumu|Vakfı|Derneği|Merkezi|University|Institute|Foundation|Ministry)\b/.test(n)) return { creatorType, name: n };
   const words = n.split(" ");
