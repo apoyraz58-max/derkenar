@@ -298,8 +298,8 @@
         <button id="foreign-convert" type="button">Derkenar atıflarına çevir</button>
         <p class="muted small">Atıflar yerinde (dipnotta ya da metinde) Derkenar atıfına döner; eserler kütüphanede aranır, olmayanlar alandaki künyeyle eklenir. Önce belgenin bir kopyasını alın; Word'de Geri Al ile geri dönülür.</p>
       </section>
-      <section>
-        <h2>Elle yazılmış dipnotlar ve kaynakça</h2>
+      <details id="hand-box" class="section-like">
+        <summary>Eski bir çalışmayı Derkenar'a taşı (elle yazılmış dipnot, kaynakça, metin içi atıf)</summary>
         <p class="muted small">Atıf programı kullanılmadan yazılmış bir tezin dipnotlarındaki künyeler okunur ("Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45.", kısa künyeler, "Bk." …) ve yerinde Derkenar atıfına çevrilir; İSNAD'ın kullanmadığı a.g.e., a.e., Ibid. tanınır ve kısa künyeye dönüşür; eserler kütüphanede aranır, olmayanlar eklenir. Açıklama içeren dipnotlar olduğu gibi kalır. Önce ne olacağı gösterilir.</p>
         <button id="hand-scan" type="button">Dipnotları tara</button>
         <div id="hand-result"></div>
@@ -309,7 +309,7 @@
         <p class="muted small">Metin içi atıflar için ("(Kara, 2005: 45)", "(Kara vd., 2012; Ocak, 1996)"): önce kaynakçayı okutun, sonra <b>Metin içi atıfları tara</b>; yazar ve yıl kütüphanedeki eserle eşleşen atıflar çevrilir.</p>
         <button id="hand-intext-scan" type="button">Metin içi atıfları tara</button>
         <div id="hand-intext-result"></div>
-      </section>
+      </details>
       <section>
         <h2>Teslim</h2>
         <p class="muted">Atıfları ve kaynakçayı düz metne çevirir; Derkenar onları artık güncellemez. Önce belgenin bir kopyasını alın.</p>
@@ -341,13 +341,6 @@
 
     <!-- ============================== Aktar -->
     <div id="view-aktar" class="view" role="tabpanel" hidden>
-      <section>
-        <h2>Şahıslar tablosu (DİA – EI3)</h2>
-        <p class="muted small">Kişilerin DİA adını ve Encyclopaedia of Islam THREE transliterasyonunu içeren tablo (.xlsx ya da .csv; sütun başlıkları "Kısa Ad (DİA)", "Tam Ad (DİA)", "Vefat Tarihi" (isteğe bağlı; yalnız adaşları ayırt etmek için uyarıda gösterilir), "EI3 Transliterasyonu (Kısa Ad)", "EI3 Transliterasyonu (Tam Ad)", "Grup"). Yüklenince İngilizce İSNAD'da bu kişilerin adları EI3'e göre yazılır (kayıtlar Türkçe kalır) ve Türkçe kayıtlardaki adlar DİA yazımına göre denetlenir. Tablo yalnız bu bilgisayarda saklanır.</p>
-        <label class="file-btn">Tablo seç <input id="persons-file" type="file" accept=".xlsx,.csv,.tsv,.txt" hidden /></label>
-        <p id="persons-status" class="muted small"></p>
-        <button id="persons-remove" type="button" class="link danger-text" hidden>Tabloyu kaldır</button>
-      </section>
       <section>
         <h2>Dışa aktarılmış kütüphane dosyası</h2>
         <p class="muted">Atıf programınızda Dosya → Kütüphaneyi dışa aktar. En eksiksizi <b>RDF</b> (koleksiyonlar, notlar, etiketler dahil); CSL JSON, BibTeX ve RIS de olur. Derkenar yedeği de buradan geri yüklenir.</p>
@@ -402,6 +395,13 @@
           <button id="ex-download" type="button" class="primary">İndir</button>
           <button id="ex-copy" type="button">Panoya kopyala</button>
         </div>
+      </section>
+      <section>
+        <h2>Şahıslar tablosu (DİA – EI3)</h2>
+        <p class="muted small">Kişilerin DİA adını ve Encyclopaedia of Islam THREE transliterasyonunu içeren tablo (.xlsx ya da .csv; sütun başlıkları "Kısa Ad (DİA)", "Tam Ad (DİA)", "Vefat Tarihi" (isteğe bağlı; yalnız adaşları ayırt etmek için uyarıda gösterilir), "EI3 Transliterasyonu (Kısa Ad)", "EI3 Transliterasyonu (Tam Ad)", "Grup"). Yüklenince İngilizce İSNAD'da bu kişilerin adları EI3'e göre yazılır (kayıtlar Türkçe kalır) ve Türkçe kayıtlardaki adlar DİA yazımına göre denetlenir. Tablo yalnız bu bilgisayarda saklanır.</p>
+        <label class="file-btn">Tablo seç <input id="persons-file" type="file" accept=".xlsx,.csv,.tsv,.txt" hidden /></label>
+        <p id="persons-status" class="muted small"></p>
+        <button id="persons-remove" type="button" class="link danger-text" hidden>Tabloyu kaldır</button>
       </section>
       <section>
         <h2>Kaynaklar</h2>
@@ -495,7 +495,7 @@
         <h2>Eski bir çalışmayı Derkenar'a taşımak</h2>
         <ul class="guide">
           <li><strong>Başka bir atıf programıyla yazılmış belge:</strong> Belge sekmesinde "Başka programla eklenmiş atıflar" bölümü çıkar; <strong>Derkenar atıflarına çevir</strong> ile atıflar ve kaynakça Derkenar'a geçer.</li>
-          <li><strong>Atıf programı olmadan yazılmış tez:</strong> <strong>Belge → Elle yazılmış dipnotlar → Dipnotları tara</strong>. Tam ve kısa künyeler, "Bk." gibi önekler, a.mlf., yazma eserler (77b), sözlük maddeleri ve âyetler okunur; İSNAD a.g.e. kullanmadığından a.g.e./a.e./Ibid. kısa künyeye çevrilir. Ne olacağı listelenir; onaylayınca yerinde Derkenar atıfı olurlar. Açıklama içeren dipnotlar dokunulmadan kalır.</li>
+          <li><strong>Atıf programı olmadan yazılmış tez:</strong> <strong>Belge → Eski bir çalışmayı Derkenar'a taşı → Dipnotları tara</strong>. Tam ve kısa künyeler, "Bk." gibi önekler, a.mlf., yazma eserler (77b), sözlük maddeleri ve âyetler okunur; İSNAD a.g.e. kullanmadığından a.g.e./a.e./Ibid. kısa künyeye çevrilir. Ne olacağı listelenir; onaylayınca yerinde Derkenar atıfı olurlar. Açıklama içeren dipnotlar dokunulmadan kalır.</li>
           <li>Elle yazılmış kaynakçayı seçip <strong>Seçili kaynakçayı oku</strong>: eserler kütüphaneye ve belgenin kaynakçasına girer (atıf yapılmamış olanlar da). Metin içi stillerde "(Kara, 2005: 45)" gibi atıflar <strong>Metin içi atıfları tara</strong> ile çevrilir.</li>
           <li>Başka bir belgeden kopyalanan atıfın verisi yoksa: <strong>Belge → Belgedeki kaynakları kütüphaneye al</strong>.</li>
           <li>Önce belgenin bir kopyasını alın; her çeviri Word'de Geri Al ile geri alınır.</li>

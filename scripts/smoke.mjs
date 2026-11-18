@@ -566,6 +566,7 @@ try {
   const typed = apa.find((t) => /\d{4}/.test(t) && !t.includes(";"));
   await page.evaluate((t) => window.__doc.flow.push({ kind: "text", text: ` Elle yazılmış ${t} burada.` }), typed);
   await page.click("#tab-belge");
+  if (!(await page.isVisible("#hand-intext-scan"))) await page.click("#hand-box summary");
   await page.click("#hand-intext-scan");
   await page.waitForSelector("#hand-intext-result:has-text('1 metin içi atıf kütüphanedeki eserlerle eşleşti')", { timeout: 5000 }).catch(async () => fail(`in-text scan for ${typed}: ${await page.textContent("#hand-intext-result")} / ${await page.textContent("#message")}`));
   await page.locator("#hand-intext-result button").click();
@@ -779,6 +780,7 @@ try {
     for (const t of ["Hasan Kâmil Yılmaz, Anahatlarıyla Tasavvuf ve Tarikatlar (İstanbul: Ensar Neşriyat, 2004), 45.", "a.g.e., 46.", "Bu görüş için ileride ayrıca durulacaktır.", "Bk. Yılmaz, Anahatlarıyla Tasavvuf, 50."]) window.__doc.flow.push({ fn: { controls: [], text: t } });
   });
   await page.click("#tab-belge");
+  if (!(await page.isVisible("#hand-scan"))) await page.click("#hand-box summary");
   await page.click("#hand-scan");
   await page.waitForSelector("#hand-result:has-text('3 tanesi atıfa çevrilebilir')");
   if (!(await page.textContent("#hand-result")).includes("kalır: künye olarak okunamadı")) fail("hand note with prose should stay");
@@ -794,6 +796,7 @@ try {
   await page.evaluate(() => {
     window.__doc.selText = "KAYNAKÇA\rYılmaz, Hasan Kâmil. Anahatlarıyla Tasavvuf ve Tarikatlar. İstanbul: Ensar Neşriyat, 2004.\rOcak, Ahmet Yaşar. Türk Sufîliğine Bakışlar. İstanbul: İletişim Yayınları, 1996.\r";
   });
+  if (!(await page.isVisible("#hand-bib-scan"))) await page.click("#hand-box summary");
   await page.click("#hand-bib-scan");
   await page.waitForSelector("#hand-bib-result:has-text('2 künyeden 2 tanesi okundu (1 eser kütüphanede yok')", { timeout: 4000 }).catch(async () => fail(`typed bibliography: ${await page.textContent("#hand-bib-result")} / ${await page.textContent("#message")}`));
   await page.locator("#hand-bib-result button").click();
@@ -835,6 +838,15 @@ try {
     await page.click("#person-ei3");
     await page.waitForSelector("#message:has-text('ad EI3 yazımına çevrildi')");
     if (!(await page.evaluate(() => window.__doc.flow.map((x) => (x.cc ? x.cc.text : typeof x.text === "string" ? x.text : "")).join("").includes("Abstract: Katib Çelebi’s view.")))) fail(`EI3 in selection: ${await page.evaluate(() => JSON.stringify(window.__doc.flow.filter((x) => typeof x.text === "string").map((x) => x.text).slice(-3)))}`);
+  }
+
+  if (process.env.SHOTS) {
+    await page.click("#tab-belge");
+    await page.screenshot({ path: `${process.env.SHOTS}/belge.png`, fullPage: true });
+    await page.click("#tab-aktar");
+    await page.screenshot({ path: `${process.env.SHOTS}/aktar.png`, fullPage: true });
+    await page.click("#tab-atif");
+    await page.screenshot({ path: `${process.env.SHOTS}/atif.png`, fullPage: true });
   }
 
   // 10. Veri bilgisi ve kılavuz.

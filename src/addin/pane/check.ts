@@ -51,7 +51,7 @@ async function checkAge(): Promise<void> {
       "li",
       {},
       h("div", { class: "issue warning" }, h("span", { class: "lvl" }, "Uyarı"), ` Belgede elle yazılmış ${n} "a.g.e. / a.e. / a.g.m. / Ibid." var. İSNAD bu kısaltmaları kullanmaz; aynı esere yeniden atıfta kısa künye yazılır (ör. "Kara, Tasavvuf ve Tarikatlar, 47."). `),
-      h("button", { type: "button", class: "link", onclick: () => { $("tab-belge").click(); $("hand-scan").scrollIntoView({ block: "center" }); $("hand-scan").focus(); } }, "Dipnotları tara ile kısa künyeye çevir"),
+      h("button", { type: "button", class: "link", onclick: () => { $("tab-belge").click(); ($("hand-box") as HTMLDetailsElement).open = true; $("hand-scan").scrollIntoView({ block: "center" }); $("hand-scan").focus(); } }, "Dipnotları tara ile kısa künyeye çevir"),
     ),
   );
   $("chk-summary").textContent += ` Elle yazılmış ${n} a.g.e.`;

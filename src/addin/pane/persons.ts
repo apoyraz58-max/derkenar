@@ -76,7 +76,7 @@ export function wirePersons(): void {
       const pairs = ei3Replacements(text, index);
       if (!pairs.length) return setMessage("Seçili metinde tablodaki kişilerin DİA yazımıyla geçen adı bulunamadı.", "info");
       const n = await serial(() => word.replaceInSelection(pairs));
-      setMessage(`${n} ad EI3 yazımına çevrildi: ${pairs.slice(0, 5).map((p) => `${p.from} → ${p.to}`).join("; ")}${pairs.length > 5 ? " …" : ""}. Türkçe ekler ("’nin") kaldırıldı; cümleyi gözden geçirin.`, "success");
+      setMessage(`${n} ad EI3 yazımına çevrildi: ${pairs.slice(0, 5).map((p) => `${p.from} → ${p.to}`).join("; ")}${pairs.length > 5 ? " …" : ""}.${pairs.some((p) => /[’'][\p{L}]+$/u.test(p.from) && !/[’'][sS]$/.test(p.from)) ? ' Türkçe ekler ("’nin") kaldırıldı; cümleyi gözden geçirin.' : ""}`, "success");
     });
 }
 
