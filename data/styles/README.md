@@ -17,6 +17,10 @@ details without parentheses ("…hk. E-Posta 2 Eylül 2019, Alıcı Emrah Kaya."
   "Yükseköğretim Kurulu (2016)" biçiminde (kılavuz s. 122); kaynakça değişmedi
   ("Türkiye: Yükseköğretim Kurulu, 2016"). Dipnot için `legal-cites-note` makrosu eklendi.
 
+- İki İSNAD stilinde mahkeme kararının tarihinden önce mahkeme adı yazılmaz: kılavuz
+  "Yargıtay 11. Hukuk Dairesi (Yargıtay), K. 2019/1204 (22 Ağustos 2019)." der (s. 123); stil
+  "(Yargıtay 22 Ağustos 2019)" yazıyordu (`issued` makrosu, `legal_case`).
+
 ## APA ve Chicago
 
 `apa.csl` (APA Style 7th edition) ve `chicago-notes-bibliography.csl` (Chicago Manual of

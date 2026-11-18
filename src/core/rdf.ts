@@ -98,14 +98,15 @@ function setBase(item: Item, base: string, value: string, extra: string[]): void
   const f = typeField(item.itemType, base);
   if (f) {
     if (!item.fields[f]) item.fields[f] = value;
-  } else if (base !== "number" || !setNumberLike(item, value)) {
+  } else if ((base !== "number" && base !== "issue") || !setNumberLike(item, value)) {
     extra.push(`${base}: ${value}`);
   }
 }
 
 /** prism:number means issue for articles, number elsewhere. */
 function setNumberLike(item: Item, value: string): boolean {
-  for (const b of ["issue", "seriesNumber", "reportNumber", "billNumber"]) {
+  // A court decision's number ("K. 2019/1204") comes as the court reporter's number.
+  for (const b of ["issue", "seriesNumber", "reportNumber", "billNumber", "docketNumber"]) {
     const f = typeField(item.itemType, b);
     if (f && !item.fields[f]) {
       item.fields[f] = value;

@@ -1117,7 +1117,6 @@
         <choose>
           <if type="legal_case">
             <group delimiter=" ">
-              <text variable="authority"/>
               <choose>
                 <if variable="container-title" match="any">
                   <date variable="issued" form="numeric" date-parts="year"/>

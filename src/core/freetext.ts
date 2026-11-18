@@ -622,6 +622,19 @@ function legislation(s: string): ParsedReference | null {
   return { item, form: "isnad-dipnot", unsure: [] };
 }
 
+/** A court decision (İSNAD): "Yargıtay 11. Hukuk Dairesi (Yargıtay), K. 2019/1204 (22 Ağustos 2019)". */
+function courtCase(s: string): ParsedReference | null {
+  const item = emptyItem("case", "serbest");
+  const t = readUrl(item, s).replace(/\.$/, "");
+  const m = /^(.+?)\s*\(([^()]{2,40})\),?\s*(?:K|E|Karar|Esas)\.\s*(?:No\.?\s*)?([\d/.-]+)\s*\(([^()]+)\)$/u.exec(t);
+  if (!m || !/(mahkeme|yargıtay|danıştay|daire|kurul|court|sayıştay)/i.test(`${m[1]} ${m[2]}`)) return null;
+  item.creators.push({ creatorType: "author", lastName: m[2]!.trim(), firstName: m[1]!.trim() });
+  item.fields.court = m[2]!.trim();
+  item.fields.docketNumber = m[3]!;
+  item.fields.dateDecided = dayMonthYear(m[4]!) ?? m[4]!.trim();
+  return { item, form: "isnad-dipnot", unsure: [] };
+}
+
 /**
  * A body as author, with its abbreviation (İSNAD): "Hazine ve Maliye Bakanlığı (HMB), Aylık Bütçe
  * Bülteni (Haziran 2019)", "… Komisyonu (MAK), … Raporu (Ankara: TBMM, 2016)". The abbreviation
@@ -689,7 +702,7 @@ function withOthers(r: ParsedReference, s: string): ParsedReference {
 export function parseReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
-  const ms = manuscript(s) ?? newspaper(s) ?? legislation(s) ?? institution(s);
+  const ms = manuscript(s) ?? newspaper(s) ?? legislation(s) ?? courtCase(s) ?? institution(s);
   if (ms) return withOthers(ms, s);
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;

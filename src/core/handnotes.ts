@@ -161,6 +161,8 @@ function findShort(body: string, pool: readonly Item[]): Item | null {
   const mine = [...new Set(pool)].filter((it) => byAuthor(it, author));
   const pick = (hits: Item[]) => (hits.length === 1 ? hits[0]! : (hits.find((h) => fold(h.fields.shortTitle ?? "") === title) ?? null));
   const starts = mine.filter((it) => {
+    // A court decision is named by its number: "Yargıtay, K. 2019/1204".
+    if (it.fields.docketNumber && title === fold(`K. ${it.fields.docketNumber}`)) return true;
     const t = fold(titleOf(it));
     const st = fold(it.fields.shortTitle ?? "");
     return t.startsWith(title) || (st && (st === title || title.startsWith(st)));
@@ -284,7 +286,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         const r = parseReference(`${body}.`);
         const f = r?.item.fields;
         // A full reference has an author or an imprint; a sentence of the author's own has neither.
-        const looksFull = r && f?.title && (r.item.creators.length > 0 || f.date || f.archive || f.accessDate) && (f.date || f.publisher || f.publicationTitle || f.encyclopediaTitle || f.dictionaryTitle || f.university || f.place || f.archive || f.accessDate || f.url);
+        const looksFull = r && (f?.title || f?.docketNumber) && (r.item.creators.length > 0 || f.date || f.archive || f.accessDate) && (f.date || f.dateDecided || f.publisher || f.publicationTitle || f.encyclopediaTitle || f.dictionaryTitle || f.university || f.place || f.archive || f.accessDate || f.url);
         if (!r || !looksFull) {
           reason = "künye olarak okunamadı";
           break;

@@ -218,3 +218,12 @@ describe("vd.", () => {
     expect(parseReference("Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları, 2005.")?.unsure).not.toContain("diğer yazarlar (vd.)");
   });
 });
+
+describe("hand-typed footnotes: court decisions", () => {
+  it("reads “Yargıtay 11. Hukuk Dairesi (Yargıtay), K. 2019/1204 (22 Ağustos 2019)” and “Yargıtay, K. 2019/1204”", () => {
+    const r = readHandNotes(["Yargıtay 11. Hukuk Dairesi (Yargıtay), K. 2019/1204 (22 Ağustos 2019).", "Yargıtay, K. 2019/1204.", "Anayasa Mahkemesi (AYM) K. 2015/19953 (26 Haziran 2019).", "AYM, K. 2015/19953."], []);
+    expect(r[0]!.refs![0]!.item).toMatchObject({ itemType: "case", fields: { court: "Yargıtay", docketNumber: "2019/1204", dateDecided: "2019-08-22" } });
+    expect(r[1]!.refs![0]!.item).toBe(r[0]!.refs![0]!.item);
+    expect(r[3]!.refs![0]!.item).toBe(r[2]!.refs![0]!.item);
+  });
+});
