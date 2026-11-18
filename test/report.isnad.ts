@@ -51,7 +51,7 @@ const label = (i: Item) => {
   return m === "kuran" || m === "incil" ? "verse" : m === "hadis-bab" || m === "hadis-no" ? "book" : undefined;
 };
 
-const titles = (i: Item) => [titleOf(i), i.fields.dictionaryTitle, i.fields.bookTitle, i.fields.encyclopediaTitle, i.fields.shortTitle].filter((t): t is string => Boolean(t && t.length > 3));
+const titles = (i: Item) => [titleOf(i), i.fields.dictionaryTitle, i.fields.bookTitle, i.fields.encyclopediaTitle, i.fields.shortTitle, i.fields.docketNumber ? `K. ${i.fields.docketNumber}` : ""].filter((t): t is string => Boolean(t && t.length > 3));
 
 it("report", () => {
   const { items } = parseZoteroRdf(readFileSync(new URL("fixtures/isnad/isnad2-eserler.rdf", import.meta.url), "utf8"), "file:isnad");

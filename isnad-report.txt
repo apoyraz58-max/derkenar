@@ -1,4 +1,4 @@
-Toplam 405 karşılaştırma: 268 birebir, 40 yalnız dizgi farkıyla, 97 farklı.
+Toplam 411 karşılaştırma: 271 birebir, 42 yalnız dizgi farkıyla, 98 farklı.
 2.1 Kitap-Yazarsız ve Anonim (s. 68): 5/6
 2.2 Kitap-Tek Yazarlı (s. 68): 6/6
 2.3 Kitap-İki Yazarlı (s. 69): 6/6
@@ -51,7 +51,7 @@ Toplam 405 karşılaştırma: 268 birebir, 40 yalnız dizgi farkıyla, 97 farkl�
 22.1 Mevzuat-Resmî Gazete’de (s. 121): 11/12
 22.2 Mevzuat-Diğer (s. 122): 6/6
 23 Standard (s. 123): 1/3
-24 Mahkeme Kararı (s. 123): 0/0
+24 Mahkeme Kararı (s. 123): 5/6
 26 Veri Tabanı (s. 125): 7/12
 27 Yazılım (s. 126): 5/9
 28 Patent (s. 127): 3/6
@@ -269,8 +269,9 @@ Toplam 405 karşılaştırma: 268 birebir, 40 yalnız dizgi farkıyla, 97 farkl�
      kılavuz: TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz. Türkiye: Türk Standardları Enstitüsü, Kabul 05 Haziran 2012, TS OIC/SMIIC 2/T1.
      derkenar: TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz. Türkiye: Türk Standardları Enstitüsü, Kabul 5 Haziran 2012, TS OIC/SMIIC 2/T1.
 ## 24 Mahkeme Kararı (s. 123)
-  ? eşleşmedi: Yargıtay 11. Hukuk Dairesi (Yargıtay), K. 2019/1204 (22 Ağustos 2019).
-  ? eşleşmedi: Anayasa Mahkemesi (AYM) K. 2015/19953 (26 Haziran 2019).
+  ✗ ilk
+     kılavuz: Anayasa Mahkemesi (AYM) K. 2015/19953 (26 Haziran 2019).
+     derkenar: Anayasa Mahkemesi (AYM), K. 2015/19953 (26 Haziran 2019).
 ## 26 Veri Tabanı (s. 125)
   ✗ kaynakça
      kılavuz: DAVET, Dini Araştırmalar Veri Tabanı İlahiyat Atıf Dizini. “Aranan: Oruç      İbadeti”.     Erişim      12      Eylül      2019. https://www.davet.org.tr
