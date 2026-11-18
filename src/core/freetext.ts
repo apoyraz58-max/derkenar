@@ -596,6 +596,37 @@ function newspaper(s: string): ParsedReference | null {
   return { item, form: "isnad-dipnot", unsure: [] };
 }
 
+/**
+ * A body as author, with its abbreviation (İSNAD): "Hazine ve Maliye Bakanlığı (HMB), Aylık Bütçe
+ * Bülteni (Haziran 2019)", "… Komisyonu (MAK), … Raporu (Ankara: TBMM, 2016)". The abbreviation
+ * is the surname (İSNAD's Zotero rule), so later notes read "HMB, Aylık Bütçe Bülteni".
+ */
+function institution(s: string): ParsedReference | null {
+  const item = emptyItem("report", "serbest");
+  const t = readUrl(item, s).replace(/\.$/, "");
+  const m = /^([^(),“”]{3,140}?)\s*\((\p{Lu}[\p{Lu}\d.]{1,11})\),?\s+([^()]{3,300}?)(?:\s*\(([^()]+)\))?$/u.exec(t);
+  if (!m) return null;
+  item.creators.push({ creatorType: "author", lastName: m[2]!, firstName: m[1]!.trim() });
+  item.fields.title = m[3]!.trim().replace(/,$/, "");
+  const inside = m[4]?.trim() ?? "";
+  if (inside && !readImprint(item, inside)) {
+    const d = dayMonthYear(inside);
+    const my = /^(\p{L}+)\s+(\d{4})$/u.exec(inside);
+    const mo = my ? MONTHS[my[1]!.toLocaleLowerCase("tr")] : undefined;
+    if (d) item.fields.date = d;
+    else if (my && mo) item.fields.date = `${my[2]}-${String(mo).padStart(2, "0")}`;
+    else if (/^\d{4}$/.test(inside)) item.fields.date = inside;
+    else return null;
+  }
+  if (!item.fields.date && !item.fields.accessDate && !item.fields.publisher) return null;
+  if (item.fields.accessDate && !item.fields.date) item.itemType = "webpage";
+  if (item.itemType === "report" && item.fields.publisher) {
+    item.fields.institution = item.fields.publisher;
+    delete item.fields.publisher;
+  }
+  return { item: settle(item), form: "isnad-dipnot", unsure: [] };
+}
+
 const LIBRARY = /(Kütüphane\w*|Library|Bibliothe\w*|Arşiv\w*|Archiv\w*|Müze\w*|Museum)/i;
 
 /**
@@ -625,7 +656,7 @@ function manuscript(s: string): ParsedReference | null {
 export function parseReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
-  const ms = manuscript(s) ?? newspaper(s);
+  const ms = manuscript(s) ?? newspaper(s) ?? institution(s);
   if (ms) return ms;
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;

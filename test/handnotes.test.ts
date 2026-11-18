@@ -188,3 +188,13 @@ describe("hand-typed footnotes: newspapers, month and year", () => {
     expect(r[3]!.refs![0]!.item.fields.date).toBe("1996");
   });
 });
+
+describe("hand-typed footnotes: a body as author", () => {
+  it("reads “Kurum (KISALTMA), Başlık (Haziran 2019)” and its short form", () => {
+    const r = readHandNotes(["Hazine ve Maliye Bakanlığı (HMB), Aylık Bütçe Bülteni (Haziran 2019), 45-46.", "HMB, Aylık Bütçe Bülteni, 40.", "Meclis Araştırması Komisyonu (MAK), Çocuklara Yönelik İstismar Olaylarının Araştırılması Komisyonu Raporu (Ankara: TBMM, 2016), 45.", "MAK, İstismar Olaylarının Araştırılması Raporu, 47."], []);
+    expect(r[0]!.refs![0]!.item).toMatchObject({ itemType: "report", fields: { title: "Aylık Bütçe Bülteni", date: "2019-06" }, creators: [{ lastName: "HMB", firstName: "Hazine ve Maliye Bakanlığı" }] });
+    expect(r[1]!.refs![0]!.item).toBe(r[0]!.refs![0]!.item);
+    expect(r[2]!.refs![0]!.item.fields).toMatchObject({ institution: "TBMM", place: "Ankara", date: "2016" });
+    expect(r[3]!.refs![0]!.item).toBe(r[2]!.refs![0]!.item);
+  });
+});

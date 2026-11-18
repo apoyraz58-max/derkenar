@@ -151,7 +151,14 @@ function findShort(body: string, pool: readonly Item[]): Item | null {
   if (!author) return null;
   // A short title taken from inside the title ("Suça Teşebbüsten Vazgeçme"), or its initials ("GAS").
   const inside = mine.filter((it) => fold(titleOf(it)).includes(title) || (/^[\p{Lu}]{2,6}$/u.test(raw) && initials(titleOf(it)) === raw.toLowerCase()));
-  return inside.length === 1 ? inside[0]! : null;
+  if (inside.length === 1) return inside[0]!;
+  // A short title of the author's own making ("MAK, Cinsel İstismar Olaylarının Önlenmesi … Raporu"): the author's only work, if most of its words are in the title.
+  if (mine.length === 1) {
+    const words = title.split(" ").filter((w) => w.length > 3);
+    const full = new Set(fold(titleOf(mine[0]!)).split(" "));
+    if (words.length >= 2 && words.filter((w) => full.has(w)).length / words.length >= 0.6) return mine[0]!;
+  }
+  return null;
 }
 
 /** "Tehânevî, “delîl”, 1/797": a madde of the dictionary by that author met before. */

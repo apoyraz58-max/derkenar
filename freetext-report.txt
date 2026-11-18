@@ -1,10 +1,10 @@
-Serbest künye: 150 metinden 145 tanesi okundu.
-  title: 133/145
-  author: 105/111
+Serbest künye: 150 metinden 146 tanesi okundu.
+  title: 134/146
+  author: 106/112
   container: 34/41
-  date: 125/129
-  place: 105/106
-  publisher: 103/104
+  date: 126/130
+  place: 105/107
+  publisher: 103/105
   volume: 25/31
   issue: 13/17
 
@@ -26,7 +26,14 @@ Serbest künye: 150 metinden 145 tanesi okundu.
 ✗ dipnot, journalArticle: İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl, “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”, nşr. Kadir Gömbeyaz, Bilimname 38 (2019), 57-81.
      author: "ebeveyi'r-Resûl" ≠ "İbrahim el-Halebî"
      issue: "" ≠ "38"
-✗ okunamadı (dipnot, book): Türk Standardları Enstitüsü (TSE), Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz (Türkiye: Türk Standardları Enstitüsü, Kabul 5 Haziran 2012, TS OIC/SMIIC 2/T1).
+✗ dipnot, book: Türk Standardları Enstitüsü (TSE), Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz (Türkiye: Türk Standardları Enstitüsü, Kabul 5 Haziran 2012, TS OIC/SMIIC 2/T1).
+     place: "" ≠ "Türkiye"
+     publisher: "" ≠ "Türk Standardları Enstitüsü"
+     tür: report ≠ book
+✗ dipnot, book: Türkiye Yazma Eserler Kurumu Başkanlığı (TYEKB), Yazma Eserler Portalı (Erişim 12 Eylül 2019).
+     tür: webpage ≠ book
+✗ dipnot, book: The Fihrist (TF), Union Catalogue of Manuscripts from the Islamicate World (Erişim 13 Eylül 2019).
+     tür: webpage ≠ book
 ✗ okunamadı (dipnot, journalArticle): Abdülmecid b. Aziz Şeyh Zindânî, “Yemen’de Şeyh Zindânî ile Mülakat” (Görüşmeci: Mehmet Ümit, Görüşme Transkripsiyonu), e-makalat 6/2 (Güz 2013), 135-150.
 ✗ kaynakça, book: el-Fihrisü’ş-şâmil li’t-türâsi’l-Arabiyyi’l-İslâmiyyi’l-mahtût: el-fıkh ve usûluhû. 12 Cilt. Amman: Müessesetü Âli’l-Beyt li’l-Fikri’l-İslâmî, 1999-2014.
      volume: "12" ≠ "11"
