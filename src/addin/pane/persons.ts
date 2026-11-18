@@ -1,16 +1,16 @@
 /**
  * Şahıslar tablosu (DİA – EI3): imported once from the user's own .xlsx /
  * .csv, kept in this computer's storage. With it, English İSNAD writes the
- * names of these persons the EI3 way, and the Atıf pane writes a person's
- * name with the death date İSNAD asks for: "Gazzâlî (ö. 505/1111)".
+ * names of these persons the EI3 way and Turkish records are checked against
+ * DİA's spelling. (Death dates in the text are Vefeyât's work.)
  */
 import { setEnglishNames } from "../../core/docstate.js";
-import { type DeathMention, type Person, type PersonIndex, type PersonTable, diaParts, ei3Replacements, missingDeathDates, diaSuggestion, englishCreator, findPerson, indexPersons, onlyMarks, personInText, searchPersons, tableFrom } from "../../core/persons.js";
+import { type PersonIndex, type PersonTable, diaParts, ei3Replacements, diaSuggestion, englishCreator, findPerson, indexPersons, onlyMarks, searchPersons, tableFrom } from "../../core/persons.js";
 import type { Issue } from "../../core/isnad.js";
 import type { Item } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { getMeta, setMeta } from "../store.js";
-import { $, doc, h, run, serial, setMessage } from "./core.js";
+import { $, doc, run, serial, setMessage } from "./core.js";
 import { refresh } from "./document.js";
 
 let index: PersonIndex | null = null;
@@ -35,7 +35,7 @@ function render(): void {
   $("persons-remove").hidden = !t;
   $("person-helper").hidden = false;
   $("person-empty").hidden = Boolean(t);
-  $<HTMLInputElement>("person-q").disabled = !t;
+  $<HTMLButtonElement>("person-ei3").disabled = !t;
 }
 
 export async function loadPersons(): Promise<void> {
@@ -50,28 +50,7 @@ async function importTable(file: File): Promise<void> {
   use(table);
   const unsure = table.persons.filter((p) => p.unsure).length;
   if (english()) await refresh(false, true);
-  setMessage(`Şahıslar tablosu yüklendi: ${table.persons.length.toLocaleString("tr-TR")} kişi${unsure ? ` (${unsure} kişinin EI3 yazımı tabloda tahminî olarak işaretli)` : ""}. İngilizce İSNAD'da bu kişilerin adları EI3'e göre yazılır; Atıf sekmesinden adı vefat tarihiyle ekleyebilirsiniz.`, "success");
-}
-
-function personRow(p: Person): HTMLElement {
-  const en = english();
-  const btn = h(
-    "button",
-    { type: "button", class: "person-hit" },
-    h("span", { class: "r-title" }, personInText(p, en)),
-    h("span", { class: "r-more" }, `${en ? p.dia : p.ei3}${p.unsure ? " · EI3 yazımı tahminî" : ""}`),
-  );
-  btn.onclick = () =>
-    void run("Ekleniyor", async () => {
-      await serial(() => word.insertPlainText(personInText(p, en)));
-      setMessage(`Metne yazıldı: ${personInText(p, en)}. İSNAD vefat tarihini adın ilk geçtiği yerde ister.`, "success");
-    });
-  return btn;
-}
-
-function search(): void {
-  const q = $<HTMLInputElement>("person-q").value;
-  $("person-hits").replaceChildren(...(index && q.trim().length >= 2 ? searchPersons(q, index, 8).map((p) => h("li", {}, personRow(p))) : []));
+  setMessage(`Şahıslar tablosu yüklendi: ${table.persons.length.toLocaleString("tr-TR")} kişi${unsure ? ` (${unsure} kişinin EI3 yazımı tabloda tahminî olarak işaretli)` : ""}. İngilizce İSNAD'da bu kişilerin adları EI3'e göre yazılır, Türkçe kayıtlardaki adlar DİA yazımına göre denetlenir.`, "success");
 }
 
 export function wirePersons(): void {
@@ -89,7 +68,6 @@ export function wirePersons(): void {
       if (english()) await refresh(false, true);
       setMessage("Şahıslar tablosu kaldırıldı; adlar kayıtta yazıldığı gibi.", "info");
     });
-  $<HTMLInputElement>("person-q").oninput = search;
   $("person-ei3").onclick = () =>
     void run("Adlar çevriliyor", async () => {
       if (!index) throw new Error("Önce Aktar → Şahıslar tablosu'nu yükleyin.");
@@ -148,33 +126,4 @@ export function diaSpelling(items: Item[]): string[] {
 export function diaSurnames(q: string): string[] {
   if (!index || q.trim().length < 3) return [];
   return [...new Set(searchPersons(q, index, 10).filter((p) => /arap|fars/i.test(p.group)).map((p) => diaParts(p).surname))];
-}
-
-// ---------------------------------------------------------------- death dates at the first mention
-
-/** Persons mentioned in the document's text without the death date at their first mention. */
-export async function missingDates(): Promise<DeathMention[]> {
-  if (!index) return [];
-  const { text, own } = await serial(() => word.bodyText());
-  // The persons whose works this document cites tell which of two namesakes is meant.
-  const cited = new Set<Person>();
-  for (const it of Object.values(doc().items)) for (const c of it.creators) {
-    const p = findPerson(c, index);
-    if (p) cited.add(p);
-  }
-  // Read in the writer's own text; the place counted in the whole text, as Word's search sees it.
-  return missingDeathDates(own, index, english(), cited).map((d) => ({ ...d, n: occurrences(text.slice(0, d.at), d.word) }) as DeathMention & { n: number });
-}
-
-function occurrences(hay: string, needle: string): number {
-  let n = 0;
-  for (let i = hay.indexOf(needle); i >= 0; i = hay.indexOf(needle, i + needle.length)) n++;
-  return n;
-}
-
-/** Writes the dates after the first mentions (the last first, so the earlier places do not move). */
-export async function addDates(list: readonly (DeathMention & { n?: number })[]): Promise<number> {
-  let done = 0;
-  for (const d of [...list].sort((a, b) => b.at - a.at)) if (await serial(() => word.insertAfterOccurrence(d.word, (d as { n?: number }).n ?? 0, ` ${d.note}`))) done++;
-  return done;
 }

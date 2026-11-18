@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { emptyState, planRefresh, putCitation, setEnglishNames } from "../src/core/docstate.js";
 import { Renderer } from "../src/core/engine.js";
 import { htmlToText } from "../src/core/html.js";
-import { buildDict, diaSuggestion, onlyMarks, englishCreator, findPerson, indexPersons, personInText, personsFromRows, readCsv, searchPersons, transliterate, type PersonTable } from "../src/core/persons.js";
+import { buildDict, diaSuggestion, onlyMarks, englishCreator, findPerson, indexPersons, personsFromRows, readCsv, searchPersons, transliterate, type PersonTable } from "../src/core/persons.js";
 import { emptyItem } from "../src/core/zotero.js";
 
 const styles = new URL("../data/styles/", import.meta.url);
@@ -49,12 +49,9 @@ describe("Şahıslar (DİA–EI3)", () => {
     expect(find("Kara", "Ahmet")).toBeNull();
     expect(find("Yılmaz", "Hüseyin")).toBeNull();
   });
-  it("writes the EI3 form and the death date", () => {
+  it("writes the EI3 form", () => {
     const p = findPerson({ creatorType: "author", lastName: "Râzî", firstName: "Fahreddin er-" }, ix)!;
     expect(englishCreator({ creatorType: "author", lastName: "Râzî", firstName: "Fahrüddîn er-" }, p, t.dict).creator).toEqual({ creatorType: "author", lastName: "al-Rāzī", firstName: "Fakhr al-Dīn" });
-    expect(personInText(p, false)).toBe("Fahreddin er-Râzî (ö. 606/1210)");
-    expect(personInText(p, true)).toBe("Fakhr al-Dīn al-Rāzī (d. 606/1210)");
-    expect(personInText(t.persons[5]!, false)).toBe("Mustafa Kara");
     expect(searchPersons("gazz", ix).map((x) => x.dia)).toEqual(["Gazzâlî", "Ahmed el-Gazzâlî"]);
   });
   it("English İSNAD: names the EI3 way, al- with the surname", () => {
@@ -105,17 +102,6 @@ describe("DİA yazımı (Türkçe)", () => {
   });
 });
 
-import { missingDeathDates } from "../src/core/persons.js";
-
-describe("Vefat tarihi: metinde ilk geçiş", () => {
-  const ix = indexPersons(table());
-  it("finds the first mention without a date; parentheses and dated mentions do not count", () => {
-    const text = "Bu görüş (Gazzâlî, el-Mustasfâ, 1/45) ile başlar. Fahreddin er-Râzî de buna katılır. Gazzâlî ise farklı düşünür; Gazzâlî'nin eseri. Buhârî (ö. 256/870) burada yok. Kâtib Çelebi (v. 1067/1657) de. Mustafa Kara bir çağdaştır.";
-    expect(missingDeathDates(text, ix).map((d) => `${d.text} ${d.note}`)).toEqual(["Fahreddin er-Râzî (ö. 606/1210)", "Gazzâlî (ö. 505/1111)"]);
-    expect(missingDeathDates("Gazzali bunu söyler.", ix, true).map((d) => `${d.text} ${d.note}`)).toEqual(["Gazzali (d. 505/1111)"]);
-  });
-});
-
 import { ei3Replacements } from "../src/core/persons.js";
 
 describe("Metindeki adlar DİA → EI3", () => {
@@ -126,16 +112,5 @@ describe("Metindeki adlar DİA → EI3", () => {
       { from: "Kâtib Çelebi’s", to: "Katib Çelebi’s" },
       { from: "Gazzâlî’nin", to: "al-Ghazālī" },
     ]);
-  });
-});
-
-describe("Vefat tarihi: adaşlar", () => {
-  it("a shared name is the cited author's", () => {
-    const rows = readCsv(CSV + "\n7;Gazzâlî, Zeyneb;---;---;(ö. 700/1300);al-Ghazālī, Zaynab;;;Arap;;;");
-    const persons = personsFromRows(rows);
-    const ix = indexPersons({ persons, dict: buildDict(persons), source: "t" });
-    expect(missingDeathDates("Gazzâlî der ki.", ix)).toEqual([]);
-    const cited = new Set([persons.find((p) => p.dia === "Gazzâlî")!]);
-    expect(missingDeathDates("Gazzâlî der ki.", ix, false, cited).map((d) => d.note)).toEqual(["(ö. 505/1111)"]);
   });
 });

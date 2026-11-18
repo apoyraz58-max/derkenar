@@ -816,14 +816,6 @@ try {
     await page.click("#tab-aktar");
     await page.setInputFiles("#persons-file", { name: "sahislar.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
     await page.waitForSelector("#message:has-text('Şahıslar tablosu yüklendi: 2 kişi')");
-    await page.click("#tab-atif");
-    await page.click("#person-helper summary");
-    await page.fill("#person-q", "gazz");
-    await page.evaluate(() => (window.__doc.plainInsert = true));
-    await page.locator("#person-hits button", { hasText: "Gazzâlî (ö. 505/1111)" }).click();
-    await page.waitForSelector("#message:has-text('Metne yazıldı: Gazzâlî (ö. 505/1111)')");
-    await page.evaluate(() => (window.__doc.plainInsert = false));
-    if (!(await page.evaluate(() => window.__doc.flow.some((x) => x.text === "Gazzâlî (ö. 505/1111)")))) fail("person with death date not written");
     // DİA spelling: a pasted reference with "Gazzali" takes DİA's form; a loosely written one is asked about.
     await page.click("#tab-kutuphane");
     await page.selectOption("#lib-new", "__ways");
@@ -836,21 +828,13 @@ try {
     await page.locator("#ed-issues .issue", { hasText: 'DİA\'da "Ebû Hâmid Muhammed el-Gazzâlî" (ö. 505/1111)' }).waitFor({ timeout: 5000 }).catch(async () => fail(`DİA issue: ${await page.textContent("#ed-issues")}`));
     await page.locator("#ed-issues button", { hasText: "DİA yazımını uygula" }).click();
     if ((await page.inputValue('[aria-label="Soyad"]')) !== "Gazzâlî") fail("DİA fix not applied");
-    // Death date at the first mention: Denetim finds Kâtib Çelebi without one and writes it.
-    await page.evaluate(() => window.__doc.flow.push({ kind: "text", text: " Kâtib Çelebi’nin eseri. Yine Kâtib Çelebi." }));
-    await page.click("#tab-denetim");
-    await page.selectOption("#chk-scope", "document");
-    await page.click("#chk-run");
-    await page.locator("#chk-deaths button", { hasText: "Ekle" }).first().click();
-    await page.waitForSelector("#message:has-text('1 kişinin vefat tarihi')");
-    const dated = await page.evaluate(() => window.__doc.flow.filter((x) => typeof x.text === "string" && x.text.includes("Kâtib Çelebi")).map((x) => x.text).join("|"));
-    // Names in a selected English text, DİA → EI3.
+    // Names in a selected English text, DİA → EI3 (and no death dates anywhere: that is Vefeyât's work).
     await page.evaluate(() => { window.__doc.flow.push({ kind: "text", text: " Abstract: Kâtib Çelebi’s view." }); window.__doc.selText = "Abstract: Kâtib Çelebi’s view."; });
     await page.click("#tab-atif");
+    await page.click("#person-helper summary");
     await page.click("#person-ei3");
     await page.waitForSelector("#message:has-text('ad EI3 yazımına çevrildi')");
     if (!(await page.evaluate(() => window.__doc.flow.map((x) => (x.cc ? x.cc.text : typeof x.text === "string" ? x.text : "")).join("").includes("Abstract: Katib Çelebi’s view.")))) fail(`EI3 in selection: ${await page.evaluate(() => JSON.stringify(window.__doc.flow.filter((x) => typeof x.text === "string").map((x) => x.text).slice(-3)))}`);
-    if (!dated.includes("Kâtib Çelebi’nin (ö. 1067/1657) eseri. Yine Kâtib Çelebi.")) fail(`death date: ${dated} / ${await page.evaluate(() => JSON.stringify(window.__doc.flow.filter((x) => typeof x.text === "string").map((x) => x.text)))}`);
   }
 
   // 10. Veri bilgisi ve kılavuz.
