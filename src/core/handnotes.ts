@@ -125,8 +125,24 @@ function cutPlace(s: string): { body: string } & Place {
 
 const fold = (s: string) => foldText(s).replace(/^(el|al|er|es|en|et|ed|ez|eş|es)\s/, "");
 
+/** Folded surnames and titles, worked out once per record (a thesis cites the same works hundreds of times). */
+const folded = new WeakMap<Item, { surnames: string[]; title: string; short: string; container: string }>();
+function keysOf(item: Item) {
+  let k = folded.get(item);
+  if (!k) {
+    k = {
+      surnames: item.creators.filter((c) => c.creatorType === "author" || c.creatorType === "editor").map((c) => fold(c.lastName ?? c.name ?? "")).filter(Boolean),
+      title: fold(titleOf(item)),
+      short: fold(item.fields.shortTitle ?? ""),
+      container: fold(item.fields.publicationTitle ?? ""),
+    };
+    folded.set(item, k);
+  }
+  return k;
+}
+
 function surnames(item: Item): string[] {
-  return item.creators.filter((c) => c.creatorType === "author" || c.creatorType === "editor").map((c) => fold(c.lastName ?? c.name ?? "")).filter(Boolean);
+  return keysOf(item).surnames;
 }
 
 /** "Kara, Tasavvuf ve Tarikatlar" → the work among `pool` by that author whose title (or short title) begins so. */
@@ -134,7 +150,7 @@ function surnames(item: Item): string[] {
 const authorKey = (s: string) => fold(s.replace(/\s*\((?:ed|eds|haz|ç(?:ev)?)\.?\)\s*$/i, "").replace(/\s+(?:vd\.?|et al\.?)$/i, "").split(/\s+[-–]\s+|\s+ve\s+|\s*&\s*/)[0]!);
 /** By that author — or, for an unsigned newspaper piece, in that paper ("Milliyet, “Yetki Kanunları”"). */
 const byAuthor = (it: Item, author: string) =>
-  !author || surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`)) || (!it.creators.length && fold(it.fields.publicationTitle ?? "") === author);
+  !author || surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`)) || (!it.creators.length && keysOf(it).container === author);
 
 /** The initials of a title's words ("Geschichte des arabischen Schrifttums" → "gas"), for "Sezgin, GAS". */
 const initials = (t: string) => fold(t).split(" ").filter((w) => w.length > 3).map((w) => w[0]).join("");
@@ -163,23 +179,22 @@ function findShort(body: string, pool: readonly Item[]): Item | null {
   const title = fold(raw.replace(/[“”"«»]/g, ""));
   if (!title) return null;
   const mine = [...new Set(pool)].filter((it) => byAuthor(it, author));
-  const pick = (hits: Item[]) => (hits.length === 1 ? hits[0]! : (hits.find((h) => fold(h.fields.shortTitle ?? "") === title) ?? null));
+  const pick = (hits: Item[]) => (hits.length === 1 ? hits[0]! : (hits.find((h) => keysOf(h).short === title) ?? null));
   const starts = mine.filter((it) => {
     // A court decision is named by its number: "Yargıtay, K. 2019/1204".
     if (it.fields.docketNumber && title === fold(`K. ${it.fields.docketNumber}`)) return true;
-    const t = fold(titleOf(it));
-    const st = fold(it.fields.shortTitle ?? "");
+    const { title: t, short: st } = keysOf(it);
     return t.startsWith(title) || (st && (st === title || title.startsWith(st)));
   });
   if (starts.length) return pick(starts);
   if (!author) return null;
   // A short title taken from inside the title ("Suça Teşebbüsten Vazgeçme"), or its initials ("GAS").
-  const inside = mine.filter((it) => fold(titleOf(it)).includes(title) || (/^[\p{Lu}]{2,6}$/u.test(raw) && initials(titleOf(it)) === raw.toLowerCase()));
+  const inside = mine.filter((it) => keysOf(it).title.includes(title) || (/^[\p{Lu}]{2,6}$/u.test(raw) && initials(titleOf(it)) === raw.toLowerCase()));
   if (inside.length === 1) return inside[0]!;
   // A short title of the author's own making ("MAK, Cinsel İstismar Olaylarının Önlenmesi … Raporu"): the author's only work, if most of its words are in the title.
   if (mine.length === 1) {
     const words = title.split(" ").filter((w) => w.length > 3);
-    const full = new Set(fold(titleOf(mine[0]!)).split(" "));
+    const full = new Set(keysOf(mine[0]!).title.split(" "));
     if (words.length >= 2 && words.filter((w) => full.has(w)).length / words.length >= 0.6) return mine[0]!;
   }
   return null;

@@ -93,8 +93,15 @@ export function tagCounts(items: readonly Item[]): { tag: string; count: number;
 
 // ---------------------------------------------------------------- duplicates
 
+/** Normalized titles, kept per record (checked against the title, so an edited record is worked out again). */
+const titleCache = new WeakMap<Item, { title: string; norm: string }>();
 function normTitle(i: Item): string {
-  return fold(titleOf(i)).replace(/[^\p{L}\p{N}]+/gu, "").slice(0, 60);
+  const title = titleOf(i);
+  const c = titleCache.get(i);
+  if (c && c.title === title) return c.norm;
+  const norm = fold(title).replace(/[^\p{L}\p{N}]+/gu, "").slice(0, 60);
+  titleCache.set(i, { title, norm });
+  return norm;
 }
 
 function firstFamily(i: Item): string {
