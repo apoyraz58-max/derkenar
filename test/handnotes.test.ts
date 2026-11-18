@@ -178,3 +178,13 @@ describe("hand-typed footnotes: manuscripts, dictionaries, âyet, vd.", () => {
     expect(ref(9).item).toBe(ref(8).item);
   });
 });
+
+describe("hand-typed footnotes: newspapers, month and year", () => {
+  it("reads İSNAD's newspaper forms and a book dated Kasım 1996", () => {
+    const r = readHandNotes(["Milliyet, “Yetki Kanunları” (17 Eylül 1971), 1.", "Milliyet, “Yetki Kanunları”, 1.", "Ahmet Hakan, “Bir Yazı”, Hürriyet (12 Mart 2010), 5.", "Aristoteles, Metafizik, çev. Ahmet Arslan (İstanbul: Sosyal Yayınlar, Kasım 1996), 171."], []);
+    expect(r[0]!.refs![0]!.item).toMatchObject({ itemType: "newspaperArticle", fields: { publicationTitle: "Milliyet", title: "Yetki Kanunları", date: "1971-09-17" } });
+    expect(r[1]!.refs![0]!.item).toBe(r[0]!.refs![0]!.item);
+    expect(r[2]!.refs![0]!.item.fields).toMatchObject({ publicationTitle: "Hürriyet", date: "2010-03-12" });
+    expect(r[3]!.refs![0]!.item.fields.date).toBe("1996");
+  });
+});

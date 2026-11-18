@@ -110,7 +110,9 @@ function surnames(item: Item): string[] {
 /** "Kara, Tasavvuf ve Tarikatlar" → the work among `pool` by that author whose title (or short title) begins so. */
 /** "Topaloğlu vd.", "Topaloğlu - Çelebi", "Roper (ed.)" → the first author's surname. */
 const authorKey = (s: string) => fold(s.replace(/\s*\((?:ed|eds|haz|ç(?:ev)?)\.?\)\s*$/i, "").replace(/\s+(?:vd\.?|et al\.?)$/i, "").split(/\s+[-–]\s+|\s+ve\s+|\s*&\s*/)[0]!);
-const byAuthor = (it: Item, author: string) => !author || surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`));
+/** By that author — or, for an unsigned newspaper piece, in that paper ("Milliyet, “Yetki Kanunları”"). */
+const byAuthor = (it: Item, author: string) =>
+  !author || surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`)) || (!it.creators.length && fold(it.fields.publicationTitle ?? "") === author);
 
 /** The initials of a title's words ("Geschichte des arabischen Schrifttums" → "gas"), for "Sezgin, GAS". */
 const initials = (t: string) => fold(t).split(" ").filter((w) => w.length > 3).map((w) => w[0]).join("");

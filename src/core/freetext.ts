@@ -57,7 +57,7 @@ const ROLE_RE = /^(Türkçeye çev\.|critical ed\.|thk\.|nşr\.|haz\.|sad\.|mlf\
 
 const MONTHS: Record<string, number> = { ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6, temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12, january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12 };
 
-const DATE = String.raw`(?:\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4}(?:-\d{2,4})?)?(?:\s*\[\d{4}\])?|ts\.|n\.d\.)`;
+const DATE = String.raw`(?:(?:ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)\s+)?(?:\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4}(?:-\d{2,4})?)?(?:\s*\[\d{4}\])?|ts\.|n\.d\.)`;
 const ARTICLES = /^(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|al|ad|an|ar|as|at|az)-/i;
 
 /** "12 Mart 2024" → "2024-03-12". */
@@ -124,7 +124,8 @@ function readImprint(item: Item, s: string): boolean {
     if (!/^(y\.y\.|s\.n\.)$/i.test(pub)) item.fields.publisher = pub;
   }
   if (edition) item.fields.edition = edition;
-  setDate(item, date!);
+  // A book is dated by its year ("Kasım 1996" → 1996).
+  setDate(item, date!.replace(/^\p{L}+\s+/u, ""));
   return true;
 }
 
@@ -568,6 +569,33 @@ function plausibility(r: ParsedReference): number {
   return p - r.unsure.length * 0.5;
 }
 
+/**
+ * A newspaper (İSNAD): "Yazar, “Başlık”, Gazete (17 Eylül 1971), 1." or, without
+ * an author, "Gazete, “Başlık” (17 Eylül 1971), 1." — a full day, month and year.
+ */
+function newspaper(s: string): ParsedReference | null {
+  const t = s.trim().replace(/\.$/, "");
+  const withAuthor = /^([^“”]{2,80}?),\s*“([^”]+)”,\s*([^(),]{2,60}?)\s*\((\d{1,2}\s+\p{L}+\s+\d{4})\)(?:,\s*(\d+(?:-\d+)?))?$/u.exec(t);
+  const noAuthor = withAuthor ? null : /^([^“”,]{2,60}),\s*“([^”]+)”\s*\((\d{1,2}\s+\p{L}+\s+\d{4})\)(?:,\s*(\d+(?:-\d+)?))?$/u.exec(t);
+  const m = withAuthor ?? noAuthor;
+  if (!m) return null;
+  const date = dayMonthYear(withAuthor ? m[4]! : m[3]!);
+  if (!date) return null;
+  const item = emptyItem("newspaperArticle", "serbest");
+  if (withAuthor) {
+    for (const n of splitNames(m[1]!).names) item.creators.push(nameInOrder(n, "author"));
+    item.fields.title = m[2]!;
+    item.fields.publicationTitle = m[3]!.trim();
+    if (m[5]) item.fields.pages = m[5];
+  } else {
+    item.fields.publicationTitle = m[1]!.trim();
+    item.fields.title = m[2]!;
+    if (m[4]) item.fields.pages = m[4];
+  }
+  item.fields.date = date;
+  return { item, form: "isnad-dipnot", unsure: [] };
+}
+
 const LIBRARY = /(Kütüphane\w*|Library|Bibliothe\w*|Arşiv\w*|Archiv\w*|Müze\w*|Museum)/i;
 
 /**
@@ -597,7 +625,7 @@ function manuscript(s: string): ParsedReference | null {
 export function parseReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
-  const ms = manuscript(s);
+  const ms = manuscript(s) ?? newspaper(s);
   if (ms) return ms;
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;
