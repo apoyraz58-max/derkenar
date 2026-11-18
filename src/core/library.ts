@@ -191,6 +191,47 @@ function isbn13(raw: string): string {
  * ISBN (10 or 13), or the same title, year and first creator. Used when a
  * work is added, so the library does not get it twice.
  */
+/**
+ * existingCopy for many candidates against one library: the library is
+ * indexed once by key, DOI, ISBN and title; `add` puts in what was just
+ * added, so a list does not add the same work twice.
+ */
+export function copyFinder(items: readonly Item[]): { find(candidate: Item): Item | undefined; add(item: Item): void } {
+  const byKey = new Map<string, Item>();
+  const byDoi = new Map<string, Item>();
+  const byIsbn = new Map<string, Item>();
+  const byTitle = new Map<string, Item[]>();
+  const add = (i: Item) => {
+    if (i.deleted) return;
+    if (!byKey.has(i.key)) byKey.set(i.key, i);
+    const doi = i.fields.DOI?.trim().toLowerCase();
+    if (doi && !byDoi.has(doi)) byDoi.set(doi, i);
+    for (const x of (i.fields.ISBN ?? "").split(/[\s,;]+/)) if (x.replace(/[^0-9X]/gi, "").length >= 10 && !byIsbn.has(isbn13(x))) byIsbn.set(isbn13(x), i);
+    const t = normTitle(i);
+    if (t.length >= 4) byTitle.set(t, [...(byTitle.get(t) ?? []), i]);
+  };
+  for (const i of items) add(i);
+  return {
+    add,
+    find(candidate) {
+      const k = byKey.get(candidate.key);
+      if (k) return k;
+      const doi = candidate.fields.DOI?.trim().toLowerCase();
+      if (doi && byDoi.has(doi)) return byDoi.get(doi);
+      for (const x of (candidate.fields.ISBN ?? "").split(/[\s,;]+/)) if (x.replace(/[^0-9X]/gi, "").length >= 10 && byIsbn.has(isbn13(x))) return byIsbn.get(isbn13(x));
+      const t = normTitle(candidate);
+      if (t.length < 4) return undefined;
+      const y = yearOf(candidate);
+      const f = firstFamily(candidate);
+      return (byTitle.get(t) ?? []).find((i) => {
+        const yi = yearOf(i);
+        const fi = firstFamily(i);
+        return !(y && yi && y !== yi) && !(f && fi && f !== fi) && Boolean(f || fi || y || yi);
+      });
+    },
+  };
+}
+
 export function existingCopy(candidate: Item, items: readonly Item[]): Item | undefined {
   const doi = candidate.fields.DOI?.trim().toLowerCase();
   const isbns = new Set((candidate.fields.ISBN ?? "").split(/[\s,;]+/).filter((x) => x.replace(/[^0-9X]/gi, "").length >= 10).map(isbn13));

@@ -11,7 +11,7 @@ import * as word from "../word.js";
 import { $, S, doc, getRenderer, h, putItems, run, serial, setMessage } from "./core.js";
 import { refresh } from "./document.js";
 import { isnadFix } from "./io.js";
-import { existingCopy } from "../../core/library.js";
+import { copyFinder } from "../../core/library.js";
 import { expandSameAuthor, parseReference, splitReferences } from "../../core/freetext.js";
 
 let plan: HandNote[] = [];
@@ -98,14 +98,16 @@ function bibliographyLines(text: string): string[] {
 
 function readBibliography(text: string): BibLine[] {
   const created: Item[] = [];
+  const copies = copyFinder(S.items);
   return bibliographyLines(text)
     .map((l) => {
       const r = parseReference(l);
       if (!r || !r.item.fields.title) return { text: l, item: null, isNew: false };
-      const old = existingCopy(r.item, [...S.items, ...created]);
+      const old = copies.find(r.item);
       if (old) return { text: l, item: old, isNew: created.includes(old) };
       const item = { ...r.item, source: "kaynakca" };
       created.push(item);
+      copies.add(item);
       return { text: l, item, isNew: true };
     });
 }

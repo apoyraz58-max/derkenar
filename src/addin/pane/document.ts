@@ -188,18 +188,20 @@ export async function checkForeign(): Promise<void> {
 
 async function convertForeign(): Promise<void> {
   const { parseZoteroField } = await import("../../core/zoterodoc.js");
-  const { existingCopy } = await import("../../core/library.js");
+  const { copyFinder } = await import("../../core/library.js");
   const { fromCsl } = await import("../../core/zotero.js");
   const d = doc();
   const fresh = new Map<string, Item>();
+  const copies = copyFinder(S.items);
   let inNotes = 0;
   let inText = 0;
   const keyFor = (w: { key?: string; data: CslItem }): string => {
     if (w.key && (S.byKey.has(w.key) || d.items[w.key] || fresh.has(w.key))) return w.key;
     const candidate = fromCsl({ ...w.data }, "belge", w.key);
-    const old = existingCopy(candidate, [...S.items, ...fresh.values()]);
+    const old = copies.find(candidate);
     if (old) return old.key;
     fresh.set(candidate.key, candidate);
+    copies.add(candidate);
     return candidate.key;
   };
   const result = await serial(() =>

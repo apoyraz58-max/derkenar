@@ -804,3 +804,18 @@ describe("İSNAD: initials apart", () => {
     expect(csl.author[0]!.given).toBe("T.C. Cumhurbaşkanlığı");
   });
 });
+
+import { copyFinder, existingCopy } from "../src/core/library.js";
+
+describe("copyFinder", () => {
+  it("finds what existingCopy finds", () => {
+    const mk = (title: string, last: string, date: string, extra: Record<string, string> = {}) => ({ ...emptyItem("book"), creators: [{ creatorType: "author", lastName: last, firstName: "A" }], fields: { title, date, ...extra } });
+    const lib = [mk("Tasavvuf ve Tarikatlar Tarihi", "Kara", "2005"), mk("Başka", "X", "2000", { DOI: "10.1/abc" }), mk("Üçüncü", "Y", "1999", { ISBN: "978-0-19-852663-6" })];
+    const f = copyFinder(lib);
+    for (const c of [mk("Tasavvuf ve tarikatlar tarihi", "Kara", "2005"), mk("Tasavvuf ve Tarikatlar Tarihi", "Kara", "1990"), mk("Farklı", "Z", "2001", { DOI: "10.1/ABC" }), mk("Farklı", "Z", "2001", { ISBN: "0198526636" }), mk("Yok", "Q", "2000")])
+      expect(f.find(c)).toBe(existingCopy(c, lib));
+    const n = mk("Yeni", "N", "2020");
+    f.add(n);
+    expect(f.find(mk("Yeni", "N", "2020"))).toBe(n);
+  });
+});

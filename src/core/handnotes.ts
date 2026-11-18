@@ -13,7 +13,7 @@
  */
 import { parseReference } from "./freetext.js";
 import { foldText } from "./isnadstyle.js";
-import { existingCopy } from "./library.js";
+import { copyFinder, existingCopy } from "./library.js";
 import { type Item, titleOf } from "./zotero.js";
 
 export interface HandRef {
@@ -217,6 +217,7 @@ const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(title
 /** Reads the notes in order; `library` is searched for each work before a new record is made. */
 export function readHandNotes(notes: readonly string[], library: readonly Item[]): HandNote[] {
   const created: Item[] = [];
+  const copies = copyFinder(library);
   const unsureOf = new Map<Item, string[]>();
   const seen: Item[] = [];
   let previous: HandRef | null = null;
@@ -311,11 +312,12 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           reason = "künye olarak okunamadı";
           break;
         }
-        const old = existingCopy(r.item, [...library, ...created]);
+        const old = copies.find(r.item);
         if (old) item = old;
         else {
           item = { ...r.item, source: "dipnot" };
           created.push(item);
+          copies.add(item);
           isNew = true;
           if (r.unsure.length) unsureOf.set(item, r.unsure);
         }

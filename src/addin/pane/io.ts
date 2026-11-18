@@ -12,7 +12,7 @@ import { getMeta, setMeta } from "../store.js";
 import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
 import { currentView, inCurrentView } from "./library.js";
-import { existingCopy, librarySpelling } from "../../core/library.js";
+import { copyFinder, existingCopy, librarySpelling } from "../../core/library.js";
 import { diaSpelling } from "./persons.js";
 
 
@@ -101,10 +101,14 @@ export function isnadFix(items: Item[]): string {
 export function splitExisting(items: readonly Item[]): { fresh: Item[]; already: Item[] } {
   const fresh: Item[] = [];
   const already: Item[] = [];
+  const finder = copyFinder(S.items);
   for (const it of items) {
-    const old = existingCopy(it, [...S.items, ...fresh]);
+    const old = finder.find(it);
     if (old) already.push(old);
-    else fresh.push(it);
+    else {
+      fresh.push(it);
+      finder.add(it);
+    }
   }
   return { fresh, already };
 }
