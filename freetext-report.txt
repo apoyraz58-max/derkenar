@@ -1,6 +1,6 @@
 Serbest künye: 150 metinden 146 tanesi okundu.
   title: 134/146
-  author: 106/112
+  author: 105/112
   container: 34/41
   date: 126/130
   place: 105/107
@@ -35,6 +35,8 @@ Serbest künye: 150 metinden 146 tanesi okundu.
 ✗ dipnot, book: The Fihrist (TF), Union Catalogue of Manuscripts from the Islamicate World (Erişim 13 Eylül 2019).
      tür: webpage ≠ book
 ✗ okunamadı (dipnot, journalArticle): Abdülmecid b. Aziz Şeyh Zindânî, “Yemen’de Şeyh Zindânî ile Mülakat” (Görüşmeci: Mehmet Ümit, Görüşme Transkripsiyonu), e-makalat 6/2 (Güz 2013), 135-150.
+✗ dipnot, book: Ebü’l-Hüseyn Müslim b. el-Haccâc, el-Câmiʿu’ṣ-ṣaḥîḥ, nşr. Muhammed Fuâd Abdülbâkī (Kahire: y.y., 1374-75/1955-56).
+     author: "Haccâc" ≠ "Müslim"
 ✗ kaynakça, book: el-Fihrisü’ş-şâmil li’t-türâsi’l-Arabiyyi’l-İslâmiyyi’l-mahtût: el-fıkh ve usûluhû. 12 Cilt. Amman: Müessesetü Âli’l-Beyt li’l-Fikri’l-İslâmî, 1999-2014.
      volume: "12" ≠ "11"
 ✗ kaynakça, journalArticle: Şuhâvî, Bedreddin. et-Tırâzu’l-müzheb. “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”. thk. Osman Bayder. Tahkik İslami İlimler Araştırma ve Neşir Dergisi 2/1 (Haziran 2019), 211-257. https://doi.org/10.5281/zenodo.3475103

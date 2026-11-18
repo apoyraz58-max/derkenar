@@ -326,3 +326,13 @@ describe("uyum: short references resolved through the bibliography", () => {
     expect(r.shortFirst.length).toBe(1);
   });
 });
+
+describe("well-known names: İbn Mâce, Ahmed b. Hanbel", () => {
+  it("keeps them whole as the surname", () => {
+    const r = readHandNotes(["Ebû Abdillâh Muhammed b. Yezîd İbn Mâce, es-Sünen (Kahire: y.y., ts.), “Mukaddime”, 5.", "İbn Mâce, “Mukaddime”, 7.", "Ahmed b. Hanbel, el-Müsned (Beyrut: Müessesetü’r-Risâle, 2001), 2/45.", "Ahmed b. Hanbel, el-Müsned, 3/12."], []);
+    expect(r[0]!.refs![0]!.item.creators[0]).toMatchObject({ lastName: "İbn Mâce", firstName: "Ebû Abdillâh Muhammed b. Yezîd" });
+    expect(r[1]!.refs![0]!.item).toBe(r[0]!.refs![0]!.item);
+    expect(r[2]!.refs![0]!.item.creators[0]).toMatchObject({ name: "Ahmed b. Hanbel" });
+    expect(r[3]!.refs![0]!.item).toBe(r[2]!.refs![0]!.item);
+  });
+});

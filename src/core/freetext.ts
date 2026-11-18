@@ -80,6 +80,14 @@ function nameInOrder(raw: string, creatorType: string): Creator {
   // An institution: "Türk Standardları Enstitüsü".
   if (/\b(Enstitüsü|Üniversitesi|Başkanlığı|Bakanlığı|Kurumu|Vakfı|Derneği|Merkezi|University|Institute|Foundation|Ministry)\b/.test(n)) return { creatorType, name: n };
   const words = n.split(" ");
+  // "Ahmed b. Hanbel": the well-known name is the whole "X b. Y" (DİA, İSNAD).
+  if (words.length === 3 && /^(b\.|bin|bint|bt\.)$/i.test(words[1]!)) return { creatorType, name: n };
+  // "… Muhammed b. Yezîd İbn Mâce", "… İbnü’l-Arabî": "İbn Mâce" is the surname.
+  if (words.length >= 3 && /^(İbn|Ibn|İbni|İbnü’l|İbnü'l)$/.test(words[words.length - 2]!)) {
+    const last2 = words.splice(-2).join(" ");
+    return { creatorType, lastName: last2, firstName: words.join(" ") };
+  }
+  if (words.length === 2 && /^(İbn|Ibn|İbni)$/.test(words[0]!)) return { creatorType, name: n };
   const last = words.pop()!;
   const art = ARTICLES.exec(last);
   if (art) return { creatorType, lastName: last.slice(art[0].length), firstName: `${words.join(" ")} ${art[0].toLocaleLowerCase("tr")}` };
