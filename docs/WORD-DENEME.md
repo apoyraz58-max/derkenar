@@ -37,10 +37,12 @@ Sağ tık → **Derkenar → Atıf ekle**.
 1. **Kütüphanenizi alın:** atıf programınızda Dosya → Kütüphaneyi Dışa Aktar → **RDF**
    → Derkenar → **İçe Aktar** → dosyayı seçin. Koleksiyonlar, notlar ve etiketler gelir.
    Ya da çevrimiçi kütüphane numaranız ve API anahtarınızla eşitleyin.
-2. **Yeni kaynak:** **Yeni Kaynak** düğmesi ekleme yollarını gösterir: DOI/ISBN/PMID/arXiv, RIS ya da BibTeX metni yapıştırma, dosya, elle giriş. Elle girişte türü seçin; bütün kaynak türleri ve alanları vardır. Kişiler'de rol
-   olarak Muhakkik (thk.), Nâşir (nşr.), Hazırlayan (haz.), Sadeleştiren (sad.) da vardır.
-   Tarih alanına hicrî/milâdî (1413/1993) yazılabilir. Yazdıkça kaydedilir; üstte İSNAD
-   uyarıları görünür.
+2. **Yeni kaynak:** **Yeni Kaynak** düğmesi ekleme yollarını gösterir: DOI/ISBN/PMID/arXiv;
+   künye yapıştırma (İSNAD, APA, eski usul, liste hâlinde; RIS, BibTeX, DİA Atıf metni);
+   iç kapak ve künye sayfası fotoğrafı ya da makale/tez PDF'i; dosya; elle giriş. Elle girişte
+   türü seçin; bütün kaynak türleri ve alanları vardır. Kişiler'de rol olarak Muhakkik (thk.),
+   Nâşir (nşr.), Hazırlayan (haz.), Sadeleştiren (sad.) da vardır. Tarih alanına hicrî/milâdî
+   (1413/1993) yazılabilir. Yazdıkça kaydedilir; üstte canlı önizleme ve İSNAD uyarıları görünür.
 3. **Atıf:** arayın (şapka ve Türkçe harf gerekmez), Enter ile sepete ekleyin, **Cilt** ve
    **Sayfa** yazın (1/45 olur), Ctrl+Enter. Atıf yeni dipnota girer.
 4. **Otomatik güncelleme:** başka bir şey yapmanız gerekmez. Araya atıf ekleyin, bir dipnotu
@@ -52,14 +54,41 @@ Sağ tık → **Derkenar → Atıf ekle**.
    **Önerilen düzeltmeleri uygula**.
 8. **Teslim:** belgenin kopyasını alın → **Düz Metne Çevir**.
 
-## Bilinen sınırlar (0.2)
+## 4. Eski bir çalışmayı taşımak
 
-- Stil şimdilik yalnız İSNAD 2 (dipnotlu ve metin içi).
+- **Başka atıf programıyla yazılmış belge:** Belge sekmesinde "Başka programla eklenmiş atıflar"
+  → **Derkenar atıflarına çevir**.
+- **Atıf programı olmadan yazılmış tez:** Belge → **Dipnotları tara** (önce liste gösterilir,
+  sonra **… dipnotu atıfa çevir**); kaynakçayı seçip **Seçili kaynakçayı oku**; metin içi
+  stillerde **Metin içi atıfları tara**.
+- Her zaman önce belgenin bir kopyasında deneyin; Word'de Geri Al çalışır.
+
+## 5. Gerçek Word'de denenmesi gerekenler
+
+Bunlar geliştirme sırasında yalnız taklit bir Word'de denendi. Bir kopya belgede deneyip
+sonucu bildirirseniz çok işe yarar:
+
+1. **Dipnotları tara:** el yazısı dipnotlu bir bölüm (tam künye, kısa künye, a.g.e., "Bk.",
+   a.mlf., yazma eser 77b, sözlük maddesi, âyet). Dipnot numaraları yerinde kalmalı, metin
+   Derkenar atıfı olmalı, açıklamalı dipnotlar değişmemeli.
+2. **Seçili kaynakçayı oku:** el yazısı kaynakçayı seçin; hepsi okunursa yerine Derkenar
+   kaynakçası gelmeli.
+3. **Metin içi atıfları tara:** APA ya da İSNAD metin içi bir belgede "(Kara, 2005: 45)".
+4. **Fotoğraftan ya da PDF'ten ekle:** iç kapak + künye sayfası fotoğrafı; bir makale PDF'i.
+5. **Şahıslar tablosu:** Aktar'dan yükleyin; belgeyi İngilizceye alınca adlar EI3 olmalı;
+   İngilizce bir paragrafı seçip **Seçili metindeki adları EI3 yazımına çevir**.
+6. **Arama kutusuna künye yapıştırma:** Atıf sekmesinde "＋ … kütüphaneye ekle ve atıfa koy".
+
+## Bilinen sınırlar
+
 - Dipnot ve sonnot Word 2019, Microsoft 365 veya Word Online ister (WordApi 1.5); Word 2016'da
   atıf metne eklenir ve otomatik izleme yalnız metindeki atıflarda çalışır.
 - Otomatik güncelleme pencere açıkken çalışır. Pencere kapalıyken yapılan değişiklikler, pencere
   açılınca ilk saniyede düzeltilir.
-- Dipnotlu stilden metin içi stile geçişte yalnız atıf içeren dipnotlar metne taşınır; içinde açıklama da
-  olan dipnotlar yerinde kalır (sayısı bildirilir).
-- Atıf metnini elle değiştirirseniz bir sonraki güncellemede üzerine yazılır.
-- PDF okuyucu ve tarayıcı eklentisi yok.
+- Dipnotlu stilden metin içi stile geçişte yalnız atıf içeren dipnotlar metne taşınır; içinde
+  açıklama da olan dipnotlar yerinde kalır (sayısı bildirilir).
+- Atıf metnini Word'de elle değiştirirseniz Derkenar onun üzerine yazmaz; Denetim'de "Elle
+  yazılanı koru" ya da "Derkenar'ın metnine dön" seçilir.
+- Elle yazılmış dipnotlarda kanun, yönetmelik, mahkeme kararı, istatistik ve sanat eseri
+  künyeleri henüz okunmaz; bunlar elle girilir.
+- Vefat tarihleri Derkenar'ın işi değildir (Vefeyât eklentisi).
