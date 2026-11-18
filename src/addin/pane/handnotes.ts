@@ -239,12 +239,15 @@ async function checkAgainstBibliography(): Promise<void> {
   const r = checkBibliography(notes.map((n) => n.text), lines, S.items, derkenar);
   const noteNo = (i: number) => (notes[i - 1] ? notes[i - 1]!.index + 1 : i);
   $("hand-check-result").replaceChildren(
-    h("p", { class: "small" }, `Dipnotlarda ${r.citedCount} eser, kaynakçada ${r.listedCount} künye okundu.${!r.missing.length && !r.uncited.length ? " Uyumlu: her anılan eser kaynakçada, kaynakçadaki her eser anılmış." : ""}`),
+    h("p", { class: "small" }, `Dipnotlarda ${r.citedCount} eser, kaynakçada ${r.listedCount} künye okundu.${!r.missing.length && !r.uncited.length ? " Kaynakça uyumlu: her anılan eser kaynakçada, kaynakçadaki her eser anılmış." : ""}`),
     ...(r.missing.length
       ? [h("p", { class: "small" }, h("strong", {}, `Dipnotta anılıp kaynakçada olmayan (${r.missing.length}):`)), h("ul", { class: "hand-list small" }, ...r.missing.slice(0, 100).map((m) => h("li", {}, `${creatorLine(m.item) || "—"}, ${short(titleOf(m.item), 70)}${m.notes.length ? ` — dn. ${m.notes.map(noteNo).slice(0, 6).join(", ")}${m.notes.length > 6 ? " …" : ""}` : ""}`)))]
       : []),
     ...(r.uncited.length ? [h("p", { class: "small" }, h("strong", {}, `Kaynakçada olup hiçbir dipnotta anılmayan (${r.uncited.length}):`)), h("ul", { class: "hand-list small" }, ...r.uncited.slice(0, 100).map((l) => h("li", {}, short(l, 140))))] : []),
     ...(r.unreadLines.length ? [h("p", { class: "muted small" }, `Kaynakçada künye olarak okunamayan ${r.unreadLines.length} satır sayılmadı.`)] : []),
+    ...(r.shortFirst.length ? [h("p", { class: "small" }, h("strong", {}, `İlk geçişi kısa künye ya da a.g.e. ile yapılan (${r.shortFirst.length}):`), " İSNAD ilk atıfta tam künye ister."), h("ul", { class: "hand-list small" }, ...r.shortFirst.slice(0, 100).map((x) => h("li", {}, `dn. ${noteNo(x.note)}: ${creatorLine(x.item) || "—"}, ${short(titleOf(x.item), 70)}`)))] : []),
+    ...(r.fullAgain.length ? [h("p", { class: "small" }, h("strong", {}, `İlk atıftan sonra yeniden tam künyeyle verilen (${r.fullAgain.length}):`), " İSNAD sonraki atıflarda kısa künye yazar."), h("ul", { class: "hand-list small" }, ...r.fullAgain.slice(0, 100).map((x) => h("li", {}, `${creatorLine(x.item) || "—"}, ${short(titleOf(x.item), 60)} — dn. ${x.notes.map(noteNo).slice(0, 6).join(", ")}${x.notes.length > 6 ? " …" : ""}`)))] : []),
+    ...(r.age.length ? [h("p", { class: "small" }, h("strong", {}, `a.g.e. / a.e. / Ibid. kullanılan dipnotlar (${r.age.length}):`), ` dn. ${r.age.map(noteNo).slice(0, 15).join(", ")}${r.age.length > 15 ? " …" : ""}. İSNAD bunların yerine kısa künye ister; "Dipnotları tara" ile Derkenar atıfına çevrilince kendiliğinden düzelir.`)] : []),
     h("p", { class: "muted small" }, "Yalnız okunabilen dipnotlar sayılır; açıklama dipnotları ve okunamayan künyeler dışarıda kalır. Kaynakçada yararlanılan ama anılmayan eserler bulunabilir; bu bir hata olmayabilir."),
   );
 }

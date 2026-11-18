@@ -30,6 +30,8 @@ export interface HandRef {
   readonly madde?: string;
   /** CSL locator label: "sub verbo" for a law's madde (md. 35/4). */
   readonly label?: string;
+  /** How the note wrote it: a full reference, a short one, or a.g.e. / Ibid. (İSNAD: full first, short after, never a.g.e.). */
+  readonly form?: "full" | "short" | "age";
   /** What the reading could not tell ("diğer yazarlar (vd.)"), for a new record. */
   readonly unsure?: string[];
   /** Kitâb-ı Mukaddes: book abbreviation, bab and cümle ("Yar.1:12"). */
@@ -225,7 +227,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         }
         const tail = rest.slice(named[0].length).replace(/^(a\.?\s?g\.?\s?[em]\.?|age\.?|agm\.?|aynı\s+eser|op\.?\s*cit\.?)\s*,?\s*/i, "");
         const c: Place = tail ? cut(`, ${tail}`) : {};
-        const ref: HandRef = { item: work, isNew: created.includes(work), ...place(c), ...(prefix ? { prefix } : {}) };
+        const ref: HandRef = { item: work, isNew: created.includes(work), form: "age", ...place(c), ...(prefix ? { prefix } : {}) };
         refs.push(ref);
         seen.splice(seen.indexOf(work), 1);
         seen.push(work);
@@ -240,7 +242,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         const tail = rest.slice(sm[0].length).trim();
         const c: Place = tail ? cut(`, ${tail.replace(/^,\s*/, "")}`) : {};
         const sameLoc = /^a\.?\s?y\.?|aynı\s+yer/i.test(sm[1]!);
-        const ref: HandRef = { item: previous.item, isNew: previous.isNew, ...(c.volume ? { volume: c.volume } : previous.volume && !c.locator ? { volume: previous.volume } : {}), ...(c.locator ? { locator: c.locator } : sameLoc && previous.locator ? { locator: previous.locator } : {}), ...(prefix ? { prefix } : {}) };
+        const ref: HandRef = { item: previous.item, isNew: previous.isNew, form: "age", ...(c.volume ? { volume: c.volume } : previous.volume && !c.locator ? { volume: previous.volume } : {}), ...(c.locator ? { locator: c.locator } : sameLoc && previous.locator ? { locator: previous.locator } : {}), ...(prefix ? { prefix } : {}) };
         refs.push(ref);
         continue;
       }
@@ -258,7 +260,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           reason = "Kitâb-ı Mukaddes atfı önceki bir esere bağlanamadı";
           break;
         }
-        refs.push({ item: k, isNew: created.includes(k), ...where, ...(prefix ? { prefix } : {}) });
+        refs.push({ item: k, isNew: created.includes(k), form: "short", ...where, ...(prefix ? { prefix } : {}) });
         continue;
       }
       // "el-Bakara 2/14." alone: the Kur’ân meâl cited before.
@@ -268,7 +270,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           reason = "âyet atfı önceki bir meâli göstermiyor";
           break;
         }
-        refs.push({ item: q, isNew: created.includes(q), ...where, ...(prefix ? { prefix } : {}) });
+        refs.push({ item: q, isNew: created.includes(q), form: "short", ...where, ...(prefix ? { prefix } : {}) });
         continue;
       }
       // A short form of a work already met (in these notes, then in the library).
@@ -282,6 +284,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         }
       }
       let isNew = false;
+      const full = !item;
       if (!item) {
         const r = parseReference(`${body}.`);
         const f = r?.item.fields;
@@ -303,7 +306,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       // Kept in the order last cited ("Kara, a.g.e." is Kara's work cited last).
       if (seen.includes(item)) seen.splice(seen.indexOf(item), 1);
       seen.push(item);
-      const ref: HandRef = { item, isNew: isNew || created.includes(item), ...where, ...(prefix ? { prefix } : {}), ...(isNew && unsureOf.get(item)?.includes("diğer yazarlar (vd.)") ? { unsure: ["diğer yazarlar (vd.)"] } : {}) };
+      const ref: HandRef = { item, isNew: isNew || created.includes(item), form: full ? "full" : "short", ...where, ...(prefix ? { prefix } : {}), ...(isNew && unsureOf.get(item)?.includes("diğer yazarlar (vd.)") ? { unsure: ["diğer yazarlar (vd.)"] } : {}) };
       refs.push(ref);
     }
     if (reason || !refs.length) {
@@ -385,6 +388,29 @@ export interface BibCheck {
   readonly unreadLines: string[];
   readonly citedCount: number;
   readonly listedCount: number;
+  /** İSNAD: works first cited with a short reference (or a.g.e.), by note number. */
+  readonly shortFirst: { item: Item; note: number }[];
+  /** Works given in full again after their first citation (İSNAD writes the short form). */
+  readonly fullAgain: { item: Item; notes: number[] }[];
+  /** Notes with a.g.e. / a.e. / Ibid. */
+  readonly age: number[];
+}
+
+/** Full first, short after, no a.g.e. (İSNAD's rule for footnotes), as the notes were typed. */
+export function firstMentions(read: readonly HandNote[]): Pick<BibCheck, "shortFirst" | "fullAgain" | "age"> {
+  const met = new Set<Item>();
+  const shortFirst: { item: Item; note: number }[] = [];
+  const again = new Map<Item, number[]>();
+  const age = new Set<number>();
+  for (const n of read)
+    for (const r of n.refs ?? []) {
+      if (r.form === "age") age.add(n.index + 1);
+      if (!met.has(r.item)) {
+        met.add(r.item);
+        if (r.form && r.form !== "full") shortFirst.push({ item: r.item, note: n.index + 1 });
+      } else if (r.form === "full") again.set(r.item, [...(again.get(r.item) ?? []), n.index + 1]);
+    }
+  return { shortFirst, fullAgain: [...again].map(([item, notes]) => ({ item, notes })), age: [...age] };
 }
 
 const sameWork = (a: Item, b: Item): boolean => {
@@ -416,7 +442,10 @@ export function checkBibliography(notes: readonly string[], bibliography: readon
   }
   const missing = [...cited].filter(([it]) => !listed.some((l) => sameWork(it, l.item))).map(([item, ns]) => ({ item, notes: [...new Set(ns)] }));
   const uncited = listed.filter((l) => ![...cited.keys()].some((it) => sameWork(it, l.item))).map((l) => l.line);
-  return { missing, uncited, unreadLines, citedCount: cited.size, listedCount: listed.length };
+  // A work already cited with Derkenar may have had its full reference there.
+  const fm = firstMentions(read);
+  const viaDerkenar = new Set(alsoCited);
+  return { missing, uncited, unreadLines, citedCount: cited.size, listedCount: listed.length, ...fm, shortFirst: fm.shortFirst.filter((x) => !viaDerkenar.has(x.item)) };
 }
 
 /** "(Kara, 2005: 45; Ocak 1996)" and "Kara (2005)": the author and year of each in-text citation typed by hand. */

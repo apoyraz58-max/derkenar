@@ -260,3 +260,21 @@ describe("in-text citations against the bibliography", () => {
     expect(r.uncited).toEqual(["Yılmaz, Hasan Kâmil. Anahatlarıyla Tasavvuf ve Tarikatlar. İstanbul: Ensar Neşriyat, 2004."]);
   });
 });
+
+describe("full first, short after, no a.g.e.", () => {
+  it("finds short first mentions, full repeats and a.g.e.", () => {
+    const r = checkBibliography(
+      [
+        "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45.",
+        "a.g.e., 46.",
+        "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 50.",
+        "Kutlu, “İlk Mürciî Metinler”, 322.",
+      ],
+      [],
+      lib,
+    );
+    expect(r.age).toEqual([2]);
+    expect(r.fullAgain.map((x) => [x.item.fields.title, x.notes])).toEqual([["Tasavvuf ve Tarikatlar Tarihi", [3]]]);
+    expect(r.shortFirst.map((x) => [x.item.fields.title, x.note])).toEqual([["İlk Mürciî Metinler", 4]]);
+  });
+});
