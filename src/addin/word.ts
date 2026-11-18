@@ -717,23 +717,25 @@ export async function replaceInBody(writes: readonly { text: string; ids: readon
   });
 }
 
-/** In the selection: each `from` replaced by its `to` (formatting around them kept). */
+/**
+ * In the selection: each `from` replaced by its `to` (formatting around them
+ * kept). Longest first, one after another, so "Gazzâlî’nin" is replaced before
+ * "Gazzâlî" is looked for (Word would find "Gazzâlî" inside it too).
+ */
 export async function replaceInSelection(pairs: readonly { from: string; to: string }[]): Promise<number> {
   return Word.run(async (context) => {
     const sel = context.document.getSelection();
-    const found = pairs.map((p) => {
+    let n = 0;
+    for (const p of [...pairs].sort((a, b) => b.from.length - a.from.length)) {
       const r = sel.search(p.from, { matchCase: true });
       r.load("items");
-      return { p, r };
-    });
-    await context.sync();
-    let n = 0;
-    for (const { p, r } of found)
+      await context.sync();
       for (const range of r.items) {
         range.insertText(p.to, "Replace");
         n++;
       }
-    await context.sync();
+      await context.sync();
+    }
     return n;
   });
 }
