@@ -13,11 +13,12 @@ import { citedKeys, currentOrder, refresh } from "./document.js";
 import { $, S, doc, h, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
 import { inCurrentView } from "./library.js";
+import { personIssues } from "./persons.js";
 import { fieldVariants, unifyField } from "../../core/library.js";
 
 /** Fixes applied by "Önerilen düzeltmeleri uygula"; case changes stay manual. */
 /** "Önerilen düzeltmeleri uygula": the mechanical fixes also made when a work is added, and a few more. */
-const SAFE = new Set([...AUTO, "volume", "issue", "url"]);
+const SAFE = new Set([...AUTO, "volume", "issue", "url", "dia-name"]);
 
 let lastItems: Item[] = [];
 let lastIssues: Issue[] = [];
@@ -33,7 +34,7 @@ function scopeItems(): Item[] {
 export function runCheck(): void {
   lastItems = scopeItems();
   const withInfo = $<HTMLInputElement>("chk-info").checked;
-  lastIssues = lastItems.flatMap((i) => checkItem(i)).filter((i) => withInfo || i.level !== "info");
+  lastIssues = lastItems.flatMap((i) => [...checkItem(i), ...personIssues(i)]).filter((i) => withInfo || i.level !== "info");
   render();
   if ($<HTMLSelectElement>("chk-scope").value === "document") void checkAge();
 }

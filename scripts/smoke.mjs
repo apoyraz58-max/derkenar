@@ -822,6 +822,18 @@ try {
     await page.waitForSelector("#message:has-text('Metne yazıldı: Gazzâlî (ö. 505/1111)')");
     await page.evaluate(() => (window.__doc.plainInsert = false));
     if (!(await page.evaluate(() => window.__doc.flow.some((x) => x.text === "Gazzâlî (ö. 505/1111)")))) fail("person with death date not written");
+    // DİA spelling: a pasted reference with "Gazzali" takes DİA's form; a loosely written one is asked about.
+    await page.click("#tab-kutuphane");
+    await page.selectOption("#lib-new", "__ways");
+    await page.fill("#new-paste", "Gazzali, Ebu Hamid Muhammed. el-Mustasfa min ilmi'l-usul. Beyrut: Daru'l-Kutubi'l-Ilmiyye, 1993.");
+    await page.click("#new-paste-form button[type=submit]");
+    await page.waitForSelector("#message:has-text('DİA yazımıyla: Gazzâlî')");
+    if ((await page.inputValue('[aria-label="Ad"]')) !== "Ebû Hâmid Muhammed el-") fail(`DİA given name: ${await page.inputValue('[aria-label="Ad"]')}`);
+    await page.fill('[aria-label="Soyad"]', "Gazali");
+    await page.fill('[aria-label="Ad"]', "");
+    await page.locator("#ed-issues .issue", { hasText: 'DİA\'da "Ebû Hâmid Muhammed el-Gazzâlî" (ö. 505/1111)' }).waitFor({ timeout: 5000 }).catch(async () => fail(`DİA issue: ${await page.textContent("#ed-issues")}`));
+    await page.locator("#ed-issues button", { hasText: "DİA yazımını uygula" }).click();
+    if ((await page.inputValue('[aria-label="Soyad"]')) !== "Gazzâlî") fail("DİA fix not applied");
   }
 
   // 10. Veri bilgisi ve kılavuz.

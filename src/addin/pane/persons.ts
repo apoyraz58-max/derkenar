@@ -5,7 +5,9 @@
  * name with the death date İSNAD asks for: "Gazzâlî (ö. 505/1111)".
  */
 import { setEnglishNames } from "../../core/docstate.js";
-import { type Person, type PersonIndex, type PersonTable, englishCreator, findPerson, indexPersons, personInText, searchPersons, tableFrom } from "../../core/persons.js";
+import { type Person, type PersonIndex, type PersonTable, diaParts, diaSuggestion, englishCreator, findPerson, indexPersons, onlyMarks, personInText, searchPersons, tableFrom } from "../../core/persons.js";
+import type { Issue } from "../../core/isnad.js";
+import type { Item } from "../../core/zotero.js";
 import * as word from "../word.js";
 import { getMeta, setMeta } from "../store.js";
 import { $, doc, h, run, serial, setMessage } from "./core.js";
@@ -88,4 +90,52 @@ export function wirePersons(): void {
       setMessage("Şahıslar tablosu kaldırıldı; adlar kayıtta yazıldığı gibi.", "info");
     });
   $<HTMLInputElement>("person-q").oninput = search;
+}
+
+// ---------------------------------------------------------------- DİA spelling in Turkish
+
+/** Creators the table knows written otherwise than DİA writes them: an issue with the DİA form as its fix. */
+export function personIssues(item: Item): Issue[] {
+  if (!index) return [];
+  const out: Issue[] = [];
+  item.creators.forEach((c, i) => {
+    const s = diaSuggestion(c, index!);
+    if (!s) return;
+    const name = s.creator.name ?? `${s.creator.firstName ? `${s.creator.firstName} ` : ""}${s.creator.lastName}`.replace(/- /, "-");
+    const death = s.person.death ? ` (ö. ${s.person.death})` : "";
+    out.push({
+      key: item.key,
+      code: s.loose ? "dia-name-loose" : "dia-name",
+      level: "warning",
+      creatorIndex: i,
+      message: s.loose ? `Kişi adı DİA'da "${name}"${death} diye yazılıyor; aynı kişi mi, bakın.` : `Kişi adının DİA yazımı: ${name}${death}.`,
+      fix: { creatorIndex: i, creator: s.creator },
+      fixLabel: "DİA yazımını uygula",
+    });
+  });
+  return out;
+}
+
+/** When a record is added: names that differ from DİA only in marks and case ("Gazzali" → "Gazzâlî") take DİA's form. */
+export function diaSpelling(items: Item[]): string[] {
+  if (!index) return [];
+  const changed: string[] = [];
+  items.forEach((it, k) => {
+    let touched = false;
+    const creators = it.creators.map((c) => {
+      const s = diaSuggestion(c, index!);
+      if (!s || s.loose || !onlyMarks(c, s.creator)) return c;
+      touched = true;
+      changed.push(s.creator.lastName ?? s.creator.name ?? "");
+      return s.creator;
+    });
+    if (touched) items[k] = { ...it, creators };
+  });
+  return changed;
+}
+
+/** DİA surnames for the editor's surname box ("gazz" → Gazzâlî, Gazzî …). */
+export function diaSurnames(q: string): string[] {
+  if (!index || q.trim().length < 3) return [];
+  return [...new Set(searchPersons(q, index, 10).filter((p) => /arap|fars/i.test(p.group)).map((p) => diaParts(p).surname))];
 }

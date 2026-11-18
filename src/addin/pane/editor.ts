@@ -33,6 +33,7 @@ import {
 import { CITE_MODES, citeMode } from "../../core/isnadmodes.js";
 import { addToBasket } from "./cite.js";
 import { richNote } from "./richnote.js";
+import { diaSurnames, personIssues } from "./persons.js";
 import * as store from "../store.js";
 import * as word from "../word.js";
 import { citedKeys, refresh } from "./document.js";
@@ -322,7 +323,14 @@ function renderCreators(): HTMLElement {
     const single = c.name !== undefined;
     nameSuggestions();
     const last = h("input", { value: single ? c.name : (c.lastName ?? ""), placeholder: single ? "Tam ad / kurum" : "Soyad / şöhret", "aria-label": "Soyad", list: "dl-last", autocomplete: "off" });
-    last.oninput = () => set(single ? { name: last.value } : { lastName: last.value });
+    last.oninput = () => {
+      set(single ? { name: last.value } : { lastName: last.value });
+      // DİA names for what is typed (from the Şahıslar table), among the library's own.
+      const dl = document.getElementById("dl-last");
+      if (!dl) return;
+      for (const o of dl.querySelectorAll("option[data-dia]")) o.remove();
+      for (const n of diaSurnames(last.value)) dl.prepend(h("option", { value: n, "data-dia": "1" }));
+    };
     const first = h("input", { value: c.firstName ?? "", placeholder: "Ad (ör. Ebû Hâmid Muhammed b. Muhammed)", "aria-label": "Ad", list: "dl-first", autocomplete: "off" });
     first.oninput = () => set({ firstName: first.value });
     const toggle = h("button", {
@@ -476,7 +484,7 @@ function renderIssues(): void {
   const box = $("ed-issues");
   box.replaceChildren();
   if (!item) return;
-  const issues = checkItem(item).filter((i) => i.level !== "info");
+  const issues = [...checkItem(item), ...personIssues(item)].filter((i) => i.level !== "info");
   renderReview();
   if (!issues.length) return;
   box.append(

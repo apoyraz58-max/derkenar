@@ -368,3 +368,91 @@ export function searchPersons(q: string, index: PersonIndex, limit = 12): Person
   }
   return hits.sort((a, b) => a.s - b.s).slice(0, limit).map((x) => x.p);
 }
+
+// ---------------------------------------------------------------- the DİA form in Turkish
+
+/** "gazali" and "gazzâlî": doubled letters and vowels blurred, for names written loosely. */
+export function looseKey(s: string): string {
+  return nameKey(s)
+    .split(" ")
+    .map((w) => w.replace(/(.)\1+/g, "$1").replace(/[aeiıouü]+/g, "*"))
+    .join(" ");
+}
+
+const ARTICLE_TR = /^(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|eż)-/i;
+
+/** "Buhârî, Muhammed b. İsmâil" → surname "Buhârî", given "Muhammed b. İsmâil"; "Fahreddin er-Râzî" → "Râzî", "Fahreddin", article "er-". */
+export function diaParts(p: Person): { surname: string; given: string; article: string } {
+  const [a, b] = p.dia.split(/,\s*/);
+  const article = (s: string) => new RegExp(`(?:^|\\s)${ARTICLE_TR.source.slice(1, -1)}-${s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\s|$)`, "iu").exec(p.diaFull ?? "")?.[1];
+  if (b !== undefined) {
+    const art = /arap|fars/i.test(p.group) ? article(a!) : undefined;
+    return { surname: a!, given: b, article: art ? `${art.toLocaleLowerCase("tr")}-` : "" };
+  }
+  const words = a!.split(" ");
+  const lastWord = words[words.length - 1]!;
+  const m = ARTICLE_TR.exec(lastWord);
+  if (m && words.length > 1) return { surname: lastWord.slice(m[0].length), given: words.slice(0, -1).join(" "), article: m[0].toLocaleLowerCase("tr") };
+  // A single word ("Gazzâlî", "Mâtürîdî"): the article from the full name, the kunya and ism before the nasab.
+  if (words.length === 1 && /arap|fars/i.test(p.group)) {
+    const art = article(a!);
+    const full = (p.diaFull ?? "").split(" ");
+    const kunya = full.findIndex((w) => /^Eb[ûüu]/i.test(w));
+    const until = full.findIndex((w, i) => i > Math.max(kunya, 0) && (w === "b." || ARTICLE_TR.test(w)));
+    const given = full.slice(Math.max(kunya, 0), until > 0 ? until : 0).join(" ");
+    return { surname: a!, given, article: art ? `${art.toLocaleLowerCase("tr")}-` : "" };
+  }
+  return { surname: a!, given: "", article: "" };
+}
+
+/** The person of a creator, also when the name is written loosely ("Gazali"); `loose` tells which. */
+export function findPersonLoose(c: Creator, index: PersonIndex): { person: Person; loose: boolean } | null {
+  const exact = findPerson(c, index);
+  if (exact) return { person: exact, loose: false };
+  const last = c.lastName ?? c.name ?? "";
+  if (nameKey(last).length < 4) return null;
+  const key = looseKey(last);
+  const cands = index.table.persons.filter((p) => /arap|fars/i.test(p.group) && looseKey(diaParts(p).surname) === key);
+  if (cands.length === 1) return { person: cands[0]!, loose: true };
+  const first = c.firstName ?? "";
+  if (!first) {
+    const plain = cands.filter((p) => !p.dia.includes(",") && !p.dia.includes(" "));
+    return plain.length === 1 ? { person: plain[0]!, loose: true } : null;
+  }
+  const scored = cands.map((p) => ({ p, s: overlap(first, `${p.dia} ${p.diaFull ?? ""}`) })).sort((a, b) => b.s - a.s);
+  return scored[0] && scored[0].s > 0 && (scored.length === 1 || scored[0].s > scored[1]!.s) ? { person: scored[0].p, loose: true } : null;
+}
+
+/**
+ * The creator written as DİA writes the person, İSNAD's way for Turkish
+ * (article at the end of the given name: "Gazzâlî" + "Ebû Hâmid Muhammed el-").
+ * Words of the given name are respelt from the DİA full name; words not in
+ * it stay as written. An empty given name gets DİA's (kunya and ism).
+ */
+export function diaCreator(c: Creator, p: Person): Creator {
+  const { surname, given, article } = diaParts(p);
+  if (c.name !== undefined) return { creatorType: c.creatorType, name: c.name.trim().split(/\s+/).length > 1 && given ? `${given} ${article}${surname}`.replace(/- /, "-") : surname };
+  const source = `${p.diaFull ?? ""} ${given}`.split(/\s+/).filter(Boolean);
+  const byKey = new Map(source.map((w) => [looseKey(w.replace(ARTICLE_TR, "")), w.replace(ARTICLE_TR, "")]));
+  const typed = (c.firstName ?? "").trim().replace(/\s+(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|eż|al)-$/i, "");
+  // "İbn" + "Haldun" becomes "İbn Haldûn" as surname: its words leave the given name.
+  const inSurname = new Set(surname.split(/\s+/).map(looseKey));
+  const words = typed ? typed.split(/\s+/).filter((w) => !inSurname.has(looseKey(w))).map((w) => (w === "b." ? w : (byKey.get(looseKey(w)) ?? w))) : given ? [given] : [];
+  const firstName = `${words.join(" ")}${article ? ` ${article}` : ""}`.trim();
+  return { creatorType: c.creatorType, lastName: surname, ...(firstName ? { firstName } : {}) };
+}
+
+const sameCreator = (a: Creator, b: Creator) => (a.name ?? "") === (b.name ?? "") && (a.lastName ?? "") === (b.lastName ?? "") && (a.firstName ?? "") === (b.firstName ?? "");
+
+/** Only marks and case differ ("Gazzali" → "Gazzâlî"): safe to apply without asking. */
+export function onlyMarks(a: Creator, b: Creator): boolean {
+  const k = (c: Creator) => nameKey(`${c.firstName ?? ""} ${c.lastName ?? c.name ?? ""}`.replace(/\s+(el|er|ez|es|eş|en|et|ed|al)-$/i, ""));
+  return !sameCreator(a, b) && k(a) === k(b);
+}
+
+export function diaSuggestion(c: Creator, index: PersonIndex): { person: Person; creator: Creator; loose: boolean } | null {
+  const f = findPersonLoose(c, index);
+  if (!f) return null;
+  const creator = diaCreator(c, f.person);
+  return sameCreator(c, creator) ? null : { person: f.person, creator, loose: f.loose };
+}

@@ -13,6 +13,7 @@ import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMes
 import { openEditor } from "./editor.js";
 import { currentView, inCurrentView } from "./library.js";
 import { existingCopy, librarySpelling } from "../../core/library.js";
+import { diaSpelling } from "./persons.js";
 
 
 /** Imports keep existing items: a re-import of the same Zotero export updates them in place. */
@@ -81,16 +82,19 @@ function pendingFixes(items: readonly Item[]): string {
 export function isnadFix(items: Item[]): string {
   const all = new Set<string>();
   const spelled = new Set<string>();
+  const dia = new Set<string>();
   items.forEach((it, i) => {
     const r = autoFix(it);
     for (const c of r.changed) all.add(c);
-    // Then the library's own spelling of the same names ("Gazzâli" → "Gazzâlî").
-    const l = librarySpelling(r.item, S.items);
+    // DİA's spelling of the persons in the Şahıslar table, then the library's own spelling ("Gazzâli" → "Gazzâlî").
+    const one = [r.item];
+    for (const n of diaSpelling(one)) dia.add(n);
+    const l = librarySpelling(one[0]!, S.items);
     items[i] = l.item;
     for (const c of l.changed) spelled.add(c);
   });
   const left = items.reduce((n, it) => n + checkItem(it).filter((x) => x.level !== "info").length, 0);
-  return (all.size ? ` İSNAD'a göre düzeltildi: ${[...all].join(", ")}.` : "") + (spelled.size ? ` Kütüphanedeki yazımla: ${[...spelled].slice(0, 4).join(", ")}.` : "") + (left ? ` ${left} uyarı düzenleyicide (yayınevi adı, eksik bilgi …).` : "");
+  return (all.size ? ` İSNAD'a göre düzeltildi: ${[...all].join(", ")}.` : "") + (dia.size ? ` DİA yazımıyla: ${[...dia].slice(0, 4).join(", ")}.` : "") + (spelled.size ? ` Kütüphanedeki yazımla: ${[...spelled].slice(0, 4).join(", ")}.` : "") + (left ? ` ${left} uyarı düzenleyicide (yayınevi adı, eksik bilgi …).` : "");
 }
 
 /** Works the library has already (same DOI, ISBN, or title, year and author) are not added twice. */

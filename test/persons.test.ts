@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { emptyState, planRefresh, putCitation, setEnglishNames } from "../src/core/docstate.js";
 import { Renderer } from "../src/core/engine.js";
 import { htmlToText } from "../src/core/html.js";
-import { buildDict, englishCreator, findPerson, indexPersons, personInText, personsFromRows, readCsv, searchPersons, transliterate, type PersonTable } from "../src/core/persons.js";
+import { buildDict, diaSuggestion, onlyMarks, englishCreator, findPerson, indexPersons, personInText, personsFromRows, readCsv, searchPersons, transliterate, type PersonTable } from "../src/core/persons.js";
 import { emptyItem } from "../src/core/zotero.js";
 
 const styles = new URL("../data/styles/", import.meta.url);
@@ -83,5 +83,24 @@ describe("Şahıslar (DİA–EI3)", () => {
     } finally {
       setEnglishNames(null);
     }
+  });
+});
+
+describe("DİA yazımı (Türkçe)", () => {
+  const t = table();
+  const ix = indexPersons(t);
+  const sug = (lastName: string, firstName = "") => {
+    const c = { creatorType: "author", lastName, firstName };
+    const s = diaSuggestion(c, ix);
+    return s ? `${s.creator.firstName ?? ""}|${s.creator.lastName}${s.loose ? " ~" : ""}${onlyMarks(c, s.creator) ? " =" : ""}` : null;
+  };
+  it("respells, adds the article, fills kunya and ism", () => {
+    expect(sug("Gazzali", "Ebu Hamid Muhammed")).toBe("Ebû Hâmid Muhammed el-|Gazzâlî =");
+    expect(sug("Gazali")).toBe("Ebû Hâmid Muhammed el-|Gazzâlî ~");
+    expect(sug("Gazzâlî", "Ebû Hâmid Muhammed el-")).toBeNull();
+    expect(sug("Buhari", "Muhammed b. Ismail")).toBe("Muhammed b. İsmâil el-|Buhârî =");
+    expect(sug("Razi", "Fahreddin")).toBe("Fahreddin er-|Râzî =");
+    expect(sug("Kara", "Mustafa")).toBeNull();
+    expect(sug("Yılmaz", "Hüseyin")).toBeNull();
   });
 });
