@@ -405,14 +405,29 @@ export function diaParts(p: Person): { surname: string; given: string; article: 
   return { surname: a!, given: "", article: "" };
 }
 
+/** Arabic and Persian persons by the loose key of their DİA surname, built once per table. */
+const looseIndexes = new WeakMap<PersonIndex, Map<string, Person[]>>();
+function looseIndex(index: PersonIndex): Map<string, Person[]> {
+  let m = looseIndexes.get(index);
+  if (!m) {
+    m = new Map();
+    for (const p of index.table.persons) {
+      if (!/arap|fars/i.test(p.group)) continue;
+      const k = looseKey(diaParts(p).surname);
+      m.set(k, [...(m.get(k) ?? []), p]);
+    }
+    looseIndexes.set(index, m);
+  }
+  return m;
+}
+
 /** The person of a creator, also when the name is written loosely ("Gazali"); `loose` tells which. */
 export function findPersonLoose(c: Creator, index: PersonIndex): { person: Person; loose: boolean } | null {
   const exact = findPerson(c, index);
   if (exact) return { person: exact, loose: false };
   const last = c.lastName ?? c.name ?? "";
   if (nameKey(last).length < 4) return null;
-  const key = looseKey(last);
-  const cands = index.table.persons.filter((p) => /arap|fars/i.test(p.group) && looseKey(diaParts(p).surname) === key);
+  const cands = looseIndex(index).get(looseKey(last)) ?? [];
   if (cands.length === 1) return { person: cands[0]!, loose: true };
   const first = c.firstName ?? "";
   if (!first) {
