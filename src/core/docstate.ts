@@ -207,9 +207,22 @@ export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet
     }
     // citeproc title-cases titles of English-language works; a transliterated or Turkish title is not one ("Kitāb al-Tawḥīd").
     if (isnad && /^en/.test(lang)) englishIsnad(csl);
-    out[k] = isnad ? fillImprint(articleToGiven(csl, english), lang) : plainRoles(csl);
+    out[k] = isnad ? fillImprint(spacedInitials(articleToGiven(csl, english)), lang) : plainRoles(csl);
   }
   return out;
+}
+
+/** İSNAD writes initials apart: "C.E. Bosworth" → "C. E. Bosworth" (the record is not changed). */
+export function spacedInitials(csl: CslItem): CslItem {
+  const c = csl as CslItem & Record<string, unknown>;
+  for (const value of Object.values(c)) {
+    if (!Array.isArray(value)) continue;
+    for (const n of value as Record<string, unknown>[]) {
+      // Only a given name of initials alone ("C.E.", "J.R.R."); "T.C. Cumhurbaşkanlığı" is an abbreviation, not initials.
+      if (typeof n?.given === "string" && /^(?:\p{Lu}\.\s?){2,}$/u.test(n.given.trim())) n.given = n.given.trim().replace(/(\p{Lu}\.)(?=\p{Lu}\.)/gu, "$1 ");
+    }
+  }
+  return csl;
 }
 
 /** "el-Gazzâlî" in the surname box (as Zotero users often write it). */

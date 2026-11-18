@@ -1,4 +1,4 @@
-Toplam 411 karşılaştırma: 271 birebir, 42 yalnız dizgi farkıyla, 98 farklı.
+Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farklı.
 2.1 Kitap-Yazarsız ve Anonim (s. 68): 5/6
 2.2 Kitap-Tek Yazarlı (s. 68): 6/6
 2.3 Kitap-İki Yazarlı (s. 69): 6/6
@@ -20,7 +20,7 @@ Toplam 411 karşılaştırma: 271 birebir, 42 yalnız dizgi farkıyla, 98 farkl�
 8 Yunan ve Roma Klasikleri (s. 92): 3/9
 10.1 Kadı Sicili-Matbu (s. 94): 5/6
 10.2 Kadı Sicili-Arşivde (s. 94): 1/3
-11.1 Ansiklopedi-Matbu (s. 95): 7/9
+11.1 Ansiklopedi-Matbu (s. 95): 8/9
 11.2 Ansiklopedi-Yazarsız (s. 96): 3/3
 11.3 Ansiklopedi-Web (s. 97): 8/9
 12.1 Sözlük-Arap Harfli (s. 98): 6/12
@@ -175,12 +175,9 @@ Toplam 411 karşılaştırma: 271 birebir, 42 yalnız dizgi farkıyla, 98 farkl�
      derkenar: Kayseri Sancağı Şer’îye Sicil Defteri (1334-1336). Milli Kütüphane, No. 06 Mil Yz C 39/3. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=857602
   ? eşleşmedi: 06 Mil Yz C 39/3, 68-90.
 ## 11.1 Ansiklopedi-Matbu (s. 95)
-  ✗ ilk
-     kılavuz: Halil İnalcık, “Selīm I”, The Encyclopaedia of Islam, ed. C. E. Bosworth vd. (Leiden: Brill, 1997), 9/127-131.
-     derkenar: Halil İnalcık, “Selīm I”, The Encyclopaedia of Islam, ed. C.E. Bosworth vd. (Leiden: Brill, 1997).
   ✗ kaynakça
      kılavuz: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C. E. Bosworth vd. 9/127-131. Leiden: Brill, 1997.
-     derkenar: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C.E. Bosworth vd. 9/117-118. Leiden: Brill, 1997.
+     derkenar: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C. E. Bosworth vd. 9/117-118. Leiden: Brill, 1997.
 ## 11.3 Ansiklopedi-Web (s. 97)
   ✗ ilk
      kılavuz: Shari L. Lowin, “Isrāʾīliyyāt”, Encyclopaedia of Islam (Erişim 13 Temmuz 2019).

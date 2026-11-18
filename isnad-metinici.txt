@@ -226,7 +226,7 @@ Metin içi: 411 karşılaştırmadan 245 uyuşuyor.
 ## 11.1 Ansiklopedi-Matbu (s. 164)
   ✗ kaynakça
      kılavuz: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C. E. Bosworth vd. 9/127-131. Leiden: Brill, 1997.
-     derkenar: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C.E. Bosworth vd. 9/117-118. Leiden: Brill, 1997.
+     derkenar: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C. E. Bosworth vd. 9/117-118. Leiden: Brill, 1997.
   ✗ ilk
      kılavuz: (Yavuz, 1997)
      derkenar: (Yavuz, 2001)

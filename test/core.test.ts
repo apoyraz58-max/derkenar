@@ -794,3 +794,13 @@ describe("serbest künye", async () => {
     expect(splitReferences("1. Kara, Mustafa. Tasavvuf ve Tarikatlar\nTarihi. İstanbul: Dergâh Yayınları, 2005.\n2. Kutlu, Sönmez. Türklerin İslâmlaşma Sürecinde Mürcie. Ankara: TDV Yayınları, 2010.")).toHaveLength(2);
   });
 });
+
+import { spacedInitials } from "../src/core/docstate.js";
+
+describe("İSNAD: initials apart", () => {
+  it("C.E. → C. E.; T.C. Cumhurbaşkanlığı stays", () => {
+    const csl = spacedInitials({ id: "x", type: "book", editor: [{ family: "Bosworth", given: "C.E." }], author: [{ family: "CB", given: "T.C. Cumhurbaşkanlığı" }] } as never) as unknown as { editor: { given: string }[]; author: { given: string }[] };
+    expect(csl.editor[0]!.given).toBe("C. E.");
+    expect(csl.author[0]!.given).toBe("T.C. Cumhurbaşkanlığı");
+  });
+});
