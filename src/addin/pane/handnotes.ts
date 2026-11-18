@@ -3,7 +3,7 @@
  * citations in place (the note, its number and its place stay). First a
  * look at what would change; then the change, which Word's Undo takes back.
  */
-import { type HandInText, type HandNote, readHandNotes, readInText } from "../../core/handnotes.js";
+import { type HandInText, type HandNote, checkBibliography, readHandNotes, readInText } from "../../core/handnotes.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import type { CiteRef } from "../../core/types.js";
 import { type Item, creatorLine, titleOf } from "../../core/zotero.js";
@@ -88,12 +88,17 @@ let bib: { text: string; lines: BibLine[] } | null = null;
 /** A heading inside the list ("KAYNAKÇA", "Makaleler", "B. Arşiv Belgeleri"): no year, no punctuation of a reference. */
 const isHeading = (l: string) => l.length < 60 && !/\d{3,4}|[“”"]|:\s/.test(l);
 
-function readBibliography(text: string): BibLine[] {
-  const created: Item[] = [];
+/** The reference lines of a bibliography typed by hand: headings left out, "———." given its author. */
+function bibliographyLines(text: string): string[] {
   // Headings out first (a heading has no full stop and would be joined to the next reference).
   const raw = text.split("\n").map((l) => l.trim());
   const kept = raw.filter((l, i) => l && !(isHeading(l) && !/[.)]$/.test(l) && (i === 0 || !raw[i - 1] || /[.)\]]$/.test(raw[i - 1]!))));
-  return expandSameAuthor(splitReferences(kept.join("\n")))
+  return expandSameAuthor(splitReferences(kept.join("\n")));
+}
+
+function readBibliography(text: string): BibLine[] {
+  const created: Item[] = [];
+  return bibliographyLines(text)
     .map((l) => {
       const r = parseReference(l);
       if (!r || !r.item.fields.title) return { text: l, item: null, isNew: false };
@@ -207,7 +212,31 @@ async function convertInText(): Promise<void> {
   setMessage(`${done} metin içi atıf Derkenar atıfına çevrildi.`, "success");
 }
 
+// ---------------------------------------------------------------- footnotes against the bibliography
+
+/** Dipnot – kaynakça uyumu: cited but not listed, listed but not cited. Nothing in the document changes. */
+async function checkAgainstBibliography(): Promise<void> {
+  const text = (await serial(() => word.selectionText())).trim();
+  if (text.length < 20) throw new Error("Önce Word'de kaynakçanın tamamını seçin, sonra yeniden basın.");
+  const notes = await serial(() => word.handNotes());
+  const d = doc();
+  // Works already cited with Derkenar count as cited too.
+  const derkenar = [...new Set(Object.values(d.citations).flatMap((c) => c.items.map((r) => r.id)))].map((k) => d.items[k] ?? S.byKey.get(k)).filter((x): x is Item => Boolean(x));
+  const r = checkBibliography(notes.map((n) => n.text), bibliographyLines(text), S.items, derkenar);
+  const noteNo = (i: number) => (notes[i - 1] ? notes[i - 1]!.index + 1 : i);
+  $("hand-check-result").replaceChildren(
+    h("p", { class: "small" }, `Dipnotlarda ${r.citedCount} eser, kaynakçada ${r.listedCount} künye okundu.${!r.missing.length && !r.uncited.length ? " Uyumlu: her anılan eser kaynakçada, kaynakçadaki her eser anılmış." : ""}`),
+    ...(r.missing.length
+      ? [h("p", { class: "small" }, h("strong", {}, `Dipnotta anılıp kaynakçada olmayan (${r.missing.length}):`)), h("ul", { class: "hand-list small" }, ...r.missing.slice(0, 100).map((m) => h("li", {}, `${creatorLine(m.item) || "—"}, ${short(titleOf(m.item), 70)}${m.notes.length ? ` — dn. ${m.notes.map(noteNo).slice(0, 6).join(", ")}${m.notes.length > 6 ? " …" : ""}` : ""}`)))]
+      : []),
+    ...(r.uncited.length ? [h("p", { class: "small" }, h("strong", {}, `Kaynakçada olup hiçbir dipnotta anılmayan (${r.uncited.length}):`)), h("ul", { class: "hand-list small" }, ...r.uncited.slice(0, 100).map((l) => h("li", {}, short(l, 140))))] : []),
+    ...(r.unreadLines.length ? [h("p", { class: "muted small" }, `Kaynakçada künye olarak okunamayan ${r.unreadLines.length} satır sayılmadı.`)] : []),
+    h("p", { class: "muted small" }, "Yalnız okunabilen dipnotlar sayılır; açıklama dipnotları ve okunamayan künyeler dışarıda kalır. Kaynakçada yararlanılan ama anılmayan eserler bulunabilir; bu bir hata olmayabilir."),
+  );
+}
+
 export function wireHandNotes(): void {
+  $("hand-check").onclick = () => void run("Dipnotlar ve kaynakça karşılaştırılıyor", checkAgainstBibliography);
   $("hand-intext-scan").onclick = () => void run("Metin okunuyor", scanInText);
   $("hand-bib-scan").onclick = () => void run("Kaynakça okunuyor", scanBibliography);
   $("hand-scan").onclick = () => void run("Dipnotlar okunuyor", scan);

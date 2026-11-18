@@ -803,6 +803,17 @@ try {
   await page.waitForSelector("#message:has-text('2 eser kaynakçaya alındı')");
   const bibText = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag === "DERKENAR:BIB").map((x) => x.cc.text).join(""));
   if (!bibText.includes("Türk Sufîliğine Bakışlar")) fail(`uncited work from the typed bibliography missing: ${bibText.slice(0, 300)}`);
+  // Footnotes against a typed bibliography: nothing changes in the document, the differences are listed.
+  await page.evaluate(() => {
+    window.__doc.flow.push({ fn: { controls: [], text: "Süleyman Uludağ, Tasavvuf Terimleri Sözlüğü (İstanbul: Marifet Yayınları, 1995), 12." } });
+    window.__doc.selText = "KAYNAKÇA\rOcak, Ahmet Yaşar. Türk Sufîliğine Bakışlar. İstanbul: İletişim Yayınları, 1996.\rKara, Mustafa. Bursa’da Tarikatlar ve Tekkeler. Bursa: Uludağ Yayınları, 1990.\r";
+  });
+  const flowBefore = await page.evaluate(() => JSON.stringify(window.__doc.flow));
+  await page.click("#hand-check");
+  await page.waitForSelector("#hand-check-result:has-text('Dipnotta anılıp kaynakçada olmayan')");
+  const chk = await page.textContent("#hand-check-result");
+  if (!chk.includes("Tasavvuf Terimleri Sözlüğü") || !chk.includes("Bursa’da Tarikatlar")) fail(`bibliography check: ${chk}`);
+  if (flowBefore !== (await page.evaluate(() => JSON.stringify(window.__doc.flow)))) fail("bibliography check changed the document");
 
   // 9y. A reference pasted into the citation search: added to the library and to the citation at once.
   await page.click("#tab-atif");

@@ -373,3 +373,48 @@ export function readInText(text: string, library: readonly Item[]): HandInText[]
   }
   return out;
 }
+
+// ---------------------------------------------------------------- footnotes against the bibliography
+
+export interface BibCheck {
+  /** Works cited in the notes that the bibliography does not list (with the notes citing them, 1-based). */
+  readonly missing: { item: Item; notes: number[] }[];
+  /** Bibliography lines no note cites. */
+  readonly uncited: string[];
+  /** Bibliography lines that could not be read as references. */
+  readonly unreadLines: string[];
+  readonly citedCount: number;
+  readonly listedCount: number;
+}
+
+const sameWork = (a: Item, b: Item): boolean => {
+  if (existingCopy(a, [b])) return true;
+  const sa = surnames(a)[0] ?? fold(a.fields.publicationTitle ?? "");
+  const sb = surnames(b)[0] ?? fold(b.fields.publicationTitle ?? "");
+  if (sa && sb && sa !== sb) return false;
+  const ta = fold(titleOf(a));
+  const tb = fold(titleOf(b));
+  return ta.length > 3 && tb.length > 3 && (ta.startsWith(tb) || tb.startsWith(ta));
+};
+
+/**
+ * A thesis written by hand: are the works its footnotes cite all in its
+ * bibliography, and does the bibliography list only works cited? (What a
+ * jury checks first.) `notes` are the footnotes in order; `bibliography` the
+ * reference lines of the bibliography (headings already left out).
+ */
+export function checkBibliography(notes: readonly string[], bibliography: readonly string[], library: readonly Item[] = [], alsoCited: readonly Item[] = []): BibCheck {
+  const read = readHandNotes(notes, library);
+  const cited = new Map<Item, number[]>(alsoCited.map((it) => [it, []]));
+  for (const n of read) for (const r of n.refs ?? []) cited.set(r.item, [...(cited.get(r.item) ?? []), n.index + 1]);
+  const listed: { line: string; item: Item }[] = [];
+  const unreadLines: string[] = [];
+  for (const line of bibliography) {
+    const r = parseReference(line);
+    if (r?.item.fields.title || r?.item.fields.docketNumber) listed.push({ line, item: r!.item });
+    else unreadLines.push(line);
+  }
+  const missing = [...cited].filter(([it]) => !listed.some((l) => sameWork(it, l.item))).map(([item, ns]) => ({ item, notes: [...new Set(ns)] }));
+  const uncited = listed.filter((l) => ![...cited.keys()].some((it) => sameWork(it, l.item))).map((l) => l.line);
+  return { missing, uncited, unreadLines, citedCount: cited.size, listedCount: listed.length };
+}

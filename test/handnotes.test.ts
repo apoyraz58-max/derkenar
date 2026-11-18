@@ -227,3 +227,22 @@ describe("hand-typed footnotes: court decisions", () => {
     expect(r[3]!.refs![0]!.item).toBe(r[2]!.refs![0]!.item);
   });
 });
+
+import { checkBibliography } from "../src/core/handnotes.js";
+
+describe("footnotes against the bibliography", () => {
+  it("lists works cited but not listed, and listed but not cited", () => {
+    const r = checkBibliography(
+      [
+        "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45.",
+        "Ahmet Yaşar Ocak, Türk Sufîliğine Bakışlar (İstanbul: İletişim Yayınları, 1996), 12.",
+        "Kara, Tasavvuf ve Tarikatlar, 47.",
+        "Bu konuda başka görüşler de vardır.",
+      ],
+      ["Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları, 2005.", "Uludağ, Süleyman. Tasavvuf Terimleri Sözlüğü. İstanbul: Marifet Yayınları, 1995."],
+    );
+    expect(r.missing.map((m) => `${m.item.fields.title} ${m.notes.join(",")}`)).toEqual(["Türk Sufîliğine Bakışlar 2"]);
+    expect(r.uncited).toEqual(["Uludağ, Süleyman. Tasavvuf Terimleri Sözlüğü. İstanbul: Marifet Yayınları, 1995."]);
+    expect([r.citedCount, r.listedCount]).toEqual([2, 2]);
+  });
+});
