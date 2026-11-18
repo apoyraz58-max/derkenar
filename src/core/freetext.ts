@@ -568,10 +568,37 @@ function plausibility(r: ParsedReference): number {
   return p - r.unsure.length * 0.5;
 }
 
+const LIBRARY = /(Kütüphane\w*|Library|Bibliothe\w*|Arşiv\w*|Archiv\w*|Müze\w*|Museum)/i;
+
+/**
+ * A manuscript (İSNAD): "Müellif, Eser (Şehir: Kütüphane, Koleksiyon, No), 77b."
+ * — the parenthesis holds a library and a shelf mark, not a publisher and a year.
+ */
+function manuscript(s: string): ParsedReference | null {
+  const m = /^(.+?)\s*\((?:([^:()]{2,40}):\s*)?([^,()]{3,80}),\s*([^()]{1,80})\)\.?$/u.exec(s.trim());
+  if (!m || !LIBRARY.test(m[3]!) || /\b(yayın\w*|press|verlag)\b/i.test(m[3]!)) return null;
+  const item = emptyItem("manuscript", "serbest");
+  const parts = topSplit(m[1]!, ",");
+  let titleParts = parts;
+  // An author when the first part reads as a name and something is left for the title.
+  if (parts.length >= 2 && /^\p{Lu}/u.test(parts[0]!) && parts[0]!.split(" ").length <= 9 && !/[“"]/.test(parts[0]!)) {
+    for (const n of splitNames(parts[0]!).names) item.creators.push(nameInOrder(n, "author"));
+    titleParts = parts.slice(1);
+  }
+  const rest = readRoles(item, titleParts.slice(1));
+  item.fields.title = [titleParts[0]!, ...rest].join(", ").trim();
+  if (m[2]) item.fields.place = m[2].trim();
+  item.fields.archive = m[3]!.trim();
+  item.fields.archiveLocation = m[4]!.trim();
+  return { item: settle(item), form: "isnad-dipnot", unsure: [] };
+}
+
 /** One reference (a line) → a record, or null when it cannot be read. Every reading is tried; the most sensible wins. */
 export function parseReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
+  const ms = manuscript(s);
+  if (ms) return ms;
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;
   for (const f of [isnadBib, isnadNote, apa, oldStyle]) {

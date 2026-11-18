@@ -19,7 +19,7 @@ let plan: HandNote[] = [];
 const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n)}…` : s);
 
 function describe(n: HandNote): string {
-  return n.refs!.map((r) => `${r.prefix ? `${r.prefix} ` : ""}${creatorLine(r.item) || "—"}, ${short(titleOf(r.item), 50)}${r.volume ? `, c. ${r.volume}` : ""}${r.locator ? `, s. ${r.locator}` : ""}${r.isNew ? " (yeni)" : ""}`).join("; ");
+  return n.refs!.map((r) => `${r.prefix ? `${r.prefix} ` : ""}${creatorLine(r.item) || "—"}, ${short(titleOf(r.item), 50)}${r.madde ? `, “${r.madde}”` : ""}${r.sure ? `, ${r.sure}/${r.ayet}` : ""}${r.volume ? `, c. ${r.volume}` : ""}${r.locator ? `, s. ${r.locator}` : ""}${r.isNew ? " (yeni)" : ""}`).join("; ");
 }
 
 async function scan(): Promise<void> {
@@ -60,7 +60,7 @@ async function convert(): Promise<void> {
   if (fixed.length) await putItems(fixed);
   const writes: { index: number; id: string; segments: { text: string }[] }[] = [];
   for (const p of ok) {
-    const refs: CiteRef[] = p.refs!.map((r) => ({ id: r.item.key, ...(r.volume ? { volume: r.volume } : {}), ...(r.locator ? { locator: r.locator } : {}), ...(r.prefix ? { prefix: r.prefix } : {}) }));
+    const refs: CiteRef[] = p.refs!.map((r) => ({ id: r.item.key, ...(r.volume ? { volume: r.volume } : {}), ...(r.locator ? { locator: r.locator } : {}), ...(r.sure ? { sure: r.sure, ayet: r.ayet } : {}), ...(r.madde ? { madde: r.madde } : {}), ...(r.prefix ? { prefix: r.prefix } : {}) }));
     const works = Object.fromEntries(refs.map((r) => [r.id, byKey.get(r.id) ?? S.byKey.get(r.id) ?? d.items[r.id]!]));
     const id = newCitationId();
     putCitation(d, id, refs, works);

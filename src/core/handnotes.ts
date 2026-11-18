@@ -23,6 +23,20 @@ export interface HandRef {
   readonly volume?: string;
   readonly locator?: string;
   readonly prefix?: string;
+  /** Kur’ân: sûre number and âyet ("el-Bakara 2/14"). */
+  readonly sure?: string;
+  readonly ayet?: string;
+  /** Dictionary: madde ("“delîl”"). */
+  readonly madde?: string;
+}
+
+/** Where in the work: what `cut` reads at the end of a reference. */
+interface Place {
+  volume?: string;
+  locator?: string;
+  sure?: string;
+  ayet?: string;
+  madde?: string;
 }
 
 export interface HandNote {
@@ -36,7 +50,11 @@ export interface HandNote {
 const PREFIX = /^((?:[\p{L}\s,]{0,60}?\s)?(?:bk\.|bkz\.|bakınız|krş\.|karş\.)|ayrıca\s+bk\.|ayrıca\s+bkz\.|ayrıca\s+bakınız|bk\.|bkz\.|bakınız|krş\.|karş\.|karşılaştırınız|mesela|örnek\s+olarak|see\s+also|see|cf\.|vgl\.)\s*/iu;
 const SAME = /^(op\.?\s*cit\.?|a\.?\s?g\.?\s?e\.?|a\.?\s?g\.?\s?m\.?|a\.?\s?e\.?|age\.?|agm\.?|aynı\s+eser|aynı\s+yer|a\.?\s?y\.?|ibid\.?|ibidem|ay\.?\s?e\.?|aynı\s+makale)(?=[\s,.]|$)\s*,?\s*/i;
 /** The cited place at the end: "45", "1/45", "45-47", "45 vd.", "vr. 12b", "II/45". */
-const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?(\d+(?:\s*[-–]\s*\d+)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|s\.\s*\d+(?:\s*[-–]\s*\d+)?)\.?\s*$/i;
+const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?((?:\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|s\.\s*\d+(?:\s*[-–]\s*\d+)?)(?:\s*\([^()]{1,40}\))?)\.?\s*$/i;
+/** "…, el-Bakara 2/14." (a Kur’ân meâli or tefsir). */
+const SURE = /(?:^|,\s*)((?:[a-zâîû]{1,3}-)?\p{Lu}[\p{L}’'ʿ-]*(?:\s\p{L}[\p{L}’'ʿ-]*)?)\s+(\d{1,3})\s*\/\s*(\d{1,3}(?:\s*[-–]\s*\d{1,3})?)\.?\s*$/u;
+/** "…, “delîl”" (a dictionary's madde, before the place). */
+const MADDE = /,\s*[“"]([^”"]{1,60})[”"]\s*$/;
 
 /** Splits a note into its references ("…; …"), not inside quotes or parentheses. */
 export function splitNote(text: string): string[] {
@@ -62,14 +80,24 @@ export function splitNote(text: string): string[] {
 const VOL_PAGE = /,\s*(?:c\.|cilt)?\s*([IVXLC]+|(?<=(?:c\.|cilt)\s*)\d+)\s*,\s*(?:s\.|ss\.)?\s*(\d+(?:\s*[-–]\s*\d+)?(?:\s*vd\.)?)\.?\s*$/i;
 
 /** The cited place at the end of a footnote reference ("…, 45." · "…, 1/45." · "…, c. II, s. 12."), and the rest. */
-export function cut(s: string): { body: string; volume?: string; locator?: string } {
+export function cut(s0: string): { body: string } & Place {
+  const r = cutPlace(s0);
+  // A dictionary's madde before the page: "(… 1996), “delîl”, 1/793".
+  const md = /\)\s*,\s*[“"][^“”"]*[”"]\s*$/.test(r.body) ? MADDE.exec(r.body) : null;
+  return md ? { ...r, body: r.body.slice(0, md.index).trim(), madde: md[1]! } : r;
+}
+
+function cutPlace(s: string): { body: string } & Place {
+  const sm = SURE.exec(s);
+  if (sm && (sm.index > 0 || /^(?:[a-zâîû]{1,3}-)/.test(sm[1]!))) return { body: s.slice(0, sm.index).trim(), sure: sm[2]!, ayet: sm[3]!.replace(/\s*[-–]\s*/g, "-") };
   const vp = VOL_PAGE.exec(s);
   if (vp) return { body: s.slice(0, vp.index).trim(), volume: vp[1]!, locator: vp[2]!.replace(/\s*[-–]\s*/g, "-") };
   const m = LOCATOR.exec(s);
   // "…, İstanbul, 2005." ends with the year, not a page.
-  if (!m || (!m[1] && /^(1[0-9]|20)\d{2}$/.test(m[2]!) && !/\b(1[0-9]|20)\d{2}\b/.test(s.slice(0, m.index)))) return { body: s.replace(/\.\s*$/, "") };
+  // (Only a year of print, 1500-2099, after something that is not a quoted title: "“isnat”, 1029" is a page.)
+  if (!m || (!m[1] && /^(1[5-9]|20)\d{2}$/.test(m[2]!) && !/[”"]\s*$/.test(s.slice(0, m.index)) && !/\b(1[0-9]|20)\d{2}\b/.test(s.slice(0, m.index)))) return { body: s.replace(/\.\s*$/, "") };
   const volume = m[1]?.replace(/\s*\/\s*$/, "").trim();
-  const locator = m[2]!.replace(/^s\.\s*/i, "").replace(/\s*[-–]\s*/g, "-").trim();
+  const locator = m[2]!.replace(/^s\.\s*/i, "").replace(/(\d[ab]?)\s*[-–]\s*(?=\d)/g, "$1-").trim();
   return { body: s.slice(0, m.index).trim(), ...(volume ? { volume } : {}), locator };
 }
 
@@ -80,19 +108,63 @@ function surnames(item: Item): string[] {
 }
 
 /** "Kara, Tasavvuf ve Tarikatlar" → the work among `pool` by that author whose title (or short title) begins so. */
+/** "Topaloğlu vd.", "Topaloğlu - Çelebi", "Roper (ed.)" → the first author's surname. */
+const authorKey = (s: string) => fold(s.replace(/\s*\((?:ed|eds|haz|ç(?:ev)?)\.?\)\s*$/i, "").replace(/\s+(?:vd\.?|et al\.?)$/i, "").split(/\s+[-–]\s+|\s+ve\s+|\s*&\s*/)[0]!);
+const byAuthor = (it: Item, author: string) => !author || surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`));
+
+/** The initials of a title's words ("Geschichte des arabischen Schrifttums" → "gas"), for "Sezgin, GAS". */
+const initials = (t: string) => fold(t).split(" ").filter((w) => w.length > 3).map((w) => w[0]).join("");
+
+/** "Kara, Tasavvuf ve Tarikatlar" → the work among `pool` by that author whose title (or short title) begins so. */
+/** The first comma outside quotes and parentheses (the one after the author). */
+function firstComma(s: string): number {
+  let depth = 0;
+  let quote = false;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]!;
+    if (ch === "(") depth++;
+    else if (ch === ")" && depth) depth--;
+    else if (ch === "“") quote = true;
+    else if (ch === "”") quote = false;
+    else if (ch === "," && !depth && !quote) return i;
+  }
+  return -1;
+}
+
 function findShort(body: string, pool: readonly Item[]): Item | null {
-  const comma = body.indexOf(",");
-  const author = comma > 0 ? fold(body.slice(0, comma)) : "";
-  const title = fold((comma > 0 ? body.slice(comma + 1) : body).replace(/[“”"«»]/g, ""));
+  const comma = firstComma(body);
+  const author = comma > 0 ? authorKey(body.slice(0, comma)) : "";
+  // A manuscript's short form keeps its shelf mark: "Keşşî, et-Temhîd (Şehit Ali Paşa, 1153)".
+  const raw = (comma > 0 ? body.slice(comma + 1) : body).replace(/\s*\([^()]*\)\s*$/, "").trim();
+  const title = fold(raw.replace(/[“”"«»]/g, ""));
   if (!title) return null;
-  const hits = [...new Set(pool)].filter((it) => {
-    if (author && !surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`))) return false;
+  const mine = [...new Set(pool)].filter((it) => byAuthor(it, author));
+  const pick = (hits: Item[]) => (hits.length === 1 ? hits[0]! : (hits.find((h) => fold(h.fields.shortTitle ?? "") === title) ?? null));
+  const starts = mine.filter((it) => {
     const t = fold(titleOf(it));
     const st = fold(it.fields.shortTitle ?? "");
     return t.startsWith(title) || (st && (st === title || title.startsWith(st)));
   });
-  return hits.length === 1 ? hits[0]! : (hits.find((h) => fold(h.fields.shortTitle ?? "") === title) ?? null);
+  if (starts.length) return pick(starts);
+  if (!author) return null;
+  // A short title taken from inside the title ("Suça Teşebbüsten Vazgeçme"), or its initials ("GAS").
+  const inside = mine.filter((it) => fold(titleOf(it)).includes(title) || (/^[\p{Lu}]{2,6}$/u.test(raw) && initials(titleOf(it)) === raw.toLowerCase()));
+  return inside.length === 1 ? inside[0]! : null;
 }
+
+/** "Tehânevî, “delîl”, 1/797": a madde of the dictionary by that author met before. */
+function findDictionary(body: string, pool: readonly Item[]): { item: Item; madde: string } | null {
+  const m = /^([^,“"]{2,60}),\s*[“"]([^”"]{1,60})[”"]$/.exec(body.trim());
+  if (!m) return null;
+  const author = authorKey(m[1]!);
+  const works = [...new Set(pool)].filter((it) => byAuthor(it, author) && !/Article|journal|magazine|newspaper/i.test(it.itemType));
+  return works.length === 1 ? { item: works[0]!, madde: m[2]! } : null;
+}
+
+const place = (p: Place): Place => ({ ...(p.volume ? { volume: p.volume } : {}), ...(p.locator ? { locator: p.locator } : {}), ...(p.sure ? { sure: p.sure, ayet: p.ayet } : {}), ...(p.madde ? { madde: p.madde } : {}) });
+
+/** A Kur’ân meâl or tefsir: "el-Bakara 2/14" alone in a later note points to it. */
+const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(titleOf(it));
 
 /** Reads the notes in order; `library` is searched for each work before a new record is made. */
 export function readHandNotes(notes: readonly string[], library: readonly Item[]): HandNote[] {
@@ -122,8 +194,8 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           break;
         }
         const tail = rest.slice(named[0].length).replace(/^(a\.?\s?g\.?\s?[em]\.?|age\.?|agm\.?|aynı\s+eser|op\.?\s*cit\.?)\s*,?\s*/i, "");
-        const c: { volume?: string; locator?: string } = tail ? cut(`, ${tail}`) : {};
-        const ref: HandRef = { item: work, isNew: created.includes(work), ...(c.volume ? { volume: c.volume } : {}), ...(c.locator ? { locator: c.locator } : {}), ...(prefix ? { prefix } : {}) };
+        const c: Place = tail ? cut(`, ${tail}`) : {};
+        const ref: HandRef = { item: work, isNew: created.includes(work), ...place(c), ...(prefix ? { prefix } : {}) };
         refs.push(ref);
         seen.splice(seen.indexOf(work), 1);
         seen.push(work);
@@ -136,7 +208,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           break;
         }
         const tail = rest.slice(sm[0].length).trim();
-        const c: { volume?: string; locator?: string } = tail ? cut(`, ${tail.replace(/^,\s*/, "")}`) : {};
+        const c: Place = tail ? cut(`, ${tail.replace(/^,\s*/, "")}`) : {};
         const sameLoc = /^a\.?\s?y\.?|aynı\s+yer/i.test(sm[1]!);
         const ref: HandRef = { item: previous.item, isNew: previous.isNew, ...(c.volume ? { volume: c.volume } : previous.volume && !c.locator ? { volume: previous.volume } : {}), ...(c.locator ? { locator: c.locator } : sameLoc && previous.locator ? { locator: previous.locator } : {}), ...(prefix ? { prefix } : {}) };
         refs.push(ref);
@@ -146,16 +218,35 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       const am = /^(?:a\.\s?mlf\.|aynı\s+müellif|id\.|idem)\s*,?\s*/i.exec(rest);
       const prevAuthor = refs[refs.length - 1]?.item.creators[0] ?? previous?.item.creators[0];
       const restOwn = am && prevAuthor ? `${[prevAuthor.firstName, prevAuthor.lastName ?? prevAuthor.name].filter(Boolean).join(" ").replace(/- /, "-")}, ${rest.slice(am[0].length)}` : rest;
-      const { body, volume, locator } = cut(restOwn);
+      const c = cut(restOwn);
+      const { body } = c;
+      let where = place(c);
+      // "el-Bakara 2/14." alone: the Kur’ân meâl cited before.
+      if (!body && c.sure) {
+        const q = [...seen].reverse().find(isQuran);
+        if (!q) {
+          reason = "âyet atfı önceki bir meâli göstermiyor";
+          break;
+        }
+        refs.push({ item: q, isNew: created.includes(q), ...where, ...(prefix ? { prefix } : {}) });
+        continue;
+      }
       // A short form of a work already met (in these notes, then in the library).
-      const short = body.length < 120 && !/\(.*:\s*.*\d{3,4}.*\)/.test(body) ? (findShort(body, seen) ?? findShort(body, library)) : null;
-      let item: Item | null = short;
+      const shortable = body.length < 160 && !/\(.*:\s*.*\d{3,4}.*\)/.test(body);
+      let item: Item | null = shortable ? (findShort(body, seen) ?? findShort(body, library)) : null;
+      if (!item && shortable) {
+        const d = findDictionary(body, seen) ?? findDictionary(body, library);
+        if (d) {
+          item = d.item;
+          where = { ...where, madde: d.madde };
+        }
+      }
       let isNew = false;
       if (!item) {
         const r = parseReference(`${body}.`);
         const f = r?.item.fields;
         // A full reference has an author or an imprint; a sentence of the author's own has neither.
-        const looksFull = r && f?.title && (r.item.creators.length > 0 || f.date) && (f.date || f.publisher || f.publicationTitle || f.university || f.place);
+        const looksFull = r && f?.title && (r.item.creators.length > 0 || f.date || f.archive || f.accessDate) && (f.date || f.publisher || f.publicationTitle || f.encyclopediaTitle || f.dictionaryTitle || f.university || f.place || f.archive || f.accessDate || f.url);
         if (!r || !looksFull) {
           reason = "künye olarak okunamadı";
           break;
@@ -171,7 +262,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       // Kept in the order last cited ("Kara, a.g.e." is Kara's work cited last).
       if (seen.includes(item)) seen.splice(seen.indexOf(item), 1);
       seen.push(item);
-      const ref: HandRef = { item, isNew: isNew || created.includes(item), ...(volume ? { volume } : {}), ...(locator ? { locator } : {}), ...(prefix ? { prefix } : {}) };
+      const ref: HandRef = { item, isNew: isNew || created.includes(item), ...where, ...(prefix ? { prefix } : {}) };
       refs.push(ref);
     }
     if (reason || !refs.length) {

@@ -2,3 +2,5 @@ node_modules/
 dist/
 coverage/
 *.log
+isnad-handnotes.txt
+isnad-en.txt

@@ -145,3 +145,36 @@ describe("a.mlf. in a footnote", () => {
     expect(r[0]!.refs![1]!.item.creators[0]).toMatchObject({ lastName: "Kara", firstName: "Mustafa" });
   });
 });
+
+describe("hand-typed footnotes: manuscripts, dictionaries, âyet, vd.", () => {
+  it("reads what theses in ilahiyat cite most", () => {
+    const r = readHandNotes(
+      [
+        "Ebû Şekûr Muhammed b. Abdüsseyyid es-Sâlimî el-Keşşî, et-Temhîd fî beyâni’t-tevḥîd (İstanbul: Süleymaniye Kütüphanesi, Şehit Ali Paşa, 1153), 77b.",
+        "Keşşî, et-Temhîd (Şehit Ali Paşa, 1153), 78a.",
+        "Muhammed Aʿlâ b. Ali et-Tehânevî, Keşşâfü ıṣṭılâḥâti’l-fünûn ve’l-‘ulûm, nşr. Ali Dahrûc - Abdullah Hâlidî (Beyrut: Mektebetü Lübnan, 1996), “delîl”, 1/793-799.",
+        "Tehânevî, “delîl”, 1/797.",
+        "Kur’ân-ı Kerîm Meâli, çev. Halil Altuntaş - Muzaffer Şahin (Ankara: Diyanet İşleri Başkanlığı Yayınları, 2009), el-Enfâl 8/2.",
+        "el-Bakara 2/14.",
+        "Bekir Topaloğlu vd., İslam’da İnanç Esasları (İstanbul: MÜ İlâhiyat Fakültesi Vakfı Yayınları, 1998), 25.",
+        "Topaloğlu vd., İslam’da İnanç Esasları, 36.",
+        "Fuat Sezgin, Geschichte des arabischen Schrifttums (Leiden: Brill, 1967-2015), 1/44-45.",
+        "Sezgin, GAS, 1/48-56.",
+      ],
+      [],
+    );
+    const ref = (i: number) => r[i]!.refs![0]!;
+    expect(ref(0).item).toMatchObject({ itemType: "manuscript", fields: { archive: "Süleymaniye Kütüphanesi", archiveLocation: "Şehit Ali Paşa, 1153" } });
+    expect(ref(0).locator).toBe("77b");
+    expect(ref(1).item).toBe(ref(0).item);
+    expect(ref(1).locator).toBe("78a");
+    expect([ref(2).madde, ref(2).volume, ref(2).locator]).toEqual(["delîl", "1", "793-799"]);
+    expect(ref(3).item).toBe(ref(2).item);
+    expect([ref(3).madde, ref(3).locator]).toEqual(["delîl", "797"]);
+    expect([ref(4).sure, ref(4).ayet]).toEqual(["8", "2"]);
+    expect(ref(5).item).toBe(ref(4).item);
+    expect([ref(5).sure, ref(5).ayet]).toEqual(["2", "14"]);
+    expect(ref(7).item).toBe(ref(6).item);
+    expect(ref(9).item).toBe(ref(8).item);
+  });
+});
