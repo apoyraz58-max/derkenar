@@ -4,7 +4,7 @@
  * wrong and, where the fix is mechanical, carries it ("Düzelt").
  */
 import { cleanYear, hijriPair, nisbaArticle, restoreTurkish, isTurkishPlace, isnadName, isnadPlace, isnadPublisher, isnadTitle, nameNeedsCase, publisherLooksShort, shortTitleOf } from "./isnadstyle.js";
-import { type Creator, type Item, baseField, containerOf, fieldLabel, parseDate, primaryCreators, typeField } from "./zotero.js";
+import { type Creator, type Item, baseField, containerOf, creatorTypesOf, fieldLabel, parseDate, primaryCreators, typeField } from "./zotero.js";
 
 export type Level = "error" | "warning" | "info";
 
@@ -255,6 +255,23 @@ export function checkItem(item: Item): Issue[] {
       const creator: Creator = c.name !== undefined ? { creatorType: c.creatorType, name: untitled(c.name)! } : { creatorType: c.creatorType, lastName: untitled(c.lastName) ?? "", ...(c.firstName ? { firstName: untitled(c.firstName)! } : {}) };
       add({ code: "name-title", level: "warning", message: `Kişi adında unvan var (${full.trim()}); İSNAD künyede unvan yazmaz.`, creatorIndex: i, fix: { creatorIndex: i, creator }, fixLabel: "Unvanı sil" });
     }
+    // "Yılmaz, Ahmet (çev.)", "Haz. Mehmet Demir", "Kara (ed.)": the role written into the name.
+    const ROLE_IN_NAME: [RegExp, string][] = [
+      [/(?:^|\s|\()(?:çev(?:iren)?|tercüme|trans(?:lated by)?|tr)\.?\)?(?=\s|$|,)/i, "translator"],
+      [/(?:^|\s|\()(?:thk|tahkik|muhakkik)\.?\)?(?=\s|$|,)/i, "muhakkik"],
+      [/(?:^|\s|\()(?:haz(?:ırlayan)?|hzl|yay\.\s*haz)\.?\)?(?=\s|$|,)/i, "hazirlayan"],
+      [/(?:^|\s|\()(?:ed|eds|editör|editor)\.?\)?(?=\s|$|,)/i, "editor"],
+      [/(?:^|\s|\()(?:nşr|neşreden)\.?\)?(?=\s|$|,)/i, "nasir"],
+    ];
+    const parts = [c.name, c.firstName, c.lastName].filter((x): x is string => Boolean(x));
+    const role = ROLE_IN_NAME.find(([re]) => parts.some((x) => re.test(x) && /[.()]/.test(x)));
+    if (role && c.creatorType !== "contributor") {
+      const strip = (x: string | undefined) => (x ? x.replace(role[0], " ").replace(/\(\s*\)/g, "").replace(/\s+/g, " ").trim() : x);
+      const types = new Set(creatorTypesOf(item.itemType));
+      const to = types.has(role[1]) ? role[1] : c.creatorType;
+      const creator: Creator = c.name !== undefined ? { creatorType: to, name: strip(c.name)! } : { creatorType: to, lastName: strip(c.lastName) ?? "", ...(strip(c.firstName) ? { firstName: strip(c.firstName)! } : {}) };
+      add({ code: "name-role", level: "warning", message: `Rol adın içine yazılmış (${full.trim()}); kişi ${to === c.creatorType ? "" : "rolüyle "}ayrı alana alınmalı.`, creatorIndex: i, fix: { creatorIndex: i, creator }, fixLabel: "Rolü ayır" });
+    }
     // "Mâce" + "… b. Yezîd İbn", "Hanbel" + "Ahmed b.": the well-known name was cut in two.
     if (c.name === undefined && c.lastName?.trim() && c.firstName?.trim()) {
       const first = c.firstName.trim();
@@ -361,7 +378,7 @@ export function apostropheReport(items: readonly Item[]): { mark: string; count:
 export const LEVEL_LABEL: Record<Level, string> = { error: "Hata", warning: "Uyarı", info: "Bilgi" };
 
 /** Fixes applied by themselves when a work is added (DOI, ISBN, pasted record): mechanical, safe ones. */
-export const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "name-split", "name-title", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
+export const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "name-split", "name-title", "name-role", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
 const AUTO_LABEL: Record<string, string> = {
   "turkish-letters": "eksik Türkçe harfler",
   encoding: "bozuk karakterler",
@@ -374,6 +391,7 @@ const AUTO_LABEL: Record<string, string> = {
   "name-comma": "ad-soyad ayrımı",
   "name-split": "ikiye bölünmüş meşhur ad (İbn …, … b. …)",
   "name-title": "kişi adındaki unvan (Prof. Dr. …)",
+  "name-role": "adın içine yazılmış rol (çev., haz., ed.)",
   pages: "sayfa aralığı",
   edition: "baskı",
   "doi-url": "DOI",

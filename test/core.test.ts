@@ -850,3 +850,12 @@ describe("İSNAD: no academic titles in names", () => {
     expect(autoFix(mk({ lastName: "Drâz", firstName: "Muhammed Abdullah" })).item.creators[0]).toMatchObject({ lastName: "Drâz", firstName: "Muhammed Abdullah" });
   });
 });
+
+describe("İSNAD: role written into the name", () => {
+  it("(çev.), Haz., (ed.) become the role", () => {
+    const mk = (c: Record<string, string>) => ({ ...emptyItem("book"), creators: [{ creatorType: "author", lastName: "Gazzâlî", firstName: "Ebû Hâmid el-" }, { creatorType: "author", ...c }], fields: { title: "İhyâ", place: "İstanbul", publisher: "Bedir Yayınevi", date: "1975" } });
+    expect(autoFix(mk({ lastName: "Serdaroğlu", firstName: "Ahmet (çev.)" })).item.creators[1]).toEqual({ creatorType: "translator", lastName: "Serdaroğlu", firstName: "Ahmet" });
+    expect(autoFix(mk({ lastName: "Demir", firstName: "Haz. Mehmet" })).item.creators[1]).toMatchObject({ lastName: "Demir", firstName: "Mehmet" });
+    expect(autoFix(mk({ lastName: "Edirneli", firstName: "Ahmet" })).item.creators[1]).toEqual({ creatorType: "author", lastName: "Edirneli", firstName: "Ahmet" });
+  });
+});
