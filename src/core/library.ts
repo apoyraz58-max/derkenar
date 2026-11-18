@@ -213,6 +213,8 @@ function marks(s: string): number {
 
 const bare = (s: string) => s.normalize("NFC").replace(/[ʿʾ’'‘`]/g, "").replace(/\s+/g, " ").trim();
 
+const spellingCache = new WeakMap<readonly Item[], Map<string, Map<string, number>>>();
+
 function spellings(items: readonly Item[]): Map<string, Map<string, number>> {
   const m = new Map<string, Map<string, number>>();
   const add = (kind: string, v: string | undefined) => {
@@ -240,7 +242,12 @@ function spellings(items: readonly Item[]): Map<string, Map<string, number>> {
  * marks and case, never in letters; and never towards a plainer spelling.
  */
 export function librarySpelling(item: Item, library: readonly Item[]): { item: Item; changed: string[] } {
-  const known = spellings(library.filter((i) => i.key !== item.key));
+  // Counted once per library (a list of additions is checked against the same library); the item's own spelling counts too, which only adds to itself.
+  let known = spellingCache.get(library);
+  if (!known) {
+    known = spellings(library);
+    spellingCache.set(library, known);
+  }
   const changed: string[] = [];
   const best = (kind: string, v: string): string | null => {
     const variants = known.get(`${kind}|${foldText(v)}`);
