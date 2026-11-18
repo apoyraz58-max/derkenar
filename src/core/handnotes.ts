@@ -142,7 +142,11 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         refs.push(ref);
         continue;
       }
-      const { body, volume, locator } = cut(rest);
+      // "a.mlf., Başka Eser, 12." / "Id., …": another work of the author cited just before.
+      const am = /^(?:a\.\s?mlf\.|aynı\s+müellif|id\.|idem)\s*,?\s*/i.exec(rest);
+      const prevAuthor = refs[refs.length - 1]?.item.creators[0] ?? previous?.item.creators[0];
+      const restOwn = am && prevAuthor ? `${[prevAuthor.firstName, prevAuthor.lastName ?? prevAuthor.name].filter(Boolean).join(" ").replace(/- /, "-")}, ${rest.slice(am[0].length)}` : rest;
+      const { body, volume, locator } = cut(restOwn);
       // A short form of a work already met (in these notes, then in the library).
       const short = body.length < 120 && !/\(.*:\s*.*\d{3,4}.*\)/.test(body) ? (findShort(body, seen) ?? findShort(body, library)) : null;
       let item: Item | null = short;

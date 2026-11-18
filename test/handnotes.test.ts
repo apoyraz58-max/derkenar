@@ -137,3 +137,11 @@ describe("———. / a.mlf. in a typed bibliography", () => {
     ]);
   });
 });
+
+describe("a.mlf. in a footnote", () => {
+  it("is the author cited just before", () => {
+    expect(show(["Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45; a.mlf., Bursa’da Tarikatlar ve Tekkeler (Bursa: Uludağ Yayınları, 1990), 12."])).toEqual(["Tasavvuf ve Tarikatlar Tarihi* s.45 ; Bursa’da Tarikatlar ve Tekkeler* s.12"]);
+    const r = readHandNotes(["Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45; a.mlf., Bursa’da Tarikatlar ve Tekkeler (Bursa: Uludağ Yayınları, 1990), 12."], []);
+    expect(r[0]!.refs![1]!.item.creators[0]).toMatchObject({ lastName: "Kara", firstName: "Mustafa" });
+  });
+});
