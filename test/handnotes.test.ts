@@ -115,3 +115,25 @@ describe("a.g.e. typed by hand", () => {
     expect(ageCount("a.g.e., s. 4. Kara, a.g.e., 5. A.e. 7. Ibid. a.g.m., 3. Bu çağda age değil; ae. hayır")).toBe(5);
   });
 });
+
+import { expandSameAuthor } from "../src/core/freetext.js";
+
+describe("———. / a.mlf. in a typed bibliography", () => {
+  it("takes the author of the line before", () => {
+    expect(
+      expandSameAuthor([
+        "Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları, 2005.",
+        "———. Bursa’da Tarikatlar ve Tekkeler. Bursa: Uludağ Yayınları, 1990.",
+        "a.mlf. Metinlerle Günümüz Tasavvuf Hareketleri. İstanbul: Dergâh Yayınları, 2002.",
+        "Ocak, Ahmet Yaşar. Türk Sufîliğine Bakışlar. İstanbul: İletişim Yayınları, 1996.",
+        "———, “Kalenderîler”, Belleten 45 (1981), 1-20.",
+      ]),
+    ).toEqual([
+      "Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları, 2005.",
+      "Kara, Mustafa. Bursa’da Tarikatlar ve Tekkeler. Bursa: Uludağ Yayınları, 1990.",
+      "Kara, Mustafa. Metinlerle Günümüz Tasavvuf Hareketleri. İstanbul: Dergâh Yayınları, 2002.",
+      "Ocak, Ahmet Yaşar. Türk Sufîliğine Bakışlar. İstanbul: İletişim Yayınları, 1996.",
+      "Ocak, Ahmet Yaşar. “Kalenderîler”, Belleten 45 (1981), 1-20.",
+    ]);
+  });
+});

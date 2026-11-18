@@ -12,7 +12,7 @@ import { $, S, doc, getRenderer, h, putItems, run, serial, setMessage } from "./
 import { refresh } from "./document.js";
 import { isnadFix } from "./io.js";
 import { existingCopy } from "../../core/library.js";
-import { parseReference, splitReferences } from "../../core/freetext.js";
+import { expandSameAuthor, parseReference, splitReferences } from "../../core/freetext.js";
 
 let plan: HandNote[] = [];
 
@@ -92,7 +92,7 @@ function readBibliography(text: string): BibLine[] {
   // Headings out first (a heading has no full stop and would be joined to the next reference).
   const raw = text.split("\n").map((l) => l.trim());
   const kept = raw.filter((l, i) => l && !(isHeading(l) && !/[.)]$/.test(l) && (i === 0 || !raw[i - 1] || /[.)\]]$/.test(raw[i - 1]!))));
-  return splitReferences(kept.join("\n"))
+  return expandSameAuthor(splitReferences(kept.join("\n")))
     .map((l) => {
       const r = parseReference(l);
       if (!r || !r.item.fields.title) return { text: l, item: null, isNew: false };

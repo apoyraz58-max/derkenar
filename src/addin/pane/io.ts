@@ -137,9 +137,9 @@ async function pasteRecords(): Promise<void> {
     items = r.items;
   } else {
     // Serbest künye: each line a reference in İSNAD, APA … — split into fields.
-    const { parseReference, splitReferences } = await import("../../core/freetext.js");
+    const { expandSameAuthor, parseReference, splitReferences } = await import("../../core/freetext.js");
     items = [];
-    for (const line of splitReferences(text)) {
+    for (const line of expandSameAuthor(splitReferences(text))) {
       const r = parseReference(line);
       if (!r) {
         left.push(line);

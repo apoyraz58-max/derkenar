@@ -592,6 +592,26 @@ export function parseReference(raw: string): ParsedReference | null {
   return best;
 }
 
+/** "———.", "----,", "a.mlf.", "aynı müellif" at the head of a bibliography line: the author of the line before. */
+const SAME_AUTHOR = /^(?:[—–_-]{2,}|a\.\s?mlf\.?|aynı\s+müellif|aynı\s+yazar|idem|id\.)\s*[.,]?\s+/i;
+
+/**
+ * A bibliography typed by hand writes a repeated author as "———." or "a.mlf.":
+ * the line gets the author of the line before it ("Kara, Mustafa."), as the
+ * reader would read it.
+ */
+export function expandSameAuthor(lines: readonly string[]): string[] {
+  let author = "";
+  return lines.map((line) => {
+    const m = SAME_AUTHOR.exec(line.trim());
+    if (m && author) return `${author} ${line.trim().slice(m[0].length)}`;
+    // The author part of a kaynakça line: up to the first ". " after "Soyad, Ad" (or the "Ad Soyad," of a dipnot form).
+    const a = /^([^.,]{2,60},\s*[^.]{2,80}?\.)\s+\S/u.exec(line.trim()) ?? /^((?:\p{Lu}[\p{L}’'-]*\s?){2,6},)\s/u.exec(line.trim());
+    if (a) author = a[1]!;
+    return line;
+  });
+}
+
 /** A pasted list: one reference per line (a reference broken over lines is joined back when a line does not end a sentence). */
 export function splitReferences(text: string): string[] {
   const lines = text.replace(/\r/g, "").split("\n").map((l) => l.trim());
