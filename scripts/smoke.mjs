@@ -83,6 +83,11 @@ const FAKE = String.raw`
     load() { return this; },
     insertText(t) {
       const sel = doc.fieldSel;
+      if (!sel && doc.plainInsert) {
+        // Plain text typed at the cursor (a person's name with the death date).
+        insertAtCursor({ kind: "text", text: t });
+        return { insertParagraph(p) { insertAtCursor({ kind: "text", text: p }); return { getRange() { return this; } }; } };
+      }
       if (!sel) throw new Error("no field selected");
       doc.fieldSel = null;
       return {
@@ -802,6 +807,22 @@ try {
   if (!(await page.textContent("#basket")).includes("Osmanlılar")) fail("pasted reference not in the citation");
   if ((await page.inputValue('#basket [data-f="locator"]')) !== "45") fail("page of the pasted reference not taken");
   await page.click("#clear-basket");
+
+  // 9x. Şahıslar tablosu: imported, then a person's name written with the death date.
+  {
+    const csv = "Sıra;Kısa Ad (DİA);Tam Ad (DİA);Orijinal Ad;Vefat Tarihi;EI3 Transliterasyonu (Kısa Ad);EI3 Transliterasyonu (Tam Ad);Osmanlıca Transliterasyon;Grup;Kural;Yöntem;Kontrol notu\n1;Gazzâlî;Ebû Hâmid Muhammed b. Muhammed el-Gazzâlî;;(ö. 505/1111);al-Ghazālī;Abū Ḥāmid Muḥammad b. Muḥammad al-Ghazālī;;Arap;;;\n2;Kâtib Çelebi;---;---;(ö. 1067/1657);Katib Çelebi;;Kātib Çelebi;Osmanlı / Türk;;;\n";
+    await page.click("#tab-aktar");
+    await page.setInputFiles("#persons-file", { name: "sahislar.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+    await page.waitForSelector("#message:has-text('Şahıslar tablosu yüklendi: 2 kişi')");
+    await page.click("#tab-atif");
+    await page.click("#person-helper summary");
+    await page.fill("#person-q", "gazz");
+    await page.evaluate(() => (window.__doc.plainInsert = true));
+    await page.locator("#person-hits button", { hasText: "Gazzâlî (ö. 505/1111)" }).click();
+    await page.waitForSelector("#message:has-text('Metne yazıldı: Gazzâlî (ö. 505/1111)')");
+    await page.evaluate(() => (window.__doc.plainInsert = false));
+    if (!(await page.evaluate(() => window.__doc.flow.some((x) => x.text === "Gazzâlî (ö. 505/1111)")))) fail("person with death date not written");
+  }
 
   // 10. Veri bilgisi ve kılavuz.
   await page.click("#go-info");

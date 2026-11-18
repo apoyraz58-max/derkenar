@@ -11,6 +11,7 @@ import { wireEditor } from "./pane/editor.js";
 import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pane/io.js";
 import { wireScan } from "./pane/scan.js";
 import { wireHandNotes } from "./pane/handnotes.js";
+import { loadPersons, wirePersons } from "./pane/persons.js";
 import { renderInfo, wireInfo } from "./pane/info.js";
 import { refreshLibraryView, wireLibrary } from "./pane/library.js";
 import { wireTranslit } from "./pane/translit.js";
@@ -110,6 +111,7 @@ Office.onReady(async () => {
   wireIo();
   wireScan();
   wireHandNotes();
+  wirePersons();
   wireTranslit();
   wireInfo();
   onShow("atif", () => ($<HTMLInputElement>("q").focus({ preventScroll: true }), void onSelection()));
@@ -135,6 +137,8 @@ Office.onReady(async () => {
   });
   doc();
   await loadLibrary();
+  // Before the first refresh: an English document writes the table's persons the EI3 way.
+  await loadPersons().catch(() => undefined);
   void restoreZoteroForm();
   word.onSelectionChanged(() => {
     window.clearTimeout(selTimer);

@@ -276,3 +276,10 @@ details.section-like summary { cursor: pointer; font-weight: 600; font-size: 13p
 #outside-offer .outside { display: block; width: 100%; text-align: left; margin: 4px 0 6px; padding: 8px 10px; border: 1px dashed var(--accent); border-radius: 6px; background: transparent; cursor: pointer; }
 #outside-offer .outside .r-title { color: var(--accent); font-weight: 600; }
 #outside-offer .outside .r-more { color: var(--muted); font-size: 11px; }
+
+/* Kişi adı ve vefat tarihi */
+#person-helper { margin: 4px 0 8px; }
+#person-hits li { margin: 3px 0; }
+.person-hit { display: block; width: 100%; text-align: left; padding: 5px 8px; background: transparent; }
+.person-hit .r-title { display: block; font-weight: 600; }
+.person-hit .r-more { display: block; color: var(--muted); font-size: 11px; }

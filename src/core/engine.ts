@@ -74,7 +74,9 @@ export class Renderer {
       retrieveItem: (id: string) => this.items[id] ?? { id, type: "document", title: MISSING },
     };
     const Engine = (CSL as unknown as { Engine: new (...args: unknown[]) => Engine }).Engine;
-    this.engine = new Engine(sys, styleXml, lang ?? this.meta.defaultLocale ?? "tr-TR", true);
+    // English İSNAD writes EI3's article with the surname ("al-Bukhārī, Abū ʿAbdallāh …") and files it under B.
+    const xml = this.meta.isnad && /^en/.test(this.lang) && !/demote-non-dropping-particle=/.test(styleXml) ? styleXml.replace(/<style\b/, '<style demote-non-dropping-particle="sort-only"') : styleXml;
+    this.engine = new Engine(sys, xml, lang ?? this.meta.defaultLocale ?? "tr-TR", true);
     this.engine.opt.development_extensions.wrap_url_and_doi = false;
   }
 

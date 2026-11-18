@@ -9,7 +9,7 @@ import { sameAuthors } from "./names.js";
 import { htmlToText } from "./html.js";
 import { isArabicTitle } from "./isnadstyle.js";
 import { fold } from "./search.js";
-import { type Item, toCsl } from "./zotero.js";
+import { type Creator, type Item, toCsl } from "./zotero.js";
 
 export const TAG_CITATION = "DERKENAR:C:";
 export const TAG_BIBLIOGRAPHY = "DERKENAR:BIB";
@@ -188,9 +188,17 @@ export function volumesCited(refs: readonly CiteRef[]): Set<string> {
  * Items as CSL. A book cited with its own cilt ("1/80") must not also print
  * the record's Cilt ("6/1/80"): for those works the record's volume is left out.
  */
+/** English İSNAD: the names of persons in the Şahıslar table written the EI3 way (set by the pane when a table is loaded). */
+let englishNames: ((c: Creator) => Creator) | null = null;
+export function setEnglishNames(fn: ((c: Creator) => Creator) | null): void {
+  englishNames = fn;
+}
+
 export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set(), isnad = true, lang = "tr-TR"): Record<string, CslItem> {
   const out: Record<string, CslItem> = {};
-  for (const [k, v] of Object.entries(items)) {
+  const english = isnad && /^en/.test(lang);
+  for (const [k, v0] of Object.entries(items)) {
+    const v = english && englishNames ? { ...v0, creators: v0.creators.map(englishNames) } : v0;
     const csl: CslItem = { ...toCsl(v), id: k };
     if (citedWithVolume.has(k) && !CONTAINER_VOLUME.has(csl.type) && csl.volume !== undefined) {
       // The record's Cilt was really the number of volumes: the bibliography says "6 Cilt".
@@ -199,7 +207,7 @@ export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet
     }
     // citeproc title-cases titles of English-language works; a transliterated or Turkish title is not one ("Kitāb al-Tawḥīd").
     if (isnad && /^en/.test(lang)) englishIsnad(csl);
-    out[k] = isnad ? fillImprint(articleToGiven(csl), lang) : plainRoles(csl);
+    out[k] = isnad ? fillImprint(articleToGiven(csl, english), lang) : plainRoles(csl);
   }
   return out;
 }
@@ -213,7 +221,7 @@ const SURNAME_ARTICLE = /^((?:el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|eż|a
  * bibliography "Gazzâlî, Ebû Hâmid …" under G (guide s. 87). A surname typed
  * as "el-Gazzâlî" is read the same way; the record is not changed.
  */
-export function articleToGiven(csl: CslItem): CslItem {
+export function articleToGiven(csl: CslItem, english = false): CslItem {
   const c = csl as CslItem & Record<string, unknown>;
   for (const value of Object.values(c)) {
     if (!Array.isArray(value)) continue;
@@ -221,6 +229,8 @@ export function articleToGiven(csl: CslItem): CslItem {
       const family = typeof n?.family === "string" ? n.family : "";
       const m = SURNAME_ARTICLE.exec(family);
       if (!m || n.literal) continue;
+      // English İSNAD keeps EI3's "al-" with the surname: "al-Bukhārī, Abū ʿAbdallāh …", "al-Bukhārī, al-Jāmiʿ".
+      if (english && /^al-$/i.test(m[1]!)) continue;
       const article = m[1]!.toLocaleLowerCase("tr");
       const given = typeof n.given === "string" ? n.given.trim() : "";
       n.family = m[2]!.charAt(0).toLocaleUpperCase("tr") + m[2]!.slice(1);
