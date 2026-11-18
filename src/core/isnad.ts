@@ -248,6 +248,13 @@ export function checkItem(item: Item): Issue[] {
       add({ code: "name-comma", level: "warning", message: `Ad ve soyad tek kutuya yazılmış (${c.lastName}).`, creatorIndex: i, fix: { creatorIndex: i, creator: { creatorType: c.creatorType, lastName: last, firstName: first } }, fixLabel: "Ayır" });
     }
     if (c.name === undefined && !c.lastName?.trim() && c.firstName?.trim()) add({ code: "name-last", level: "warning", message: `Soyad / şöhret kutusu boş (${c.firstName}).`, creatorIndex: i });
+    // "Prof. Dr. Mustafa Kara", "Doç. Dr.", "Dr. Öğr. Üyesi": İSNAD writes no academic title.
+    const TITLE = /^(?:(?:Prof|Doç|Doc|Yrd|Yard|Dr|Öğr|Ogr|Üyesi|Gör|Arş|Uzm|Assoc|Asst|Assist)\.?\s*)+(?=\p{Lu})/u;
+    const untitled = (x: string | undefined) => (x ? x.replace(TITLE, "").trim() : x);
+    if ([c.name, c.firstName, c.lastName].some((x) => x && TITLE.test(x.trim()) && /\.|Üyesi/.test(TITLE.exec(x.trim())![0]))) {
+      const creator: Creator = c.name !== undefined ? { creatorType: c.creatorType, name: untitled(c.name)! } : { creatorType: c.creatorType, lastName: untitled(c.lastName) ?? "", ...(c.firstName ? { firstName: untitled(c.firstName)! } : {}) };
+      add({ code: "name-title", level: "warning", message: `Kişi adında unvan var (${full.trim()}); İSNAD künyede unvan yazmaz.`, creatorIndex: i, fix: { creatorIndex: i, creator }, fixLabel: "Unvanı sil" });
+    }
     // "Mâce" + "… b. Yezîd İbn", "Hanbel" + "Ahmed b.": the well-known name was cut in two.
     if (c.name === undefined && c.lastName?.trim() && c.firstName?.trim()) {
       const first = c.firstName.trim();
@@ -354,7 +361,7 @@ export function apostropheReport(items: readonly Item[]): { mark: string; count:
 export const LEVEL_LABEL: Record<Level, string> = { error: "Hata", warning: "Uyarı", info: "Bilgi" };
 
 /** Fixes applied by themselves when a work is added (DOI, ISBN, pasted record): mechanical, safe ones. */
-export const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "name-split", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
+export const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "name-split", "name-title", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
 const AUTO_LABEL: Record<string, string> = {
   "turkish-letters": "eksik Türkçe harfler",
   encoding: "bozuk karakterler",
@@ -366,6 +373,7 @@ const AUTO_LABEL: Record<string, string> = {
   "name-case": "kişi adları",
   "name-comma": "ad-soyad ayrımı",
   "name-split": "ikiye bölünmüş meşhur ad (İbn …, … b. …)",
+  "name-title": "kişi adındaki unvan (Prof. Dr. …)",
   pages: "sayfa aralığı",
   edition: "baskı",
   "doi-url": "DOI",

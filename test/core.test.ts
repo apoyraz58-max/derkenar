@@ -841,3 +841,12 @@ describe("İSNAD: a well-known name cut in two", () => {
     expect(autoFix(mk("Gazzâlî", "Ebû Hâmid Muhammed b. Muhammed el-")).item.creators[0]).toEqual({ creatorType: "author", lastName: "Gazzâlî", firstName: "Ebû Hâmid Muhammed b. Muhammed el-" });
   });
 });
+
+describe("İSNAD: no academic titles in names", () => {
+  it("Prof. Dr. Mustafa Kara → Mustafa Kara; Drâz stays", () => {
+    const mk = (c: Record<string, string>) => ({ ...emptyItem("book"), creators: [{ creatorType: "author", ...c }], fields: { title: "Tasavvuf", place: "İstanbul", publisher: "Dergâh Yayınları", date: "2005" } });
+    expect(autoFix(mk({ lastName: "Kara", firstName: "Prof. Dr. Mustafa" })).item.creators[0]).toEqual({ creatorType: "author", lastName: "Kara", firstName: "Mustafa" });
+    expect(autoFix(mk({ lastName: "Yılmaz", firstName: "Dr. Öğr. Üyesi Ahmet" })).item.creators[0]).toEqual({ creatorType: "author", lastName: "Yılmaz", firstName: "Ahmet" });
+    expect(autoFix(mk({ lastName: "Drâz", firstName: "Muhammed Abdullah" })).item.creators[0]).toMatchObject({ lastName: "Drâz", firstName: "Muhammed Abdullah" });
+  });
+});
