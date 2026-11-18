@@ -304,3 +304,17 @@ describe("hand-typed footnotes: hadith", () => {
     expect([ref(4).item === ref(3).item, ref(4).kitab, ref(4).bab]).toEqual([true, "Ticârât", "45"]);
   });
 });
+
+import { SHORT_UNKNOWN } from "../src/core/handnotes.js";
+
+describe("short reference to a work not known", () => {
+  it("says so, and links once the library has the work", () => {
+    expect(readHandNotes(["Buhârî, “Îmân”, 2."], [])[0]!.reason).toBe(SHORT_UNKNOWN);
+    const sahih = emptyItem("book");
+    sahih.creators = [{ creatorType: "author", lastName: "Buhârî", firstName: "Ebû Abdillâh Muhammed b. İsmâîl el-" }];
+    sahih.fields = { title: "el-Câmiʿu’ṣ-ṣaḥîḥ", place: "İstanbul", publisher: "Çağrı Yayınları", date: "1992" };
+    const r = readHandNotes(["Buhârî, “Îmân”, 2."], [sahih])[0]!.refs![0]!;
+    expect([r.item, r.kitab, r.bab]).toEqual([sahih, "Îmân", "2"]);
+    expect(readHandNotes(["Bu görüş için ileride bakılacaktır."], [])[0]!.reason).toBe("künye olarak okunamadı");
+  });
+});

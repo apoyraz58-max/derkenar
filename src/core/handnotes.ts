@@ -246,6 +246,9 @@ function findHadith(body: string, pool: readonly Item[]): { item: Item; kitab: s
 /** A Kur’ân meâl or tefsir: "el-Bakara 2/14" alone in a later note points to it. */
 const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(titleOf(it));
 
+/** Reason given to a short reference whose work was neither cited in full before nor found in the library. */
+export const SHORT_UNKNOWN = "kısa künye; eser daha önce tam künyeyle anılmamış, kütüphanede de yok";
+
 /** Reads the notes in order; `library` is searched for each work before a new record is made. */
 export function readHandNotes(notes: readonly string[], library: readonly Item[]): HandNote[] {
   const created: Item[] = [];
@@ -348,7 +351,8 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         // A full reference has an author or an imprint; a sentence of the author's own has neither.
         const looksFull = r && (f?.title || f?.docketNumber) && (r.item.creators.length > 0 || f.date || f.archive || f.accessDate) && (f.date || f.dateDecided || f.publisher || f.publicationTitle || f.encyclopediaTitle || f.dictionaryTitle || f.university || f.place || f.archive || f.accessDate || f.url);
         if (!r || !looksFull) {
-          reason = "künye olarak okunamadı";
+          // "Buhârî, “Îmân”, 2" with no full reference anywhere before: a short form of a work not known yet.
+          reason = shortable && /^[^,()“”"]{2,50},\s*[^()]{2,90}$/.test(body) && (c.locator || c.madde || c.volume) ? SHORT_UNKNOWN : "künye olarak okunamadı";
           break;
         }
         const old = copies.find(r.item);

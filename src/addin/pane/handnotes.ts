@@ -3,7 +3,7 @@
  * citations in place (the note, its number and its place stay). First a
  * look at what would change; then the change, which Word's Undo takes back.
  */
-import { type HandInText, type HandNote, checkBibliography, checkInTextBibliography, inTextAuthorYears, readHandNotes, readInText } from "../../core/handnotes.js";
+import { type HandInText, type HandNote, SHORT_UNKNOWN, checkBibliography, checkInTextBibliography, inTextAuthorYears, readHandNotes, readInText } from "../../core/handnotes.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import type { CiteRef } from "../../core/types.js";
 import { type Item, creatorLine, titleOf } from "../../core/zotero.js";
@@ -44,6 +44,9 @@ async function scan(): Promise<void> {
         h("li", { value: String(p.index + 1), class: p.refs ? "" : "muted" }, h("div", { class: "hand-src" }, short(p.text, 140)), h("div", { class: p.refs ? "hand-to" : "hand-keep" }, p.refs ? `→ ${describe(p)}` : `kalır: ${p.reason}`)),
       ),
     ),
+    ...(plan.filter((p) => p.reason === SHORT_UNKNOWN).length
+      ? [h("p", { class: "notice small" }, `${plan.filter((p) => p.reason === SHORT_UNKNOWN).length} dipnot kısa künyeyle anılan ama tam künyesi dipnotlarda olmayan eserlere gidiyor (ör. "Buhârî, “Îmân”, 2"). Önce aşağıda kaynakçayı seçip "Seçili kaynakçayı oku"ya basın; eserler kütüphaneye girince yeniden tarayın, bu dipnotlar da bağlanır.`)]
+      : []),
     ok.length ? h("button", { type: "button", class: "primary", onclick: () => void run("Dipnotlar çevriliyor", convert) }, `${ok.length} dipnotu atıfa çevir`) : h("p", { class: "muted small" }, "Çevrilecek dipnot yok."),
   );
 }
