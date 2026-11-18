@@ -418,3 +418,37 @@ export function checkBibliography(notes: readonly string[], bibliography: readon
   const uncited = listed.filter((l) => ![...cited.keys()].some((it) => sameWork(it, l.item))).map((l) => l.line);
   return { missing, uncited, unreadLines, citedCount: cited.size, listedCount: listed.length };
 }
+
+/** "(Kara, 2005: 45; Ocak 1996)" and "Kara (2005)": the author and year of each in-text citation typed by hand. */
+export function inTextAuthorYears(text: string): { who: string; year: string; at: string }[] {
+  const out: { who: string; year: string; at: string }[] = [];
+  for (const m of text.matchAll(/\(([^()]{4,240})\)/g)) {
+    for (const part of splitNote(m[1]!)) {
+      const p = part.replace(/^(?:bk\.|bkz\.|krş\.|ayrıca\s+bk\.|see|cf\.)\s*/i, "").trim();
+      const r = /^(.+?)[,\s]+(?:\d{3,4}\s*\/\s*)?((?:1[5-9]|20)\d{2}[a-z]?)\b/u.exec(p);
+      if (!r) continue;
+      const who = fold(r[1]!.replace(/\s+(vd\.|et al\.?|ve\s+.+|and\s+.+|&\s*.+)$/i, "").trim());
+      if (who && who.split(" ").length <= 3 && !/^(o|ö|v|d)$/.test(who)) out.push({ who, year: r[2]!, at: part.trim() });
+    }
+  }
+  // Narrative: "Kara (2005) der ki", "Kara (2005: 45)".
+  for (const m of text.matchAll(/(\p{Lu}[\p{L}’'-]{2,})(?:\s+(?:vd\.|ve\s+\p{Lu}[\p{L}’'-]+))?\s+\(((?:1[5-9]|20)\d{2}[a-z]?)(?:[,:][^()]*)?\)/gu)) out.push({ who: fold(m[1]!.replace(/[’'][\p{L}]+$/u, "")), year: m[2]!, at: m[0] });
+  return out;
+}
+
+/** In-text citations typed by hand against the bibliography, by first author's surname and year. */
+export function checkInTextBibliography(text: string, bibliography: readonly string[]): { missing: string[]; uncited: string[]; unreadLines: string[]; citedCount: number; listedCount: number } {
+  const cites = inTextAuthorYears(text);
+  const listed: { line: string; who: string; years: string[] }[] = [];
+  const unreadLines: string[] = [];
+  for (const line of bibliography) {
+    const r = parseReference(line);
+    const who = r ? (surnames(r.item)[0] ?? fold(r.item.fields.publicationTitle ?? "")) : "";
+    if (r && who) listed.push({ line, who, years: (r.item.fields.date ?? "").match(/\d{4}/g) ?? [] });
+    else unreadLines.push(line);
+  }
+  const matches = (c: { who: string; year: string }, l: { who: string; years: string[] }) => (l.who === c.who || l.who.endsWith(` ${c.who}`)) && l.years.includes(c.year.slice(0, 4));
+  const missing = [...new Set(cites.filter((c) => !listed.some((l) => matches(c, l))).map((c) => c.at))];
+  const uncited = listed.filter((l) => !cites.some((c) => matches(c, l))).map((l) => l.line);
+  return { missing, uncited, unreadLines, citedCount: new Set(cites.map((c) => `${c.who} ${c.year}`)).size, listedCount: listed.length };
+}

@@ -3,7 +3,7 @@
  * citations in place (the note, its number and its place stay). First a
  * look at what would change; then the change, which Word's Undo takes back.
  */
-import { type HandInText, type HandNote, checkBibliography, readHandNotes, readInText } from "../../core/handnotes.js";
+import { type HandInText, type HandNote, checkBibliography, checkInTextBibliography, inTextAuthorYears, readHandNotes, readInText } from "../../core/handnotes.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import type { CiteRef } from "../../core/types.js";
 import { type Item, creatorLine, titleOf } from "../../core/zotero.js";
@@ -222,7 +222,21 @@ async function checkAgainstBibliography(): Promise<void> {
   const d = doc();
   // Works already cited with Derkenar count as cited too.
   const derkenar = [...new Set(Object.values(d.citations).flatMap((c) => c.items.map((r) => r.id)))].map((k) => d.items[k] ?? S.byKey.get(k)).filter((x): x is Item => Boolean(x));
-  const r = checkBibliography(notes.map((n) => n.text), bibliographyLines(text), S.items, derkenar);
+  const lines = bibliographyLines(text);
+  // In-text citations typed in the text ("(Kara, 2005: 45)", "Kara (2005)"): checked by author and year.
+  const body = await serial(() => word.bodyText()).catch(() => "");
+  if (inTextAuthorYears(body).length >= Math.max(3, notes.length)) {
+    const t = checkInTextBibliography(body, lines);
+    $("hand-check-result").replaceChildren(
+      h("p", { class: "small" }, `Metinde ${t.citedCount} yazar-yıl atfı, kaynakçada ${t.listedCount} künye okundu.${!t.missing.length && !t.uncited.length ? " Uyumlu." : ""}`),
+      ...(t.missing.length ? [h("p", { class: "small" }, h("strong", {}, `Metinde anılıp kaynakçada bulunmayan (${t.missing.length}):`)), h("ul", { class: "hand-list small" }, ...t.missing.slice(0, 100).map((m) => h("li", {}, `(${m})`)))] : []),
+      ...(t.uncited.length ? [h("p", { class: "small" }, h("strong", {}, `Kaynakçada olup metinde anılmayan (${t.uncited.length}):`)), h("ul", { class: "hand-list small" }, ...t.uncited.slice(0, 100).map((l) => h("li", {}, short(l, 140))))] : []),
+      ...(t.unreadLines.length ? [h("p", { class: "muted small" }, `Kaynakçada künye olarak okunamayan ${t.unreadLines.length} satır sayılmadı.`)] : []),
+      h("p", { class: "muted small" }, "Metin içi atıflar ilk yazarın soyadı ve yılla karşılaştırıldı. Belgede hiçbir şey değişmez."),
+    );
+    return;
+  }
+  const r = checkBibliography(notes.map((n) => n.text), lines, S.items, derkenar);
   const noteNo = (i: number) => (notes[i - 1] ? notes[i - 1]!.index + 1 : i);
   $("hand-check-result").replaceChildren(
     h("p", { class: "small" }, `Dipnotlarda ${r.citedCount} eser, kaynakçada ${r.listedCount} künye okundu.${!r.missing.length && !r.uncited.length ? " Uyumlu: her anılan eser kaynakçada, kaynakçadaki her eser anılmış." : ""}`),

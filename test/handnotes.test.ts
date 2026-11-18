@@ -246,3 +246,17 @@ describe("footnotes against the bibliography", () => {
     expect([r.citedCount, r.listedCount]).toEqual([2, 2]);
   });
 });
+
+import { checkInTextBibliography } from "../src/core/handnotes.js";
+
+describe("in-text citations against the bibliography", () => {
+  it("matches by surname and year, narrative ones too", () => {
+    const r = checkInTextBibliography("Tasavvuf (Kara, 2005: 45) böyledir. Ocak (1996) aksini söyler; (Uludağ 1995, s. 12; bk. Kara, 2005). Gazzâlî (ö. 505/1111) de.", [
+      "Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları, 2005.",
+      "Ocak, Ahmet Yaşar. Türk Sufîliğine Bakışlar. İstanbul: İletişim Yayınları, 1996.",
+      "Yılmaz, Hasan Kâmil. Anahatlarıyla Tasavvuf ve Tarikatlar. İstanbul: Ensar Neşriyat, 2004.",
+    ]);
+    expect(r.missing).toEqual(["Uludağ 1995, s. 12"]);
+    expect(r.uncited).toEqual(["Yılmaz, Hasan Kâmil. Anahatlarıyla Tasavvuf ve Tarikatlar. İstanbul: Ensar Neşriyat, 2004."]);
+  });
+});

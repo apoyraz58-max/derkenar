@@ -739,3 +739,13 @@ export async function replaceInSelection(pairs: readonly { from: string; to: str
     return n;
   });
 }
+
+/** The main text only (no notes). */
+export async function bodyText(): Promise<string> {
+  return Word.run(async (context) => {
+    const body = context.document.body;
+    body.load("text");
+    await context.sync();
+    return body.text;
+  });
+}
