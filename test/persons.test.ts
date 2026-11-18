@@ -128,3 +128,14 @@ describe("Metindeki adlar DİA → EI3", () => {
     ]);
   });
 });
+
+describe("Vefat tarihi: adaşlar", () => {
+  it("a shared name is the cited author's", () => {
+    const rows = readCsv(CSV + "\n7;Gazzâlî, Zeyneb;---;---;(ö. 700/1300);al-Ghazālī, Zaynab;;;Arap;;;");
+    const persons = personsFromRows(rows);
+    const ix = indexPersons({ persons, dict: buildDict(persons), source: "t" });
+    expect(missingDeathDates("Gazzâlî der ki.", ix)).toEqual([]);
+    const cited = new Set([persons.find((p) => p.dia === "Gazzâlî")!]);
+    expect(missingDeathDates("Gazzâlî der ki.", ix, false, cited).map((d) => d.note)).toEqual(["(ö. 505/1111)"]);
+  });
+});

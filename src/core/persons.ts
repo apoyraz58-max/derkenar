@@ -480,6 +480,20 @@ function diedBefore1900(p: Person): boolean {
   return y !== null && y < 1900;
 }
 
+/** The words of a folded text (also without a suffix: "gazzali’nin" → "gazzali"), to skip names that cannot be in it. */
+function wordsOf(folded: string): Set<string> {
+  const set = new Set<string>();
+  for (const w of folded.split(/[\s,.;:()[\]"“”!?«»…/]+/)) {
+    if (!w) continue;
+    set.add(w);
+    const bare = w.split(/[’']/)[0]!;
+    if (bare) set.add(bare);
+  }
+  return set;
+}
+
+const mayBeIn = (form: string, words: Set<string>) => form.split(" ").every((w) => words.has(w));
+
 export interface DeathMention {
   person: Person;
   /** The name as it stands in the text at its first mention. */
@@ -510,7 +524,7 @@ function mentionForms(p: Person): string[] {
  * first mention (İSNAD: those who died before the 20th century). A mention
  * inside parentheses (an in-text citation) does not count as the first.
  */
-export function missingDeathDates(text: string, index: PersonIndex, english = false): DeathMention[] {
+export function missingDeathDates(text: string, index: PersonIndex, english = false, cited: ReadonlySet<Person> = new Set()): DeathMention[] {
   const folded = foldSame(text);
   // Forms shared by several persons (two "Râzî"s) are left out: which one is meant cannot be told.
   const owners = new Map<string, Person[]>();
@@ -522,9 +536,13 @@ export function missingDeathDates(text: string, index: PersonIndex, english = fa
     }
   }
   const found = new Map<Person, DeathMention>();
+  const words = wordsOf(folded);
   for (const [form, ps] of owners) {
-    if (ps.length !== 1) continue;
-    const p = ps[0]!;
+    if (!mayBeIn(form, words)) continue;
+    // A name several persons share: the one whose work the document cites, if only one is.
+    const own = ps.length === 1 ? ps : ps.filter((x) => cited.has(x));
+    if (own.length !== 1) continue;
+    const p = own[0]!;
     const re = new RegExp(`(?<![\\p{L}’'-])${form.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}])`, "gu");
     for (const m of folded.matchAll(re)) {
       const before = folded.slice(Math.max(0, m.index - 200), m.index);
@@ -566,8 +584,9 @@ export function ei3Replacements(text: string, index: PersonIndex): { from: strin
   }
   const out: { from: string; to: string }[] = [];
   const taken: [number, number][] = [];
+  const words = wordsOf(folded);
   for (const [k, list] of [...owners].sort((a, b) => b[0].length - a[0].length)) {
-    if (list.length !== 1) continue;
+    if (list.length !== 1 || !mayBeIn(k, words)) continue;
     const re = new RegExp(`(?<![\\p{L}’'-])${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:[’'][\\p{L}]+)?(?![\\p{L}])`, "gu");
     for (const m of folded.matchAll(re)) {
       const end = m.index + m[0].length;

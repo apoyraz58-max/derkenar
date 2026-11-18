@@ -156,8 +156,14 @@ export function diaSurnames(q: string): string[] {
 export async function missingDates(): Promise<DeathMention[]> {
   if (!index) return [];
   const { text, own } = await serial(() => word.bodyText());
+  // The persons whose works this document cites tell which of two namesakes is meant.
+  const cited = new Set<Person>();
+  for (const it of Object.values(doc().items)) for (const c of it.creators) {
+    const p = findPerson(c, index);
+    if (p) cited.add(p);
+  }
   // Read in the writer's own text; the place counted in the whole text, as Word's search sees it.
-  return missingDeathDates(own, index, english()).map((d) => ({ ...d, n: occurrences(text.slice(0, d.at), d.word) }) as DeathMention & { n: number });
+  return missingDeathDates(own, index, english(), cited).map((d) => ({ ...d, n: occurrences(text.slice(0, d.at), d.word) }) as DeathMention & { n: number });
 }
 
 function occurrences(hay: string, needle: string): number {
