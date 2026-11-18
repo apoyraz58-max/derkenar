@@ -269,10 +269,14 @@ describe("full first, short after, no a.g.e.", () => {
         "a.g.e., 46.",
         "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 50.",
         "Kutlu, “İlk Mürciî Metinler”, 322.",
+        "Kara, Tasavvuf ve Tarikatlar, 51.",
+        "Kara, Tasavvuf, 52.",
+        "Kara, Tasavvuf, 53.",
       ],
       [],
       lib,
     );
+    expect(r.shortVariants.map((x) => x.forms)).toEqual([["Kara, Tasavvuf ve Tarikatlar", "Kara, Tasavvuf"]]);
     expect(r.age).toEqual([2]);
     expect(r.fullAgain.map((x) => [x.item.fields.title, x.notes])).toEqual([["Tasavvuf ve Tarikatlar Tarihi", [3]]]);
     expect(r.shortFirst.map((x) => [x.item.fields.title, x.note])).toEqual([["İlk Mürciî Metinler", 4]]);

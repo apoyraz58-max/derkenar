@@ -32,6 +32,8 @@ export interface HandRef {
   readonly label?: string;
   /** How the note wrote it: a full reference, a short one, or a.g.e. / Ibid. (İSNAD: full first, short after, never a.g.e.). */
   readonly form?: "full" | "short" | "age";
+  /** A short reference as typed ("Kara, Tasavvuf"), to see whether a work is shortened one way throughout. */
+  readonly written?: string;
   /** What the reading could not tell ("diğer yazarlar (vd.)"), for a new record. */
   readonly unsure?: string[];
   /** Kitâb-ı Mukaddes: book abbreviation, bab and cümle ("Yar.1:12"). */
@@ -306,7 +308,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       // Kept in the order last cited ("Kara, a.g.e." is Kara's work cited last).
       if (seen.includes(item)) seen.splice(seen.indexOf(item), 1);
       seen.push(item);
-      const ref: HandRef = { item, isNew: isNew || created.includes(item), form: full ? "full" : "short", ...where, ...(prefix ? { prefix } : {}), ...(isNew && unsureOf.get(item)?.includes("diğer yazarlar (vd.)") ? { unsure: ["diğer yazarlar (vd.)"] } : {}) };
+      const ref: HandRef = { item, isNew: isNew || created.includes(item), form: full ? "full" : "short", ...(full ? {} : { written: body.replace(/\s*\([^()]*\)\s*$/, "").trim() }), ...where, ...(prefix ? { prefix } : {}), ...(isNew && unsureOf.get(item)?.includes("diğer yazarlar (vd.)") ? { unsure: ["diğer yazarlar (vd.)"] } : {}) };
       refs.push(ref);
     }
     if (reason || !refs.length) {
@@ -394,10 +396,22 @@ export interface BibCheck {
   readonly fullAgain: { item: Item; notes: number[] }[];
   /** Notes with a.g.e. / a.e. / Ibid. */
   readonly age: number[];
+  /** Works shortened in more than one way ("Kara, Tasavvuf" · "Kara, Tasavvuf ve Tarikatlar"). */
+  readonly shortVariants: { item: Item; forms: string[] }[];
 }
 
 /** Full first, short after, no a.g.e. (İSNAD's rule for footnotes), as the notes were typed. */
-export function firstMentions(read: readonly HandNote[]): Pick<BibCheck, "shortFirst" | "fullAgain" | "age"> {
+export function firstMentions(read: readonly HandNote[]): Pick<BibCheck, "shortFirst" | "fullAgain" | "age" | "shortVariants"> {
+  const forms = new Map<Item, Map<string, string>>();
+  for (const n of read)
+    for (const r of n.refs ?? []) {
+      if (r.form !== "short" || !r.written) continue;
+      const m = forms.get(r.item) ?? new Map<string, string>();
+      // Letters only: "Kara, Tasavvuf" and "Kara, Tasavvuf." are one form.
+      m.set(foldText(r.written.replace(/[“”"]/g, "")), r.written);
+      forms.set(r.item, m);
+    }
+  const shortVariants = [...forms].filter(([, m]) => m.size > 1).map(([item, m]) => ({ item, forms: [...m.values()] }));
   const met = new Set<Item>();
   const shortFirst: { item: Item; note: number }[] = [];
   const again = new Map<Item, number[]>();
@@ -410,7 +424,7 @@ export function firstMentions(read: readonly HandNote[]): Pick<BibCheck, "shortF
         if (r.form && r.form !== "full") shortFirst.push({ item: r.item, note: n.index + 1 });
       } else if (r.form === "full") again.set(r.item, [...(again.get(r.item) ?? []), n.index + 1]);
     }
-  return { shortFirst, fullAgain: [...again].map(([item, notes]) => ({ item, notes })), age: [...age] };
+  return { shortFirst, fullAgain: [...again].map(([item, notes]) => ({ item, notes })), age: [...age], shortVariants };
 }
 
 const sameWork = (a: Item, b: Item): boolean => {
