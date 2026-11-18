@@ -76,13 +76,22 @@ const label = (c: Creator) => c.name ?? [c.lastName, c.firstName].filter(Boolean
 /** Groups of creators that are one person written in more than one way. */
 export function nameVariants(items: readonly Item[]): NameVariant[] {
   const groups: { creators: Creator[] }[] = [];
+  // Only creators with the same family key can be one person: compared within that bucket only.
+  const byFamily = new Map<string, { creators: Creator[] }[]>();
   for (const it of items) {
     if (it.deleted) continue;
     for (const c of it.creators) {
-      if (!familyKey(c)) continue;
-      const g = groups.find((x) => sameAuthor(x.creators[0]!, c));
+      const fk = familyKey(c);
+      if (!fk) continue;
+      const bucket = byFamily.get(fk) ?? [];
+      const g = bucket.find((x) => sameAuthor(x.creators[0]!, c));
       if (g) g.creators.push(c);
-      else groups.push({ creators: [c] });
+      else {
+        const ng = { creators: [c] };
+        bucket.push(ng);
+        groups.push(ng);
+      }
+      byFamily.set(fk, bucket);
     }
   }
   const out: NameVariant[] = [];
