@@ -104,3 +104,14 @@ describe("DİA yazımı (Türkçe)", () => {
     expect(sug("Yılmaz", "Hüseyin")).toBeNull();
   });
 });
+
+import { missingDeathDates } from "../src/core/persons.js";
+
+describe("Vefat tarihi: metinde ilk geçiş", () => {
+  const ix = indexPersons(table());
+  it("finds the first mention without a date; parentheses and dated mentions do not count", () => {
+    const text = "Bu görüş (Gazzâlî, el-Mustasfâ, 1/45) ile başlar. Fahreddin er-Râzî de buna katılır. Gazzâlî ise farklı düşünür; Gazzâlî'nin eseri. Buhârî (ö. 256/870) burada yok. Kâtib Çelebi (v. 1067/1657) de. Mustafa Kara bir çağdaştır.";
+    expect(missingDeathDates(text, ix).map((d) => `${d.text} ${d.note}`)).toEqual(["Fahreddin er-Râzî (ö. 606/1210)", "Gazzâlî (ö. 505/1111)"]);
+    expect(missingDeathDates("Gazzali bunu söyler.", ix, true).map((d) => `${d.text} ${d.note}`)).toEqual(["Gazzali (d. 505/1111)"]);
+  });
+});

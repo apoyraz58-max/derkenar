@@ -138,8 +138,9 @@ export function personsFromRows(rows: string[][]): Person[] {
     if (!empty(get(c.diaFull))) p.diaFull = get(c.diaFull);
     if (!empty(get(c.ei3Full))) p.ei3Full = get(c.ei3Full);
     if (!empty(get(c.otto))) p.otto = get(c.otto);
-    const death = /(\d{1,4}(?:\s*\/\s*\d{3,4})?)/.exec(get(c.death).replace(/^\(?\s*ö\.\s*/, ""));
-    if (death) p.death = death[1]!.replace(/\s+/g, "");
+    // "(ö. 505/1111)", "(ö. 42/662-63)", "(ö. 549/1154 [?])", "(ö. 690/1291’den sonra)": kept as the table writes it.
+    const death = get(c.death).replace(/^\(\s*/, "").replace(/\s*\)$/, "").replace(/^(ö|v|d)\.\s*/i, "").trim();
+    if (/\d/.test(death)) p.death = death.replace(/\s*\/\s*/g, "/");
     if (get(c.note) || /tahmin/i.test(get(c.method))) p.unsure = true;
     if (get(c.link)) p.link = get(c.link);
     out.push(p);
@@ -350,9 +351,8 @@ export function personInText(p: Person, english: boolean): string {
   const own = english ? p.ei3 : p.dia;
   const [last, given] = own.split(/,\s*/);
   const name = given && !/\bb\.\s/.test(given) ? `${given} ${last}` : last!;
-  const death = /^(?:\d{1,4}\/)?(\d{4})$/.exec(p.death ?? "");
   // İSNAD: the death date of those who died before the 20th century.
-  return death && Number(death[1]) >= 1900 ? name : `${name} ${deathNote(p, english)}`.trim();
+  return diedBefore1900(p) ? `${name} ${deathNote(p, english)}`.trim() : name;
 }
 
 /** Persons whose names begin with the words typed ("gazz", "ibn tey"). */
@@ -455,4 +455,88 @@ export function diaSuggestion(c: Creator, index: PersonIndex): { person: Person;
   if (!f) return null;
   const creator = diaCreator(c, f.person);
   return sameCreator(c, creator) ? null : { person: f.person, creator, loose: f.loose };
+}
+
+// ---------------------------------------------------------------- death dates in the text
+
+/** Letter by letter to plain lower case, same length (so a match points back into the text). */
+function foldSame(s: string): string {
+  let out = "";
+  for (const c of s) {
+    const b = c === "İ" || c === "ı" || c === "I" ? "i" : c.normalize("NFD")[0]!.toLowerCase();
+    out += b.length === c.length ? b : c;
+  }
+  return out;
+}
+
+/** The Gregorian year of death: the number after "/" ("505/1111"), or the only one ("1930"). */
+export function deathYear(p: Person): number | null {
+  const m = /\/(\d{1,4})/.exec(p.death ?? "") ?? /^(\d{1,4})\b/.exec(p.death ?? "");
+  return m ? Number(m[1]) : null;
+}
+
+function diedBefore1900(p: Person): boolean {
+  const y = deathYear(p);
+  return y !== null && y < 1900;
+}
+
+export interface DeathMention {
+  person: Person;
+  /** The name as it stands in the text at its first mention. */
+  text: string;
+  /** Index of the first mention in the text. */
+  at: number;
+  /** The whole word there, with a suffix ("Gazzâlî’nin"): the date goes after it. */
+  word: string;
+  /** "(ö. 505/1111)" or "(d. 505/1111)" */
+  note: string;
+}
+
+/** The forms a person is mentioned by in running text: "Fahreddin er-Râzî", "Râzî"; "Gazzâlî"; "Kâtib Çelebi". */
+function mentionForms(p: Person): string[] {
+  const { surname, given, article } = diaParts(p);
+  const forms = new Set<string>();
+  if (!p.dia.includes(",")) forms.add(p.dia);
+  if (given && article) forms.add(`${given} ${article}${surname}`);
+  // A single nisba ("Gazzâlî", "Mâtürîdî") is distinctive enough alone; a bare "Ali" or "Hasan" is not.
+  // Only for the person filed under it ("Gazzâlî", "Buhârî, Muhammed b. İsmâil"), not "Ahmed el-Gazzâlî".
+  const filedUnder = !p.dia.split(",")[0]!.trim().includes(" ");
+  if (filedUnder && /arap|fars/i.test(p.group) && !surname.includes(" ") && /[îi]$/.test(surname) && nameKey(surname).length >= 5) forms.add(surname);
+  return [...forms].filter((f) => nameKey(f).length >= 5 && (f.includes(" ") || /[îi]$/.test(f)));
+}
+
+/**
+ * Persons of the table mentioned in the text without their death date at the
+ * first mention (İSNAD: those who died before the 20th century). A mention
+ * inside parentheses (an in-text citation) does not count as the first.
+ */
+export function missingDeathDates(text: string, index: PersonIndex, english = false): DeathMention[] {
+  const folded = foldSame(text);
+  // Forms shared by several persons (two "Râzî"s) are left out: which one is meant cannot be told.
+  const owners = new Map<string, Person[]>();
+  for (const p of index.table.persons) {
+    if (!diedBefore1900(p)) continue;
+    for (const f of mentionForms(p)) {
+      const k = foldSame(f);
+      owners.set(k, [...(owners.get(k) ?? []), p]);
+    }
+  }
+  const found = new Map<Person, DeathMention>();
+  for (const [form, ps] of owners) {
+    if (ps.length !== 1) continue;
+    const p = ps[0]!;
+    const re = new RegExp(`(?<![\\p{L}’'-])${form.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}])`, "gu");
+    for (const m of folded.matchAll(re)) {
+      const before = folded.slice(Math.max(0, m.index - 200), m.index);
+      if ((before.match(/\(/g) ?? []).length > (before.match(/\)/g) ?? []).length) continue;
+      const prev = found.get(p);
+      const suffix = /^[’'][\p{L}]+/u.exec(text.slice(m.index + m[0].length))?.[0] ?? "";
+      if (!prev || m.index < prev.at) found.set(p, { person: p, text: text.slice(m.index, m.index + m[0].length), word: text.slice(m.index, m.index + m[0].length) + suffix, at: m.index, note: deathNote(p, english) });
+      break;
+    }
+  }
+  // Already dated at the first mention: "(ö. 505/1111)", "(v. 505)", "(d. 1111)" right after the name.
+  return [...found.values()]
+    .filter((d) => !/^[’'\p{L}]*\s*\((?:ö|v|d|öl|vf|ölm|died)\.?\s*[\d?]/iu.test(text.slice(d.at + d.text.length, d.at + d.text.length + 30)))
+    .sort((a, b) => a.at - b.at);
 }

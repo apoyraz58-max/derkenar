@@ -169,8 +169,9 @@ const FAKE = String.raw`
       const occurrences = () => doc.flow.flatMap((x) => { if (x.cc || x.fn || typeof x.text !== "string") return []; const out = []; let i = 0; while ((i = x.text.indexOf(t, i)) >= 0) { out.push({ x, off: i }); i += t.length; } return out; });
       return collection(occurrences().map((_, n) => ({
         parentContentControlOrNullObject: { isNullObject: true, tag: "", load() { return this; } },
-        insertText(nt) {
+        insertText(nt, where) {
           const { x, off } = occurrences()[n];
+          if (where === "After") { x.text = x.text.slice(0, off + t.length) + nt + x.text.slice(off + t.length); return {}; }
           const after = x.text.slice(off + t.length);
           x.text = x.text.slice(0, off);
           const cc = makeCC("inline");
@@ -834,6 +835,15 @@ try {
     await page.locator("#ed-issues .issue", { hasText: 'DİA\'da "Ebû Hâmid Muhammed el-Gazzâlî" (ö. 505/1111)' }).waitFor({ timeout: 5000 }).catch(async () => fail(`DİA issue: ${await page.textContent("#ed-issues")}`));
     await page.locator("#ed-issues button", { hasText: "DİA yazımını uygula" }).click();
     if ((await page.inputValue('[aria-label="Soyad"]')) !== "Gazzâlî") fail("DİA fix not applied");
+    // Death date at the first mention: Denetim finds Kâtib Çelebi without one and writes it.
+    await page.evaluate(() => window.__doc.flow.push({ kind: "text", text: " Kâtib Çelebi’nin eseri. Yine Kâtib Çelebi." }));
+    await page.click("#tab-denetim");
+    await page.selectOption("#chk-scope", "document");
+    await page.click("#chk-run");
+    await page.locator("#chk-deaths button", { hasText: "Ekle" }).first().click();
+    await page.waitForSelector("#message:has-text('1 kişinin vefat tarihi')");
+    const dated = await page.evaluate(() => window.__doc.flow.filter((x) => typeof x.text === "string" && x.text.includes("Kâtib Çelebi")).map((x) => x.text).join("|"));
+    if (!dated.includes("Kâtib Çelebi’nin (ö. 1067/1657) eseri. Yine Kâtib Çelebi.")) fail(`death date: ${dated} / ${await page.evaluate(() => JSON.stringify(window.__doc.flow.filter((x) => typeof x.text === "string").map((x) => x.text)))}`);
   }
 
   // 10. Veri bilgisi ve kılavuz.

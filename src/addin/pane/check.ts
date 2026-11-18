@@ -13,7 +13,7 @@ import { citedKeys, currentOrder, refresh } from "./document.js";
 import { $, S, doc, h, putItems, run, setMessage } from "./core.js";
 import { openEditor } from "./editor.js";
 import { inCurrentView } from "./library.js";
-import { personIssues } from "./persons.js";
+import { addDates, missingDates, personIssues } from "./persons.js";
 import { fieldVariants, unifyField } from "../../core/library.js";
 
 /** Fixes applied by "Önerilen düzeltmeleri uygula"; case changes stay manual. */
@@ -36,7 +36,34 @@ export function runCheck(): void {
   const withInfo = $<HTMLInputElement>("chk-info").checked;
   lastIssues = lastItems.flatMap((i) => [...checkItem(i), ...personIssues(i)]).filter((i) => withInfo || i.level !== "info");
   render();
-  if ($<HTMLSelectElement>("chk-scope").value === "document") void checkAge();
+  if ($<HTMLSelectElement>("chk-scope").value === "document") {
+    void checkAge();
+    void checkDeathDates();
+  }
+}
+
+/** İSNAD: the death date of a person who died before the 20th century, where the name first appears in the text. */
+async function checkDeathDates(): Promise<void> {
+  const list = await missingDates().catch(() => []);
+  if (!list.length) return;
+  const add = (which: typeof list) =>
+    void run("Vefat tarihleri ekleniyor", async () => {
+      const n = await addDates(which);
+      setMessage(`${n} kişinin vefat tarihi adının metinde ilk geçtiği yere yazıldı.`, "success");
+      runCheck();
+    });
+  $("chk-list").prepend(
+    h(
+      "li",
+      { id: "chk-deaths" },
+      h("div", { class: "issue warning" }, h("span", { class: "lvl" }, "Uyarı"), ` Metinde vefat tarihi verilmeden ilk kez geçen ${list.length} kişi. İSNAD, 20. yüzyıldan önce vefat edenlerin tarihini adın ilk geçtiği yerde ister.`),
+      ...list.slice(0, 40).map((d) =>
+        h("div", { class: "row small" }, h("span", {}, `${d.word} → ${d.word} ${d.note}${d.person.unsure ? " (tablo: tahminî)" : ""}`), h("button", { type: "button", class: "link", onclick: () => add([d]) }, "Ekle")),
+      ),
+      list.length > 1 ? h("button", { type: "button", onclick: () => add(list) }, `Hepsine ekle (${list.length})`) : null,
+    ),
+  );
+  $("chk-summary").textContent += ` Vefat tarihi eksik: ${list.length} kişi.`;
 }
 
 /** "a.g.e." typed by hand in the document (old footnotes): İSNAD writes a short reference. */

@@ -716,3 +716,43 @@ export async function replaceInBody(writes: readonly { text: string; ids: readon
     return done;
   });
 }
+
+/**
+ * The main text only (no notes); `own` is the same text with Derkenar's own
+ * controls (citations, bibliography, abbreviations) blanked, so that what the
+ * writer wrote can be told from what Derkenar wrote. Same length, same places.
+ */
+export async function bodyText(): Promise<{ text: string; own: string }> {
+  return Word.run(async (context) => {
+    const body = context.document.body;
+    body.load("text");
+    const ccs = body.contentControls;
+    ccs.load("items/tag,items/text");
+    await context.sync();
+    const text = body.text;
+    let own = text;
+    let from = 0;
+    for (const cc of ccs.items) {
+      if (!/^DERKENAR:/.test(cc.tag) || !cc.text) continue;
+      const at = text.indexOf(cc.text, from);
+      if (at < 0) continue;
+      own = own.slice(0, at) + cc.text.replace(/[^\r\n]/g, " ") + own.slice(at + cc.text.length);
+      from = at + cc.text.length;
+    }
+    return { text, own };
+  });
+}
+
+/** Writes `after` right after the n-th occurrence (0-based) of `text` in the main text. */
+export async function insertAfterOccurrence(text: string, n: number, after: string): Promise<boolean> {
+  return Word.run(async (context) => {
+    const found = context.document.body.search(text, { matchCase: true });
+    found.load("items");
+    await context.sync();
+    const r = found.items[n];
+    if (!r) return false;
+    r.insertText(after, "After");
+    await context.sync();
+    return true;
+  });
+}

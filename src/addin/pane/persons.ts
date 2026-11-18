@@ -5,7 +5,7 @@
  * name with the death date İSNAD asks for: "Gazzâlî (ö. 505/1111)".
  */
 import { setEnglishNames } from "../../core/docstate.js";
-import { type Person, type PersonIndex, type PersonTable, diaParts, diaSuggestion, englishCreator, findPerson, indexPersons, onlyMarks, personInText, searchPersons, tableFrom } from "../../core/persons.js";
+import { type DeathMention, type Person, type PersonIndex, type PersonTable, diaParts, missingDeathDates, diaSuggestion, englishCreator, findPerson, indexPersons, onlyMarks, personInText, searchPersons, tableFrom } from "../../core/persons.js";
 import type { Issue } from "../../core/isnad.js";
 import type { Item } from "../../core/zotero.js";
 import * as word from "../word.js";
@@ -138,4 +138,27 @@ export function diaSpelling(items: Item[]): string[] {
 export function diaSurnames(q: string): string[] {
   if (!index || q.trim().length < 3) return [];
   return [...new Set(searchPersons(q, index, 10).filter((p) => /arap|fars/i.test(p.group)).map((p) => diaParts(p).surname))];
+}
+
+// ---------------------------------------------------------------- death dates at the first mention
+
+/** Persons mentioned in the document's text without the death date at their first mention. */
+export async function missingDates(): Promise<DeathMention[]> {
+  if (!index) return [];
+  const { text, own } = await serial(() => word.bodyText());
+  // Read in the writer's own text; the place counted in the whole text, as Word's search sees it.
+  return missingDeathDates(own, index, english()).map((d) => ({ ...d, n: occurrences(text.slice(0, d.at), d.word) }) as DeathMention & { n: number });
+}
+
+function occurrences(hay: string, needle: string): number {
+  let n = 0;
+  for (let i = hay.indexOf(needle); i >= 0; i = hay.indexOf(needle, i + needle.length)) n++;
+  return n;
+}
+
+/** Writes the dates after the first mentions (the last first, so the earlier places do not move). */
+export async function addDates(list: readonly (DeathMention & { n?: number })[]): Promise<number> {
+  let done = 0;
+  for (const d of [...list].sort((a, b) => b.at - a.at)) if (await serial(() => word.insertAfterOccurrence(d.word, (d as { n?: number }).n ?? 0, ` ${d.note}`))) done++;
+  return done;
 }
