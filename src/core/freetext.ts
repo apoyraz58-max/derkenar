@@ -678,12 +678,19 @@ function manuscript(s: string): ParsedReference | null {
   return { item: settle(item), form: "isnad-dipnot", unsure: [] };
 }
 
+/** "Topaloğlu vd." names only the first of three or more authors: the record says so, the others are to be added. */
+function withOthers(r: ParsedReference, s: string): ParsedReference {
+  const head = s.split(/[“"(]/)[0] ?? "";
+  const authors = r.item.creators.filter((c) => c.creatorType === "author" || c.creatorType === "editor").length;
+  return /\s(vd\.|et al\.?)(?=[\s,(])/i.test(head) && authors < 3 ? { ...r, unsure: [...r.unsure, "diğer yazarlar (vd.)"] } : r;
+}
+
 /** One reference (a line) → a record, or null when it cannot be read. Every reading is tried; the most sensible wins. */
 export function parseReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
   const ms = manuscript(s) ?? newspaper(s) ?? legislation(s) ?? institution(s);
-  if (ms) return ms;
+  if (ms) return withOthers(ms, s);
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;
   for (const f of [isnadBib, isnadNote, apa, oldStyle]) {
@@ -701,7 +708,7 @@ export function parseReference(raw: string): ParsedReference | null {
       bestScore = score;
     }
   }
-  return best;
+  return best ? withOthers(best, s) : best;
 }
 
 /** "———.", "----,", "a.mlf.", "aynı müellif" at the head of a bibliography line: the author of the line before. */

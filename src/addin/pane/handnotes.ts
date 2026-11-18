@@ -19,7 +19,7 @@ let plan: HandNote[] = [];
 const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n)}…` : s);
 
 function describe(n: HandNote): string {
-  return n.refs!.map((r) => `${r.prefix ? `${r.prefix} ` : ""}${creatorLine(r.item) || "—"}, ${short(titleOf(r.item), 50)}${r.madde ? `, “${r.madde}”` : ""}${r.sure ? `, ${r.sure}/${r.ayet}` : ""}${r.volume ? `, c. ${r.volume}` : ""}${r.locator ? `, ${r.label === "sub verbo" ? "md." : "s."} ${r.locator}` : ""}${r.isNew ? " (yeni)" : ""}`).join("; ");
+  return n.refs!.map((r) => `${r.prefix ? `${r.prefix} ` : ""}${creatorLine(r.item) || "—"}, ${short(titleOf(r.item), 50)}${r.madde ? `, “${r.madde}”` : ""}${r.sure ? `, ${r.sure}/${r.ayet}` : ""}${r.volume ? `, c. ${r.volume}` : ""}${r.locator ? `, ${r.label === "sub verbo" ? "md." : "s."} ${r.locator}` : ""}${r.isNew ? " (yeni)" : ""}${r.unsure?.length ? ` — ${r.unsure.join(", ")}: kütüphanede ekleyin` : ""}`).join("; ");
 }
 
 async function scan(): Promise<void> {
@@ -72,7 +72,8 @@ async function convert(): Promise<void> {
   await refresh(false, true);
   plan = [];
   $("hand-result").replaceChildren();
-  setMessage(`${done} dipnot Derkenar atıfına çevrildi; ilk geçişler tam, sonrakiler kısa künye oldu (İSNAD gereği a.g.e. kullanılmaz).${fresh.length ? ` ${fresh.length} eser kütüphaneye eklendi.` : ""}${fixedNote} Eski elle yazılmış kaynakçayı silip Kaynakça ekle ile Derkenar'ınkini koyabilirsiniz.`, "success");
+  const others = ok.flatMap((p) => p.refs!.filter((r) => r.unsure?.length)).length;
+  setMessage(`${done} dipnot Derkenar atıfına çevrildi; ilk geçişler tam, sonrakiler kısa künye oldu (İSNAD gereği a.g.e. kullanılmaz).${fresh.length ? ` ${fresh.length} eser kütüphaneye eklendi.` : ""}${fixedNote} ${others ? ` ${others} eser "vd." ile anılmıştı: diğer yazarlarını kütüphanede ekleyin, yoksa atıfta "vd." çıkmaz.` : ""} Eski elle yazılmış kaynakçayı silip Kaynakça ekle ile Derkenar'ınkini koyabilirsiniz.`, others ? "warning" : "success");
 }
 
 // ---------------------------------------------------------------- a bibliography typed by hand

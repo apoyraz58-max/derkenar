@@ -30,6 +30,8 @@ export interface HandRef {
   readonly madde?: string;
   /** CSL locator label: "sub verbo" for a law's madde (md. 35/4). */
   readonly label?: string;
+  /** What the reading could not tell ("diğer yazarlar (vd.)"), for a new record. */
+  readonly unsure?: string[];
   /** Kitâb-ı Mukaddes: book abbreviation, bab and cümle ("Yar.1:12"). */
   readonly kitap?: string;
   readonly bab?: string;
@@ -194,6 +196,7 @@ const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(title
 /** Reads the notes in order; `library` is searched for each work before a new record is made. */
 export function readHandNotes(notes: readonly string[], library: readonly Item[]): HandNote[] {
   const created: Item[] = [];
+  const unsureOf = new Map<Item, string[]>();
   const seen: Item[] = [];
   let previous: HandRef | null = null;
   const out: HandNote[] = [];
@@ -292,12 +295,13 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           item = { ...r.item, source: "dipnot" };
           created.push(item);
           isNew = true;
+          if (r.unsure.length) unsureOf.set(item, r.unsure);
         }
       }
       // Kept in the order last cited ("Kara, a.g.e." is Kara's work cited last).
       if (seen.includes(item)) seen.splice(seen.indexOf(item), 1);
       seen.push(item);
-      const ref: HandRef = { item, isNew: isNew || created.includes(item), ...where, ...(prefix ? { prefix } : {}) };
+      const ref: HandRef = { item, isNew: isNew || created.includes(item), ...where, ...(prefix ? { prefix } : {}), ...(isNew && unsureOf.get(item)?.includes("diğer yazarlar (vd.)") ? { unsure: ["diğer yazarlar (vd.)"] } : {}) };
       refs.push(ref);
     }
     if (reason || !refs.length) {

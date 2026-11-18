@@ -116,7 +116,7 @@ describe("a.g.e. typed by hand", () => {
   });
 });
 
-import { expandSameAuthor } from "../src/core/freetext.js";
+import { expandSameAuthor, parseReference } from "../src/core/freetext.js";
 
 describe("———. / a.mlf. in a typed bibliography", () => {
   it("takes the author of the line before", () => {
@@ -207,5 +207,14 @@ describe("hand-typed footnotes: mevzuat", () => {
     expect(r[1]!.refs![0]!.item).toBe(r[0]!.refs![0]!.item);
     expect(r[2]!.refs![0]!.item).toMatchObject({ itemType: "statute", fields: { shortTitle: "YKEDİ", date: "2014" } });
     expect(r[3]!.refs![0]!.item).toBe(r[2]!.refs![0]!.item);
+  });
+});
+
+describe("vd.", () => {
+  it("is flagged: the other authors are to be added", () => {
+    const r = readHandNotes(["Bekir Topaloğlu vd., İslam’da İnanç Esasları (İstanbul: MÜ İlâhiyat Fakültesi Vakfı Yayınları, 1998), 25."], []);
+    expect(r[0]!.refs![0]!.unsure).toEqual(["diğer yazarlar (vd.)"]);
+    expect(parseReference("Topaloğlu, Bekir vd. İslam’da İnanç Esasları. İstanbul: MÜ İlâhiyat Fakültesi Vakfı Yayınları, 1998.")?.unsure).toContain("diğer yazarlar (vd.)");
+    expect(parseReference("Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları, 2005.")?.unsure).not.toContain("diğer yazarlar (vd.)");
   });
 });
