@@ -5,7 +5,7 @@
  * name with the death date İSNAD asks for: "Gazzâlî (ö. 505/1111)".
  */
 import { setEnglishNames } from "../../core/docstate.js";
-import { type DeathMention, type Person, type PersonIndex, type PersonTable, diaParts, missingDeathDates, diaSuggestion, englishCreator, findPerson, indexPersons, onlyMarks, personInText, searchPersons, tableFrom } from "../../core/persons.js";
+import { type DeathMention, type Person, type PersonIndex, type PersonTable, diaParts, ei3Replacements, missingDeathDates, diaSuggestion, englishCreator, findPerson, indexPersons, onlyMarks, personInText, searchPersons, tableFrom } from "../../core/persons.js";
 import type { Issue } from "../../core/isnad.js";
 import type { Item } from "../../core/zotero.js";
 import * as word from "../word.js";
@@ -90,6 +90,16 @@ export function wirePersons(): void {
       setMessage("Şahıslar tablosu kaldırıldı; adlar kayıtta yazıldığı gibi.", "info");
     });
   $<HTMLInputElement>("person-q").oninput = search;
+  $("person-ei3").onclick = () =>
+    void run("Adlar çevriliyor", async () => {
+      if (!index) throw new Error("Önce Aktar → Şahıslar tablosu'nu yükleyin.");
+      const text = await serial(() => word.selectionText());
+      if (!text.trim()) throw new Error("Önce Word'de çevrilecek metni (ör. İngilizce özeti) seçin.");
+      const pairs = ei3Replacements(text, index);
+      if (!pairs.length) return setMessage("Seçili metinde tablodaki kişilerin DİA yazımıyla geçen adı bulunamadı.", "info");
+      const n = await serial(() => word.replaceInSelection(pairs));
+      setMessage(`${n} ad EI3 yazımına çevrildi: ${pairs.slice(0, 5).map((p) => `${p.from} → ${p.to}`).join("; ")}${pairs.length > 5 ? " …" : ""}. Türkçe ekler ("’nin") kaldırıldı; cümleyi gözden geçirin.`, "success");
+    });
 }
 
 // ---------------------------------------------------------------- DİA spelling in Turkish

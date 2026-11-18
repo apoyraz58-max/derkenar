@@ -540,3 +540,44 @@ export function missingDeathDates(text: string, index: PersonIndex, english = fa
     .filter((d) => !/^[’'\p{L}]*\s*\((?:ö|v|d|öl|vf|ölm|died)\.?\s*[\d?]/iu.test(text.slice(d.at + d.text.length, d.at + d.text.length + 30)))
     .sort((a, b) => a.at - b.at);
 }
+
+// ---------------------------------------------------------------- names in a text, DİA → EI3
+
+/** The person's name in running English text: "al-Ghazālī", "Fakhr al-Dīn al-Rāzī", "Abū ʿĀṣim al-ʿAbbādī". */
+export function ei3Name(p: Person): string {
+  const [last, given] = p.ei3.split(/,\s*/);
+  return given && !/\bb\.\s/.test(given) ? `${given} ${last}` : last!;
+}
+
+/**
+ * The names of the table's persons in a text written the DİA way, with their
+ * EI3 form ("Gazzâlî’nin" → "al-Ghazālī"): for an English abstract or article.
+ * Longest forms first, so "Fahreddin er-Râzî" is not read as "Râzî" alone.
+ */
+export function ei3Replacements(text: string, index: PersonIndex): { from: string; to: string }[] {
+  const folded = foldSame(text);
+  const owners = new Map<string, { form: string; p: Person }[]>();
+  for (const p of index.table.persons) {
+    if (/batılı/i.test(p.group) || p.ei3 === p.dia) continue;
+    for (const f of mentionForms(p)) {
+      const k = foldSame(f);
+      owners.set(k, [...(owners.get(k) ?? []), { form: f, p }]);
+    }
+  }
+  const out: { from: string; to: string }[] = [];
+  const taken: [number, number][] = [];
+  for (const [k, list] of [...owners].sort((a, b) => b[0].length - a[0].length)) {
+    if (list.length !== 1) continue;
+    const re = new RegExp(`(?<![\\p{L}’'-])${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:[’'][\\p{L}]+)?(?![\\p{L}])`, "gu");
+    for (const m of folded.matchAll(re)) {
+      const end = m.index + m[0].length;
+      if (taken.some(([a, b]) => m.index < b && end > a)) continue;
+      taken.push([m.index, end]);
+      const from = text.slice(m.index, end);
+      // A Turkish suffix goes ("Gazzâlî’nin"); the English possessive stays ("Çelebi’s").
+      const possessive = /[’'][sS]$/.exec(from)?.[0] ?? "";
+      if (!out.some((o) => o.from === from)) out.push({ from, to: ei3Name(list[0]!.p) + possessive });
+    }
+  }
+  return out;
+}

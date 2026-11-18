@@ -115,3 +115,16 @@ describe("Vefat tarihi: metinde ilk geçiş", () => {
     expect(missingDeathDates("Gazzali bunu söyler.", ix, true).map((d) => `${d.text} ${d.note}`)).toEqual(["Gazzali (d. 505/1111)"]);
   });
 });
+
+import { ei3Replacements } from "../src/core/persons.js";
+
+describe("Metindeki adlar DİA → EI3", () => {
+  it("replaces the longest form, drops Turkish suffixes", () => {
+    const ix = indexPersons(table());
+    expect(ei3Replacements("Fahreddin er-Râzî and Gazzâlî’nin views; Râzî again. Kâtib Çelebi’s work. Mustafa Kara.", ix)).toEqual([
+      { from: "Fahreddin er-Râzî", to: "Fakhr al-Dīn al-Rāzī" },
+      { from: "Kâtib Çelebi’s", to: "Katib Çelebi’s" },
+      { from: "Gazzâlî’nin", to: "al-Ghazālī" },
+    ]);
+  });
+});

@@ -80,6 +80,7 @@ const FAKE = String.raw`
   const noteAtCursor = () => (doc.noteCursor == null ? null : doc.flow.filter((x) => x.fn)[doc.noteCursor].fn);
   const selection = {
     get text() { return doc.selText ?? ""; },
+    search(t, o) { return body.search(t, o); },
     load() { return this; },
     insertText(t) {
       const sel = doc.fieldSel;
@@ -843,6 +844,12 @@ try {
     await page.locator("#chk-deaths button", { hasText: "Ekle" }).first().click();
     await page.waitForSelector("#message:has-text('1 kişinin vefat tarihi')");
     const dated = await page.evaluate(() => window.__doc.flow.filter((x) => typeof x.text === "string" && x.text.includes("Kâtib Çelebi")).map((x) => x.text).join("|"));
+    // Names in a selected English text, DİA → EI3.
+    await page.evaluate(() => { window.__doc.flow.push({ kind: "text", text: " Abstract: Kâtib Çelebi’s view." }); window.__doc.selText = "Abstract: Kâtib Çelebi’s view."; });
+    await page.click("#tab-atif");
+    await page.click("#person-ei3");
+    await page.waitForSelector("#message:has-text('ad EI3 yazımına çevrildi')");
+    if (!(await page.evaluate(() => window.__doc.flow.map((x) => (x.cc ? x.cc.text : typeof x.text === "string" ? x.text : "")).join("").includes("Abstract: Katib Çelebi’s view.")))) fail(`EI3 in selection: ${await page.evaluate(() => JSON.stringify(window.__doc.flow.filter((x) => typeof x.text === "string").map((x) => x.text).slice(-3)))}`);
     if (!dated.includes("Kâtib Çelebi’nin (ö. 1067/1657) eseri. Yine Kâtib Çelebi.")) fail(`death date: ${dated} / ${await page.evaluate(() => JSON.stringify(window.__doc.flow.filter((x) => typeof x.text === "string").map((x) => x.text)))}`);
   }
 

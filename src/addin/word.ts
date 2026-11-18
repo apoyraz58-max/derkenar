@@ -756,3 +756,24 @@ export async function insertAfterOccurrence(text: string, n: number, after: stri
     return true;
   });
 }
+
+/** In the selection: each `from` replaced by its `to` (formatting around them kept). */
+export async function replaceInSelection(pairs: readonly { from: string; to: string }[]): Promise<number> {
+  return Word.run(async (context) => {
+    const sel = context.document.getSelection();
+    const found = pairs.map((p) => {
+      const r = sel.search(p.from, { matchCase: true });
+      r.load("items");
+      return { p, r };
+    });
+    await context.sync();
+    let n = 0;
+    for (const { p, r } of found)
+      for (const range of r.items) {
+        range.insertText(p.to, "Replace");
+        n++;
+      }
+    await context.sync();
+    return n;
+  });
+}
