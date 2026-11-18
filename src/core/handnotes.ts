@@ -28,10 +28,13 @@ export interface HandRef {
   readonly ayet?: string;
   /** Dictionary: madde ("“delîl”"). */
   readonly madde?: string;
+  /** CSL locator label: "sub verbo" for a law's madde (md. 35/4). */
+  readonly label?: string;
 }
 
 /** Where in the work: what `cut` reads at the end of a reference. */
 interface Place {
+  label?: string;
   volume?: string;
   locator?: string;
   sure?: string;
@@ -88,6 +91,9 @@ export function cut(s0: string): { body: string } & Place {
 }
 
 function cutPlace(s: string): { body: string } & Place {
+  // A law's article: "…, md. 35/4.", "…, md. 53/2-b."
+  const md = /,\s*(?:md|madde|art)\.\s*([\d][\w/-]*)\.?\s*$/i.exec(s);
+  if (md) return { body: s.slice(0, md.index).trim(), locator: md[1]!, label: "sub verbo" };
   const sm = SURE.exec(s);
   if (sm && (sm.index > 0 || /^(?:[a-zâîû]{1,3}-)/.test(sm[1]!))) return { body: s.slice(0, sm.index).trim(), sure: sm[2]!, ayet: sm[3]!.replace(/\s*[-–]\s*/g, "-") };
   const vp = VOL_PAGE.exec(s);
@@ -170,7 +176,7 @@ function findDictionary(body: string, pool: readonly Item[]): { item: Item; madd
   return works.length === 1 ? { item: works[0]!, madde: m[2]! } : null;
 }
 
-const place = (p: Place): Place => ({ ...(p.volume ? { volume: p.volume } : {}), ...(p.locator ? { locator: p.locator } : {}), ...(p.sure ? { sure: p.sure, ayet: p.ayet } : {}), ...(p.madde ? { madde: p.madde } : {}) });
+const place = (p: Place): Place => ({ ...(p.label ? { label: p.label } : {}), ...(p.volume ? { volume: p.volume } : {}), ...(p.locator ? { locator: p.locator } : {}), ...(p.sure ? { sure: p.sure, ayet: p.ayet } : {}), ...(p.madde ? { madde: p.madde } : {}) });
 
 /** A Kur’ân meâl or tefsir: "el-Bakara 2/14" alone in a later note points to it. */
 const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(titleOf(it));

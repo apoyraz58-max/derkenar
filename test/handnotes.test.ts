@@ -198,3 +198,14 @@ describe("hand-typed footnotes: a body as author", () => {
     expect(r[3]!.refs![0]!.item).toBe(r[2]!.refs![0]!.item);
   });
 });
+
+describe("hand-typed footnotes: mevzuat", () => {
+  it("reads Resmî Gazete laws and other regulations, md. as the place", () => {
+    const r = readHandNotes(["Fikir ve Sanat Eserleri Kanunu (FSEK), Resmî Gazete 7981 (13 Aralık 1951), Kanun No. 5846, md. 35/4.", "FSEK, md. 35/4.", "Yükseköğretim Kurumları Etik Davranış İlkeleri (YKEDİ), Yükseköğretim Kurulu (2014), md. 1/1.", "YKEDİ, md. 2."], []);
+    expect(r[0]!.refs![0]!.item).toMatchObject({ itemType: "statute", fields: { shortTitle: "FSEK", code: "Resmî Gazete", codeNumber: "7981", publicLawNumber: "5846", date: "1951-12-13" } });
+    expect(r[0]!.refs![0]).toMatchObject({ locator: "35/4", label: "sub verbo" });
+    expect(r[1]!.refs![0]!.item).toBe(r[0]!.refs![0]!.item);
+    expect(r[2]!.refs![0]!.item).toMatchObject({ itemType: "statute", fields: { shortTitle: "YKEDİ", date: "2014" } });
+    expect(r[3]!.refs![0]!.item).toBe(r[2]!.refs![0]!.item);
+  });
+});

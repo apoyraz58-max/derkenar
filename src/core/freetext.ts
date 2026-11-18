@@ -597,6 +597,31 @@ function newspaper(s: string): ParsedReference | null {
 }
 
 /**
+ * Mevzuat (İSNAD): "Fikir ve Sanat Eserleri Kanunu (FSEK), Resmî Gazete 7981 (13 Aralık 1951), Kanun No. 5846"
+ * and "… Yönergesi (YKBAYEY), Yükseköğretim Kurulu (2016)". The abbreviation is the short title.
+ */
+function legislation(s: string): ParsedReference | null {
+  const item = emptyItem("statute", "serbest");
+  const t = readUrl(item, s).replace(/\.$/, "");
+  const rg = /^(.+?)\s*\((\p{Lu}[\p{Lu}\d]{1,11})\),\s*(Resm[îi] Gazete|Düstur|Official Journal[^\d(]*)\s+([\w/ ]{1,20}?)\s*\(([^()]+)\)(?:,\s*(?:Kanun|Law|KHK)\s*No\.?\s*(\d+))?$/u.exec(t);
+  const other = rg ? null : /^(.+?(?<=\s)(?:Kanunu|Yönetmeliği|Yönergesi|Tüzüğü|Genelgesi|Kararnamesi|İlkeleri|Esasları|Talimatı|Law|Regulation|Directive))\s*\((\p{Lu}[\p{Lu}\d]{1,11})\),\s*([^()]{3,80}?)\s*\((\d{4})\)$/u.exec(t);
+  if (rg) {
+    item.fields.title = rg[1]!.trim();
+    item.fields.shortTitle = rg[2]!;
+    item.fields.code = rg[3]!.trim();
+    item.fields.codeNumber = rg[4]!.trim();
+    item.fields.date = dayMonthYear(rg[5]!) ?? rg[5]!.trim();
+    if (rg[6]) item.fields.publicLawNumber = rg[6];
+  } else if (other) {
+    item.fields.title = other[1]!.trim();
+    item.fields.shortTitle = other[2]!;
+    item.fields.date = other[4]!;
+    item.fields.extra = `authority: ${other[3]!.trim()}\npublisher-place: Türkiye`;
+  } else return null;
+  return { item, form: "isnad-dipnot", unsure: [] };
+}
+
+/**
  * A body as author, with its abbreviation (İSNAD): "Hazine ve Maliye Bakanlığı (HMB), Aylık Bütçe
  * Bülteni (Haziran 2019)", "… Komisyonu (MAK), … Raporu (Ankara: TBMM, 2016)". The abbreviation
  * is the surname (İSNAD's Zotero rule), so later notes read "HMB, Aylık Bütçe Bülteni".
@@ -656,7 +681,7 @@ function manuscript(s: string): ParsedReference | null {
 export function parseReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
-  const ms = manuscript(s) ?? newspaper(s) ?? institution(s);
+  const ms = manuscript(s) ?? newspaper(s) ?? legislation(s) ?? institution(s);
   if (ms) return ms;
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;
