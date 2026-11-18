@@ -37,6 +37,13 @@ export function citeMode(item: Item | undefined): CiteMode {
   if (BAB.some((a) => author === a || author.endsWith(` ${a}`))) return "hadis-bab";
   if (NO.some((a) => author === a) || title.includes("muvatta")) return "hadis-no";
   if (CILT.some((a) => author === a) && title.includes("musned")) return "hadis-cilt";
+  // The surname box holds another part of the name ("Müslim b. el-Haccâc" as Haccâc): a ṣaḥîḥ or sünen by Müslim, Ebû Dâvûd … all the same.
+  if (/\b(sahih|sunen|camiu|cami)\b/.test(title)) {
+    const a = item.creators.find((c) => c.creatorType === "author");
+    const full = ` ${fold(`${a?.firstName ?? ""} ${a?.lastName ?? a?.name ?? ""}`).replace(/-/g, " ")} `;
+    if (BAB.some((x) => full.includes(` ${x} `))) return "hadis-bab";
+    if (NO.some((x) => full.includes(` ${x} `))) return "hadis-no";
+  }
   return "normal";
 }
 

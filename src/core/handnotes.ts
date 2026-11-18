@@ -12,6 +12,7 @@
  * used, the others are added.
  */
 import { parseReference } from "./freetext.js";
+import { citeMode } from "./isnadmodes.js";
 import { foldText } from "./isnadstyle.js";
 import { copyFinder, existingCopy } from "./library.js";
 import { type Item, titleOf } from "./zotero.js";
@@ -36,6 +37,9 @@ export interface HandRef {
   readonly written?: string;
   /** What the reading could not tell ("diğer yazarlar (vd.)"), for a new record. */
   readonly unsure?: string[];
+  /** Hadith: kitâb ("Îmân"), bâb or hadith number in `bab`, hadith no in parentheses ("Müslim, “Îmân”, 12 (no. 34)"). */
+  readonly kitab?: string;
+  readonly hadisNo?: string;
   /** Kitâb-ı Mukaddes: book abbreviation, bab and cümle ("Yar.1:12"). */
   readonly kitap?: string;
   readonly bab?: string;
@@ -45,6 +49,8 @@ export interface HandRef {
 /** Where in the work: what `cut` reads at the end of a reference. */
 interface Place {
   label?: string;
+  kitab?: string;
+  hadisNo?: string;
   kitap?: string;
   bab?: string;
   cumle?: string;
@@ -126,7 +132,7 @@ function cutPlace(s: string): { body: string } & Place {
 const fold = (s: string) => foldText(s).replace(/^(el|al|er|es|en|et|ed|ez|eş|es)\s/, "");
 
 /** Folded surnames and titles, worked out once per record (a thesis cites the same works hundreds of times). */
-const folded = new WeakMap<Item, { surnames: string[]; title: string; short: string; container: string }>();
+const folded = new WeakMap<Item, { surnames: string[]; title: string; short: string; container: string; given: string[] }>();
 function keysOf(item: Item) {
   let k = folded.get(item);
   if (!k) {
@@ -135,6 +141,11 @@ function keysOf(item: Item) {
       title: fold(titleOf(item)),
       short: fold(item.fields.shortTitle ?? ""),
       container: fold(item.fields.publicationTitle ?? ""),
+      // A classical name ("Ebü’l-Hüseyn Müslim b. el-Haccâc"): later notes may use any of its names ("Müslim").
+      given: item.creators
+        .filter((c) => c.creatorType === "author" && / b\. | bin | ibn /i.test(` ${c.firstName ?? ""} `))
+        .flatMap((c) => fold(c.firstName ?? "").split(" "))
+        .filter((w) => w.length > 3),
     };
     folded.set(item, k);
   }
@@ -150,7 +161,7 @@ function surnames(item: Item): string[] {
 const authorKey = (s: string) => fold(s.replace(/\s*\((?:ed|eds|haz|ç(?:ev)?)\.?\)\s*$/i, "").replace(/\s+(?:vd\.?|et al\.?)$/i, "").split(/\s+[-–]\s+|\s+ve\s+|\s*&\s*/)[0]!);
 /** By that author — or, for an unsigned newspaper piece, in that paper ("Milliyet, “Yetki Kanunları”"). */
 const byAuthor = (it: Item, author: string) =>
-  !author || surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`)) || (!it.creators.length && keysOf(it).container === author);
+  !author || surnames(it).some((s) => s === author || s.endsWith(` ${author}`) || author.endsWith(` ${s}`)) || (!it.creators.length && keysOf(it).container === author) || (!author.includes(" ") && keysOf(it).given.includes(author));
 
 /** The initials of a title's words ("Geschichte des arabischen Schrifttums" → "gas"), for "Sezgin, GAS". */
 const initials = (t: string) => fold(t).split(" ").filter((w) => w.length > 3).map((w) => w[0]).join("");
@@ -209,7 +220,28 @@ function findDictionary(body: string, pool: readonly Item[]): { item: Item; madd
   return works.length === 1 ? { item: works[0]!, madde: m[2]! } : null;
 }
 
-const place = (p: Place): Place => ({ ...(p.kitap ? { kitap: p.kitap, bab: p.bab, cumle: p.cumle } : {}), ...(p.label ? { label: p.label } : {}), ...(p.volume ? { volume: p.volume } : {}), ...(p.locator ? { locator: p.locator } : {}), ...(p.sure ? { sure: p.sure, ayet: p.ayet } : {}), ...(p.madde ? { madde: p.madde } : {}) });
+const place = (p: Place): Place => ({ ...(p.kitab ? { kitab: p.kitab, ...(p.bab ? { bab: p.bab } : {}), ...(p.hadisNo ? { hadisNo: p.hadisNo } : {}) } : {}), ...(p.kitap ? { kitap: p.kitap, bab: p.bab, cumle: p.cumle } : {}), ...(p.label ? { label: p.label } : {}), ...(p.volume ? { volume: p.volume } : {}), ...(p.locator ? { locator: p.locator } : {}), ...(p.sure ? { sure: p.sure, ayet: p.ayet } : {}), ...(p.madde ? { madde: p.madde } : {}) });
+
+/**
+ * A hadith collection's place: the quoted kitâb and the bâb (or hadith) number,
+ * "(no. 34)" as the hadith no ("Müslim, “Îmân”, 12 (no. 34)").
+ */
+function hadithPlace(item: Item, p: Place): Place {
+  if (!/^hadis-(bab|no)$/.test(citeMode(item)) || !p.madde) return p;
+  const loc = p.locator ?? "";
+  const no = /\((?:no\.?|hadis\s+no\.?)\s*([\d-]+)\)/i.exec(loc);
+  const bab = loc.replace(/\s*\([^()]*\)\s*$/, "").trim();
+  return { kitab: p.madde, ...(bab ? { bab } : {}), ...(no ? { hadisNo: no[1]! } : {}), ...(p.volume && !bab ? { volume: p.volume } : {}) };
+}
+
+/** "Buhârî, Îmân, 2" (the old way, kitâb without quotes): the hadith collection by that author met before. */
+function findHadith(body: string, pool: readonly Item[]): { item: Item; kitab: string } | null {
+  const m = /^([^,“"]{2,40}),\s*([^,“”"()]{2,40})$/.exec(body.trim());
+  if (!m) return null;
+  const author = authorKey(m[1]!);
+  const works = [...new Set(pool)].filter((it) => byAuthor(it, author) && /^hadis-(bab|no)$/.test(citeMode(it)));
+  return works.length === 1 ? { item: works[0]!, kitab: m[2]!.trim() } : null;
+}
 
 /** A Kur’ân meâl or tefsir: "el-Bakara 2/14" alone in a later note points to it. */
 const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(titleOf(it));
@@ -301,6 +333,13 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           where = { ...where, madde: d.madde };
         }
       }
+      if (!item && shortable) {
+        const hd = findHadith(body, seen) ?? findHadith(body, library);
+        if (hd) {
+          item = hd.item;
+          where = { ...where, madde: hd.kitab };
+        }
+      }
       let isNew = false;
       const full = !item;
       if (!item) {
@@ -322,6 +361,23 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
           if (r.unsure.length) unsureOf.set(item, r.unsure);
         }
       }
+      // "Müslim, “Ticârât”, 45" for a record read as "Haccâc, Ebü’l-Hüseyn Müslim b. el-": the
+      // well-known name goes to the surname box, the whole name to the given name (İSNAD's Zotero rule).
+      if (!full && created.includes(item)) {
+        const comma = firstComma(body);
+        const used = comma > 0 ? authorKey(body.slice(0, comma)) : "";
+        const c = item.creators.find((x) => x.creatorType === "author" && x.firstName && x.lastName);
+        if (used && c && !surnames(item).includes(used)) {
+          const word = c.firstName!.split(/\s+/).find((w) => fold(w) === used);
+          if (word) {
+            const whole = `${c.firstName!.trim()}${/-$/.test(c.firstName!.trim()) ? "" : " "}${c.lastName}`;
+            c.lastName = word;
+            c.firstName = whole;
+            folded.delete(item);
+          }
+        }
+      }
+      where = hadithPlace(item, where);
       // Kept in the order last cited ("Kara, a.g.e." is Kara's work cited last).
       if (seen.includes(item)) seen.splice(seen.indexOf(item), 1);
       seen.push(item);

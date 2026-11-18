@@ -282,3 +282,25 @@ describe("full first, short after, no a.g.e.", () => {
     expect(r.shortFirst.map((x) => [x.item.fields.title, x.note])).toEqual([["İlk Mürciî Metinler", 4]]);
   });
 });
+
+describe("hand-typed footnotes: hadith", () => {
+  it("reads “Kitâb”, bâb (no.) and the old unquoted form", () => {
+    const r = readHandNotes(
+      [
+        "Ebû Abdillâh Muhammed b. İsmâîl el-Buhârî, el-Câmiʿu’ṣ-ṣaḥîḥ (İstanbul: Çağrı Yayınları, 1992), “Îmân”, 2.",
+        "Buhârî, “Menâḳıb”, 24.",
+        "Buhârî, Îmân, 3.",
+        "Ebü’l-Hüseyn Müslim b. el-Haccâc, el-Câmiʿu’ṣ-ṣaḥîḥ, nşr. Muhammed Fuâd Abdülbâkī (Kahire: y.y., 1955), “Îmân”, 12 (no. 34).",
+        "Müslim, “Ticârât”, 45.",
+      ],
+      [],
+    );
+    const ref = (i: number) => r[i]!.refs![0]!;
+    expect([ref(0).kitab, ref(0).bab]).toEqual(["Îmân", "2"]);
+    expect(ref(1).item).toBe(ref(0).item);
+    expect([ref(1).kitab, ref(1).bab]).toEqual(["Menâḳıb", "24"]);
+    expect([ref(2).item === ref(0).item, ref(2).kitab, ref(2).bab]).toEqual([true, "Îmân", "3"]);
+    expect([ref(3).kitab, ref(3).bab, ref(3).hadisNo]).toEqual(["Îmân", "12", "34"]);
+    expect([ref(4).item === ref(3).item, ref(4).kitab, ref(4).bab]).toEqual([true, "Ticârât", "45"]);
+  });
+});

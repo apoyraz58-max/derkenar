@@ -819,3 +819,13 @@ describe("copyFinder", () => {
     expect(f.find(mk("Yeni", "N", "2020"))).toBe(n);
   });
 });
+
+import { noRepeatedName } from "../src/core/engine.js";
+
+describe("İSNAD: a classical name not printed twice in a note", () => {
+  it("Müslim b. el-Haccâc Müslim → Müslim b. el-Haccâc; İmam Mâlik stays", () => {
+    expect(noRepeatedName("Ebü’l-Hüseyn Müslim b. el-Haccâc Müslim, <i>el-Câmiʿu’ṣ-ṣaḥîḥ</i>, “Îmân”, 12.")).toBe("Ebü’l-Hüseyn Müslim b. el-Haccâc, <i>el-Câmiʿu’ṣ-ṣaḥîḥ</i>, “Îmân”, 12.");
+    expect(noRepeatedName("Ebû Abdillâh Mâlik b. Enes el-Asbahî İmam Mâlik, <i>el-Muvaṭṭaʾ</i>, 12.")).toBe("Ebû Abdillâh Mâlik b. Enes el-Asbahî İmam Mâlik, <i>el-Muvaṭṭaʾ</i>, 12.");
+    expect(noRepeatedName("Müslim, “Ticârât”, 45.")).toBe("Müslim, “Ticârât”, 45.");
+  });
+});

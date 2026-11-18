@@ -48,7 +48,7 @@ it("handnotes report", () => {
     const st = emptyState();
     const order = read.flatMap((n, i) => {
       if (!n.refs) return [];
-      putCitation(st, `c${i}`, n.refs.map((x) => ({ id: x.item.key, ...(x.volume ? { volume: x.volume } : {}), ...(x.locator ? { locator: x.locator } : {}), ...(x.label ? { label: x.label } : {}), ...(x.kitap ? { kitap: x.kitap, bab: x.bab, cumle: x.cumle } : {}), ...(x.sure ? { sure: x.sure, ayet: x.ayet } : {}), ...(x.madde ? { madde: x.madde } : {}), ...(x.prefix ? { prefix: x.prefix } : {}) })), Object.fromEntries(n.refs.map((x) => [x.item.key, x.item])));
+      putCitation(st, `c${i}`, n.refs.map((x) => ({ id: x.item.key, ...(x.volume ? { volume: x.volume } : {}), ...(x.locator ? { locator: x.locator } : {}), ...(x.label ? { label: x.label } : {}), ...(x.kitap ? { kitap: x.kitap, bab: x.bab, cumle: x.cumle } : {}), ...(x.kitab ? { kitab: x.kitab, ...(x.bab ? { bab: x.bab } : {}), ...(x.hadisNo ? { hadisNo: x.hadisNo } : {}) } : {}), ...(x.sure ? { sure: x.sure, ayet: x.ayet } : {}), ...(x.madde ? { madde: x.madde } : {}), ...(x.prefix ? { prefix: x.prefix } : {}) })), Object.fromEntries(n.refs.map((x) => [x.item.key, x.item])));
       return [{ id: `c${i}`, noteIndex: i + 1, text: "" }];
     });
     const plan = order.length ? planRefresh(st, order, renderer) : null;

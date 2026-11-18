@@ -288,7 +288,7 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
 ## 27 Yazılım (s. 126)
   ✗ ilk
      kılavuz: Islamic Calendar Converter (Yazılım, ABD: Muslim Student Association of UMR - Waleed A. Muhanna, 1955).
-     derkenar: Ebü’l-Hüseyn Müslim b. el-Haccâc Müslim, el-Câmiʿu’ṣ-ṣaḥîḥ, nşr. Muhammed Fuâd Abdülbâkī (Kahire: y.y., 1374-75/1955-56).
+     derkenar: Ebü’l-Hüseyn Müslim b. el-Haccâc, el-Câmiʿu’ṣ-ṣaḥîḥ, nşr. Muhammed Fuâd Abdülbâkī (Kahire: y.y., 1374-75/1955-56).
   ✗ sonraki
      kılavuz: Islamic Calendar Converter.
      derkenar: Müslim, Müslim.

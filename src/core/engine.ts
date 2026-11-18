@@ -93,7 +93,7 @@ export class Renderer {
       properties: { noteIndex: c.noteIndex },
     }));
     const out = new Map<string, string>();
-    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html", [...uncited])) out.set(id, this.tidy(html));
+    for (const [id, , html] of this.engine.rebuildProcessorState(input, "html", [...uncited])) out.set(id, this.meta.isnad ? noRepeatedName(this.tidy(html)) : this.tidy(html));
     return out;
   }
 
@@ -158,6 +158,17 @@ export class Renderer {
 /**
  * İSNAD: no comma before a parenthesis ("…Defteri (1334-1336), 61a", guide s. 67).
  */
+/**
+ * A classical name whose well-known part is also in the given name (İSNAD's Zotero rule:
+ * "Müslim" + "Ebü’l-Hüseyn Müslim b. el-Haccâc"): in a note the given name already says it,
+ * so "… Müslim b. el-Haccâc Müslim, el-Câmiʿ" becomes "… Müslim b. el-Haccâc, el-Câmiʿ".
+ * The bibliography keeps "Müslim, Ebü’l-Hüseyn Müslim b. el-Haccâc".
+ */
+export function noRepeatedName(html: string): string {
+  // The given name ends with the nisba's article ("… b. el-Haccâc"): "İmam Mâlik" after "… el-Asbahî" is a surname of two words, not a repeat.
+  return html.replace(/(^|;\s|(?:^|>))((?:[^,;<>]*?\s)?(\p{Lu}[\p{L}’'ʿʾ-]+)(?:\s[^,;<>]*?)?\s(?:b\.|bin|bt\.)\s(?:[^,;<>]*?\s)?\p{Ll}{1,3}-[^\s,;<>]+)\s\3(?=,|<)/gu, "$1$2");
+}
+
 export function isnadTidy(html: string): string {
   return (
     html
