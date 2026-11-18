@@ -829,3 +829,15 @@ describe("İSNAD: a classical name not printed twice in a note", () => {
     expect(noRepeatedName("Müslim, “Ticârât”, 45.")).toBe("Müslim, “Ticârât”, 45.");
   });
 });
+
+import { autoFix } from "../src/core/isnad.js";
+
+describe("İSNAD: a well-known name cut in two", () => {
+  it("İbn Mâce, Ahmed b. Hanbel joined back", () => {
+    const mk = (lastName: string, firstName: string) => ({ ...emptyItem("book"), creators: [{ creatorType: "author", lastName, firstName }], fields: { title: "es-Sünen", place: "Kahire", publisher: "x", date: "1950" } });
+    expect(autoFix(mk("Mâce", "Ebû Abdillâh Muhammed b. Yezîd İbn")).item.creators[0]).toEqual({ creatorType: "author", lastName: "İbn Mâce", firstName: "Ebû Abdillâh Muhammed b. Yezîd" });
+    expect(autoFix(mk("Hanbel", "Ahmed b.")).item.creators[0]).toEqual({ creatorType: "author", name: "Ahmed b. Hanbel" });
+    expect(autoFix(mk("Hanbel", "Ebû Abdillâh Ahmed b.")).item.creators[0]).toEqual({ creatorType: "author", lastName: "Ahmed b. Hanbel", firstName: "Ebû Abdillâh" });
+    expect(autoFix(mk("Gazzâlî", "Ebû Hâmid Muhammed b. Muhammed el-")).item.creators[0]).toEqual({ creatorType: "author", lastName: "Gazzâlî", firstName: "Ebû Hâmid Muhammed b. Muhammed el-" });
+  });
+});

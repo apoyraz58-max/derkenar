@@ -248,6 +248,21 @@ export function checkItem(item: Item): Issue[] {
       add({ code: "name-comma", level: "warning", message: `Ad ve soyad tek kutuya yazılmış (${c.lastName}).`, creatorIndex: i, fix: { creatorIndex: i, creator: { creatorType: c.creatorType, lastName: last, firstName: first } }, fixLabel: "Ayır" });
     }
     if (c.name === undefined && !c.lastName?.trim() && c.firstName?.trim()) add({ code: "name-last", level: "warning", message: `Soyad / şöhret kutusu boş (${c.firstName}).`, creatorIndex: i });
+    // "Mâce" + "… b. Yezîd İbn", "Hanbel" + "Ahmed b.": the well-known name was cut in two.
+    if (c.name === undefined && c.lastName?.trim() && c.firstName?.trim()) {
+      const first = c.firstName.trim();
+      const ibn = /^(.*?)(?:^|\s)(İbn|Ibn|İbni|İbnü’l-?|İbnü'l-?)$/u.exec(first);
+      const nasab = /^(.*?)(?:^|\s)(\p{Lu}[\p{L}’'ʿ-]*\s+(?:b\.|bin|bt\.|bint))$/u.exec(first);
+      const fixed = ibn
+        ? { lastName: `${ibn[2]}${/-$/.test(ibn[2]!) ? "" : " "}${c.lastName.trim()}`, firstName: ibn[1]!.trim() }
+        : nasab
+          ? { lastName: `${nasab[2]} ${c.lastName.trim()}`, firstName: nasab[1]!.trim() }
+          : null;
+      if (fixed) {
+        const creator: Creator = fixed.firstName ? { creatorType: c.creatorType, lastName: fixed.lastName, firstName: fixed.firstName } : { creatorType: c.creatorType, name: fixed.lastName };
+        add({ code: "name-split", level: "warning", message: `Meşhur ad ikiye bölünmüş: soyad / şöhret kutusunda "${fixed.lastName}" olmalı (sonraki atıflar onu yazar).`, creatorIndex: i, fix: { creatorIndex: i, creator }, fixLabel: "Birleştir" });
+      }
+    }
   });
 
   // İSNAD abbreviations typed into the record: Derkenar writes them itself.
@@ -339,7 +354,7 @@ export function apostropheReport(items: readonly Item[]): { mark: string; count:
 export const LEVEL_LABEL: Record<Level, string> = { error: "Hata", warning: "Uyarı", info: "Bilgi" };
 
 /** Fixes applied by themselves when a work is added (DOI, ISBN, pasted record): mechanical, safe ones. */
-export const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
+export const AUTO = new Set(["turkish-letters", "encoding", "spaces", "caps", "title-case", "title-period", "name-caps", "name-case", "name-comma", "name-split", "pages", "edition", "doi-url", "abbr-in-field", "place", "publisher-known", "publisher-case", "date-clean", "short-title"]);
 const AUTO_LABEL: Record<string, string> = {
   "turkish-letters": "eksik Türkçe harfler",
   encoding: "bozuk karakterler",
@@ -350,6 +365,7 @@ const AUTO_LABEL: Record<string, string> = {
   "name-caps": "kişi adları",
   "name-case": "kişi adları",
   "name-comma": "ad-soyad ayrımı",
+  "name-split": "ikiye bölünmüş meşhur ad (İbn …, … b. …)",
   pages: "sayfa aralığı",
   edition: "baskı",
   "doi-url": "DOI",
