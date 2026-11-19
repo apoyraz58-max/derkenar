@@ -142,3 +142,24 @@ describe("DİA yazımı doğru kaydı bozmaz", () => {
     expect(auto("Bustani", "Butrus el-")).toBe("Bustânî|Butrus el-");
   });
 });
+
+describe("İngilizce EI3: çağdaş Türk adları çevrilmez, bileşik soyad", () => {
+  const rows = `Sıra;Kısa Ad (DİA);Tam Ad (DİA);Orijinal Ad;Vefat Tarihi;EI3 Transliterasyonu (Kısa Ad);EI3 Transliterasyonu (Tam Ad);Osmanlıca;Grup;Kural;Yöntem;Kontrol notu
+1;Topaloğlu, Bekir;---;---;(ö. 2016);Topaloğlu, Bekir;;;Osmanlı / Türk;;;
+2;Muhammed Fuâd Abdülbâkī;---;;(ö. 1968);Muḥammad Fuʾād ʿAbd al-Bāqī;;;Arap;;;
+3;Ebû Bekir;Ebû Bekir Abdullah b. Ebû Kuhâfe;;(ö. 13/634);Abū Bakr;Abū Bakr ʿAbdallāh b. Abī Quḥāfa;;Arap;;;
+4;Abdülhalîm Mahmûd;---;;(ö. 1978);ʿAbd al-Ḥalīm Maḥmūd;;;Arap;;;`;
+  const persons = personsFromRows(readCsv(rows));
+  const t = { persons, dict: buildDict(persons), source: "t" };
+  const ix = indexPersons(t);
+  const en = (lastName: string, firstName: string) => {
+    const c = { creatorType: "author", lastName, firstName };
+    const p = findPerson(c, ix);
+    return p ? englishCreator(c, p, t.dict).creator : null;
+  };
+  it("Bekir stays Bekir; Abdülbâkī is ʿAbd al-Bāqī; Abdülhalim finds Abdülhalîm", () => {
+    expect(en("Topaloğlu", "Bekir")).toEqual({ creatorType: "author", lastName: "Topaloğlu", firstName: "Bekir" });
+    expect(en("Abdülbâkī", "Muhammed Fuâd")).toEqual({ creatorType: "author", lastName: "ʿAbd al-Bāqī", firstName: "Muḥammad Fuʾād" });
+    expect(en("Mahmud", "Abdülhalim")).toEqual({ creatorType: "author", lastName: "Maḥmūd", firstName: "ʿAbd al-Ḥalīm" });
+  });
+});

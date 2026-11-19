@@ -294,6 +294,23 @@ export function findPerson(c: Creator, index: PersonIndex): Person | null {
 /** Vowels blurred: "Sa‘deddin" and "Sa‘düddîn" are one word written two ways. */
 const skeleton = (w: string) => nameKey(w).replace(/\s/g, "").replace(/[aeiıouü]+/g, "*");
 
+/** The dictionary by letters alone ("Abdülhalim" finds "Abdülhalîm"), where that leads to one EI3 word only. */
+const lettersMaps = new WeakMap<Record<string, string>, Map<string, string>>();
+function byLetters(dict: Record<string, string>): Map<string, string> {
+  let m = lettersMaps.get(dict);
+  if (!m) {
+    const all = new Map<string, Set<string>>();
+    for (const [k, v] of Object.entries(dict)) {
+      const key = nameKey(k);
+      if (key.includes(" ")) continue;
+      all.set(key, (all.get(key) ?? new Set()).add(v));
+    }
+    m = new Map([...all].filter(([, v]) => v.size === 1).map(([k, v]) => [k, [...v][0]!]));
+    lettersMaps.set(dict, m);
+  }
+  return m;
+}
+
 /**
  * DİA given names → EI3, word by word. A word the dictionary lacks is looked
  * for in the person's own full name (spelt a little differently: "Sa‘deddin"
@@ -304,7 +321,7 @@ export function transliterateWords(given: string, dict: Record<string, string>, 
   const out: string[] = [];
   let guessed = false;
   for (const w of trWords(given)) {
-    const hit = dict[w] ?? dict[w.charAt(0).toLocaleUpperCase("tr") + w.slice(1)];
+    const hit = dict[w] ?? dict[w.charAt(0).toLocaleUpperCase("tr") + w.slice(1)] ?? byLetters(dict).get(nameKey(w));
     if (hit) out.push(hit);
     else if (/^(b\.|bt\.|,)$/.test(w)) out.push(w);
     else {
@@ -330,10 +347,23 @@ export function transliterate(given: string, dict: Record<string, string>): stri
  */
 export function englishCreator(c: Creator, p: Person, dict: Record<string, string>): { creator: Creator; exact: boolean } {
   let [ei3Last, ei3Given] = p.ei3.split(/,\s*/);
-  // "Fakhr al-Dīn al-Rāzī" for a record "Râzî, Fahreddin er-": the surname is as many last words as the record's.
+  // EI3 writes Turks, Westerners and other modern persons in their own spelling ("Topaloğlu, Bekir", not "Bakr"):
+  // only the table's own form is taken (it drops the Ottoman circumflex: "Taşköprizade"), nothing is transliterated.
+  if (!/arap|fars/i.test(p.group)) {
+    const sameGiven = !c.firstName || !ei3Given || nameKey(c.firstName) === nameKey(diaParts(p).given || ei3Given);
+    const creator: Creator =
+      c.name !== undefined
+        ? { creatorType: c.creatorType, name: ei3Given ? `${ei3Given} ${ei3Last}` : p.ei3 }
+        : { creatorType: c.creatorType, lastName: ei3Last!, ...(c.firstName ? { firstName: sameGiven && ei3Given ? ei3Given : c.firstName } : ei3Given ? { firstName: ei3Given } : {}) };
+    return { creator, exact: !p.unsure };
+  }
+  // "Fakhr al-Dīn al-Rāzī" for a record "Râzî, Fahreddin er-": the surname is as many last words as the record's —
+  // a compound counting twice ("Abdülbâkī" is "ʿAbd al-Bāqī").
   if (!ei3Given && c.firstName && c.lastName) {
     const words = ei3Last!.split(" ");
-    const k = Math.min(c.lastName.trim().split(/\s+/).length, words.length);
+    const typed = c.lastName.trim().split(/\s+/);
+    const n = typed.length + typed.filter((w) => COMPOUND.test(w)).length;
+    const k = Math.min(n, words.length);
     ei3Last = words.slice(-k).join(" ");
   }
   if (c.name !== undefined || !c.firstName) {
