@@ -30,7 +30,7 @@ it("other", () => {
       const p2 = planRefresh(st2, [{ id: "a", noteIndex: 1, text: "" }], new Renderer(readFileSync(new URL("isnad-dipnotlu.csl", dir), "utf8"), loc));
       const back = form === "dipnot" ? htmlToText(p2.updates.get("a")!) : htmlToText(p2.bibliography!.entries[0]!.html);
       same = back === text;
-      if (!same && got.item.itemType === it.itemType) out.push(`≠ ${form} ${it.itemType}\n   kaynak: ${text}\n   tekrar: ${back}`);
+      if (!same) out.push(`≠ ${form} ${it.itemType}\n   kaynak: ${text}\n   tekrar: ${back}`);
     }
     if (same) (tally["=same"] ??= [0, 0])[0]++;
     (tally["=same"] ??= [0, 0])[1]++;

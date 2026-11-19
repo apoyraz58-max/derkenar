@@ -404,6 +404,16 @@ describe("works that name their kind", () => {
     const iv = p("Halil İnalcık, “Fatih Sultan Mehmed” (Görüşmeci: İlber Ortaylı, Video Kaydı, Görüşme 3 Mart 1985).");
     expect(iv).toMatchObject({ itemType: "interview", fields: { interviewMedium: "Video Kaydı", date: "1985-03-03" } });
   });
+  it("videos, broadcasts, recordings and symposium papers", () => {
+    expect(p("Muhammet Tarakçı, “İSNAD-Kitap Bölümüne Atıf”, YouTube (31 Mart 2018).")).toMatchObject({ itemType: "videoRecording", fields: { place: "YouTube", date: "2018-03-31" }, creators: [{ creatorType: "director" }] });
+    expect(p("Üçer, Cenksu. “Mizan”. Diyanet TV. Yayın Tarihi 6 Temmuz 2019. https://www.diyanet.tv/mizan")).toMatchObject({ itemType: "tvBroadcast", fields: { network: "Diyanet TV", date: "2019-07-06", url: "https://www.diyanet.tv/mizan" } });
+    expect(p("Michael Jackson, “Break of Dawn”, Invincible (2001).")).toMatchObject({ itemType: "audioRecording", fields: { seriesTitle: "Invincible", date: "2001" } });
+    expect(p("Koca, Fatih. “Hak Bir Gönül Verdi Bana”. Lâ Mekân, 2016.")).toMatchObject({ itemType: "audioRecording", fields: { seriesTitle: "Lâ Mekân" } });
+    expect(p("Mehmet Kalaycı - Muhammet Emin Eren, “Reflection of Tension”, Ilahiyat Studies 9/2 (2018), 249.")?.itemType).toBe("journalArticle");
+    expect(p("Ahmet Turan, “Mürted Hükümleri”, Bilig (2001), 12.")?.itemType).not.toBe("audioRecording");
+    expect(p("Abdullah Demir, “Farklı Ebû Hanîfe Tasavvurları”, IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu, ed. Cengiz Çuhadar (Kastamonu: Kastamonu Üniversitesi Yayınları, 2017), 643-658.")).toMatchObject({ itemType: "conferencePaper", fields: { proceedingsTitle: "IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu" } });
+    expect(p("Demir, Abdullah. “Farklı Ebû Hanîfe Tasavvurları”. IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu. ed. Cengiz Çuhadar. 643-658. Kastamonu: Kastamonu Üniversitesi Yayınları, 2017.")?.fields.proceedingsTitle).toBe("IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu");
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");

@@ -321,7 +321,7 @@ function sentencesOf(s: string): string[] {
     else if (ch === "”") quote = false;
     if (ch === "." && s[i + 1] === " " && depth === 0 && !quote) {
       const word = /(\S+)$/.exec(cur)?.[1] ?? "";
-      const abbrev = (/^\d{1,2}-\d{1,2}$/.test(word) && /^ (yüzyıl|yy\.)/.test(s.slice(i + 1))) || /^(b|bin|bnt|\d{1,3}|\p{Lu}|thk|nşr|haz|çev|ed|eds|sad|mlf|Türkçeye|trans|s\.a|r\.a|Hz|St|Dr|Prof|Doç|vol|no|No)$/u.test(word) && !/^\d{4}$/.test(word) && s[i + 2] !== "“";
+      const abbrev = (/^[IVXLC]{1,5}$/.test(word) && cur.trim() === word) || (/^\d{1,2}-\d{1,2}$/.test(word) && /^ (yüzyıl|yy\.)/.test(s.slice(i + 1))) || /^(b|bin|bnt|\d{1,3}|\p{Lu}|thk|nşr|haz|çev|ed|eds|sad|mlf|Türkçeye|trans|s\.a|r\.a|Hz|St|Dr|Prof|Doç|vol|no|No)$/u.test(word) && !/^\d{4}$/.test(word) && s[i + 2] !== "“";
       if (!abbrev) {
         out.push(cur.trim());
         cur = "";
@@ -609,6 +609,8 @@ function newspaper(s: string): ParsedReference | null {
   if (!m) return null;
   const date = dayMonthYear(withAuthor ? m[4]! : m[3]!);
   if (!date) return null;
+  // "Yazar, “Başlık”, YouTube (31 Mart 2018)": a video; "…, Diyanet TV (6 Temmuz 2019)": a broadcast.
+  if (withAuthor && !m[5] && (VIDEO_SITE.test(m[3]!.trim()) || TV.test(m[3]!))) return screen(emptyItem("videoRecording", "serbest"), m[1]!, false, m[2]!, m[3]!, m[4]!);
   const item = emptyItem("newspaperArticle", "serbest");
   if (withAuthor) {
     for (const n of splitNames(m[1]!).names) item.creators.push(nameInOrder(n, "author"));
@@ -822,6 +824,23 @@ function labeled(s: string): ParsedReference | null {
   const smsBib = /^(.+?)\.\s+(.+?)\.\s+(Kısa Mesaj|E-?posta|SMS|WhatsApp Mesajı)\s+([^,]+),\s*Alıcı:?\s+(.+)$/iu.exec(t);
   if (smsBib) return message(carry(emptyItem(/posta/i.test(smsBib[3]!) ? "email" : "instantMessage", "serbest")), smsBib[1]!, true, smsBib[2]!, smsBib[3]!, smsBib[4]!, smsBib[5]!);
 
+  // A video or a broadcast in the bibliography: "Soyad, Ad. “Başlık”. YouTube. Yayın Tarihi 31 Mart 2018."
+  const aired = /^(.+?)\.\s+“([^”]+)”\.\s+([^.]{2,60})\.\s+Yayın Tarihi\s+(.+)$/u.exec(t);
+  if (aired) return screen(carry(emptyItem("videoRecording", "serbest")), aired[1]!, true, aired[2]!, aired[3]!, aired[4]!);
+
+  // A recording (İSNAD 33): "Sanatçı, “Parça”, Albüm (2001)." / "Soyad, Ad. “Parça”. Albüm, 2001." — no imprint, no page.
+  const track = /^([^“”,]{3,60}),\s*“([^”]+)”,\s*([^(),“”:]{2,80}?)\s*\((\d{4}|ts\.)\)$/u.exec(t) ?? /^([^“”.,]{2,40},\s*[^“”.]{2,60})\.\s+“([^”]+)”\.\s+([^.,:“”]{2,80}),\s*(\d{4}|ts\.)$/u.exec(t);
+  if (track && !/\d[\d/\s-]*$/.test(track[3]!.trim()) && !/(dergi|journal|review|studies|bülten|yıllı[gğ]ı|mecmua|ansiklopedi)/i.test(track[3]!)) {
+    const item = emptyItem("audioRecording", "serbest");
+    const bibTrack = /\.\s+“/.test(t);
+    if (bibTrack) headCreator(item, track[1]!, "performer", true);
+    else for (const n of splitNames(track[1]!).names) headCreator(item, n, "performer", false);
+    item.fields.title = track[2]!;
+    item.fields.seriesTitle = track[3]!.trim();
+    setDate(item, track[4]!);
+    return { item: carry(item), form: /\.\s+“/.test(t) ? "isnad-kaynakca" : "isnad-dipnot", unsure: ["tür (ses kaydı mı, makale mi?)"] };
+  }
+
   // The parenthesis forms: "Önce (İçerik)[, veya .] Sonra".
   const m = /^(.+?)\s*\(([^()]+)\)\s*(?:[.,]\s*(.+))?$/u.exec(t);
   if (!m) return null;
@@ -938,6 +957,21 @@ function labeled(s: string): ParsedReference | null {
   return null;
 }
 
+const VIDEO_SITE = /^(YouTube|Vimeo|Dailymotion|Facebook|Instagram|TikTok|Twitch)$/i;
+const TV = /(\bTV\b|Televizyon|TRT|\bKanal\b|Channel|\bNTV\b|\bATV\b|\bCNN|\bBBC\b|Al ?Jazeera)/i;
+
+/** A video ("YouTube") or a broadcast ("Diyanet TV"): who made it, the title, where, the day. */
+function screen(item: Item, creator: string, bib: boolean, title: string, where: string, date: string): ParsedReference {
+  const w = where.trim();
+  if (!VIDEO_SITE.test(w) && TV.test(w)) item.itemType = "tvBroadcast";
+  if (creator) headCreator(item, creator, "director", bib);
+  item.fields.title = title.trim();
+  if (item.itemType === "tvBroadcast") item.fields.network = w;
+  else item.fields.place = w;
+  item.fields.date = dayMonthYear(date) ?? date.trim();
+  return { item, form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure: [] };
+}
+
 function message(item: Item, creator: string, bib: boolean, title: string, kind: string, date: string, to: string): ParsedReference {
   if (creator) headCreator(item, creator, "author", bib);
   item.fields.title = title.trim().replace(/\s(hk|vb|vs)$/u, " $1.");
@@ -985,6 +1019,8 @@ function withOthers(r: ParsedReference, s: string): ParsedReference {
   return /\s(vd\.|et al\.?)(?=[\s,(])/i.test(head) && authors < 3 ? { ...r, unsure: [...r.unsure, "diğer yazarlar (vd.)"] } : r;
 }
 
+const PROCEEDINGS = /(Sempozyum|Kongre|Bildiri|Konferans|Çalıştay|Kolokyum|Symposium|Conference|Congress|Proceedings|Colloquium|Workshop)/i;
+
 /** One reference (a line) → a record, or null when it cannot be read. Every reading is tried; the most sensible wins. */
 export function parseReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
@@ -1007,6 +1043,13 @@ export function parseReference(raw: string): ParsedReference | null {
       best = r;
       bestScore = score;
     }
+  }
+  // A chapter in a symposium's book is a paper (İSNAD 15): "…, IV. Uluslararası … Sempozyumu, ed. … (Yer: Yayınevi, Yıl)".
+  if (best?.item.itemType === "bookSection" && PROCEEDINGS.test(best.item.fields.bookTitle ?? "")) {
+    const f = best.item.fields;
+    best.item.itemType = "conferencePaper";
+    f.proceedingsTitle = f.bookTitle!;
+    delete f.bookTitle;
   }
   return best ? withOthers(best, s) : best;
 }
