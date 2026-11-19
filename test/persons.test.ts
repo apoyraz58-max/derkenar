@@ -114,3 +114,31 @@ describe("Metindeki adlar DİA → EI3", () => {
     ]);
   });
 });
+
+describe("DİA yazımı doğru kaydı bozmaz", () => {
+  const rows = `Sıra;Kısa Ad (DİA);Tam Ad (DİA);Orijinal Ad;Vefat Tarihi;EI3 Transliterasyonu (Kısa Ad);EI3 Transliterasyonu (Tam Ad);Osmanlıca;Grup;Kural;Yöntem;Kontrol notu
+1;Dîb, Abdülazîm Mahmûd;---;;(ö. 2010);al-Dīb, ʿAbd al-ʿAẓīm;;;Arap;;;
+2;Barkan, Ömer Lutfi;---;;(ö. 1979);Barkan, Ömer Lutfi;;;Osmanlı / Türk;;;
+3;Sekkā, Mustafa Muhammed;---;;(ö. 1969);al-Saqqā, Muṣṭafā;;;Arap;;;
+4;Muhammed Fuâd Abdülbâkī;---;;(ö. 1968);Muḥammad Fuʾād ʿAbd al-Bāqī;;;Arap;;;
+5;Keccî;Ebû Müslim İbrâhim b. Abdullah el-Keccî;;(ö. 292/905);al-Kajjī;;;Arap;;;
+6;Saffâr, Ebû İshak;Ebû İshak İbrâhim b. İsmâil ez-Zâhid es-Saffâr;;(ö. 534/1139);al-Ṣaffār, Abū Isḥāq;;;Arap;;;
+7;Bustânî, Butrus b. Bûlus;---;;(ö. 1883);al-Bustānī, Buṭrus;;;Arap;;;`;
+  const persons = personsFromRows(readCsv(rows));
+  const ix = indexPersons({ persons, dict: buildDict(persons), source: "t" });
+  const auto = (lastName: string, firstName: string) => {
+    const c = { creatorType: "author", lastName, firstName };
+    const s = diaSuggestion(c, ix);
+    return s && !s.loose && onlyMarks(c, s.creator) ? `${s.creator.lastName ?? s.creator.name}|${s.creator.firstName ?? ""}` : null;
+  };
+  it("kurum, Türkçe harf, başka kişi, iki alanlı ad, harf-i tarif, düz yazım", () => {
+    expect(diaSuggestion({ creatorType: "author", lastName: "DİB", firstName: "Diyanet İşleri Başkanlığı" }, ix)).toBeNull();
+    expect(auto("Barkan", "Ömer Lütfi")).toBeNull();
+    expect(diaSuggestion({ creatorType: "author", lastName: "es-Sekkā", firstName: "Ahmed Hicâzî" }, ix)).toBeNull();
+    expect(auto("Abdulbaki", "Muhammed Fuad")).toBe("Abdülbâkī|Muhammed Fuâd");
+    expect(diaSuggestion({ creatorType: "author", lastName: "Koca", firstName: "Fatih" }, ix)).toBeNull();
+    expect(auto("Saffâr", "Ebû İshâk İbrâhim ez-Zâhid es-")).toBeNull();
+    expect(auto("Saffar", "Ebu Ishak Ibrahim ez-Zahid es-")).toBe("Saffâr|Ebû İshak İbrâhim ez-Zâhid es-");
+    expect(auto("Bustani", "Butrus el-")).toBe("Bustânî|Butrus el-");
+  });
+});

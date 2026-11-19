@@ -249,6 +249,8 @@ export function indexPersons(table: PersonTable): PersonIndex {
     add(nameKey(p.dia.replace(/,/g, " ")), p);
     add(nameKey(surname!), p);
     if (given) add(nameKey(`${given} ${surname}`), p);
+    // "Muhammed Fuâd Abdülbâkī" is also found as "Abdülbâkī, Muhammed Fuâd".
+    if (!given && surname!.includes(" ")) add(nameKey(diaParts(p).surname), p);
   }
   return { table, byKey };
 }
@@ -265,11 +267,15 @@ export function findPerson(c: Creator, index: PersonIndex): Person | null {
   const last = c.lastName ?? c.name ?? "";
   const first = c.firstName ?? "";
   if (!last) return null;
+  // "DİB" + "Diyanet İşleri Başkanlığı", "TDV": a body, not a person of the table.
+  if (/^\p{Lu}{2,}$/u.test(last.replace(/[.\s]/g, "")) || /\b(Başkanlığı|Bakanlığı|Kurumu|Vakfı|Üniversitesi|Enstitüsü|Derneği|Merkezi|Müdürlüğü|Komisyonu|Mahkemesi)\b/.test(`${first} ${last}`)) return null;
   const whole = nameKey(`${first} ${last}`);
   const cands = new Set<Person>([...(index.byKey.get(nameKey(last)) ?? []), ...(first ? (index.byKey.get(whole) ?? []) : [])]);
   let list = [...cands];
   // A modern Turkish or Western name ("Mustafa Kara") is that person only if the given name agrees too.
   list = list.filter((p) => /arap|fars/i.test(p.group) || nameKey(p.dia.replace(/,/g, " ")) === whole || (first && overlap(first, `${p.dia} ${p.diaFull ?? ""}`) > 0 && nameKey(p.dia.split(",")[0]!) === nameKey(last)));
+  // A given name that shares no word with the person's ("Ahmed Hicâzî" es-Sekkā is not Mustafa Muhammed es-Sekkā).
+  if (first.trim()) list = list.filter((p) => !(p.diaFull || p.dia.includes(",") || p.dia.includes(" ")) || overlap(first, `${p.dia} ${p.diaFull ?? ""}`) > 0);
   if (list.length <= 1) return list[0] ?? null;
   // "Ahmed" + "Gazzâlî" is "Ahmed el-Gazzâlî", not Ebû Hâmid.
   const exact = list.filter((p) => nameKey(p.dia.split(/,\s*/).reverse().join(" ")) === whole);
@@ -377,6 +383,8 @@ export function diaParts(p: Person): { surname: string; given: string; article: 
   const lastWord = words[words.length - 1]!;
   const m = ARTICLE_TR.exec(lastWord);
   if (m && words.length > 1) return { surname: lastWord.slice(m[0].length), given: words.slice(0, -1).join(" "), article: m[0].toLocaleLowerCase("tr") };
+  // "Muhammed Fuâd Abdülbâkī", "Abdülhalîm Mahmûd": a modern Arabic name, surname the last word (as İSNAD writes "Abdülbâkī, “ecl”").
+  if (words.length > 1 && /arap|fars/i.test(p.group) && !/^(İbn|Ibn|Ebû|Ebü|Ümmü)/.test(words[words.length - 2]!) && !/(^|\s)(b\.|bin|bt\.)(\s|$)/.test(a!)) return { surname: lastWord, given: words.slice(0, -1).join(" "), article: "" };
   // A single word ("Gazzâlî", "Mâtürîdî"): the article from the full name, the kunya and ism before the nasab.
   if (words.length === 1 && /arap|fars/i.test(p.group)) {
     const art = article(a!);
@@ -411,9 +419,10 @@ export function findPersonLoose(c: Creator, index: PersonIndex): { person: Perso
   if (exact) return { person: exact, loose: false };
   const last = c.lastName ?? c.name ?? "";
   if (nameKey(last).length < 4) return null;
-  const cands = looseIndex(index).get(looseKey(last)) ?? [];
-  if (cands.length === 1) return { person: cands[0]!, loose: true };
   const first = c.firstName ?? "";
+  // A loosely written surname ("Gazali") with a given name must share a word of it ("Koca, Fatih" is not Keccî).
+  const cands = (looseIndex(index).get(looseKey(last)) ?? []).filter((p) => !first.trim() || overlap(first, `${p.dia} ${p.diaFull ?? ""}`) > 0);
+  if (cands.length === 1) return { person: cands[0]!, loose: true };
   if (!first) {
     const plain = cands.filter((p) => !p.dia.includes(",") && !p.dia.includes(" "));
     return plain.length === 1 ? { person: plain[0]!, loose: true } : null;
@@ -433,11 +442,25 @@ export function diaCreator(c: Creator, p: Person): Creator {
   if (c.name !== undefined) return { creatorType: c.creatorType, name: c.name.trim().split(/\s+/).length > 1 && given ? `${given} ${article}${surname}`.replace(/- /, "-") : surname };
   const source = `${p.diaFull ?? ""} ${given}`.split(/\s+/).filter(Boolean);
   const byKey = new Map(source.map((w) => [looseKey(w.replace(ARTICLE_TR, "")), w.replace(ARTICLE_TR, "")]));
-  const typed = (c.firstName ?? "").trim().replace(/\s+(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|eż|al)-$/i, "");
+  const typedArticle = /\s*((?:el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|eż|al)-)$/i.exec((c.firstName ?? "").trim())?.[1] ?? "";
+  const typed = (c.firstName ?? "").trim().replace(/\s*(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|eż|al)-$/i, "");
   // "İbn" + "Haldun" becomes "İbn Haldûn" as surname: its words leave the given name.
   const inSurname = new Set(surname.split(/\s+/).map(looseKey));
-  const words = typed ? typed.split(/\s+/).filter((w) => !inSurname.has(looseKey(w))).map((w) => (w === "b." ? w : (byKey.get(looseKey(w)) ?? w))) : given ? [given] : [];
-  const firstName = `${words.join(" ")}${article ? ` ${article}` : ""}`.trim();
+  const typedWords = typed ? typed.split(/\s+/) : [];
+  // (Only a given name that is nothing but a piece of the surname — "İbn" for "İbn Haldûn" — is dropped.)
+  const onlySurname = typedWords.length > 0 && typedWords.every((w) => inSurname.has(looseKey(w)));
+  // A word keeps the article it was typed with ("ez-Zâhid"); only its spelling follows DİA.
+  const respell = (w: string) => {
+    if (w === "b.") return w;
+    const art = ARTICLE_TR.exec(w)?.[0] ?? "";
+    const dia = byKey.get(looseKey(w.slice(art.length)));
+    // Never towards a plainer spelling ("İshâk" stays though DİA's short name writes "İshak").
+    const marks = (x: string) => (x.normalize("NFD").match(/[\u0300-\u036f]|[ʿʾ‘’]/g) ?? []).length;
+    return dia && marks(dia) >= marks(w.slice(art.length)) ? `${art}${dia}` : w;
+  };
+  const words = typedWords.length ? (onlySurname ? [] : typedWords.map(respell)) : given ? [given] : [];
+  const art = article || typedArticle;
+  const firstName = `${words.join(" ")}${art ? ` ${art}` : ""}`.trim();
   return { creatorType: c.creatorType, lastName: surname, ...(firstName ? { firstName } : {}) };
 }
 
@@ -445,8 +468,25 @@ const sameCreator = (a: Creator, b: Creator) => (a.name ?? "") === (b.name ?? ""
 
 /** Only marks and case differ ("Gazzali" → "Gazzâlî"): safe to apply without asking. */
 export function onlyMarks(a: Creator, b: Creator): boolean {
-  const k = (c: Creator) => nameKey(`${c.firstName ?? ""} ${c.lastName ?? c.name ?? ""}`.replace(/\s+(el|er|ez|es|eş|en|et|ed|al)-$/i, ""));
-  return !sameCreator(a, b) && k(a) === k(b);
+  const text = (c: Creator) => `${c.firstName ?? ""} ${c.lastName ?? c.name ?? ""}`.replace(/\s+(el|er|ez|es|eş|en|et|ed|al)-$/i, "").trim();
+  if (sameCreator(a, b) || nameKey(text(a)) !== nameKey(text(b))) return false;
+  // Only ever richer: "Abdulbaki" → "Abdülbâkī", "Gazzali" → "Gazzâlî"; never a Turkish letter or a mark taken away ("Lütfi" → "Lutfi", "İshâk" → "İshak").
+  const wa = text(a).split(/\s+/);
+  const wb = text(b).split(/\s+/).filter((w) => !/^(el|er|ez|es|eş|en|et|ed|al)-$/i.test(w));
+  const special = (w: string) => (w.normalize("NFC").match(/[üÜöÖçÇşŞğĞıİâÂîÎûÛāĀīĪūŪḥḤṣṢṭṬẓẒḳḲḫġżḍʿʾ]/g) ?? []).sort().join("");
+  const sub = (x: string, y: string) => {
+    const pool = [...y];
+    return [...x].every((ch) => {
+      const i = pool.indexOf(ch);
+      if (i < 0) return false;
+      pool.splice(i, 1);
+      return true;
+    });
+  };
+  return wa.every((w) => {
+    const twin = wb.find((v) => nameKey(v) === nameKey(w));
+    return !twin || sub(special(w), special(twin));
+  });
 }
 
 export function diaSuggestion(c: Creator, index: PersonIndex): { person: Person; creator: Creator; loose: boolean } | null {
