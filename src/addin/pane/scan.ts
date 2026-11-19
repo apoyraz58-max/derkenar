@@ -8,7 +8,7 @@
  * ISBN found on the page is sent to the catalogues, as with "Bul ve ekle".
  */
 import { cleanIsbn, lookupIsbn } from "../../core/importers.js";
-import { completeFromPage, type PageLine, type PageReading, readPage } from "../../core/pagetext.js";
+import { type PageLine, type PagesRecord, readPage, recordFromPages } from "../../core/pagetext.js";
 import { type Attachment, type Item, creatorLine, newKey, now, titleOf } from "../../core/zotero.js";
 import { getMeta, putFile } from "../store.js";
 import { $, putItems, run, setMessage } from "./core.js";
@@ -191,42 +191,10 @@ async function readPdf(file: Blob, name: string): Promise<PageLine[][]> {
 
 // ---------------------------------------------------------------- the record
 
-function richness(r: PageReading): number {
-  if (!r.item) return -1;
-  return (r.how === "atif" ? 20 : 0) + Object.keys(r.item.fields).length + r.item.creators.length - r.unsure.length;
-}
-
-/** What the pages say, best page first; the catalogue's record for a DOI or ISBN on them, completed from the page. */
-async function recordFrom(pages: PageLine[][]): Promise<{ item: Item | null; unsure: string[]; via: string; text: string; failed: string }> {
-  const readings = pages.map(readPage);
-  const text = pages.map((p) => p.map((l) => l.text).join("\n")).join("\n\n");
-  const dois = [...new Set(readings.flatMap((r) => r.dois))];
-  const isbns = [...new Set(readings.flatMap((r) => r.isbns))];
-  const ranked = [...readings].sort((a, b) => richness(b) - richness(a));
-  let page: Item | null = ranked[0]?.item ?? null;
-  for (const r of ranked.slice(1)) if (page && r.item) page = completeFromPage(page, r.item);
-  const unsure = ranked[0]?.unsure ?? [];
-  let failed = "";
+/** What the pages say; the catalogue's record for a DOI or ISBN on them, completed from the pages. */
+async function recordFrom(pages: PageLine[][]): Promise<PagesRecord> {
   const googleKey = (await getMeta<string>("googleBooksKey").catch(() => undefined)) || undefined;
-  // An article prints its own DOI and the DOIs it cites: the first one on the first page is its own.
-  if (dois[0] && !(isbns.length && page?.itemType === "book")) {
-    progress("DOI ile aranıyor");
-    try {
-      return { item: completeFromPage(await lookupDoiOrIsbn(dois[0]), page), unsure: [], via: `DOI ${dois[0]}`, text, failed };
-    } catch (e) {
-      failed = e instanceof Error ? e.message : String(e);
-    }
-  }
-  for (const isbn of isbns.slice(0, 2)) {
-    progress("ISBN ile aranıyor");
-    try {
-      const found = await lookupIsbn(cleanIsbn(isbn) ?? isbn, fetch, googleKey);
-      return { item: completeFromPage(found, page), unsure: [], via: `ISBN ${isbn}`, text, failed };
-    } catch (e) {
-      failed = e instanceof Error ? e.message : String(e);
-    }
-  }
-  return { item: page, unsure, via: ranked[0]?.how === "atif" ? "sayfadaki atıf satırı" : "sayfanın düzeni", text, failed };
+  return recordFromPages(pages, { doi: (d) => lookupDoiOrIsbn(d), isbn: (i) => lookupIsbn(cleanIsbn(i) ?? i, fetch, googleKey) }, progress);
 }
 
 /** The PDF the record was read from, kept with it (in this computer's storage), as a file added in the editor is. */

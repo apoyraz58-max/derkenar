@@ -382,3 +382,61 @@ export function completeFromPage(found: Item, page: Item | null): Item {
   const creators = found.creators.length ? [...found.creators, ...page.creators.filter((c) => c.creatorType !== "author" && !found.creators.some((f) => f.creatorType === c.creatorType && foldText(f.lastName ?? f.name ?? "") === foldText(c.lastName ?? c.name ?? "")))] : page.creators;
   return { ...found, fields, creators };
 }
+
+// ---------------------------------------------------------------- several pages, and the catalogues
+
+function richness(r: PageReading): number {
+  if (!r.item) return -1;
+  return (r.how === "atif" ? 20 : 0) + Object.keys(r.item.fields).length + r.item.creators.length - r.unsure.length;
+}
+
+export interface PagesRecord {
+  item: Item | null;
+  unsure: string[];
+  /** How it was found: "DOI 10.…", "ISBN 978…", "sayfadaki atıf satırı", "sayfanın düzeni". */
+  via: string;
+  /** All the text read, for the paste box when nothing came of it. */
+  text: string;
+  /** Why the catalogue lookup failed, when it was tried. */
+  failed: string;
+}
+
+/**
+ * The pages of one work (a cover and a künye page, or a PDF's first pages): the best
+ * page's reading, completed from the others; the catalogue's record when a DOI or
+ * ISBN on them is found there, completed from the pages. An article's own DOI
+ * comes first, but a book with an ISBN is looked up by it (DOIs in a book are the
+ * works it cites).
+ */
+export async function recordFromPages(
+  pages: readonly (readonly PageLine[])[],
+  lookup: { doi(doi: string): Promise<Item>; isbn(isbn: string): Promise<Item> },
+  step: (what: string) => void = () => undefined,
+): Promise<PagesRecord> {
+  const readings = pages.map((p) => readPage(p));
+  const text = pages.map((p) => p.map((l) => l.text).join("\n")).join("\n\n");
+  const dois = [...new Set(readings.flatMap((r) => r.dois))];
+  const isbns = [...new Set(readings.flatMap((r) => r.isbns))];
+  const ranked = [...readings].sort((a, b) => richness(b) - richness(a));
+  let page: Item | null = ranked[0]?.item ?? null;
+  for (const r of ranked.slice(1)) if (page && r.item) page = completeFromPage(page, r.item);
+  const unsure = ranked[0]?.unsure ?? [];
+  let failed = "";
+  if (dois[0] && !(isbns.length && page?.itemType === "book")) {
+    step("DOI ile aranıyor");
+    try {
+      return { item: completeFromPage(await lookup.doi(dois[0]), page), unsure: [], via: `DOI ${dois[0]}`, text, failed };
+    } catch (e) {
+      failed = e instanceof Error ? e.message : String(e);
+    }
+  }
+  for (const isbn of isbns.slice(0, 2)) {
+    step("ISBN ile aranıyor");
+    try {
+      return { item: completeFromPage(await lookup.isbn(isbn), page), unsure: [], via: `ISBN ${isbn}`, text, failed };
+    } catch (e) {
+      failed = e instanceof Error ? e.message : String(e);
+    }
+  }
+  return { item: page, unsure, via: ranked[0]?.how === "atif" ? "sayfadaki atıf satırı" : "sayfanın düzeni", text, failed };
+}

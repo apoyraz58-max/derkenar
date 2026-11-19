@@ -169,3 +169,39 @@ describe("field variants", () => {
     expect(changed.map((i) => i.fields.publisher)).toEqual(["Dergâh Yayınları"]);
   });
 });
+
+import { recordFromPages } from "../src/core/pagetext.js";
+
+describe("several pages and the catalogues", () => {
+  const cover = L([["MUSTAFA KARA", 18], ["TASAVVUF VE TARİKATLAR", 36], ["TARİHİ", 36]]);
+  const kunye = linesOf("Dergâh Yayınları: 412\n8. Baskı: Ekim 2005\nISBN 978-0-19-852663-6\nİstanbul");
+  const catalogue = () => {
+    const it = emptyItem("book");
+    it.fields = { title: "Tasavvuf ve tarikatlar tarihi", ISBN: "9780198526636" };
+    it.creators = [{ creatorType: "author", lastName: "Kara", firstName: "Mustafa" }];
+    return it;
+  };
+  it("a cover and a künye page: the ISBN is looked up, the pages fill what the catalogue lacks", async () => {
+    const asked: string[] = [];
+    const r = await recordFromPages([cover, kunye], { doi: async () => { throw new Error("no"); }, isbn: async (i) => (asked.push(i), catalogue()) });
+    expect(asked).toEqual(["9780198526636"]);
+    expect(r.via).toBe("ISBN 9780198526636");
+    expect(r.item?.fields).toMatchObject({ title: "Tasavvuf ve tarikatlar tarihi", publisher: "Dergâh Yayınları", edition: "8", date: "2005", place: "İstanbul" });
+  });
+  it("a book's DOIs (works it cites) do not win over its ISBN; a failed lookup leaves the pages' record", async () => {
+    const withDoi = linesOf("ISBN 978-0-19-852663-6\nDergâh Yayınları\nhttps://doi.org/10.1000/cited");
+    const r = await recordFromPages([cover, withDoi], { doi: async () => { throw new Error("DOI should not be asked"); }, isbn: async () => { throw new Error("katalogda yok"); } });
+    expect(r.via).toBe("sayfanın düzeni");
+    expect(r.failed).toBe("katalogda yok");
+    expect(r.item?.fields.title).toBe("TASAVVUF VE TARİKATLAR TARİHİ");
+    expect(r.item?.fields.publisher).toBe("Dergâh Yayınları");
+  });
+  it("an article's own DOI is looked up", async () => {
+    const page = linesOf("Kader Dergisi · Cilt 21, Sayı 2, 2023\nMâtürîdî’de İnsan Fiilleri\nDOI: 10.18317/kaderdergi.123");
+    const art = emptyItem("journalArticle");
+    art.fields = { title: "Mâtürîdî’de İnsan Fiilleri", DOI: "10.18317/kaderdergi.123" };
+    const r = await recordFromPages([page], { doi: async (d) => (d === "10.18317/kaderdergi.123" ? art : Promise.reject(new Error("?"))), isbn: async () => { throw new Error("no"); } });
+    expect(r.via).toBe("DOI 10.18317/kaderdergi.123");
+    expect(r.item?.fields.title).toBe("Mâtürîdî’de İnsan Fiilleri");
+  });
+});
