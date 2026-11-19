@@ -15,6 +15,9 @@ import { parseQuick } from "../../core/search.js";
 import { $, S, doc, getRenderer, h, run, serial, setMessage, showView, work } from "./core.js";
 import { getMeta, setMeta } from "../store.js";
 import { cleanDoi, cleanIsbn } from "../../core/importers.js";
+import { checkItem } from "../../core/isnad.js";
+import { openEditor } from "./editor.js";
+import { personIssues } from "./persons.js";
 
 let results: Item[] = [];
 let cursor = 0;
@@ -195,6 +198,7 @@ export function renderBasket(): void {
           ),
         ),
         locatorRow(ref, citeMode(w), { label, vol, loc, showVolume, set, enter }),
+        recordIssues(w),
         recordVolume && showVolume && citeMode(w) === "normal" ? h("p", { class: "muted small" }, ref.volume ? `Atıftaki cilt (${ref.volume}) kullanılır; kayıttaki cilt (${recordVolume}) bu eserin atıflarında yazılmaz.` : `Kayıtta Cilt: ${recordVolume}. Cilt kutusu boş kalırsa atıfta "${recordVolume}/sayfa" yazılır.`) : null,
         h(
           "div",
@@ -218,6 +222,21 @@ export function renderBasket(): void {
     );
   });
   schedulePreview();
+}
+
+/** What İSNAD finds wrong in the record being cited (missing publisher, title in capitals …): fix it before it goes into the thesis. */
+function recordIssues(w: Item | undefined): HTMLElement | null {
+  if (!w || !S.byKey.has(w.key)) return null;
+  const issues = [...checkItem(w), ...personIssues(w)].filter((i) => i.level !== "info");
+  if (!issues.length) return null;
+  const errors = issues.filter((i) => i.level === "error").length;
+  const shortMsg = (m: string) => (m.length > 70 ? `${m.slice(0, 70)}…` : m);
+  return h(
+    "p",
+    { class: `small basket-warn${errors ? " error" : ""}` },
+    `Künyede ${issues.length} ${errors ? "sorun" : "uyarı"}: ${issues.slice(0, 2).map((i) => shortMsg(i.message)).join(" · ")}${issues.length > 2 ? " …" : ""} `,
+    h("button", { type: "button", class: "link", onclick: () => openEditor(w.key) }, "Künyeyi düzelt"),
+  );
 }
 
 /** One-click prefixes: İSNAD's "bk.", "krş." (in English "see", "cf.", ISNAD Citation Style 2nd ed.). */

@@ -824,6 +824,15 @@ try {
   await page.waitForSelector("#message:has-text('Atıfa eklendi: Öngören')");
   if (!(await page.textContent("#basket")).includes("Osmanlılar")) fail("pasted reference not in the citation");
   if ((await page.inputValue('#basket [data-f="locator"]')) !== "45") fail("page of the pasted reference not taken");
+  if (await page.locator("#basket .basket-warn").count()) fail("a complete record should show no warning in the basket");
+  await page.click("#clear-basket");
+  // A record with gaps: the basket says so, and opens it for fixing.
+  await page.fill("#q", "Kerim Akçay, Eksik Künyeli Bir Kitap (İstanbul: Akçay, 2001), 12.");
+  await page.locator("#outside-offer button", { hasText: "Bu künyeyi kütüphaneye ekle" }).click();
+  await page.waitForSelector("#basket .basket-warn:has-text('Künyede')");
+  await page.locator("#basket .basket-warn button", { hasText: "Künyeyi düzelt" }).click();
+  if (!(await page.isVisible("#view-kaynak"))) fail("Künyeyi düzelt did not open the editor");
+  await page.click("#tab-atif");
   await page.click("#clear-basket");
 
   // 9x. Şahıslar tablosu: imported, then a person's name written with the death date.
