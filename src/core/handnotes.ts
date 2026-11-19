@@ -11,7 +11,7 @@
  * the author's own words stays as it is. Works already in the library are
  * used, the others are added.
  */
-import { parseReference } from "./freetext.js";
+import { expandSameAuthor, parseReference, splitReferences } from "./freetext.js";
 import { citeMode } from "./isnadmodes.js";
 import { foldText } from "./isnadstyle.js";
 import { copyFinder, existingCopy } from "./library.js";
@@ -583,4 +583,34 @@ export function checkInTextBibliography(text: string, bibliography: readonly str
   const missing = [...new Set(cites.filter((c) => !listed.some((l) => matches(c, l))).map((c) => c.at))];
   const uncited = listed.filter((l) => !cites.some((c) => matches(c, l))).map((l) => l.line);
   return { missing, uncited, unreadLines, citedCount: new Set(cites.map((c) => `${c.who} ${c.year}`)).size, listedCount: listed.length };
+}
+
+// ---------------------------------------------------------------- a bibliography typed by hand
+
+/** A heading inside the list ("KAYNAKÇA", "Makaleler", "B. Arşiv Belgeleri"): no year, no punctuation of a reference. */
+const isHeading = (l: string) => l.length < 60 && !/\d{3,4}|[“”"]|:\s/.test(l);
+
+/** Which lines are headings: short, no year, no reference punctuation, and after a finished line or another heading. */
+function headingFlags(raw: readonly string[]): boolean[] {
+  const flags: boolean[] = [];
+  raw.forEach((l, i) => {
+    const prev = raw[i - 1];
+    flags.push(Boolean(l) && isHeading(l) && !/[.)]$/.test(l) && (i === 0 || !prev || /[.)\]]$/.test(prev) || flags[i - 1] === true));
+  });
+  return flags;
+}
+
+/** The reference lines of a bibliography typed by hand: headings left out, "———." given its author. */
+export function bibliographyLines(text: string): string[] {
+  // Headings out first (a heading has no full stop and would be joined to the next reference).
+  const raw = text.split("\n").map((l) => l.trim());
+  const flags = headingFlags(raw);
+  return expandSameAuthor(splitReferences(raw.filter((l, i) => l && !flags[i]).join("\n")));
+}
+
+/** The section headings of a typed bibliography ("Kitaplar", "Makaleler", "B. Arşiv Belgeleri"), its own title left out. */
+export function sectionHeadings(text: string): string[] {
+  const raw = text.split("\n").map((l) => l.trim());
+  const flags = headingFlags(raw);
+  return raw.filter((l, i) => flags[i] && !/^(kaynakça|kaynaklar|bibliyografya|bibliography|references|works cited)$/i.test(l));
 }

@@ -3,7 +3,7 @@
  * citations in place (the note, its number and its place stay). First a
  * look at what would change; then the change, which Word's Undo takes back.
  */
-import { type HandInText, type HandNote, SHORT_UNKNOWN, checkBibliography, checkInTextBibliography, inTextAuthorYears, readHandNotes, readInText } from "../../core/handnotes.js";
+import { type HandInText, type HandNote, SHORT_UNKNOWN, bibliographyLines, sectionHeadings, checkBibliography, checkInTextBibliography, inTextAuthorYears, readHandNotes, readInText } from "../../core/handnotes.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import type { CiteRef } from "../../core/types.js";
 import { type Item, creatorLine, titleOf } from "../../core/zotero.js";
@@ -12,7 +12,7 @@ import { $, S, copyText, doc, getRenderer, h, putItems, run, serial, setMessage 
 import { refresh } from "./document.js";
 import { isnadFix } from "./io.js";
 import { copyFinder } from "../../core/library.js";
-import { expandSameAuthor, parseReference, splitReferences } from "../../core/freetext.js";
+import { parseReference } from "../../core/freetext.js";
 
 let plan: HandNote[] = [];
 
@@ -88,23 +88,6 @@ interface BibLine {
   isNew: boolean;
 }
 let bib: { text: string; lines: BibLine[] } | null = null;
-
-/** A heading inside the list ("KAYNAKÇA", "Makaleler", "B. Arşiv Belgeleri"): no year, no punctuation of a reference. */
-const isHeading = (l: string) => l.length < 60 && !/\d{3,4}|[“”"]|:\s/.test(l);
-
-/** The reference lines of a bibliography typed by hand: headings left out, "———." given its author. */
-function bibliographyLines(text: string): string[] {
-  // Headings out first (a heading has no full stop and would be joined to the next reference).
-  const raw = text.split("\n").map((l) => l.trim());
-  const kept = raw.filter((l, i) => l && !(isHeading(l) && !/[.)]$/.test(l) && (i === 0 || !raw[i - 1] || /[.)\]]$/.test(raw[i - 1]!))));
-  return expandSameAuthor(splitReferences(kept.join("\n")));
-}
-
-/** The section headings of a typed bibliography ("Kitaplar", "Makaleler", "B. Arşiv Belgeleri"), its own title left out. */
-function sectionHeadings(text: string): string[] {
-  const raw = text.split("\n").map((l) => l.trim());
-  return raw.filter((l, i) => l && isHeading(l) && !/[.)]$/.test(l) && (i === 0 || !raw[i - 1] || /[.)\]]$/.test(raw[i - 1]!)) && !/^(kaynakça|kaynaklar|bibliyografya|bibliography|references|works cited)$/i.test(l));
-}
 
 function readBibliography(text: string): BibLine[] {
   const created: Item[] = [];

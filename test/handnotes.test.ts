@@ -351,3 +351,18 @@ describe("a.g.e. within one note, and its place", () => {
     expect(r[2]!.refs!.map((x) => [x.item.fields.title, x.kitab, x.bab])).toEqual([["el-Câmiʿu’ṣ-ṣaḥîḥ", "Îmân", "3"], ["el-Câmiʿu’ṣ-ṣaḥîḥ", "Menâḳıb", "24"]]);
   });
 });
+
+import { bibliographyLines, sectionHeadings } from "../src/core/handnotes.js";
+
+describe("a typed bibliography: lines and section headings", () => {
+  const text = ["KAYNAKÇA", "A. Kitaplar", "Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları,", "2005.", "———. Bursa’da Tarikatlar ve Tekkeler. Bursa: Uludağ Yayınları, 1990.", "B. Makaleler", "Kutlu, Sönmez. “İlk Mürciî Metinler”. Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 317-331."].join("\n");
+  it("headings out, broken lines joined, ——— given its author", () => {
+    expect(sectionHeadings(text)).toEqual(["A. Kitaplar", "B. Makaleler"]);
+    expect(bibliographyLines(text)).toEqual([
+      "Kara, Mustafa. Tasavvuf ve Tarikatlar Tarihi. İstanbul: Dergâh Yayınları, 2005.",
+      "Kara, Mustafa. Bursa’da Tarikatlar ve Tekkeler. Bursa: Uludağ Yayınları, 1990.",
+      "Kutlu, Sönmez. “İlk Mürciî Metinler”. Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 317-331.",
+    ]);
+    expect(sectionHeadings("KAYNAKÇA\nKara, Mustafa. Tasavvuf. İstanbul: Dergâh, 2005.")).toEqual([]);
+  });
+});
