@@ -1,6 +1,6 @@
 Serbest künye: 150 metinden 146 tanesi okundu.
   title: 134/146
-  author: 105/112
+  author: 106/112
   container: 34/41
   date: 126/130
   place: 105/107
@@ -8,8 +8,6 @@ Serbest künye: 150 metinden 146 tanesi okundu.
   volume: 25/31
   issue: 13/17
 
-✗ dipnot, journalArticle: Bedreddin eş-Şuhâvî, et-Tırâzu’l-müzheb, “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”, thk. Osman Bayder, Tahkik İslami İlimler Araştırma ve Neşir Dergisi 2/1 (Haziran 2019), 211-257.
-     author: "Tırâzu'l-müzheb" ≠ "Şuhâvî"
 ✗ okunamadı (dipnot, journalArticle): İsmail Kara, “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu), Nihayet Dergisi 5 (Temmuz 2015), 34-38.
 ✗ dipnot, book: Ebû Abdillâh Ahmed b. Muhammed b. Hanbel eş-Şeybânî Ahmed b. Hanbel, el-Müsned, nşr. Ebû Hâcir Muhammed Saîd Besyûnî (Beyrut: y.y., 1405/1985).
      author: "Hanbel" ≠ "Ahmed b. Hanbel"
@@ -24,7 +22,7 @@ Serbest künye: 150 metinden 146 tanesi okundu.
 ✗ dipnot, book: Ebû Abdillâh Mâlik b. Enes el-Asbahî İmam Mâlik, el-Muvaṭṭaʾ, nşr. Abdüvehhâb Abdüllatîf (Kahire: y.y., 1382/1962).
      author: "Mâlik" ≠ "İmam Mâlik"
 ✗ dipnot, journalArticle: İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl, “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”, nşr. Kadir Gömbeyaz, Bilimname 38 (2019), 57-81.
-     author: "ebeveyi'r-Resûl" ≠ "İbrahim el-Halebî"
+     author: "Halebî" ≠ "İbrahim el-Halebî"
      issue: "" ≠ "38"
 ✗ dipnot, book: Türk Standardları Enstitüsü (TSE), Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz (Türkiye: Türk Standardları Enstitüsü, Kabul 5 Haziran 2012, TS OIC/SMIIC 2/T1).
      place: "" ≠ "Türkiye"

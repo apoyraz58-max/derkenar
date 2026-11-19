@@ -171,6 +171,8 @@ function stripLeading(s: string): string {
     .trim()
     .replace(/^(\[\d+\]|\d+[.)]\s|\d+\s+(?=\p{Lu}))/u, "")
     .replace(/\s+/g, " ")
+    // "eş- Şuhâvî": a broken line left a space after the article.
+    .replace(/(?<=^|[\s(])(el|er|ez|es|eş|en|et|ed|al)-\s+(?=\p{Lu})/gu, "$1-")
     .replace(/[„"]([^"“”]+?)["“”]/g, "“$1”")
     .replace(/[‘']{2}([^'’]+?)[’']{2}/g, "“$1”")
     .trim();
@@ -221,6 +223,12 @@ function isnadNote(s: string): ParsedReference | null {
   const art = /^(.*?),?\s*“([^”]+)”,\s*(.+?)\s+(\d+)(?:\/(\d+))?\s+\(([^)]*?\d{4})\)(?:,\s*([\d\-–]+))?\.?$/u.exec(t);
   if (art && !/:/.test(art[3]!)) {
     item.itemType = "journalArticle";
+    // A text published in an article (İSNAD 14.3): "Müellif, Eserin Adı, “Makale”, nşr. X, Dergi …"; the work's name is kept apart.
+    const lead = topSplit(art[1]!, ",");
+    if (lead.length >= 2 && looksLikeName(lead[0]!) && !lead.slice(1).some((x) => ROLE_RE.test(x.trim()))) {
+      item.fields.seriesText = lead.slice(1).join(", ").trim();
+      art[1] = lead[0]!;
+    }
     authorsInOrder(item, art[1]!);
     item.fields.title = art[2]!;
     const container = readRoles(item, art[3]!.split(/,\s*/));
@@ -634,7 +642,8 @@ function newspaper(s: string): ParsedReference | null {
 function legislation(s: string): ParsedReference | null {
   const item = emptyItem("statute", "serbest");
   const t = readUrl(item, s).replace(/\.$/, "");
-  const rg = /^(.+?)\s*\((\p{Lu}[\p{Lu}\d]{1,11})\),\s*(Resm[îi] Gazete|Düstur|Official Journal[^\d(]*)\s+([\w/ ]{1,20}?)\s*\(([^()]+)\)(?:,\s*(?:Kanun|Law|KHK)\s*No\.?\s*(\d+))?$/u.exec(t);
+  // The short title is an abbreviation ("FSEK") or, in the EU's Official Journal, a name ("Stop extremism").
+  const rg = /^(.+?)\s*\((\p{Lu}[\p{Lu}\d]{1,11}|\p{Lu}[^()]{2,40})\),\s*(Resm[îi] Gazete|Düstur|Official Journal[^\d(]*?)\s+((?:[A-Z]\s)?[\d/ ]{1,20}?)\s*\(([^()]+)\)(?:,\s*(?:Kanun|Law|KHK)\s*No\.?\s*(\d+))?(?:,\s*(\d+(?:-\d+)?))?$/u.exec(t);
   const other = rg ? null : /^(.+?(?<=\s)(?:Kanunu|Yönetmeliği|Yönergesi|Tüzüğü|Genelgesi|Kararnamesi|İlkeleri|Esasları|Talimatı|Law|Regulation|Directive))\s*\((\p{Lu}[\p{Lu}\d]{1,11})\),\s*([^()]{3,80}?)\s*\((\d{4})\)$/u.exec(t);
   if (rg) {
     item.fields.title = rg[1]!.trim();
@@ -643,6 +652,7 @@ function legislation(s: string): ParsedReference | null {
     item.fields.codeNumber = rg[4]!.trim();
     item.fields.date = dayMonthYear(rg[5]!) ?? rg[5]!.trim();
     if (rg[6]) item.fields.publicLawNumber = rg[6];
+    if (rg[7]) item.fields.pages = rg[7];
   } else if (other) {
     item.fields.title = other[1]!.trim();
     item.fields.shortTitle = other[2]!;

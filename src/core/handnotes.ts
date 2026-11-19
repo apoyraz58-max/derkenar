@@ -132,7 +132,7 @@ function cutPlace(s: string): { body: string } & Place {
 const fold = (s: string) => foldText(s).replace(/^(el|al|er|es|en|et|ed|ez|eş|es)\s/, "");
 
 /** Folded surnames and titles, worked out once per record (a thesis cites the same works hundreds of times). */
-const folded = new WeakMap<Item, { surnames: string[]; title: string; short: string; container: string; given: string[] }>();
+const folded = new WeakMap<Item, { surnames: string[]; title: string; short: string; work: string; container: string; given: string[] }>();
 /** Whoever a short form names first: the author, or the artist, inventor, director … of a work that has no author. */
 const MAIN_CREATOR = new Set(["author", "editor", "inventor", "artist", "director", "interviewee", "programmer", "cartographer", "composer", "performer", "podcaster", "presenter"]);
 
@@ -143,6 +143,8 @@ function keysOf(item: Item) {
       surnames: item.creators.filter((c) => MAIN_CREATOR.has(c.creatorType)).map((c) => fold(c.lastName ?? c.name ?? "")).filter(Boolean),
       title: fold(titleOf(item)),
       short: fold(item.fields.shortTitle ?? ""),
+      // The work a text edition in an article publishes ("Risâle fi hakkı ebeveyi’r-Resûl"): its later notes use that name.
+      work: fold(item.itemType === "journalArticle" ? (item.fields.seriesText ?? "") : ""),
       container: fold(item.fields.publicationTitle ?? ""),
       // A classical name ("Ebü’l-Hüseyn Müslim b. el-Haccâc"): later notes may use any of its names ("Müslim").
       given: item.creators
@@ -208,7 +210,8 @@ function findShort(body0: string, pool: readonly Item[]): Item | null {
     // Software is named with its version: "EndNote X9".
     if (it.fields.versionNumber && title === fold(`${titleOf(it)} ${it.fields.versionNumber}`)) return true;
     const { title: t, short: st } = keysOf(it);
-    return t.startsWith(title) || (st && (st === title || title.startsWith(st)));
+    const { work } = keysOf(it);
+    return t.startsWith(title) || (st && (st === title || title.startsWith(st))) || (work && work === title);
   });
   if (starts.length) return pick(starts);
   if (!author) return null;

@@ -443,6 +443,15 @@ describe("works that name their kind", () => {
     expect(p("Kara, Mustafa. Tasavvuf. İstanbul: Dergâh Yayınları, 2005.")?.itemType).toBe("book");
     expect(p("Kut, Günay. Yazma Eserler Kataloğu. Ankara: Milli Kütüphane, 1990.")).toMatchObject({ itemType: "book", fields: { publisher: "Milli Kütüphane", date: "1990" } });
   });
+  it("EU legislation and text editions in articles", () => {
+    expect(p("Commission Decision (EU) 2017/1002 of 7 June 2017 on the proposed initiative (Stop extremism), Official Journal of the European Union L 152/1 (15 June 2017), 2.")).toMatchObject({ itemType: "statute", fields: { shortTitle: "Stop extremism", code: "Official Journal of the European Union", codeNumber: "L 152/1", date: "2017-06-15" } });
+    const ed = p("İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl, “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar”, nşr. Kadir Gömbeyaz, Bilimname 38 (2019), 76.");
+    expect(ed).toMatchObject({ itemType: "journalArticle", fields: { seriesText: "Risâle fi hakkı ebeveyi’r-Resûl", title: "Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar", publicationTitle: "Bilimname" } });
+    expect(ed?.creators.map((c) => c.creatorType)).toEqual(["author", "nasir"]);
+    const r = readHandNotes(["İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl, “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar”, nşr. Kadir Gömbeyaz, Bilimname 38 (2019), 76.", "Halebî, Risâle fi hakkı ebeveyi’r-Resûl, 77."], []);
+    expect(r[1]!.refs?.[0]?.item).toBe(r[0]!.refs?.[0]?.item);
+    expect(p("Bedreddin eş- Şuhâvî, et-Tırâzu’l-müzheb, “Bir Tahkik”, thk. Osman Bayder, Tahkik Dergisi 2/1 (Haziran 2019), 229.")?.creators[0]).toMatchObject({ lastName: "Şuhâvî", firstName: "Bedreddin eş-" });
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");
