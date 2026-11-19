@@ -814,6 +814,8 @@ try {
   const chk = await page.textContent("#hand-check-result");
   if (!chk.includes("Tasavvuf Terimleri Sözlüğü") || !chk.includes("Bursa’da Tarikatlar")) fail(`bibliography check: ${chk}`);
   if (flowBefore !== (await page.evaluate(() => JSON.stringify(window.__doc.flow)))) fail("bibliography check changed the document");
+  await page.locator("#hand-check-result button", { hasText: "Sonucu panoya kopyala" }).click();
+  await page.waitForSelector("#message:has-text('Uyum denetiminin sonucu panoya kopyalandı')");
 
   // 9y. A reference pasted into the citation search: added to the library and to the citation at once.
   await page.click("#tab-atif");

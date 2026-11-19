@@ -8,7 +8,7 @@ import { newCitationId, putCitation } from "../../core/docstate.js";
 import type { CiteRef } from "../../core/types.js";
 import { type Item, creatorLine, titleOf } from "../../core/zotero.js";
 import * as word from "../word.js";
-import { $, S, doc, getRenderer, h, putItems, run, serial, setMessage } from "./core.js";
+import { $, S, copyText, doc, getRenderer, h, putItems, run, serial, setMessage } from "./core.js";
 import { refresh } from "./document.js";
 import { isnadFix } from "./io.js";
 import { copyFinder } from "../../core/library.js";
@@ -239,6 +239,13 @@ async function checkAgainstBibliography(): Promise<void> {
       ...(t.unreadLines.length ? [h("p", { class: "muted small" }, `Kaynakçada künye olarak okunamayan ${t.unreadLines.length} satır sayılmadı.`)] : []),
       h("p", { class: "muted small" }, "Metin içi atıflar ilk yazarın soyadı ve yılla karşılaştırıldı. Belgede hiçbir şey değişmez."),
     );
+    report(
+      [
+        `Metin içi atıflar ile kaynakça (Derkenar): ${t.citedCount} yazar-yıl atfı, ${t.listedCount} künye.`,
+        section("Metinde anılıp kaynakçada bulunmayan", t.missing.map((m) => `(${m})`)),
+        section("Kaynakçada olup metinde anılmayan", t.uncited),
+      ].join("\n"),
+    );
     return;
   }
   const r = checkBibliography(notes.map((n) => n.text), lines, S.items, derkenar);
@@ -255,6 +262,38 @@ async function checkAgainstBibliography(): Promise<void> {
     ...(r.shortVariants.length ? [h("p", { class: "small" }, h("strong", {}, `Kısa künyesi farklı yazılan (${r.shortVariants.length}):`), " Bir eser her yerde aynı kısa başlıkla anılır."), h("ul", { class: "hand-list small" }, ...r.shortVariants.slice(0, 100).map((x) => h("li", {}, x.forms.slice(0, 4).join(" · "))))] : []),
     ...(r.age.length ? [h("p", { class: "small" }, h("strong", {}, `a.g.e. / a.e. / Ibid. kullanılan dipnotlar (${r.age.length}):`), ` dn. ${r.age.map(noteNo).slice(0, 15).join(", ")}${r.age.length > 15 ? " …" : ""}. İSNAD bunların yerine kısa künye ister; "Dipnotları tara" ile Derkenar atıfına çevrilince kendiliğinden düzelir.`)] : []),
     h("p", { class: "muted small" }, "Yalnız okunabilen dipnotlar sayılır; açıklama dipnotları ve okunamayan künyeler dışarıda kalır. Kaynakçada yararlanılan ama anılmayan eserler bulunabilir; bu bir hata olmayabilir."),
+  );
+  const name = (it: Item) => `${creatorLine(it) || "—"}, ${titleOf(it)}`;
+  report(
+    [
+      `Dipnotlar ile kaynakça (Derkenar): dipnotlarda ${r.citedCount} eser, kaynakçada ${r.listedCount} künye.`,
+      section("Dipnotta anılıp kaynakçada olmayan", r.missing.map((m) => `${name(m.item)}${m.notes.length ? ` — dn. ${m.notes.map(noteNo).join(", ")}` : ""}`)),
+      section("Kaynakçada olup hiçbir dipnotta anılmayan", r.uncited),
+      section("İlk geçişi kısa künye ya da a.g.e. ile yapılan", r.shortFirst.map((x) => `dn. ${noteNo(x.note)}: ${name(x.item)}`)),
+      section("İlk atıftan sonra yeniden tam künyeyle verilen", r.fullAgain.map((x) => `${name(x.item)} — dn. ${x.notes.map(noteNo).join(", ")}`)),
+      section("Kısa künyesi farklı yazılan", r.shortVariants.map((x) => x.forms.join(" · "))),
+      section("a.g.e. / a.e. / Ibid. kullanılan dipnotlar", r.age.length ? [`dn. ${r.age.map(noteNo).join(", ")}`] : []),
+    ].join("\n"),
+  );
+}
+
+/** A heading and its lines, for the report copied to the clipboard; nothing when the list is empty. */
+function section(title: string, lines: readonly string[]): string {
+  return lines.length ? `\n${title} (${lines.length}):\n${lines.map((l) => `- ${l}`).join("\n")}` : "";
+}
+
+/** The whole result (lists not cut short), ready to copy and send. */
+function report(text: string): void {
+  $("hand-check-result").append(
+    h("button", {
+      type: "button",
+      class: "link",
+      onclick: () =>
+        void run("Kopyalanıyor", async () => {
+          await copyText(text.replace(/\n{3,}/g, "\n\n").trim());
+          setMessage("Uyum denetiminin sonucu panoya kopyalandı (listelerin tamamı).", "success");
+        }),
+    }, "Sonucu panoya kopyala"),
   );
 }
 
