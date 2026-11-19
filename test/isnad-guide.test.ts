@@ -511,3 +511,15 @@ describe("ISNAD Citation Style 2nd Edition (İngilizce kılavuz) örnekleri", ()
     expect(first("Mâtürîdî Kelâm Ekolünde Nesefîler ve Ebû Hafs Ömer en-Nesefî’nin İtikâdî Görüşleri")).toContain("Undergraduate Thesis, 2002)");
   });
 });
+
+import { AUTO, checkItem } from "../src/core/isnad.js";
+
+describe("eklerken kendiliğinden düzeltmeler doğru kaydı bozmaz", () => {
+  it("kılavuzun kendi kayıtlarında yalnız beklenen düzeltmeler", () => {
+    const fired = new Map<string, number>();
+    for (const it of items) for (const i of checkItem(it)) if (AUTO.has(i.code) && i.fix) fired.set(i.code, (fired.get(i.code) ?? 0) + 1);
+    // Kısa başlık önerisi, elle yazılmış "y.y."/"ts.", "Beirut" → "Beyrut", "Istanbul" → "İstanbul", bir başlık sonu noktası.
+    expect([...fired.keys()].sort()).toEqual(["abbr-in-field", "place", "short-title", "title-period", "turkish-letters"]);
+    expect((fired.get("short-title") ?? 0) + (fired.get("title-period") ?? 0)).toBeLessThanOrEqual(10);
+  });
+});

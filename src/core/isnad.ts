@@ -183,13 +183,14 @@ export function checkItem(item: Item): Issue[] {
       }
     }
     if (base === "title" || base === "publicationTitle" || base === "shortTitle") {
-      if (isAllCaps(value) && !(base === "shortTitle" && !/\s/.test(value.trim()))) add({ code: "caps", level: "warning", message: `${label} tamamen büyük harfle yazılmış.`, field, fix: { field, value: base === "shortTitle" ? sentenceCase(value) : isnadTitle(value) }, fixLabel: "Küçült" });
+      // (A short title of capitals and initials, "A. (AMD)", is an abbreviation, not a shouted title.)
+      if (isAllCaps(value) && !(base === "shortTitle" && (!/\s/.test(value.trim()) || (value.match(/\p{L}/gu) ?? []).length <= 6))) add({ code: "caps", level: "warning", message: `${label} tamamen büyük harfle yazılmış.`, field, fix: { field, value: base === "shortTitle" ? sentenceCase(value) : isnadTitle(value) }, fixLabel: "Küçült" });
       // Title case only for what İSNAD prints in italics: books, and the book or journal a part belongs to.
       else if (base !== "shortTitle" && (base === "publicationTitle" || ITALIC_TITLE.has(item.itemType)) && isnadTitle(value) !== value) {
         const v = isnadTitle(value);
         add({ code: "title-case", level: "warning", message: `${label} İSNAD'a göre büyük-küçük harf: "${v}". (Türkçe ve Batı dillerindeki adlarda kelime başları büyük; Arapça adlarda yalnız ilk kelime.)`, field, fix: { field, value: v }, fixLabel: "Düzelt" });
       }
-      if (/[^.]\.$/.test(value.trim()) && !/(^|\s)(\p{L}|vb|vd|vs|haz|thk|çev|nşr|ed|eds|bs|yy|ts|nr|no|c|s|ss|st|dr|prof|doç|mlf)\.$/iu.test(value.trim())) add({ code: "title-period", level: "warning", message: `${label} nokta ile bitiyor; noktayı stil koyar.`, field, fix: { field, value: value.trim().replace(/\.$/, "") }, fixLabel: "Noktayı sil" });
+      if (/[^.]\.$/.test(value.trim()) && !/(^|\s)(\p{L}|vb|vd|vs|haz|thk|çev|nşr|ed|eds|bs|yy|ts|nr|no|c|s|ss|st|dr|prof|doç|mlf|hk|krş|bk|bkz|vr|md|ö|h|m|vol|pp|etc)\.$/iu.test(value.trim())) add({ code: "title-period", level: "warning", message: `${label} nokta ile bitiyor; noktayı stil koyar.`, field, fix: { field, value: value.trim().replace(/\.$/, "") }, fixLabel: "Noktayı sil" });
       if (/['’ʿ‘`]/.test(value) && new Set(value.match(/['’ʿ‘`]/g)).size > 1) add({ code: "apostrophes", level: "info", message: `${label}: farklı kesme / ayın işaretleri karışık kullanılmış (' ’ ʿ ‘).`, field });
     }
     if (base === "pages") {

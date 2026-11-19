@@ -393,14 +393,19 @@ export function shortTitleOf(title: string): string | null {
     .trim();
   let words = main.split(/\s+/);
 
-  if (isArabicTitle(words.slice(0, 2).join(" ")) && !words.some((w, k) => k < words.length - 1 && isAdjunct(w) && !isArabicTitle(w))) {
+  // (A Turkish title that begins with an Arabic name: "Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi".)
+  const turkishTail = words.some((w) => /^(adlı|isimli|adındaki)$/i.test(w) || (!isArabicTitle(w) && /(?:[ıiuü]n[ıiuü]n|s[ıiuü]n[ıiuü]n)$/.test(lower(w))));
+  if (isArabicTitle(words.slice(0, 2).join(" ")) && !turkishTail && !words.some((w, k) => k < words.length - 1 && isAdjunct(w) && !isArabicTitle(w))) {
     if (words.length > 1 && /^(kitâb|kitāb|kitab)$/i.test(words[0]!) && /^(al|el)-/i.test(words[1]!)) words = words.slice(1);
     const i = words.findIndex((w, k) => k > 0 && AR_CUT.test(w));
     if (i > 0) words = words.slice(0, i);
     else if (words.length > 4) words = words.slice(0, 2);
   } else if (!(isWestern(main) || isOtherWestern(main))) {
     // A second part joined by "ve" (long enough to be a second subject).
-    const v = words.findIndex((w, k) => k >= 2 && /^(ve|ile)$/i.test(w) && words.length - k - 1 >= 3 && !words.slice(0, k).join(" ").includes(","));
+    // ("Tahkik ve Tercümesi" share one suffix: one subject, not two.)
+    // ("Ahlak ve Tasavvuf Kavramları", "Tahkik ve Tercümesi": one suffix for both, so one subject, not two.)
+    const sharedSuffix = (k: number) => !/(s?[ıiuü]|[’'].*|l[ae]r[ıi]?)$/.test(lower(words[k - 1]!)) && [words[k + 1], words[k + 2]].some((x) => x && /(s?[ıiuü]|l[ae]r[ıi])$/.test(lower(x)));
+    const v = words.findIndex((w, k) => k >= 2 && /^(ve|ile)$/i.test(w) && words.length - k - 1 >= 3 && !words.slice(0, k).join(" ").includes(",") && !sharedSuffix(k));
     if (v > 0) words = words.slice(0, v);
     // A closing range: "… İznik’ten II. Vatikan’a".
     const last = words[words.length - 1] ?? "";
@@ -412,13 +417,21 @@ export function shortTitleOf(title: string): string | null {
     if (words.length > 4) {
       const a = words.findIndex((w, k) => k <= 3 && k < words.length - 2 && isScope(w));
       if (a >= 0 && !words.slice(0, a).some((w) => /[’'](d|t)[ae]n$|[’'](y)?[ae]$/.test(w))) words = words.slice(a + 1);
+      // "… Müzesi'nde Bulunan Türk Halıları" → "Türk Halıları": the participle went with the place.
+      if (a >= 0 && words.length > 2 && /^\p{L}+(?:[ıiuü]?l?[ae]n|[dt][ıiuü][ğk][ıiuü])$/u.test(words[0]!) && /^\p{Lu}/u.test(words[0]!) && /(?:an|en|ılan|ilen|ulan|ülen)$/.test(words[0]!)) words = words.slice(1);
     }
+    // "… Üzerine Bir İnceleme", "… Bir Değerlendirme": a generic close, then the postposition before it.
+    if (words.length > 3 && /^bir$/i.test(words[words.length - 2]!) && /^(inceleme|değerlendirme|araştırma|yaklaşım|deneme|tahlil|tetkik|çözümleme|analiz|okuma|bakış|giriş|katkı|tartışma)$/i.test(lower(words[words.length - 1]!))) words = words.slice(0, -2);
     // A closing postposition ("Tasavvuf Üzerine") is about what precedes it.
     while (words.length > 2 && POSTPOSITIONS.has(lower(words[words.length - 1]!))) words = words.slice(0, -1);
   } else if (words.length > 10) {
     words = words.slice(0, 6);
   }
-  while (words.length > 1 && (CUT.has(lower(words[words.length - 1]!)) || /^(ve|ile)$/i.test(words[words.length - 1]!))) words = words.slice(0, -1);
+  while (words.length > 1 && (CUT.has(lower(words[words.length - 1]!)) || /^(ve|ile)$/i.test(words[words.length - 1]!))) {
+    // "… Tahkik ve Tercümesi": the last word ends a pair; cutting it would leave "… Tahkik".
+    if (words.length > 2 && /^(ve|ile)$/i.test(words[words.length - 2]!) && CUT.has(lower(words[words.length - 1]!))) break;
+    words = words.slice(0, -1);
+  }
   const short = words.join(" ").replace(/[,;:]$/, "");
   return short && short !== full ? short : null;
 }
