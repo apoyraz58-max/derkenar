@@ -163,3 +163,19 @@ describe("İngilizce EI3: çağdaş Türk adları çevrilmez, bileşik soyad", (
     expect(en("Mahmud", "Abdülhalim")).toEqual({ creatorType: "author", lastName: "Maḥmūd", firstName: "ʿAbd al-Ḥalīm" });
   });
 });
+
+describe("Seçili metni EI3'e çevirme: adaşlar", () => {
+  const rows = `Sıra;Kısa Ad (DİA);Tam Ad (DİA);Orijinal Ad;Vefat Tarihi;EI3 Transliterasyonu (Kısa Ad);EI3 Transliterasyonu (Tam Ad);Osmanlıca;Grup;Kural;Yöntem;Kontrol notu
+1;Eş‘arî, Ebü’l-Hasan;---;;(ö. 324/935);al-Ashʿarī, Abū l-Ḥasan;;;Arap;;;
+2;Eş‘arî, Ebû Bürde;---;;(ö. 104/722);al-Ashʿarī, Abū Burda;;;Arap;;;
+3;Gazzâlî;---;;(ö. 505/1111);al-Ghazālī;;;Arap;;;
+4;Gazzâlî, Zeyneb;---;;(ö. 2005);al-Ghazzālī, Zaynab;;;Arap;;;`;
+  const persons = personsFromRows(readCsv(rows));
+  const ix = indexPersons({ persons, dict: buildDict(persons), source: "t" });
+  it("same EI3 surname for all, or the one filed under the bare name", () => {
+    expect(ei3Replacements("Eş‘arî and Gazzâlî’nin.", ix)).toEqual([
+      { from: "Gazzâlî’nin", to: "al-Ghazālī" },
+      { from: "Eş‘arî", to: "al-Ashʿarī" },
+    ]);
+  });
+});

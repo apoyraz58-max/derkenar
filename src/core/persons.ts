@@ -591,8 +591,15 @@ export function ei3Replacements(text: string, index: PersonIndex): { from: strin
   const out: { from: string; to: string }[] = [];
   const taken: [number, number][] = [];
   const words = wordsOf(folded);
+  // A bare surname ("Gazzâlî") is written as the EI3 surname ("al-Ghazālī"); a name shared by several
+  // persons is still replaced when they all give the same EI3 form (the three Eş‘arîs are all "al-Ashʿarī").
+  const target = (o: { form: string; p: Person }) => (!o.form.includes(" ") && nameKey(o.form) === nameKey(diaParts(o.p).surname) ? o.p.ei3.split(/,\s*/)[0]! : ei3Name(o.p));
   for (const [k, list] of [...owners].sort((a, b) => b[0].length - a[0].length)) {
-    if (list.length !== 1 || !mayBeIn(k, words)) continue;
+    if (!mayBeIn(k, words)) continue;
+    // Otherwise the person filed under exactly that name ("Gazzâlî", not "Gazzâlî, Zeyneb"), if there is one.
+    const filed = list.filter((o) => o.p.dia === o.form);
+    const one = new Set(list.map(target)).size === 1 ? list[0]! : filed.length === 1 ? filed[0]! : null;
+    if (!one) continue;
     const re = new RegExp(`(?<![\\p{L}’'-])${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:[’'][\\p{L}]+)?(?![\\p{L}])`, "gu");
     for (const m of folded.matchAll(re)) {
       const end = m.index + m[0].length;
@@ -601,7 +608,7 @@ export function ei3Replacements(text: string, index: PersonIndex): { from: strin
       const from = text.slice(m.index, end);
       // A Turkish suffix goes ("Gazzâlî’nin"); the English possessive stays ("Çelebi’s").
       const possessive = /[’'][sS]$/.exec(from)?.[0] ?? "";
-      if (!out.some((o) => o.from === from)) out.push({ from, to: ei3Name(list[0]!.p) + possessive });
+      if (!out.some((o) => o.from === from)) out.push({ from, to: target(one) + possessive });
     }
   }
   return out;
