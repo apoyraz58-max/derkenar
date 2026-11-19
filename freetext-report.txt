@@ -30,10 +30,6 @@ Serbest künye: 150 metinden 146 tanesi okundu.
      place: "" ≠ "Türkiye"
      publisher: "" ≠ "Türk Standardları Enstitüsü"
      tür: report ≠ book
-✗ dipnot, book: Türkiye Yazma Eserler Kurumu Başkanlığı (TYEKB), Yazma Eserler Portalı (Erişim 12 Eylül 2019).
-     tür: webpage ≠ book
-✗ dipnot, book: The Fihrist (TF), Union Catalogue of Manuscripts from the Islamicate World (Erişim 13 Eylül 2019).
-     tür: webpage ≠ book
 ✗ okunamadı (dipnot, journalArticle): Abdülmecid b. Aziz Şeyh Zindânî, “Yemen’de Şeyh Zindânî ile Mülakat” (Görüşmeci: Mehmet Ümit, Görüşme Transkripsiyonu), e-makalat 6/2 (Güz 2013), 135-150.
 ✗ dipnot, book: Ebü’l-Hüseyn Müslim b. el-Haccâc, el-Câmiʿu’ṣ-ṣaḥîḥ, nşr. Muhammed Fuâd Abdülbâkī (Kahire: y.y., 1374-75/1955-56).
      author: "Haccâc" ≠ "Müslim"

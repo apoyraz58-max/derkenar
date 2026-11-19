@@ -414,6 +414,21 @@ describe("works that name their kind", () => {
     expect(p("Abdullah Demir, “Farklı Ebû Hanîfe Tasavvurları”, IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu, ed. Cengiz Çuhadar (Kastamonu: Kastamonu Üniversitesi Yayınları, 2017), 643-658.")).toMatchObject({ itemType: "conferencePaper", fields: { proceedingsTitle: "IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu" } });
     expect(p("Demir, Abdullah. “Farklı Ebû Hanîfe Tasavvurları”. IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu. ed. Cengiz Çuhadar. 643-658. Kastamonu: Kastamonu Üniversitesi Yayınları, 2017.")?.fields.proceedingsTitle).toBe("IV. Uluslararası Şeyh Şa’ban-ı Velî Sempozyumu");
   });
+  it("bodies with an abbreviation, posts, bare www addresses", () => {
+    const hmb = p("HMB, Hazine ve Maliye Bakanlığı. Aylık Bütçe Bülteni (Haziran 2019). https://ms.hmb.gov.tr/b.pdf");
+    expect(hmb).toMatchObject({ itemType: "report", fields: { title: "Aylık Bütçe Bülteni", date: "2019-06" } });
+    expect(hmb?.creators).toEqual([{ creatorType: "author", lastName: "HMB", firstName: "Hazine ve Maliye Bakanlığı" }]);
+    expect(hmb?.fields.extra).toBe("authority: HMB");
+    expect(p("Yale University (YU), “About Yale: Yale Facts” (Erişim 13 Mayıs 2017).")).toMatchObject({ itemType: "webpage", fields: { title: "About Yale: Yale Facts", extra: "authority: YU" } });
+    expect(p("TYEKB, Türkiye Yazma Eserler Kurumu Başkanlığı. Yazma Eserler Portalı. Erişim 12 Eylül 2019. http://yazmalar.gov.tr")?.itemType).toBe("book");
+    expect(p("DAVET, Dini Araştırmalar Veri Tabanı İlahiyat Atıf Dizini. “Aranan: Oruç İbadeti”. Erişim 12 Eylül 2019. www.davet.org.tr")?.fields).toMatchObject({ url: "www.davet.org.tr", title: "Aranan: Oruç İbadeti" });
+    // A person whose surname is written in capitals is not a body.
+    const kara = p("KARA, Mustafa Ahmet. Tasavvuf Tarihi. İstanbul: Dergâh Yayınları, 2005.");
+    expect(kara?.fields.extra).toBeUndefined();
+    expect(kara?.itemType).toBe("book");
+    expect(p("Abdullah Demir, “İSNAD yaygınlaşıyor”, Facebook (12 Mart 2019, 20:30).")).toMatchObject({ itemType: "webpage", fields: { websiteTitle: "Facebook", date: "12 Mart 2019, 20:30" } });
+    expect(p("Demir, Abdullah. “İSNAD yaygınlaşıyor”. Facebook. 12 Mart 2019, 20:30. Erişim 12 Temmuz 2019. https://www.facebook.com/x")).toMatchObject({ itemType: "webpage", fields: { accessDate: "2019-07-12" } });
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");

@@ -184,7 +184,8 @@ function readUrl(item: Item, s: string): string {
     item.fields.DOI = doiUrl[1]!;
     t = t.replace(doiUrl[0], "").trim();
   }
-  const url = /(https?:\/\/\S+?)[.,;)]?(?=\s|$)/.exec(t);
+  // A bare "www.davet.org.tr" at the end is an address too.
+  const url = /(https?:\/\/\S+?)[.,;)]?(?=\s|$)/.exec(t) ?? /(?<=^|\s)(www\.[\w-]+(?:\.[\w-]+)+(?:\/\S*?)?)[.,;]?$/.exec(t);
   if (url) {
     item.fields.url = url[1]!;
     t = t.replace(url[0], "").trim();
@@ -676,6 +677,12 @@ function institution(s: string): ParsedReference | null {
   if (!m) return null;
   item.creators.push({ creatorType: "author", lastName: m[2]!, firstName: m[1]!.trim() });
   item.fields.title = m[3]!.trim().replace(/,$/, "");
+  // "Yale University (YU), “About Yale”": a page of the body's site, its title in quotes.
+  const quoted = /^“([^”]+)”$/u.exec(item.fields.title);
+  if (quoted) {
+    item.fields.title = quoted[1]!;
+    item.itemType = "webpage";
+  }
   const inside = m[4]?.trim() ?? "";
   if (inside) {
     // A bulletin is dated by its month ("Haziran 2019"), a statistic by its day.
@@ -688,12 +695,80 @@ function institution(s: string): ParsedReference | null {
     else if (!readImprint(item, inside)) return null;
   }
   if (!item.fields.date && !item.fields.accessDate && !item.fields.publisher) return null;
-  if (item.fields.accessDate && !item.fields.date) item.itemType = "webpage";
+  // Read online without a date of its own: a quoted title is a page, an unquoted one a portal or book (İSNAD 11.3, 20.4).
+  if (item.fields.accessDate && !item.fields.date) item.itemType = quoted ? "webpage" : "book";
+  if (item.itemType === "webpage" && !item.fields.accessDate && !item.fields.url && !quoted) item.itemType = "report";
   if (item.itemType === "report" && item.fields.publisher) {
     item.fields.institution = item.fields.publisher;
     delete item.fields.publisher;
   }
   return { item: settle(item), form: "isnad-dipnot", unsure: [] };
+}
+
+/**
+ * The bibliography form of a body with its abbreviation (İSNAD): "HMB, Hazine ve Maliye Bakanlığı. Aylık Bütçe
+ * Bülteni (Haziran 2019). https://…", "TASAM, …. Rapor. Ankara: TASAM, 2018.", "DAVET, …. “Aranan: Oruç İbadeti”. Erişim ….".
+ */
+function institutionBib(s: string): ParsedReference | null {
+  const item = emptyItem("report", "serbest");
+  const t = readUrl(item, s).replace(/\.$/, "");
+  const m = /^(\p{Lu}[\p{Lu}\d.\s]{1,11}),\s+([^.“”()]{3,140}?)\.\s+(.+)$/u.exec(t);
+  if (!m || /\p{Ll}/u.test(m[1]!) || !(BODY_WORD.test(m[2]!) || abbreviates(m[1]!, m[2]!))) return null;
+  // Only a body: "KARA, Mustafa Ahmet." is a person written in capitals.
+  if (!BODY_WORD.test(m[2]!) && m[2]!.split(" ").length < 3) return null;
+  item.creators.push({ creatorType: "author", lastName: m[1]!.trim(), firstName: m[2]!.trim() });
+  let rest = m[3]!.trim();
+  const quoted = /^“([^”]+)”(?:\.\s*(.*))?$/u.exec(rest);
+  if (quoted) {
+    item.itemType = "webpage";
+    item.fields.title = quoted[1]!;
+    if (quoted[2]) item.fields.websiteTitle = quoted[2].replace(/\.$/, "");
+    return { item: settle(item), form: "isnad-kaynakca", unsure: [] };
+  }
+  const paren = /^(.+?)\s*\(([^()]+)\)$/u.exec(rest);
+  if (paren) {
+    rest = paren[1]!;
+    const inside = paren[2]!.trim();
+    const d = dayMonthYear(inside);
+    const my = /^(\p{L}+)\s+(\d{4})$/u.exec(inside);
+    const mo = my ? MONTHS[my[1]!.toLocaleLowerCase("tr")] : undefined;
+    if (d) item.fields.date = d;
+    else if (my && mo) item.fields.date = `${my[2]}-${String(mo).padStart(2, "0")}`;
+    else if (/^\d{4}$/.test(inside)) item.fields.date = inside;
+    else return null;
+    item.fields.title = rest;
+  } else {
+    const ss = sentencesOf(rest);
+    item.fields.title = ss[0]!;
+    const imp = ss.slice(1).join(". ");
+    if (imp && !readImprint(item, imp)) return null;
+  }
+  if (!item.fields.date && !item.fields.accessDate && !item.fields.publisher) return null;
+  if (item.fields.accessDate && !item.fields.date) item.itemType = "book";
+  if (item.itemType === "report" && item.fields.publisher) {
+    item.fields.institution = item.fields.publisher;
+    delete item.fields.publisher;
+  }
+  return { item: settle(item), form: "isnad-kaynakca", unsure: [] };
+}
+
+const SOCIAL = /^(Facebook|Twitter|X|Instagram|LinkedIn|TikTok|Threads|Bluesky|Mastodon|Telegram)$/i;
+
+/** A post (İSNAD 29): "Ad Soyad, “Metin”, Twitter (8 Eylül 2019, 23:32)." / "Soyad, Ad. “Metin”. Twitter. 8 Eylül 2019, 23:32. Erişim …". */
+function socialPost(s: string): ParsedReference | null {
+  const item = emptyItem("webpage", "serbest");
+  const t = readUrl(item, s).replace(/\.$/, "");
+  const when = String.raw`(\d{1,2}\s+\p{L}+\s+\d{4}(?:,\s*\d{1,2}[:.]\d{2})?)`;
+  const note = new RegExp(String.raw`^(.+?),\s*“([^”]+)”,\s*([^(),]{1,30}?)\s*\(${when}\)$`, "u").exec(t);
+  const bib = note ? null : new RegExp(String.raw`^(.+?)\.\s+“([^”]+)”\.\s+([^.]{1,30})\.\s+${when}$`, "u").exec(t);
+  const m = note ?? bib;
+  if (!m || !SOCIAL.test(m[3]!.trim())) return null;
+  if (note) for (const n of splitNames(m[1]!).names) item.creators.push(nameInOrder(n, "author"));
+  else headCreator(item, m[1]!, "author", true);
+  item.fields.title = m[2]!;
+  item.fields.websiteTitle = m[3]!.trim();
+  item.fields.date = m[4]!;
+  return { item, form: note ? "isnad-dipnot" : "isnad-kaynakca", unsure: [] };
 }
 
 const LIBRARY = /(Kütüphane\w*|Library|Bibliothe\w*|Arşiv\w*|Archiv\w*|Müze\w*|Museum)/i;
@@ -1021,11 +1096,47 @@ function withOthers(r: ParsedReference, s: string): ParsedReference {
 
 const PROCEEDINGS = /(Sempozyum|Kongre|Bildiri|Konferans|Çalıştay|Kolokyum|Symposium|Conference|Congress|Proceedings|Colloquium|Workshop)/i;
 
+const BODY_WORD = /(Arşivi|Nezâreti|Nezareti|Başkanlığı|Bakanlığı|Kurumu|Kurulu|Enstitüsü|Üniversitesi|Sistemi|Dizini|Veri Taban|Kütüphanesi|Müdürlüğü|Vakfı|Derneği|Merkezi|Cumhurbaşkanlığı|University|Institute|Archive|Library|Ministry|Office|Foundation|Association|Organization|Database)/u;
+
+/** The letters of an abbreviation, in order, among the initials of the name ("YU" ← "Yale University"). */
+function abbreviates(acr: string, name: string): boolean {
+  const ini = name.split(/[\s-]+/).map((w) => w[0] ?? "").join("").toLocaleUpperCase("tr");
+  let i = 0;
+  for (const ch of acr.replace(/[.\s]/g, "")) {
+    i = ini.indexOf(ch, i);
+    if (i < 0) return false;
+    i++;
+  }
+  return true;
+}
+
+/**
+ * A body named with its abbreviation ("Yale University (YU)", "BOA, Osmanlı Arşivi."): İSNAD's rule keeps
+ * the abbreviation as the surname and says so in "authority", which prints it in parentheses in notes.
+ */
+function markAuthority(r: ParsedReference, s: string): ParsedReference {
+  const it = r.item;
+  if (/^authority:/m.test(it.fields.extra ?? "")) return r;
+  const c = it.creators.find((x) => x.lastName && x.firstName && /^\p{Lu}[\p{Lu}\d.\s]{1,11}$/u.test(x.lastName) && !/\p{Ll}/u.test(x.lastName));
+  if (!c) return r;
+  const acr = c.lastName!;
+  const inParens = s.includes(`(${acr})`);
+  const inverted = s.startsWith(`${acr}, ${c.firstName}`) && /\s/.test(c.firstName!) && (BODY_WORD.test(c.firstName!) || abbreviates(acr, c.firstName!));
+  if (!inParens && !inverted) return r;
+  it.fields.extra = [`authority: ${acr}`, it.fields.extra].filter(Boolean).join("\n");
+  return r;
+}
+
 /** One reference (a line) → a record, or null when it cannot be read. Every reading is tried; the most sensible wins. */
 export function parseReference(raw: string): ParsedReference | null {
+  const r = readReference(raw);
+  return r ? markAuthority(r, stripLeading(raw)) : r;
+}
+
+function readReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
-  const ms = labeled(s) ?? manuscript(s) ?? newspaper(s) ?? legislation(s) ?? courtCase(s) ?? institution(s);
+  const ms = labeled(s) ?? socialPost(s) ?? manuscript(s) ?? newspaper(s) ?? legislation(s) ?? courtCase(s) ?? institution(s) ?? institutionBib(s);
   if (ms) return withOthers(ms, s);
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;
