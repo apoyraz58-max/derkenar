@@ -1,4 +1,4 @@
-Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farklı.
+Toplam 414 karşılaştırma: 277 birebir, 43 yalnız dizgi farkıyla, 94 farklı.
 2.1 Kitap-Yazarsız ve Anonim (s. 68): 5/6
 2.2 Kitap-Tek Yazarlı (s. 68): 6/6
 2.3 Kitap-İki Yazarlı (s. 69): 6/6
@@ -16,10 +16,10 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
 5.2 Kitâb-ı Mukaddes-Web (s. 86): 0/0
 6.2 Hadis (“Kitâb Adı”, Hadis No. Sistemi) (s. 88): 0/0
 7.1 Yazma Eser-Müellifi Bilinmeyen (s. 90): 1/3
-7.2 Yazma Eser-Müellifi Bilinen (s. 91): 5/9
+7.2 Yazma Eser-Müellifi Bilinen (s. 91): 7/9
 8 Yunan ve Roma Klasikleri (s. 92): 3/9
 10.1 Kadı Sicili-Matbu (s. 94): 5/6
-10.2 Kadı Sicili-Arşivde (s. 94): 1/3
+10.2 Kadı Sicili-Arşivde (s. 94): 2/3
 11.1 Ansiklopedi-Matbu (s. 95): 8/9
 11.2 Ansiklopedi-Yazarsız (s. 96): 3/3
 11.3 Ansiklopedi-Web (s. 97): 8/9
@@ -33,7 +33,7 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
 13.8 Tez-Doçentlik (s. 105): 3/3
 14.1 Makale-Araştırma (Tek Yazarlı-Çok Yazarlı) (s. 106): 11/12
 14.2 Makale-Çeviri (s. 108): 6/6
-14.3 Makale-Tahkik/Neşir (s. 109): 2/3
+14.3 Makale-Tahkik/Neşir (s. 109): 3/6
 14.4 Makale-Popüler (s. 110): 3/3
 14.5 Makale-İnternette (s. 110): 2/3
 15 Bildiri/Tebliğ (s. 111): 6/6
@@ -62,7 +62,7 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
 33 Ses Kaydı (s. 130): 14/15
 34 Nota Kâğıdı (s. 131): 0/3
 35 Sınav Kâğıdı (s. 132): 0/9
-36 Sanat Eseri ve Tarihî Eser (s. 133): 17/21
+36 Sanat Eseri ve Tarihî Eser (s. 133): 19/21
 37 Fotoğraf-Dijital (s. 134): 3/3
 38.1 Harita-Matbu (s. 135): 9/9
 38.2 Harita-Web (s. 136): 7/9
@@ -136,13 +136,6 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
   ✗ ilk
      kılavuz: Hüsâmeddin Hüseyin b. Ali es-Siğnâkī, et-Tesdîd fî şerḥi’t-Temhîd li-ḳavâʿidi’t-tevḥîd (İstanbul: Süleymaniye Kütüphanesi, Esad Efendi, 3893), 1a.
      derkenar: Hüsâmeddin Hüseyin b. Ali Siğnâkī, et-Tesdîd fî şerḥi’t-Temhîd li-ḳavâʿidi’t-tevḥîd (İstanbul: Süleymaniye Kütüphanesi, Esad Efendi, 3893).
-  ✗ ilk
-     kılavuz: Meḥmed ibn Pīr ʿAlī Birgiwī, Kitāb al-Ṭarīgah al-Muḥammadīyah (Copenhagen: The Royal Library, Danish Collection, Cod. Arab.
-     derkenar: Meḥmed ibn Pīr ʿAlī Birgiwī, Kitāb al-Ṭarīgah al-Muḥammadīyah (Copenhagen: The Royal Library, Danish Collection, Cod. Arab. A.C. 5).
-  ✗ sonraki
-     kılavuz: (bulunamadı)
-     derkenar: Birgiwī, al-Ṭarīgah al-Muḥammadīyah (Danish Collection, Cod. Arab. A.C. 5).
-  ? eşleşmedi: A.C. 5), 2a.
 ## 8 Yunan ve Roma Klasikleri (s. 92)
   ✗ ilk
      kılavuz: Aristoteles, Metaphysics, çev. Richard Hope (USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960), 139 (1031a 15-20).
@@ -167,13 +160,9 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
      kılavuz: (bulunamadı)
      derkenar: İstanbul Kadı Sicilleri Eyüb Mahkemesi 49 Numaralı Sicil.
 ## 10.2 Kadı Sicili-Arşivde (s. 94)
-  ✗ ilk
-     kılavuz: Kayseri Sancağı Şer'îye Sicil Defteri (1334-1336), Milli Kütüphane, No.
-     derkenar: Kayseri Sancağı Şer’îye Sicil Defteri (1334-1336), Milli Kütüphane, No. 06 Mil Yz C 39/3.
   ✗ kaynakça
      kılavuz: Kayseri Sancağı Şer'îye Sicil Defteri (1334-1336). Milli Kütüphane, No. 06 Mil Yz C 39/3, 68-90. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=857 602
      derkenar: Kayseri Sancağı Şer’îye Sicil Defteri (1334-1336). Milli Kütüphane, No. 06 Mil Yz C 39/3. https://kasif.mkutup.gov.tr/SonucDetay.aspx?MakId=857602
-  ? eşleşmedi: 06 Mil Yz C 39/3, 68-90.
 ## 11.1 Ansiklopedi-Matbu (s. 95)
   ✗ kaynakça
      kılavuz: İnalcık, Halil. “Selīm I”. The Encyclopaedia of Islam (New Edition). ed. C. E. Bosworth vd. 9/127-131. Leiden: Brill, 1997.
@@ -223,8 +212,12 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
      kılavuz: Ali Ayten vd., “Dini Başa Çıkma, Şükür ve Hayat Memnuniyeti ilişkisi: Hastalar, Hasta Yakınları ve Hastane Çalışanları Üzerine Bir Araştırma”, Dinbilimleri Akademik Araştırma Dergisi 12/2 (2012), 45-79.
      derkenar: Ali Ayten vd., “Dini Başa Çıkma, Şükür ve Hayat Memnuniyeti İlişkisi: Hastalar, Hasta Yakınları ve Hastane Çalışanları Üzerine Bir Araştırma”, Dinbilimleri Akademik Araştırma Dergisi 12/2 (2012), 45-79.
 ## 14.3 Makale-Tahkik/Neşir (s. 109)
-  ? eşleşmedi: İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl, “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö.
-  ? eşleşmedi: 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”, nşr. Kadir Gömbeyaz, Bilimname 38 (2019), 76.
+  ✗ sonraki
+     kılavuz: (bulunamadı)
+     derkenar: İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl.
+  ✗ kaynakça
+     kılavuz: Halebî, İbrahim. Risâle fi hakkı ebeveyi’r-Resûl. nşr. Kadir Gömbeyaz. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278
+     derkenar: İbrahim el-Halebî. Risâle fi hakkı ebeveyi’r-Resûl. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. nşr. Kadir Gömbeyaz. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278
   ✗ ilk
      kılavuz: Bedreddin eş- Şuhâvî. et-Tırâzu’l-müzheb, “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”, thk. Osman Bayder, Tahkik İslami İlimler Araştırma ve Neşir Dergisi 2/1 (Haziran 2019), 229
      derkenar: Bedreddin eş-Şuhâvî, et-Tırâzu’l-müzheb, “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”, thk. Osman Bayder, Tahkik İslami İlimler Araştırma ve Neşir Dergisi 2/1 (Haziran 2019), 211-257.
@@ -336,7 +329,7 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
      derkenar: Taner Şener, “Derman Kâr Eylemez”, Gönül Plak (1970).
 ## 34 Nota Kâğıdı (s. 131)
   ✗ ilk
-     kılavuz: Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kâğıdı, ts.), İstanbul: İSAM Kütüphanesi, Kemal Batanay Müzik Arşivi, No.
+     kılavuz: Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kâğıdı, ts.), İstanbul: İSAM Kütüphanesi, Kemal Batanay Müzik Arşivi, No. KB: 1-37-130.
      derkenar: Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kağıdı, ts.), İstanbul: İSAM Kütüphanesi, Kemal Batanay Müzik Arşivi, No. KB: 1-37-130.
   ✗ sonraki
      kılavuz: (bulunamadı)
@@ -344,7 +337,6 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
   ✗ kaynakça
      kılavuz: Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kâğıdı, ts.). İstanbul: İSAM Kütüphanesi, Kemal Batanay Müzik Arşivi, No. KB: 1-37-130. http://isamveri.org
      derkenar: Hak’tan Doğarak Gönlüne İmân-ı Mehâbet (Nota Kağıdı, ts.). İstanbul: İSAM Kütüphanesi, Kemal Batanay Müzik Arşivi, No. KB: 1-37-130. http://isamveri.org
-  ? eşleşmedi: KB: 1-37-130.
 ## 35 Sınav Kâğıdı (s. 132)
   ✗ ilk
      kılavuz: Öğrenci 1, İç Tasarıma Giriş Dersi Vize Sınavı (Sınav Kâğıdı, 20 Mart 2019), Sivas Cumhuriyet Üniversitesi, Mimarlık Fakültesi, Öğretici 1.
@@ -378,13 +370,6 @@ Toplam 411 karşılaştırma: 272 birebir, 42 yalnız dizgi farkıyla, 97 farkl�
   ✗ sonraki
      kılavuz: (bulunamadı)
      derkenar: Direnoğlu, Alparslan Portresi, No. 000511.
-  ✗ sonraki
-     kılavuz: (bulunamadı)
-     derkenar: Hoca Ali Rıza, Bursa Çekirge’de Sultan Murat Hüdavendigâr Camii, No. 000311.
-  ✗ ilk
-     kılavuz: Hayali Küçük Ali, Abdal (Tasvir, 1957, Ankara: Milli Kütüphane), No.
-     derkenar: Hayali Küçük Ali, Abdal (Tasvir, 1957, Ankara: Milli Kütüphane), No. 000116.
-  ? eşleşmedi: 000116.
   ✗ ilk
      kılavuz: Abdullah Fréres, Istanbul walls (Foto, 1880-1893, Washington: Library of Congress, Prints and Photographs Division), No. LOT 9528/12.
      derkenar: Abdullah Fréres, Istanbul walls (Fotoğraf, 1880-1893, Washington: Library of Congress, Abdul-Hamid II Collection), No. LOT 9528/12.

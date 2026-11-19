@@ -429,6 +429,20 @@ describe("works that name their kind", () => {
     expect(p("Abdullah Demir, “İSNAD yaygınlaşıyor”, Facebook (12 Mart 2019, 20:30).")).toMatchObject({ itemType: "webpage", fields: { websiteTitle: "Facebook", date: "12 Mart 2019, 20:30" } });
     expect(p("Demir, Abdullah. “İSNAD yaygınlaşıyor”. Facebook. 12 Mart 2019, 20:30. Erişim 12 Temmuz 2019. https://www.facebook.com/x")).toMatchObject({ itemType: "webpage", fields: { accessDate: "2019-07-12" } });
   });
+  it("archive documents and manuscripts without an imprint parenthesis", () => {
+    const boa = p("Osmanlı Arşivi (BOA), Mühimme-i Asâkir Defterleri [A.DVNS.ASK.MHM.d], No. 989, Gömlek No. 7.");
+    expect(boa).toMatchObject({ itemType: "manuscript", fields: { title: "Mühimme-i Asâkir Defterleri [A.DVNS.ASK.MHM.d]", shortTitle: "A.DVNS.ASK.MHM.d", callNumber: "No. 989, Gömlek No. 7", extra: "authority: BOA" } });
+    expect(boa?.creators).toEqual([{ creatorType: "author", lastName: "BOA", firstName: "Osmanlı Arşivi" }]);
+    expect(p("BOA, Osmanlı Arşivi. Düvel-i Ecnebiye Belgeleri [A.DVN.DVE]. No. 976. https://katalog.devletarsivleri.gov.tr")).toMatchObject({ itemType: "manuscript", fields: { shortTitle: "A.DVN.DVE", callNumber: "No. 976" } });
+    expect(p("Kayseri Sancağı Şer’îye Sicil Defteri (1334-1336), Milli Kütüphane, No. 06 Mil Yz C 39/3.")).toMatchObject({ itemType: "manuscript", fields: { shortTitle: "Kayseri Sancağı Şer’îye Sicil Defteri", date: "1334-1336", archive: "Milli Kütüphane", callNumber: "No. 06 Mil Yz C 39/3" } });
+    const sig = p("Siğnâkī, Hüsâmeddin Hüseyin b. Ali. et-Tesdîd fî şerḥi’t-Temhîd. İstanbul: Süleymaniye Kütüphanesi, Esad Efendi, 3893, 1a-215a.");
+    expect(sig).toMatchObject({ itemType: "manuscript", fields: { title: "et-Tesdîd fî şerḥi’t-Temhîd", place: "İstanbul", archive: "Süleymaniye Kütüphanesi", archiveLocation: "Esad Efendi", callNumber: "3893", numPages: "1a-215a" } });
+    expect(sig?.creators[0]).toMatchObject({ lastName: "Siğnâkī", firstName: "Hüsâmeddin Hüseyin b. Ali" });
+    expect(p("Birgiwī, Meḥmed. Kitāb al-Ṭarīgah. Copenhagen: The Royal Library, Danish Collection, Cod. Arab. A.C. 5, 1a-227b.")?.fields).toMatchObject({ archiveLocation: "Danish Collection", callNumber: "Cod. Arab. A.C. 5" });
+    // A book printed by a library's press is still a book.
+    expect(p("Kara, Mustafa. Tasavvuf. İstanbul: Dergâh Yayınları, 2005.")?.itemType).toBe("book");
+    expect(p("Kut, Günay. Yazma Eserler Kataloğu. Ankara: Milli Kütüphane, 1990.")).toMatchObject({ itemType: "book", fields: { publisher: "Milli Kütüphane", date: "1990" } });
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");

@@ -1087,6 +1087,63 @@ function readPatent(item: Item, s: string): boolean {
   return true;
 }
 
+/**
+ * Archive documents and manuscripts written without the "(Şehir: Kütüphane, …)" parenthesis (İSNAD 7, 8):
+ *   "Osmanlı Arşivi (BOA), Mühimme-i Asâkir Defterleri [A.DVNS.ASK.MHM.d], No. 989, Gömlek No. 7."
+ *   "BOA, Osmanlı Arşivi. Mühimme-i Asâkir Defterleri [A.DVNS.ASK.MHM.d]. No. 989, Gömlek No. 7."
+ *   "Kayseri Sancağı Şer’îye Sicil Defteri (1334-1336), Milli Kütüphane, No. 06 Mil Yz C 39/3."
+ *   "Siğnâkī, Hüsâmeddin Hüseyin b. Ali. et-Tesdîd …. İstanbul: Süleymaniye Kütüphanesi, Esad Efendi, 3893, 1a-215a."
+ */
+function archiveRecord(s: string): ParsedReference | null {
+  const item = emptyItem("manuscript", "serbest");
+  const t = readUrl(item, s).replace(/\.$/, "");
+  const NO = String.raw`((?:No|Nr|Env|Inv)\.?\s*.+)`;
+  const fonds = (acr: string, body: string, title: string, no: string, form: ParsedReference["form"]) => {
+    item.creators.push({ creatorType: "author", lastName: acr, firstName: body.trim() });
+    item.fields.title = title.trim();
+    const code = /\[([^\]]+)\]$/.exec(title.trim());
+    if (code) item.fields.shortTitle = code[1]!;
+    item.fields.callNumber = no.trim();
+    item.fields.extra = `authority: ${acr}`;
+    return { item, form, unsure: [] };
+  };
+  const fn = new RegExp(String.raw`^([^(),]{3,80}?)\s*\((\p{Lu}[\p{Lu}.]{1,11})\),\s*([^,\[\]]+\[[^\]]+\]),\s*${NO}$`, "u").exec(t);
+  if (fn && LIBRARY.test(fn[1]!)) return fonds(fn[2]!, fn[1]!, fn[3]!, fn[4]!, "isnad-dipnot");
+  const fb = new RegExp(String.raw`^(\p{Lu}[\p{Lu}.]{1,11}),\s*([^.]{3,80})\.\s+(.+?\[[^\]]+\])\.\s+${NO}$`, "u").exec(t);
+  if (fb && LIBRARY.test(fb[2]!)) return fonds(fb[1]!, fb[2]!, fb[3]!, fb[4]!, "isnad-kaynakca");
+
+  // "Başlık (1334-1336), Kütüphane, No. …" and its bibliography form "Başlık (1334-1336). Kütüphane, No. …".
+  const dated = new RegExp(String.raw`^(.+?\((\d{3,4}(?:-\d{2,4})?)\))[.,]\s*([^,:]{3,80}),\s*${NO}$`, "u").exec(t);
+  if (dated && LIBRARY.test(dated[3]!)) {
+    item.fields.title = dated[1]!.trim();
+    item.fields.shortTitle = dated[1]!.replace(/\s*\([^()]+\)$/, "").trim();
+    item.fields.date = dated[2]!;
+    item.fields.archive = dated[3]!.trim();
+    item.fields.callNumber = dated[4]!.trim();
+    return { item, form: /\)\./.test(t) ? "isnad-kaynakca" : "isnad-dipnot", unsure: [] };
+  }
+
+  // The bibliography form of a manuscript: "[Soyad, Ad.] Başlık. Şehir: Kütüphane, Koleksiyon, Numara, 1a-215a."
+  const at = /(?:^|\.\s)([^.:]{2,40}):\s*([^,]{3,80}),\s*(.+)$/u.exec(t);
+  if (!at || !LIBRARY.test(at[2]!) || /\b(yayın\w*|press|verlag)\b/i.test(at[2]!)) return null;
+  // "Ankara: Milli Kütüphane, 1990": a book the library printed.
+  if (new RegExp(String.raw`^(?:\d+\.\s*Basım,\s*)?${DATE}$`, "iu").test(at[3]!.trim())) return null;
+  const head = t.slice(0, at.index).trim();
+  if (!head) return null;
+  const ss = sentencesOf(head);
+  item.fields.title = ss[ss.length - 1]!;
+  if (ss.length >= 2) headCreator(item, ss.slice(0, -1).join(". "), "author", true);
+  item.fields.place = at[1]!.trim();
+  item.fields.archive = at[2]!.trim();
+  const parts = at[3]!.split(/,\s*/);
+  if (parts.length >= 2 && /^\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?$/.test(parts[parts.length - 1]!)) item.fields.numPages = parts.pop()!;
+  if (parts.length >= 2) {
+    item.fields.archiveLocation = parts[0]!;
+    item.fields.callNumber = parts.slice(1).join(", ");
+  } else item.fields.archiveLocation = parts.join(", ");
+  return { item, form: "isnad-kaynakca", unsure: [] };
+}
+
 /** "Topaloğlu vd." names only the first of three or more authors: the record says so, the others are to be added. */
 function withOthers(r: ParsedReference, s: string): ParsedReference {
   const head = s.split(/[“"(]/)[0] ?? "";
@@ -1136,7 +1193,7 @@ export function parseReference(raw: string): ParsedReference | null {
 function readReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
-  const ms = labeled(s) ?? socialPost(s) ?? manuscript(s) ?? newspaper(s) ?? legislation(s) ?? courtCase(s) ?? institution(s) ?? institutionBib(s);
+  const ms = labeled(s) ?? socialPost(s) ?? manuscript(s) ?? archiveRecord(s) ?? newspaper(s) ?? legislation(s) ?? courtCase(s) ?? institution(s) ?? institutionBib(s);
   if (ms) return withOthers(ms, s);
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;
