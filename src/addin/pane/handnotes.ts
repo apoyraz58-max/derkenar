@@ -44,6 +44,7 @@ async function scan(): Promise<void> {
         h("li", { value: String(p.index + 1), class: p.refs ? "" : "muted" }, h("div", { class: "hand-src" }, short(p.text, 140)), h("div", { class: p.refs ? "hand-to" : "hand-keep" }, p.refs ? `→ ${describe(p)}` : `kalır: ${p.reason}`)),
       ),
     ),
+    ...(plan.filter((p) => p.text).length > 200 ? [h("p", { class: "muted small" }, `Listede ilk 200 dipnot gösteriliyor; çeviri ${ok.length} dipnotun hepsine uygulanır. Önce bir kopya belgede deneyin.`)] : []),
     ...(plan.filter((p) => p.reason === SHORT_UNKNOWN).length
       ? [h("p", { class: "notice small" }, `${plan.filter((p) => p.reason === SHORT_UNKNOWN).length} dipnot kısa künyeyle anılan ama tam künyesi dipnotlarda olmayan eserlere gidiyor (ör. "Buhârî, “Îmân”, 2"). Önce aşağıda kaynakçayı seçip "Seçili kaynakçayı oku"ya basın; eserler kütüphaneye girince yeniden tarayın, bu dipnotlar da bağlanır.`)]
       : []),
