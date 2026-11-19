@@ -280,7 +280,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         }
         const tail = rest.slice(named[0].length).replace(/^(a\.?\s?g\.?\s?[em]\.?|age\.?|agm\.?|aynı\s+eser|op\.?\s*cit\.?)\s*,?\s*/i, "");
         const c: Place = tail ? cut(`, ${tail}`) : {};
-        const ref: HandRef = { item: work, isNew: created.includes(work), form: "age", ...place(c), ...(prefix ? { prefix } : {}) };
+        const ref: HandRef = { item: work, isNew: created.includes(work), form: "age", ...hadithPlace(work, place(c)), ...(prefix ? { prefix } : {}) };
         refs.push(ref);
         seen.splice(seen.indexOf(work), 1);
         seen.push(work);
@@ -288,15 +288,26 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       }
       const sm = SAME.exec(rest);
       if (sm) {
-        if (!previous) {
+        // The work cited just before: earlier in this note ("Kara, Tasavvuf, 12; a.g.e., 13"), else in the note before.
+        const prev = refs[refs.length - 1] ?? previous;
+        if (!prev) {
           reason = "a.g.e. önceki bir eseri göstermiyor";
           break;
         }
         const tail = rest.slice(sm[0].length).trim();
-        const c: Place = tail ? cut(`, ${tail.replace(/^,\s*/, "")}`) : {};
+        const cc = tail ? cut(`, ${tail.replace(/^,\s*/, "")}`) : { body: "" };
+        // "a.g.e., “Menâḳıb”, 24": what is left is a quoted kitâb or madde.
+        const q = /^,?\s*[“"]([^”"]+)[”"]$/.exec(cc.body.trim());
+        const c: Place = q ? { ...cc, madde: q[1]! } : cc;
         const sameLoc = /^a\.?\s?y\.?|aynı\s+yer/i.test(sm[1]!);
-        const ref: HandRef = { item: previous.item, isNew: previous.isNew, form: "age", ...(c.volume ? { volume: c.volume } : previous.volume && !c.locator ? { volume: previous.volume } : {}), ...(c.locator ? { locator: c.locator } : sameLoc && previous.locator ? { locator: previous.locator } : {}), ...(prefix ? { prefix } : {}) };
-        refs.push(ref);
+        // "a.g.e., “Îmân”, 3": the kitâb or madde after it counts as for any short form.
+        const own = hadithPlace(prev.item, place(c));
+        const where: Place = Object.keys(own).length
+          ? own
+          : { ...(prev.volume ? { volume: prev.volume } : {}), ...(sameLoc && prev.locator ? { locator: prev.locator } : {}) };
+        refs.push({ item: prev.item, isNew: prev.isNew, form: "age", ...where, ...(prefix ? { prefix } : {}) });
+        if (seen.includes(prev.item)) seen.splice(seen.indexOf(prev.item), 1);
+        seen.push(prev.item);
         continue;
       }
       // "a.mlf., Başka Eser, 12." / "Id., …": another work of the author cited just before.

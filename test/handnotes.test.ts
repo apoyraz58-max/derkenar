@@ -336,3 +336,18 @@ describe("well-known names: İbn Mâce, Ahmed b. Hanbel", () => {
     expect(r[3]!.refs![0]!.item).toBe(r[2]!.refs![0]!.item);
   });
 });
+
+describe("a.g.e. within one note, and its place", () => {
+  it("points to the work just before in the same note; keeps a kitâb after it", () => {
+    const r = readHandNotes(
+      [
+        "Ebû Abdillâh Muhammed b. İsmâîl el-Buhârî, el-Câmiʿu’ṣ-ṣaḥîḥ (İstanbul: Çağrı Yayınları, 1992), “Îmân”, 2.",
+        "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 12; a.g.e., 13.",
+        "Buhârî, “Îmân”, 3; a.g.e., “Menâḳıb”, 24.",
+      ],
+      [],
+    );
+    expect(r[1]!.refs!.map((x) => [x.item.fields.title, x.locator])).toEqual([["Tasavvuf ve Tarikatlar Tarihi", "12"], ["Tasavvuf ve Tarikatlar Tarihi", "13"]]);
+    expect(r[2]!.refs!.map((x) => [x.item.fields.title, x.kitab, x.bab])).toEqual([["el-Câmiʿu’ṣ-ṣaḥîḥ", "Îmân", "3"], ["el-Câmiʿu’ṣ-ṣaḥîḥ", "Menâḳıb", "24"]]);
+  });
+});
