@@ -100,6 +100,12 @@ function bibliographyLines(text: string): string[] {
   return expandSameAuthor(splitReferences(kept.join("\n")));
 }
 
+/** The section headings of a typed bibliography ("Kitaplar", "Makaleler", "B. Arşiv Belgeleri"), its own title left out. */
+function sectionHeadings(text: string): string[] {
+  const raw = text.split("\n").map((l) => l.trim());
+  return raw.filter((l, i) => l && isHeading(l) && !/[.)]$/.test(l) && (i === 0 || !raw[i - 1] || /[.)\]]$/.test(raw[i - 1]!)) && !/^(kaynakça|kaynaklar|bibliyografya|bibliography|references|works cited)$/i.test(l));
+}
+
 function readBibliography(text: string): BibLine[] {
   const created: Item[] = [];
   const copies = copyFinder(S.items);
@@ -161,6 +167,12 @@ async function convertBibliography(): Promise<void> {
     }
   }
   d.bibUncited = [...uncited];
+  // The typed bibliography was divided ("Kitaplar", "Makaleler" …): so is Derkenar's.
+  const sectioned = !d.bibSections && sectionHeadings(bib.text).length >= 2;
+  if (sectioned) {
+    d.bibSections = true;
+    $<HTMLInputElement>("bib-sections").checked = true;
+  }
   const unread = bib.lines.length - read.length;
   const replaced = unread ? false : await serial(() => word.selectionToBibliography());
   await word.saveState(d);
@@ -168,7 +180,7 @@ async function convertBibliography(): Promise<void> {
   bib = null;
   $("hand-bib-result").replaceChildren();
   setMessage(
-    `${read.length} eser kaynakçaya alındı${fresh.length ? `, ${fresh.length} tanesi kütüphaneye eklendi` : ""}.${fixedNote} ${replaced ? "Elle yazılmış kaynakçanın yerinde artık Derkenar kaynakçası var." : unread ? `Okunamayan ${unread} satır yüzünden elle yazılmış kaynakça yerinde bırakıldı; Kaynakça ekle ile Derkenar'ınkini koyup eskisini silin.` : "Belgede zaten bir Derkenar kaynakçası var; elle yazılmış olanı silebilirsiniz."}`,
+    `${read.length} eser kaynakçaya alındı${fresh.length ? `, ${fresh.length} tanesi kütüphaneye eklendi` : ""}.${fixedNote}${sectioned ? " Elle yazılmış kaynakça ara başlıklarla bölünmüştü; Derkenar'ınki de türlere ayrıldı (Belge → Kaynakçayı türlere ayır)." : ""} ${replaced ? "Elle yazılmış kaynakçanın yerinde artık Derkenar kaynakçası var." : unread ? `Okunamayan ${unread} satır yüzünden elle yazılmış kaynakça yerinde bırakıldı; Kaynakça ekle ile Derkenar'ınkini koyup eskisini silin.` : "Belgede zaten bir Derkenar kaynakçası var; elle yazılmış olanı silebilirsiniz."}`,
     unread ? "warning" : "success",
   );
 }
