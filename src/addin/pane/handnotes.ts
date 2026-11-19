@@ -131,6 +131,7 @@ async function scanBibliography(): Promise<void> {
       { class: "hand-list small" },
       ...lines.slice(0, 300).map((l) => h("li", { class: l.item ? "" : "muted" }, h("div", { class: "hand-src" }, short(l.text, 140)), h("div", { class: l.item ? "hand-to" : "hand-keep" }, l.item ? `→ ${creatorLine(l.item) || "—"}, ${short(titleOf(l.item), 60)}${l.isNew ? " (yeni)" : ""}` : "okunamadı"))),
     ),
+    ...(lines.length > 300 ? [h("p", { class: "muted small" }, `Listede ilk 300 künye gösteriliyor; ${read.length} künyenin hepsi alınır.`)] : []),
     read.length ? h("button", { type: "button", class: "primary", onclick: () => void run("Kaynakça çevriliyor", convertBibliography) }, unread.length ? `${read.length} eseri kütüphaneye ve kaynakçaya al` : "Derkenar kaynakçasına çevir") : h("p", { class: "muted small" }, "Okunan künye yok."),
   );
 }
@@ -192,6 +193,7 @@ async function scanInText(): Promise<void> {
   $("hand-intext-result").replaceChildren(
     h("p", { class: "small" }, `${total} metin içi atıf kütüphanedeki eserlerle eşleşti.`),
     h("ol", { class: "hand-list small" }, ...usable.slice(0, 200).map((f) => h("li", {}, h("div", { class: "hand-src" }, `${f.match}${counts[f.match]! > 1 ? ` (${counts[f.match]} yerde)` : ""}`), h("div", { class: "hand-to" }, `→ ${f.refs.map((x) => `${x.prefix ? `${x.prefix} ` : ""}${creatorLine(x.item) || "—"}, ${short(titleOf(x.item), 50)}${x.locator ? `, s. ${x.locator}` : ""}`).join("; ")}`)))),
+    ...(usable.length > 200 ? [h("p", { class: "muted small" }, `Listede ilk 200 atıf gösteriliyor; çeviri hepsine uygulanır.`)] : []),
     total ? h("button", { type: "button", class: "primary", onclick: () => void run("Atıflar çevriliyor", convertInText) }, `${total} atıfı çevir`) : h("p", { class: "muted small" }, "Çevrilecek atıf yok."),
   );
 }
