@@ -859,3 +859,13 @@ describe("İSNAD: role written into the name", () => {
     expect(autoFix(mk({ lastName: "Edirneli", firstName: "Ahmet" })).item.creators[1]).toEqual({ creatorType: "author", lastName: "Edirneli", firstName: "Ahmet" });
   });
 });
+
+describe("geri yükleme noktaları: elle alınan, içe aktarmalarla silinmez", () => {
+  it("son üç elle ve son üç otomatik ayrı tutulur", async () => {
+    const { pruneSnapshots } = await import("../src/core/snapshots.js");
+    const snap = (saved: string, reason: string) => ({ saved, count: 1, reason, packed: "" });
+    const kept = pruneSnapshots([snap("2026-11-10T10:00:00Z", "manual"), ...[1, 2, 3, 4, 5].map((n) => snap(`2026-11-1${n}T10:00:00Z`, "before-import"))]);
+    expect(kept.filter((s) => s.reason === "manual").length).toBe(1);
+    expect(kept.filter((s) => s.reason === "before-import").map((s) => s.saved)).toEqual(["2026-11-15T10:00:00Z", "2026-11-14T10:00:00Z", "2026-11-13T10:00:00Z"]);
+  });
+});

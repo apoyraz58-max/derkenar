@@ -13,7 +13,7 @@ export interface Snapshot {
   readonly saved: string;
   /** Works (not in the trash) at the time. */
   readonly count: number;
-  /** "daily", "manual" or "before-restore". */
+  /** "daily", "manual", "before-restore", "before-fix" or "before-import". */
   readonly reason: string;
   /** packLibrary() output. */
   readonly packed: string;
@@ -33,8 +33,11 @@ export function pruneSnapshots(list: readonly Snapshot[]): Snapshot[] {
   const sorted = [...list].sort((a, b) => b.saved.localeCompare(a.saved));
   const days = new Set<string>();
   const daily = sorted.filter((s) => s.reason === "daily" && !days.has(day(s.saved)) && days.add(day(s.saved)) && days.size <= KEEP_DAYS);
-  const other = sorted.filter((s) => s.reason !== "daily").slice(0, 3);
-  return [...daily, ...other].sort((a, b) => b.saved.localeCompare(a.saved));
+  // The last three taken by hand or before a restore, and apart from them the last three taken before a bulk fix or an import:
+  // a run of imports does not push out the point taken by hand.
+  const auto = sorted.filter((s) => s.reason === "before-fix" || s.reason === "before-import").slice(0, 3);
+  const other = sorted.filter((s) => s.reason !== "daily" && s.reason !== "before-fix" && s.reason !== "before-import").slice(0, 3);
+  return [...daily, ...other, ...auto].sort((a, b) => b.saved.localeCompare(a.saved));
 }
 
 /** What to write to go back to a snapshot: its records as they were, and later works trashed. */
