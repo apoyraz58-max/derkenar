@@ -379,3 +379,38 @@ describe("imprints with gaps", () => {
     expect(f("Sönmez Kutlu, “İlk Mürciî Metinler”, Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 320.")).toMatchObject({ publicationTitle: "Ankara Üniversitesi İlahiyat Fakültesi Dergisi", volume: "37" });
   });
 });
+
+describe("works that name their kind", () => {
+  const p = (s: string) => parseReference(s)?.item;
+  it("software, patents, art works, documents, films, messages and interviews, note and bibliography form", () => {
+    expect(p("Microsoft Word 16.29 (Yazılım, ABD: Microsoft Corporation, 2019).")).toMatchObject({ itemType: "computerProgram", fields: { title: "Microsoft Word", versionNumber: "16.29", place: "ABD", company: "Microsoft Corporation", date: "2019" } });
+    expect(p("Microsoft Word (Yazılım, ABD: Microsoft Corporation, 16.29, 2019).")?.fields.versionNumber).toBe("16.29");
+    expect(p("EndNote X9. Yazılım. ABD: Clarivate Analytics, 2019. https://endnote.com")).toMatchObject({ itemType: "computerProgram", fields: { title: "EndNote", versionNumber: "X9", url: "https://endnote.com" } });
+    const pat = p("Adem Kaya, Eğitim Dokümanları İçin İçerik Sınıflandırma Sistemi ve Yöntemi (Patent, Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019).");
+    expect(pat).toMatchObject({ itemType: "patent", fields: { issuingAuthority: "Türk Patent ve Marka Kurumu", patentNumber: "2019/07502", issueDate: "17 Mayıs 2019" } });
+    expect(pat?.creators[0]).toMatchObject({ creatorType: "inventor", lastName: "Kaya" });
+    expect(p("Fişek, Mehmet. Chair for Performing Prayers. Patent. World Intellectual Property Organization, No. WO2014/011125, Tarih 16 Ocak 2014.")).toMatchObject({ itemType: "patent", fields: { patentNumber: "WO2014/011125" } });
+    expect(p("Şefik Direnoğlu, Alparslan Portresi (Yağlı Boya, 2003, Ankara: Milli Kütüphane), No. 000511.")).toMatchObject({ itemType: "artwork", fields: { title: "Alparslan Portresi", artworkMedium: "Yağlı Boya", date: "2003", archiveLocation: "Ankara", archive: "Milli Kütüphane", callNumber: "No. 000511" } });
+    expect(p("Halı Seccade. Halı, 17-18. yüzyıl. İstanbul: Türk ve İslâm Eserleri Müzesi, Halı Koleksiyonu, No. 420.")).toMatchObject({ itemType: "artwork", creators: [], fields: { title: "Halı Seccade", date: "17-18. yüzyıl", libraryCatalog: "Halı Koleksiyonu" } });
+    expect(p("Hayali Küçük Ali. Abdal. Tasvir, 1957. Ankara: Milli Kütüphane, No. 000116.")?.creators[0]).toEqual({ creatorType: "artist", name: "Hayali Küçük Ali" });
+    const exam = p("Öğrenci 1, İç Tasarıma Giriş Dersi Vize Sınavı (Sınav Kâğıdı, 20 Mart 2019), Sivas Cumhuriyet Üniversitesi, Mimarlık Fakültesi, Öğretici 1.");
+    expect(exam).toMatchObject({ itemType: "document", creators: [{ name: "Öğrenci 1" }], fields: { archive: "Sivas Cumhuriyet Üniversitesi, Mimarlık Fakültesi", libraryCatalog: "Öğretici 1" } });
+    expect(p("Sezgin Pancar, Mersin’deki Kazı Çalışmaları Sürüyor (Fotoğraf, 2019), Anadolu Ajansı.")).toMatchObject({ itemType: "document", fields: { publisher: "Anadolu Ajansı", extra: "genre: Fotoğraf" } });
+    expect(p("Frank Darabont, The Shawshank Redemption [Esaretin Bedeli] (Film, 1995).")).toMatchObject({ itemType: "film", fields: { shortTitle: "The Shawshank Redemption" }, creators: [{ creatorType: "director" }] });
+    const sms = p("Yusuf Doğan, İlahiyat Atıf Dizini hk. (Kısa Mesaj 2 Eylül 2019, Alıcı Sami Şahin).");
+    expect(sms).toMatchObject({ itemType: "instantMessage", fields: { title: "İlahiyat Atıf Dizini hk.", date: "2 Eylül 2019" } });
+    expect(sms?.creators.map((c) => c.creatorType)).toEqual(["author", "recipient"]);
+    expect(p("Abdullah Demir, Taslak hk. (E-Posta 2 Eylül 2019, Alıcı: Emrah Kaya).")?.itemType).toBe("email");
+    const iv = p("Halil İnalcık, “Fatih Sultan Mehmed” (Görüşmeci: İlber Ortaylı, Video Kaydı, Görüşme 3 Mart 1985).");
+    expect(iv).toMatchObject({ itemType: "interview", fields: { interviewMedium: "Video Kaydı", date: "1985-03-03" } });
+  });
+  it("leaves books alone", () => {
+    expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
+    expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");
+  });
+  it("later notes find them by their short form", () => {
+    const r = readHandNotes(["Halı Seccade (Halı, 17-18. yüzyıl, İstanbul: Türk ve İslâm Eserleri Müzesi, Halı Koleksiyonu), No. 420.", "Halı Seccade, No. 420.", "EndNote X9 (Yazılım, ABD: Clarivate Analytics, 2019).", "EndNote X9.", "Adem Kaya, Bir Sistem ve Yöntemi (Patent, Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019).", "Kaya, Bir Sistem ve Yöntemi."], []);
+    expect(r.map((n) => n.refs?.[0]?.item.fields.title ?? n.reason)).toEqual(["Halı Seccade", "Halı Seccade", "EndNote", "EndNote", "Bir Sistem ve Yöntemi", "Bir Sistem ve Yöntemi"]);
+    expect(r[1]!.refs![0]!.item).toBe(r[0]!.refs![0]!.item);
+  });
+});

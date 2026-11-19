@@ -198,7 +198,11 @@ function readUrl(item: Item, s: string): string {
   const access = /\(?(?:Erişim|Access(?:ed)?)(?: Tarihi)?:?\s+([^)]+?)\)?(?=[.,]?\s*$|[.,]\s)/i.exec(t);
   if (access) {
     const d = dayMonthYear(access[1]!);
+    // "Erişim Ocak 2019": a month without a day.
+    const my = /^(\p{L}+)\s+(\d{4})$/u.exec(access[1]!.trim());
+    const mo = my ? MONTHS[my[1]!.toLocaleLowerCase("tr")] : undefined;
     if (d) item.fields.accessDate = d;
+    else if (my && mo) item.fields.accessDate = `${my[2]}-${String(mo).padStart(2, "0")}`;
     t = t.replace(access[0], "").trim();
   }
   return t.replace(/[.,;:\s]+$/, "");
@@ -317,7 +321,7 @@ function sentencesOf(s: string): string[] {
     else if (ch === "”") quote = false;
     if (ch === "." && s[i + 1] === " " && depth === 0 && !quote) {
       const word = /(\S+)$/.exec(cur)?.[1] ?? "";
-      const abbrev = /^(b|bin|bnt|\d{1,3}|\p{Lu}|thk|nşr|haz|çev|ed|eds|sad|mlf|Türkçeye|trans|s\.a|r\.a|Hz|St|Dr|Prof|Doç|vol|no|No)$/u.test(word) && !/^\d{4}$/.test(word) && s[i + 2] !== "“";
+      const abbrev = (/^\d{1,2}-\d{1,2}$/.test(word) && /^ (yüzyıl|yy\.)/.test(s.slice(i + 1))) || /^(b|bin|bnt|\d{1,3}|\p{Lu}|thk|nşr|haz|çev|ed|eds|sad|mlf|Türkçeye|trans|s\.a|r\.a|Hz|St|Dr|Prof|Doç|vol|no|No)$/u.test(word) && !/^\d{4}$/.test(word) && s[i + 2] !== "“";
       if (!abbrev) {
         out.push(cur.trim());
         cur = "";
@@ -715,6 +719,265 @@ function manuscript(s: string): ParsedReference | null {
   return { item: settle(item), form: "isnad-dipnot", unsure: [] };
 }
 
+/** "1957", "1880-1893", "20. yüzyıl", "17-18. yüzyıl", "Ağustos 2019", "20 Mart 2019", "ts.". */
+const LOOSE_DATE = String.raw`(?:\d{1,2}(?:-\d{1,2})?\.\s*(?:yüzyıl|yy\.?|century)|(?:\d{1,2}\s+)?(?:\p{L}+\s+)?\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4})?|ts\.|n\.d\.)`;
+/** A document's kind written in its parenthesis (İSNAD 30, 34, 35, 37 …). */
+const DOC_GENRE = /^(Fotoğraf|Plastik Ambalaj|Ambalaj|Sınav K[aâ][ğg]ıdı|Nota K[aâ][ğg]ıdı|Afiş|Broşür|Mektup|Belge|Kartpostal|Davetiye|Etiket|Harita|Poster|Photograph|Letter)$/iu;
+const ART_MEDIUM = /^(Tasvir|Fotoğraf|Ahşap|Porselen|Halı|Kilim|Afiş|Karakalem|Yağlı Boya|Suluboya|Sulu Boya|Akrilik|Minyatür|Hat|Tezhip|Ebru|Çini|Seramik|Cam|Maden|Gümüş|Altın|Bronz|Mermer|Taş|Kumaş|Dokuma|İşleme|Kağıt|Kâğıt|Tuval|Gravür|Litografi|Heykel|Kabartma|Mozaik|Fresk|Oil on canvas|Photograph|Painting|Drawing)(?!\p{L})/iu;
+
+/** "Hayali Küçük Ali" or "Direnoğlu, Şefik" before the title; an artist or an author. */
+function headCreator(item: Item, head: string, creatorType: string, inverted: boolean): void {
+  const h = head.trim().replace(/[.,]$/, "");
+  if (!h) return;
+  // "Öğrenci 1": a numbered, anonymous person (İSNAD 35) is a name as a whole.
+  if (/^(Öğrenci|Katılımcı|Görüşmeci|Student|Participant)\s+\d+$/u.test(h)) {
+    item.creators.push({ creatorType, name: h });
+    return;
+  }
+  // In the bibliography a person is "Soyad, Ad"; without a comma the name is kept whole ("Hayali Küçük Ali").
+  item.creators.push(inverted ? (/,/.test(h) ? nameInverted(h, creatorType) : { creatorType, name: h }) : nameInOrder(h, creatorType));
+}
+
+/** "Ankara: Milli Kütüphane, Koleksiyon, No. 000116" → archive fields. */
+function readHolding(item: Item, s: string): boolean {
+  const m = /^(?:([^:,]{2,40}):\s*)?(.+?)(?:,\s*((?:No|Seri No|Envanter No|Inv)\.?\s*.+))?$/u.exec(s.trim().replace(/\.$/, ""));
+  if (!m) return false;
+  if (m[1]) item.fields.archiveLocation = m[1].trim();
+  const parts = m[2]!.split(/,\s*/);
+  item.fields.archive = parts[0]!.trim();
+  if (parts.length > 1) item.fields.libraryCatalog = parts.slice(1).join(", ").trim();
+  if (m[3]) item.fields.callNumber = m[3].trim();
+  return true;
+}
+
+/** Splits "Yazar, Başlık" (dipnot) or "Yazar. Başlık" (kaynakça) in front of a typed parenthesis. */
+function headParts(before: string, bib: boolean): { creator: string; title: string } {
+  const b = before.trim().replace(/[.,]$/, "");
+  const numbered = /^((?:Öğrenci|Katılımcı|Görüşmeci|Student|Participant)\s+\d+)[.,]\s+(.+)$/u.exec(b);
+  if (numbered) return { creator: numbered[1]!, title: numbered[2]! };
+  if (bib) {
+    const ss = sentencesOf(b);
+    return ss.length >= 2 ? { creator: ss.slice(0, -1).join(". "), title: ss[ss.length - 1]! } : { creator: "", title: b };
+  }
+  const parts = topSplit(b, ",");
+  if (parts.length >= 2 && parts[0]!.split(" ").length <= 6 && /^\p{Lu}/u.test(parts[0]!) && !/[“"]/.test(parts[0]!)) return { creator: parts[0]!, title: parts.slice(1).join(", ") };
+  return { creator: "", title: b };
+}
+
+/**
+ * Works that name their kind (İSNAD 27-40): software "Microsoft Word 16.29 (Yazılım, ABD: Microsoft
+ * Corporation, 2019)", a patent "(Patent, Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019)",
+ * an art work "Abdal (Tasvir, 1957, Ankara: Milli Kütüphane), No. 000116", a document "(Fotoğraf, 2019),
+ * Anadolu Ajansı", a film "(Film, 1995)", a text message "(Kısa Mesaj 2 Eylül 2019, Alıcı Sami Şahin)" and
+ * an interview "“Başlık” (Görüşmeci: İlber Ortaylı, Video Kaydı, Görüşme 3 Mart 1985)". Both the note and the
+ * bibliography form are read.
+ */
+function labeled(s: string): ParsedReference | null {
+  const probe = emptyItem("document", "serbest");
+  const t = readUrl(probe, s).replace(/\.$/, "");
+  const carry = (item: Item) => {
+    if (probe.fields.url) item.fields.url = probe.fields.url;
+    if (probe.fields.accessDate) item.fields.accessDate = probe.fields.accessDate;
+    if (probe.fields.DOI) item.fields.DOI = probe.fields.DOI;
+    return item;
+  };
+  const unsure: string[] = [];
+  const bibForm = (sentencesOf(t).length >= 3 && /^[^,.]+,\s[^.]+\.\s/u.test(t)) || false;
+
+  // Software and patents in the bibliography: "Başlık. Yazılım. ABD: Şirket, 2019." / "Soyad, Ad. Başlık. Patent. Kurum, No. X, Tarih …".
+  const ss = sentencesOf(t);
+  const kindAt = ss.findIndex((x) => /^(Yazılım|Software|Patent)$/i.test(x));
+  if (kindAt >= 1 && kindAt + 1 < ss.length) {
+    const head = ss.slice(0, kindAt);
+    const rest = ss.slice(kindAt + 1).join(". ");
+    if (/^patent$/i.test(ss[kindAt]!)) {
+      const item = emptyItem("patent", "serbest");
+      if (head.length >= 2) headCreator(item, head.slice(0, -1).join(". "), "inventor", true);
+      item.fields.title = head[head.length - 1]!;
+      if (!readPatent(item, rest)) return null;
+      return { item: carry(item), form: "isnad-kaynakca", unsure };
+    }
+    const item = emptyItem("computerProgram", "serbest");
+    item.fields.programmingLanguage = ss[kindAt]!;
+    setTitleVersion(item, head.join(". "));
+    if (!readCompany(item, rest)) return null;
+    return { item: carry(item), form: "isnad-kaynakca", unsure };
+  }
+
+  // Art works in the bibliography: "[Sanatçı.] Başlık. Malzeme, Tarih. Yer: Müze, Koleksiyon, No. X."
+  const medAt = ss.findIndex((x, i) => i >= 1 && new RegExp(String.raw`^([^,]{2,30}),\s*(${LOOSE_DATE})$`, "iu").test(x) && ART_MEDIUM.test(x));
+  if (medAt >= 1 && medAt + 1 < ss.length && /:|No\./.test(ss.slice(medAt + 1).join(". "))) {
+    const item = emptyItem("artwork", "serbest");
+    const head = ss.slice(0, medAt);
+    if (head.length >= 2) headCreator(item, head.slice(0, -1).join(". "), "artist", true);
+    item.fields.title = head[head.length - 1]!;
+    const md = /^([^,]+),\s*(.+)$/u.exec(ss[medAt]!)!;
+    item.fields.artworkMedium = md[1]!.trim();
+    setDate(item, md[2]!);
+    readHolding(item, ss.slice(medAt + 1).join(". "));
+    return { item: carry(item), form: "isnad-kaynakca", unsure };
+  }
+
+  // A text message in the bibliography: "Soyad, Ad. Konu hk. Kısa Mesaj 2 Eylül 2019, Alıcı Ad Soyad."
+  const smsBib = /^(.+?)\.\s+(.+?)\.\s+(Kısa Mesaj|E-?posta|SMS|WhatsApp Mesajı)\s+([^,]+),\s*Alıcı:?\s+(.+)$/iu.exec(t);
+  if (smsBib) return message(carry(emptyItem(/posta/i.test(smsBib[3]!) ? "email" : "instantMessage", "serbest")), smsBib[1]!, true, smsBib[2]!, smsBib[3]!, smsBib[4]!, smsBib[5]!);
+
+  // The parenthesis forms: "Önce (İçerik)[, veya .] Sonra".
+  const m = /^(.+?)\s*\(([^()]+)\)\s*(?:[.,]\s*(.+))?$/u.exec(t);
+  if (!m) return null;
+  const before = m[1]!;
+  const inside = m[2]!.split(/,\s*/);
+  const after = m[3]?.trim() ?? "";
+  const label = inside[0]!.trim();
+  // "Öğrenci 1. Başlık": a numbered anonymous person (İSNAD 35) is a sentence of its own.
+  const numbered = /^((?:Öğrenci|Katılımcı|Görüşmeci|Student|Participant)\s+\d+)\.\s+(.+)$/u.exec(before);
+  const bib = bibForm || !!numbered || (/^[^,]+,\s[^.,]+\.\s/u.test(before) && sentencesOf(before).length >= 2) || (!/,/.test(before) && sentencesOf(before).length >= 2);
+
+  const sms = /^(Kısa Mesaj|E-?posta|SMS|WhatsApp Mesajı)\s+(.+)$/iu.exec(label);
+  if (sms && inside[1] && /^Alıcı:?\s/i.test(inside[1])) {
+    const { creator, title } = headParts(before, bib);
+    return message(carry(emptyItem(/posta/i.test(sms[1]!) ? "email" : "instantMessage", "serbest")), creator, bib, title, sms[1]!, sms[2]!, inside[1].replace(/^Alıcı:?\s+/i, ""));
+  }
+
+  if (/^Görüşmeci:/i.test(label)) {
+    const q = /^(.*?)[,.]?\s*“([^”]+)”\s*$/u.exec(before.trim());
+    if (!q || after) return null;
+    const item = emptyItem("interview", "serbest");
+    if (q[1]) headCreator(item, q[1], "interviewee", /,/.test(q[1]));
+    item.fields.title = q[2]!;
+    for (const n of splitNames(label.replace(/^Görüşmeci:\s*/i, "")).names) item.creators.push(nameInOrder(n, "interviewer"));
+    for (const x of inside.slice(1)) {
+      const g = /^Görüşme\s+(.+)$/i.exec(x);
+      if (g) item.fields.date = dayMonthYear(g[1]!) ?? g[1]!.trim();
+      else if (!/Transkripsiyon/i.test(x)) item.fields.interviewMedium = x.trim();
+      else return null;
+    }
+    return { item: carry(item), form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure };
+  }
+
+  if (/^(Yazılım|Software)$/i.test(label) && inside.length >= 2) {
+    const item = emptyItem("computerProgram", "serbest");
+    item.fields.programmingLanguage = label;
+    setTitleVersion(item, before);
+    // "(Yazılım, ABD: Şirket, 16.29, 2019)": the version may be written inside, before the year.
+    const parts = inside.slice(1);
+    const year = parts[parts.length - 1]!;
+    if (parts.length >= 3 && /^(v?\d[\w.]*|[A-Z]+\d[\w.]*)$/.test(parts[parts.length - 2]!.trim())) item.fields.versionNumber = parts.splice(parts.length - 2, 1)[0]!.trim();
+    if (!readCompany(item, parts.join(", "))) return null;
+    void year;
+    return { item: carry(item), form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure };
+  }
+
+  if (/^Patent$/i.test(label) && inside.length >= 2) {
+    const item = emptyItem("patent", "serbest");
+    const { creator, title } = headParts(before, bib);
+    if (creator) headCreator(item, creator, "inventor", bib);
+    item.fields.title = title;
+    if (!readPatent(item, inside.slice(1).join(", "))) return null;
+    if (after && /^\d+(?:-\d+)?$/.test(after)) item.fields.pages = after;
+    return { item: carry(item), form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure };
+  }
+
+  if (/^(Film|Belgesel|Documentary)$/i.test(label) && inside.length === 2 && /^\d{4}$/.test(inside[1]!.trim()) && !after) {
+    const item = emptyItem("film", "serbest");
+    const { creator, title } = headParts(before, bib);
+    if (creator) headCreator(item, creator, "director", bib);
+    item.fields.title = title;
+    item.fields.genre = label;
+    item.fields.date = inside[1]!.trim();
+    const short = /^(.+?)\s*\[[^\]]+\]$/.exec(title);
+    if (short) item.fields.shortTitle = short[1]!;
+    return { item: carry(item), form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure };
+  }
+
+  // An art work: "(Malzeme, Tarih, Yer: Müze[, Koleksiyon]), No. X".
+  if (inside.length >= 3 && new RegExp(String.raw`^${LOOSE_DATE}$`, "iu").test(inside[1]!.trim()) && /:/.test(inside.slice(2).join(", ")) && (!after || /^No\.?\s/.test(after)) && !placeIn(label)) {
+    const item = emptyItem("artwork", "serbest");
+    const { creator, title } = headParts(before, bib);
+    if (creator) headCreator(item, creator, "artist", bib);
+    item.fields.title = title;
+    item.fields.artworkMedium = label;
+    setDate(item, inside[1]!);
+    readHolding(item, [inside.slice(2).join(", "), after].filter(Boolean).join(", "));
+    if (!ART_MEDIUM.test(label)) unsure.push("tür (sanat eseri mi?)");
+    return { item: carry(item), form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure };
+  }
+
+  // A document of a named kind: "(Fotoğraf, 2019), Anadolu Ajansı", "(Sınav Kağıdı, 20 Mart 2019), Üniversite, Fakülte, Öğretici 1".
+  if (inside.length === 2 && DOC_GENRE.test(label) && new RegExp(String.raw`^${LOOSE_DATE}$`, "iu").test(inside[1]!.trim())) {
+    const item = emptyItem("document", "serbest");
+    const { creator, title } = headParts(before, bib);
+    if (creator) headCreator(item, creator, "author", bib);
+    item.fields.title = title;
+    setDate(item, inside[1]!);
+    item.fields.extra = `genre: ${label}`;
+    if (after) {
+      const place = /^([^:,]{2,40}):\s*(.+)$/u.exec(after);
+      if (place) {
+        // "İstanbul: BİM, Seri No. 291 …" (a maker) or "İstanbul: İSAM Kütüphanesi, Arşiv, No. …" (a holding).
+        item.fields.archiveLocation = place[1]!.trim();
+        const parts = place[2]!.split(/,\s*/);
+        const no = parts.findIndex((x) => /^(No|Seri No|Barkod No)\.?\s/i.test(x));
+        const named = no < 0 ? parts : parts.slice(0, no);
+        if (no >= 0) item.fields.callNumber = parts.slice(no).join(", ");
+        if (LIBRARY.test(named[0] ?? "")) {
+          item.fields.archive = named[0]!;
+          if (named.length > 1) item.fields.libraryCatalog = named.slice(1).join(", ");
+        } else item.fields.publisher = named.join(", ");
+      } else {
+        const parts = after.split(/,\s*/);
+        // A last part without a capitalised name is the teacher's code ("Öğretici 1") or similar.
+        if (parts.length >= 3) {
+          item.fields.archive = parts.slice(0, -1).join(", ");
+          item.fields.libraryCatalog = parts[parts.length - 1]!;
+        } else item.fields.publisher = after;
+      }
+    }
+    return { item: carry(item), form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure };
+  }
+  return null;
+}
+
+function message(item: Item, creator: string, bib: boolean, title: string, kind: string, date: string, to: string): ParsedReference {
+  if (creator) headCreator(item, creator, "author", bib);
+  item.fields.title = title.trim().replace(/\s(hk|vb|vs)$/u, " $1.");
+  item.fields.date = date.trim();
+  item.fields.extra = `genre: ${kind}`;
+  for (const n of splitNames(to).names) item.creators.push(nameInOrder(n, "recipient"));
+  return { item, form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure: [] };
+}
+
+/** "Microsoft Word 16.29" → title and version; a last word with a digit is the version. */
+function setTitleVersion(item: Item, s: string): void {
+  const t = s.trim().replace(/[.,]$/, "");
+  const v = /^(.+?)\s+(v?\d+(?:\.\d+)+|v\d+|[A-Z]{1,3}\d{1,4}|\d{4})$/.exec(t);
+  if (v && !/^\d{4}$/.test(v[2]!)) {
+    item.fields.title = v[1]!;
+    item.fields.versionNumber = v[2]!;
+  } else item.fields.title = t;
+}
+
+/** "Rolla, ABD: Şirket, 1995" / "Şirket, 2019". */
+function readCompany(item: Item, s: string): boolean {
+  const m = /^(?:(.+?):\s*)?(.+?),\s*(\d{4})$/u.exec(s.trim());
+  if (!m) return false;
+  if (m[1]) item.fields.place = m[1].trim();
+  item.fields.company = m[2]!.trim();
+  item.fields.date = m[3]!;
+  return true;
+}
+
+/** "Türk Patent ve Marka Kurumu, No. 2019/07502, Tarih 17 Mayıs 2019". */
+function readPatent(item: Item, s: string): boolean {
+  const m = /^(.+?),\s*(?:Patent\s+)?No\.?\s*([^,]+?)(?:,\s*Tarih\s+(.+))?$/iu.exec(s.trim());
+  if (!m) return false;
+  item.fields.issuingAuthority = m[1]!.trim();
+  item.fields.patentNumber = m[2]!.trim();
+  if (m[3]) item.fields.issueDate = m[3].trim();
+  item.fields.legalStatus = "Patent";
+  return true;
+}
+
 /** "Topaloğlu vd." names only the first of three or more authors: the record says so, the others are to be added. */
 function withOthers(r: ParsedReference, s: string): ParsedReference {
   const head = s.split(/[“"(]/)[0] ?? "";
@@ -726,7 +989,7 @@ function withOthers(r: ParsedReference, s: string): ParsedReference {
 export function parseReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
-  const ms = manuscript(s) ?? newspaper(s) ?? legislation(s) ?? courtCase(s) ?? institution(s);
+  const ms = labeled(s) ?? manuscript(s) ?? newspaper(s) ?? legislation(s) ?? courtCase(s) ?? institution(s);
   if (ms) return withOthers(ms, s);
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;

@@ -133,11 +133,14 @@ const fold = (s: string) => foldText(s).replace(/^(el|al|er|es|en|et|ed|ez|eş|e
 
 /** Folded surnames and titles, worked out once per record (a thesis cites the same works hundreds of times). */
 const folded = new WeakMap<Item, { surnames: string[]; title: string; short: string; container: string; given: string[] }>();
+/** Whoever a short form names first: the author, or the artist, inventor, director … of a work that has no author. */
+const MAIN_CREATOR = new Set(["author", "editor", "inventor", "artist", "director", "interviewee", "programmer", "cartographer", "composer", "performer", "podcaster", "presenter"]);
+
 function keysOf(item: Item) {
   let k = folded.get(item);
   if (!k) {
     k = {
-      surnames: item.creators.filter((c) => c.creatorType === "author" || c.creatorType === "editor").map((c) => fold(c.lastName ?? c.name ?? "")).filter(Boolean),
+      surnames: item.creators.filter((c) => MAIN_CREATOR.has(c.creatorType)).map((c) => fold(c.lastName ?? c.name ?? "")).filter(Boolean),
       title: fold(titleOf(item)),
       short: fold(item.fields.shortTitle ?? ""),
       container: fold(item.fields.publicationTitle ?? ""),
@@ -182,7 +185,15 @@ function firstComma(s: string): number {
   return -1;
 }
 
-function findShort(body: string, pool: readonly Item[]): Item | null {
+function findShort(body0: string, pool: readonly Item[]): Item | null {
+  // An art work or a document keeps its number: "Halı Seccade, No. 420", "Şefik Direnoğlu, Alparslan Portresi, No. 000511".
+  const numbered = /,\s*No\.?(?:\s*\S.*)?$/u.exec(body0);
+  const body = numbered ? body0.slice(0, numbered.index) : body0;
+  if (numbered && !body.includes(",")) {
+    const t = fold(body.replace(/[“”"«»]/g, ""));
+    const hits = [...new Set(pool)].filter((it) => keysOf(it).title === t);
+    if (hits.length === 1) return hits[0]!;
+  }
   const comma = firstComma(body);
   const author = comma > 0 ? authorKey(body.slice(0, comma)) : "";
   // A manuscript's short form keeps its shelf mark: "Keşşî, et-Temhîd (Şehit Ali Paşa, 1153)".
@@ -194,6 +205,8 @@ function findShort(body: string, pool: readonly Item[]): Item | null {
   const starts = mine.filter((it) => {
     // A court decision is named by its number: "Yargıtay, K. 2019/1204".
     if (it.fields.docketNumber && title === fold(`K. ${it.fields.docketNumber}`)) return true;
+    // Software is named with its version: "EndNote X9".
+    if (it.fields.versionNumber && title === fold(`${titleOf(it)} ${it.fields.versionNumber}`)) return true;
     const { title: t, short: st } = keysOf(it);
     return t.startsWith(title) || (st && (st === title || title.startsWith(st)));
   });
@@ -360,7 +373,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         const r = parseReference(`${body}.`);
         const f = r?.item.fields;
         // A full reference has an author or an imprint; a sentence of the author's own has neither.
-        const looksFull = r && (f?.title || f?.docketNumber) && (r.item.creators.length > 0 || f.date || f.archive || f.accessDate) && (f.date || f.dateDecided || f.publisher || f.publicationTitle || f.encyclopediaTitle || f.dictionaryTitle || f.university || f.place || f.archive || f.accessDate || f.url);
+        const looksFull = r && (f?.title || f?.docketNumber) && (r.item.creators.length > 0 || f.date || f.issueDate || f.archive || f.accessDate) && (f.date || f.dateDecided || f.issueDate || f.patentNumber || f.company || f.publisher || f.publicationTitle || f.encyclopediaTitle || f.dictionaryTitle || f.university || f.place || f.archive || f.accessDate || f.url);
         if (!r || !looksFull) {
           // "Buhârî, “Îmân”, 2" with no full reference anywhere before: a short form of a work not known yet.
           reason = shortable && /^[^,()“”"]{2,50},\s*[^()]{2,90}$/.test(body) && (c.locator || c.madde || c.volume) ? SHORT_UNKNOWN : "künye olarak okunamadı";
