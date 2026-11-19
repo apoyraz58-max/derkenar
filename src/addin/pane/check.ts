@@ -10,7 +10,7 @@ import * as word from "../word.js";
 import { ageCount, checkCitations } from "../../core/citecheck.js";
 import { keepEdited, revertEdited } from "../../core/docstate.js";
 import { citedKeys, currentOrder, refresh } from "./document.js";
-import { $, S, doc, h, putItems, run, setMessage } from "./core.js";
+import { $, S, doc, h, putItems, run, setMessage, takeSnapshot } from "./core.js";
 import { openEditor } from "./editor.js";
 import { inCurrentView } from "./library.js";
 import { personIssues } from "./persons.js";
@@ -115,6 +115,7 @@ function render(): void {
               void run("Yazımlar birleştiriliyor", async () => {
                 const target = v.spellings[Number(choice.value)]!.value;
                 const changed = unifyField(S.items, v, target).map((i) => ({ ...i, dateModified: now() }));
+                if (changed.length > 10) await takeSnapshot("before-fix");
                 await putItems(changed, [], true);
                 const d = doc();
                 for (const it of changed) if (d.items[it.key]) d.items[it.key] = it;
@@ -146,6 +147,7 @@ function render(): void {
               void run("Yazımlar birleştiriliyor", async () => {
                 const target = v.spellings[Number(choice.value)]!.creator;
                 const changed = unifyName(S.items, target, v.spellings.map((x) => x.creator)).map((i) => ({ ...i, dateModified: now() }));
+                if (changed.length > 10) await takeSnapshot("before-fix");
                 await putItems(changed, [], true);
                 const d = doc();
                 for (const it of changed) if (d.items[it.key]) d.items[it.key] = it;
@@ -221,12 +223,14 @@ async function fix(issues: Issue[]): Promise<void> {
     if (S.byKey.has(key)) lib.push(next);
     if (d.items[key]) d.items[key] = next;
   }
+  // Many records at once (Önerilen düzeltmeleri uygula): a restore point first, so the change can be undone.
+  if (lib.length > 10) await takeSnapshot("before-fix");
   if (lib.length) await putItems(lib, [], true);
   if ([...changed.keys()].some((k) => d.items[k])) {
     await word.saveState(d);
     await refresh(false, true);
   }
-  setMessage(`${issues.length} düzeltme uygulandı.`, "success");
+  setMessage(`${issues.length} düzeltme uygulandı.${lib.length > 10 ? ` Öncesi için geri yükleme noktası alındı (Veri bilgisi → Geri yükleme noktaları).` : ""}`, "success");
   runCheck();
 }
 
