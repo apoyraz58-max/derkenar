@@ -10,7 +10,7 @@ import * as word from "../word.js";
 import { ageCount, checkCitations } from "../../core/citecheck.js";
 import { keepEdited, revertEdited } from "../../core/docstate.js";
 import { citedKeys, currentOrder, refresh } from "./document.js";
-import { $, S, doc, h, putItems, run, setMessage, takeSnapshot } from "./core.js";
+import { $, S, copyText, doc, h, putItems, run, setMessage, takeSnapshot } from "./core.js";
 import { openEditor } from "./editor.js";
 import { inCurrentView } from "./library.js";
 import { personIssues } from "./persons.js";
@@ -66,6 +66,19 @@ function render(): void {
   const marks = apostropheReport(lastItems);
   $("chk-summary").textContent = `${lastItems.length} kaynak denetlendi: ${errors} hata, ${warnings} uyarı.` + (marks.length > 1 ? ` Başlıklarda farklı kesme/ayın işaretleri kullanılmış: ${marks.map((m) => `${m.mark} (${m.count})`).join(", ")}.` : "");
   $("chk-fixall").hidden = safe.length === 0;
+  // The findings as text, work by work (to keep, send or work through elsewhere).
+  $("chk-copy").hidden = byItem.size === 0;
+  $("chk-copy").onclick = () =>
+    void run("Kopyalanıyor", async () => {
+      const lines = [$("chk-summary").textContent ?? "", ""];
+      for (const [key, issues] of byItem) {
+        const item = lastItems.find((i) => i.key === key)!;
+        lines.push(`${creatorLine(item) || "—"}, ${titleOf(item) || "(başlıksız)"}`);
+        for (const i of issues) lines.push(`  - ${LEVEL_LABEL[i.level]}: ${i.message}`);
+      }
+      await copyText(lines.join("\n").trim());
+      setMessage(`Denetim sonucu panoya kopyalandı (${byItem.size} kaynak).`, "success");
+    });
   const reviewKeys = [...byItem.keys()].filter((k) => S.byKey.has(k) && byItem.get(k)!.some((i) => i.level !== "info"));
   $("chk-review").hidden = reviewKeys.length === 0;
   $("chk-review").textContent = `Sırayla düzelt (${reviewKeys.length} kayıt)`;
