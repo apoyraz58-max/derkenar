@@ -360,7 +360,7 @@ export async function snapshots(): Promise<Snapshot[]> {
 }
 
 /** Keeps the library as it is now ("daily": only when none was taken today). */
-export async function takeSnapshot(reason: "daily" | "before-restore" | "before-fix" | "manual"): Promise<void> {
+export async function takeSnapshot(reason: "daily" | "before-restore" | "before-fix" | "before-import" | "manual"): Promise<void> {
   const { snapshotDue, pruneSnapshots } = await import("../../core/snapshots.js");
   const list = await snapshots();
   if (reason === "daily" && (!snapshotDue(list) || !S.items.length)) return;

@@ -107,7 +107,7 @@ let armed = "";
 
 export async function renderSnapshots(): Promise<void> {
   const list = await snapshots();
-  const label = (r: string) => (r === "daily" ? "günlük" : r === "manual" ? "elle" : r === "before-fix" ? "toplu düzeltmeden önce" : "geri yüklemeden önce");
+  const label = (r: string) => (r === "daily" ? "günlük" : r === "manual" ? "elle" : r === "before-fix" ? "toplu düzeltmeden önce" : r === "before-import" ? "içe aktarmadan önce" : "geri yüklemeden önce");
   $("snap-list").replaceChildren(
     ...list.map((sn) =>
       h(

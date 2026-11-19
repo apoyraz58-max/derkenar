@@ -9,7 +9,7 @@ import { report, zoteroCsv, zoteroRdf } from "../../core/zoteroexport.js";
 import { type Collection, type Item, creatorLine, emptyItem, now, titleOf } from "../../core/zotero.js";
 import { citedKeys } from "./document.js";
 import { getMeta, setMeta } from "../store.js";
-import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMessage } from "./core.js";
+import { $, S, copyText, doc, download, h, putCollections, putItems, run, setMessage, takeSnapshot } from "./core.js";
 import { openEditor } from "./editor.js";
 import { currentView, inCurrentView } from "./library.js";
 import { copyFinder, existingCopy, librarySpelling } from "../../core/library.js";
@@ -36,6 +36,8 @@ async function importItems(items: Item[], collections: Collection[]): Promise<{ 
 }
 
 async function importFiles(files: File[]): Promise<void> {
+  // A re-import updates the works already here: the library as it is now is kept first.
+  if (S.items.some((i) => !i.deleted)) await takeSnapshot("before-import");
   const imported: Item[] = [];
   let added = 0;
   let updated = 0;
@@ -189,6 +191,7 @@ async function syncFromZotero(): Promise<void> {
   const saved = await getMeta<{ library: string; base?: string; version: number }>("zoteroVersion");
   const since = saved && saved.library === cfg.library && saved.base === cfg.base ? saved.version : 0;
   const status = $("z-status");
+  if (S.items.some((i) => !i.deleted)) await takeSnapshot("before-import");
   const page = await syncZotero(cfg, since, fetch, (done, total) => (status.textContent = `${done} / ${total}`)).catch((e: unknown) => {
     if (local && e instanceof TypeError) throw new Error("Bu bilgisayardaki atıf programına ulaşılamadı: program açık mı, yerel API izni verildi mi?");
     throw e;
