@@ -366,3 +366,16 @@ describe("a typed bibliography: lines and section headings", () => {
     expect(sectionHeadings("KAYNAKÇA\nKara, Mustafa. Tasavvuf. İstanbul: Dergâh, 2005.")).toEqual([]);
   });
 });
+
+describe("imprints with gaps", () => {
+  it("(2001), (İstanbul: 2001), (İstanbul, 2001), and the bibliography's “İstanbul, 2001.”", () => {
+    const f = (s: string) => parseReference(s)?.item.fields;
+    expect(f("Kerim Akçay, Eksik Künyeli Bir Kitap (2001), 12.")).toMatchObject({ title: "Eksik Künyeli Bir Kitap", date: "2001" });
+    expect(f("Kerim Akçay, Eksik Künyeli Bir Kitap (İstanbul: 2001), 12.")).toMatchObject({ place: "İstanbul", date: "2001" });
+    expect(f("Kerim Akçay, Eksik Künyeli Bir Kitap (İstanbul, 2001), 12.")).toMatchObject({ place: "İstanbul", date: "2001" });
+    expect(f("Kerim Akçay, Eksik Künyeli Bir Kitap (İstanbul, 2001), 12.")?.publisher).toBeUndefined();
+    expect(f("Akçay, Kerim. Eksik Künyeli Bir Kitap. İstanbul, 2001.")).toMatchObject({ place: "İstanbul", date: "2001" });
+    expect(f("Kerim Akçay, Eksik Künyeli Bir Kitap (Dergâh Yayınları, 2001), 12.")).toMatchObject({ publisher: "Dergâh Yayınları", date: "2001" });
+    expect(f("Sönmez Kutlu, “İlk Mürciî Metinler”, Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 320.")).toMatchObject({ publicationTitle: "Ankara Üniversitesi İlahiyat Fakültesi Dergisi", volume: "37" });
+  });
+});

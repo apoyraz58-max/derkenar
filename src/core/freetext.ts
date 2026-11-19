@@ -11,6 +11,7 @@
  * plain "Yer: Yayınevi, Yıl" of other styles. What could not be told for sure
  * is listed in `unsure`, so the user looks only at that.
  */
+import { placeIn } from "./isnadstyle.js";
 import { type Creator, type Item, emptyItem, typeField } from "./zotero.js";
 
 /** Writes a base field ("publicationTitle", "publisher" …) under the name the item type gives it. */
@@ -117,6 +118,18 @@ function setDate(item: Item, d: string): void {
 
 /** "Medine: el-Câmiatü'l-İslâmiyye, 2. Basım, 1413/1993" (also "Bursa: Uludağ Üniversitesi, İlahiyat Fakültesi, Lisans Tezi, 2002"). */
 function readImprint(item: Item, s: string): boolean {
+  // Gaps in the imprint, as hand-typed references have them: "(2001)", "(İstanbul: 2001)", "(İstanbul, 2001)".
+  const onlyDate = new RegExp(String.raw`^\s*(${DATE})\s*$`, "iu").exec(s);
+  if (onlyDate) {
+    setDate(item, onlyDate[1]!.replace(/^\p{L}+\s+/u, ""));
+    return true;
+  }
+  const placeDate = new RegExp(String.raw`^\s*([^:,()]{2,40}?)\s*[:,]\s*(${DATE})\s*$`, "iu").exec(s);
+  if (placeDate && placeIn(placeDate[1]!) && !/\b(yay|yayın|neşriyat|kitabevi|matbaa|press|basımevi|vakfı|kurumu)/i.test(placeDate[1]!)) {
+    item.fields.place = placeDate[1]!.trim();
+    setDate(item, placeDate[2]!);
+    return true;
+  }
   const m = new RegExp(String.raw`^\s*(?:([^:]{2,60}?):\s*)?(.+?),\s*(?:(\d+)\.\s*(?:Basım|bs\.|ed\.|edition),\s*)?(${DATE})\s*$`, "iu").exec(s);
   if (!m) return false;
   const [, place, middle, edition, date] = m;
@@ -222,7 +235,9 @@ function isnadNote(s: string): ParsedReference | null {
   // Book, chapter, encyclopedia: everything before "(Yer: Yayınevi, Yıl)" — the last parenthesis that is an imprint.
   let imp: RegExpExecArray | null = null;
   for (const m of t.matchAll(/\(([^()]*?(?:\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4}(?:-\d{2,4})?)?|ts\.|n\.d\.))\)/gu)) {
-    if (/[:,]/.test(m[1]!)) imp = Object.assign([m[0], t.slice(0, m.index).trim(), m[1]!, t.slice(m.index! + m[0].length)], { index: m.index!, input: t }) as unknown as RegExpExecArray;
+    // A bare year, "Kitap (2001)", is an imprint with gaps; not after a volume ("Dergisi 37 (1997)") or a quoted title (an article).
+    const before = t.slice(0, m.index).trim();
+    if (/[:,]/.test(m[1]!) || (!/[“"]/.test(before) && !/\d[\s/]*$/.test(before) && /,/.test(before))) imp = Object.assign([m[0], t.slice(0, m.index).trim(), m[1]!, t.slice(m.index! + m[0].length)], { index: m.index!, input: t }) as unknown as RegExpExecArray;
   }
   if (imp) {
     if (!readImprint(item, imp[2]!)) return null;
@@ -656,14 +671,15 @@ function institution(s: string): ParsedReference | null {
   item.creators.push({ creatorType: "author", lastName: m[2]!, firstName: m[1]!.trim() });
   item.fields.title = m[3]!.trim().replace(/,$/, "");
   const inside = m[4]?.trim() ?? "";
-  if (inside && !readImprint(item, inside)) {
+  if (inside) {
+    // A bulletin is dated by its month ("Haziran 2019"), a statistic by its day.
     const d = dayMonthYear(inside);
     const my = /^(\p{L}+)\s+(\d{4})$/u.exec(inside);
     const mo = my ? MONTHS[my[1]!.toLocaleLowerCase("tr")] : undefined;
     if (d) item.fields.date = d;
     else if (my && mo) item.fields.date = `${my[2]}-${String(mo).padStart(2, "0")}`;
     else if (/^\d{4}$/.test(inside)) item.fields.date = inside;
-    else return null;
+    else if (!readImprint(item, inside)) return null;
   }
   if (!item.fields.date && !item.fields.accessDate && !item.fields.publisher) return null;
   if (item.fields.accessDate && !item.fields.date) item.itemType = "webpage";
