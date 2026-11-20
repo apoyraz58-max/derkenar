@@ -234,6 +234,8 @@ export interface PersonIndex {
   table: PersonTable;
   /** nameKey of a DİA short name (and of its surname part) → persons. */
   byKey: Map<string, Person[]>;
+  /** Arabic and Persian persons by the nameKey of their DİA full name ("ebul huseyn muslim b haccac kuseyri"). */
+  byFull: [string, Person][];
 }
 
 export function indexPersons(table: PersonTable): PersonIndex {
@@ -252,7 +254,29 @@ export function indexPersons(table: PersonTable): PersonIndex {
     // "Muhammed Fuâd Abdülbâkī" is also found as "Abdülbâkī, Muhammed Fuâd".
     if (!given && surname!.includes(" ")) add(nameKey(diaParts(p).surname), p);
   }
-  return { table, byKey };
+  const byFull = table.persons.filter((p) => p.diaFull && /arap|fars/i.test(p.group)).map((p) => [nameKey(p.diaFull!), p] as [string, Person]);
+  return { table, byKey, byFull };
+}
+
+/** "Ebü’l-Hüseyn" + "el-" + "Haccâc" → the name as typed in one piece. */
+const typedFull = (c: Creator) => {
+  const first = (c.firstName ?? "").trim();
+  const last = (c.lastName ?? c.name ?? "").trim();
+  return first ? (/-$/.test(first) ? `${first}${last}` : `${first} ${last}`) : last;
+};
+
+/**
+ * The person whose DİA full name the creator's whole name is ("Ebü’l-Hüseyn Müslim b. el-Haccâc" is
+ * Müslim, "Ebü’l-Hüseyn Müslim b. el-Haccâc el-Kuşeyrî" in DİA): when the famous name is inside the
+ * full name, not at its end. Three words at least, and one person only.
+ */
+export function personByFullName(c: Creator, index: PersonIndex): Person | null {
+  const key = nameKey(typedFull(c));
+  if (key.split(" ").length < 3) return null;
+  const hits = index.byFull.filter(([k]) => k === key || k.startsWith(`${key} `));
+  const exact = hits.filter(([k]) => k === key);
+  if (exact.length === 1) return exact[0]![1];
+  return hits.length === 1 ? hits[0]![1] : null;
 }
 
 const overlap = (a: string, b: string) => {
@@ -276,7 +300,8 @@ export function findPerson(c: Creator, index: PersonIndex): Person | null {
   list = list.filter((p) => /arap|fars/i.test(p.group) || nameKey(p.dia.replace(/,/g, " ")) === whole || (first && overlap(first, `${p.dia} ${p.diaFull ?? ""}`) > 0 && nameKey(p.dia.split(",")[0]!) === nameKey(last)));
   // A given name that shares no word with the person's ("Ahmed Hicâzî" es-Sekkā is not Mustafa Muhammed es-Sekkā).
   if (first.trim()) list = list.filter((p) => !(p.diaFull || p.dia.includes(",") || p.dia.includes(" ")) || overlap(first, `${p.dia} ${p.diaFull ?? ""}`) > 0);
-  if (list.length <= 1) return list[0] ?? null;
+  if (!list.length) return personByFullName(c, index);
+  if (list.length === 1) return list[0]!;
   // "Ahmed" + "Gazzâlî" is "Ahmed el-Gazzâlî", not Ebû Hâmid.
   const exact = list.filter((p) => nameKey(p.dia.split(/,\s*/).reverse().join(" ")) === whole);
   if (exact.length === 1) return exact[0]!;
@@ -469,6 +494,12 @@ export function findPersonLoose(c: Creator, index: PersonIndex): { person: Perso
  */
 export function diaCreator(c: Creator, p: Person): Creator {
   const { surname, given, article } = diaParts(p);
+  // A full name with the famous name inside it ("Ebü’l-Hüseyn Müslim b. el-Haccâc", surname "Haccâc"): İSNAD keeps the
+  // name as typed and files it under the famous name ("Müslim" + "Ebü’l-Hüseyn Müslim b. el-Haccâc").
+  const full = typedFull(c);
+  if (c.lastName !== undefined && nameKey(c.lastName) !== nameKey(surname) && !surname.includes(" ") && full.split(/\s+/).some((w) => nameKey(w) === nameKey(surname)) && nameKey(full).split(" ").length >= 3) {
+    return { creatorType: c.creatorType, lastName: surname, firstName: full };
+  }
   if (c.name !== undefined) return { creatorType: c.creatorType, name: c.name.trim().split(/\s+/).length > 1 && given ? `${given} ${article}${surname}`.replace(/- /, "-") : surname };
   const source = `${p.diaFull ?? ""} ${given}`.split(/\s+/).filter(Boolean);
   const byKey = new Map(source.map((w) => [looseKey(w.replace(ARTICLE_TR, "")), w.replace(ARTICLE_TR, "")]));

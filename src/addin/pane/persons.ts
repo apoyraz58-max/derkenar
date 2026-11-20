@@ -112,7 +112,9 @@ export function diaSpelling(items: Item[]): string[] {
     let touched = false;
     const creators = it.creators.map((c) => {
       const s = diaSuggestion(c, index!);
-      if (!s || s.loose || !onlyMarks(c, s.creator)) return c;
+      // Safe without asking: only marks differ, or the very name as typed is filed under its famous part ("Müslim").
+      const refiled = s && !s.loose && s.creator.firstName === `${c.firstName ?? ""}${/-$/.test(c.firstName ?? "") ? "" : " "}${c.lastName ?? ""}`.trim();
+      if (!s || s.loose || (!onlyMarks(c, s.creator) && !refiled)) return c;
       touched = true;
       changed.push(s.creator.lastName ?? s.creator.name ?? "");
       return s.creator;

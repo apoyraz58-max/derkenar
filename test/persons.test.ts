@@ -22,7 +22,8 @@ const CSV = `Sıra;Kısa Ad (DİA);Tam Ad (DİA);Orijinal Ad;Vefat Tarihi;EI3 Tr
 3;Ahmed el-Gazzâlî;Ebü’l-Fütûh Ahmed b. Muhammed el-Gazzâlî;;(ö. 520/1126);Aḥmad al-Ghazālī;Abū l-Futūḥ Aḥmad b. Muḥammad al-Ghazālī;;Arap;;;
 4;Fahreddin er-Râzî;Ebû Abdillâh Fahrüddîn Muhammed b. Ömer er-Râzî;;(ö. 606/1210);Fakhr al-Dīn al-Rāzī;Abū ʿAbdallāh Fakhr al-Dīn Muḥammad b. ʿUmar al-Rāzī;;Arap;;;
 5;Kâtib Çelebi;---;---;(ö. 1067/1657);Katib Çelebi;;Kātib Çelebi;Osmanlı / Türk;;;
-6;Kara, Mustafa;---;---;(ö. 1950);Kara, Mustafa;;;Osmanlı / Türk;;;`;
+6;Kara, Mustafa;---;---;(ö. 1950);Kara, Mustafa;;;Osmanlı / Türk;;;
+7;Müslim;Ebü’l-Hüseyn Müslim b. el-Haccâc el-Kuşeyrî;;(ö. 261/875);Muslim;Abū l-Ḥusayn Muslim b. al-Ḥajjāj al-Qushayrī;;Arap;;;`;
 
 const table = (): PersonTable => {
   const persons = personsFromRows(readCsv(CSV));
@@ -33,7 +34,7 @@ describe("Şahıslar (DİA–EI3)", () => {
   const t = table();
   const ix = indexPersons(t);
   it("reads the table and learns the words", () => {
-    expect(t.persons.length).toBe(6);
+    expect(t.persons.length).toBe(7);
     expect(t.persons[0]).toMatchObject({ dia: "Buhârî, Muhammed b. İsmâil", death: "256/870", group: "Arap" });
     expect(t.persons[4]!.diaFull).toBeUndefined();
     expect(transliterate("Ebû Abdullah Muhammed", t.dict)).toBe("Abū ʿAbdallāh Muḥammad");
@@ -48,6 +49,14 @@ describe("Şahıslar (DİA–EI3)", () => {
     expect(find("Kara", "Mustafa")).toBe("Kara, Mustafa");
     expect(find("Kara", "Ahmet")).toBeNull();
     expect(find("Yılmaz", "Hüseyin")).toBeNull();
+  });
+  it("knows a person by the full name, when the famous name is inside it", () => {
+    const c = { creatorType: "author", lastName: "Haccâc", firstName: "Ebü’l-Hüseyn Müslim b. el-" };
+    expect(findPerson(c, ix)?.dia).toBe("Müslim");
+    expect(diaSuggestion(c, ix)?.creator).toEqual({ creatorType: "author", lastName: "Müslim", firstName: "Ebü’l-Hüseyn Müslim b. el-Haccâc" });
+    // Too short to tell, or nobody's: nothing.
+    expect(findPerson({ creatorType: "author", lastName: "Haccâc", firstName: "el-" }, ix)).toBeNull();
+    expect(findPerson({ creatorType: "author", lastName: "Haccâc", firstName: "Ebü’l-Hüseyn Ahmed b. el-" }, ix)).toBeNull();
   });
   it("writes the EI3 form", () => {
     const p = findPerson({ creatorType: "author", lastName: "Râzî", firstName: "Fahreddin er-" }, ix)!;
