@@ -1,0 +1,30 @@
+Kılavuz kaynakçası okundu: 148 satırdan 143 tanesi okundu; 137 tanesi Derkenar'da basılınca kılavuzdakinin aynısı.
+
+≠ 2.5 Kitap-Editörlü (book)
+   kılavuz:  Furat, Ahmet Hamdi vd. (ed.). Sahn-ı Semân’dan Dârülfünûn’a Osmanlı’da İlim ve Fikir Dünyası (Âlimler, Müesseseler ve Fikrî Eserler)-XVIII. Yüzyıl. 2 Cilt. İstanbul: Zeytinburnu Belediyesi Kültür Yayınları, 2018.
+   derkenar: Furat, Ahmet Hamdi (ed.). Sahn-ı Semân’dan Dârülfünûn’a Osmanlı’da İlim ve Fikir Dünyası (Âlimler, Müesseseler ve Fikrî Eserler)-XVIII. Yüzyıl. 2 Cilt. İstanbul: Zeytinburnu Belediyesi Kültür Yayınları, 2018.
+≠ 8 Yunan ve Roma Klasikleri (book)
+   kılavuz:  Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, Kasım 1996.
+   derkenar: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, 1996.
+≠ 14.3 Makale-Tahkik/Neşir (journalArticle)
+   kılavuz:  Halebî, İbrahim. Risâle fi hakkı ebeveyi’r-Resûl. nşr. Kadir Gömbeyaz. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278
+   derkenar: Halebî, İbrahim. Risâle fi hakkı ebeveyi’r-Resûl. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. nşr. Kadir Gömbeyaz. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278
+✗ 22.1 Mevzuat-Resmî Gazete’de
+   kılavuz:  Zotero gibi programlara bu türde bir yayın kaydedilirken Yayın Adı alanına Mevzuat Adı,  [okunamadı]
+✗ 22.1 Mevzuat-Resmî Gazete’de
+   kılavuz:  Yayın Kısa Adı alanına ise Mevzuat Adı Kısaltması yazılır.  [okunamadı]
+✗ 22.1 Mevzuat-Resmî Gazete’de
+   kılavuz:  Örnek: YK, Yükseköğretim Kanunu  [okunamadı]
+✗ 22.1 Mevzuat-Resmî Gazete’de
+   kılavuz:  EndNote gibi programlarda “md.” kısaltması ve madde numaraları elle yazılır.  [okunamadı]
+✗ 23 Standard
+   kılavuz:  TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz. Türkiye: Türk Standardları Enstitüsü, Kabul 05 Haziran 2012, TS OIC/SMIIC 2/T1.  [okunamadı]
+≠ 31 TV Yayını (tvBroadcast)
+   kılavuz:  Üçer, Cenksu. “Mizan”. Diyanet TV. Yayın Tarihi 06 Temmuz 2019. https://www.diyanet.tv/mizan/video/mizan--58-bolum
+   derkenar: Üçer, Cenksu. “Mizan”. Diyanet TV. Yayın Tarihi 6 Temmuz 2019. https://www.diyanet.tv/mizan/video/mizan--58-bolum
+≠ 38.2 Harita-Web (book)
+   kılavuz:  David Rumsey Map Collection. Istanbul Vilayeti. 19 Eylül 2019. https://www.davidrumsey.com
+   derkenar: David Rumsey Map Collection. Istanbul Vilayeti, ts. https://www.davidrumsey.com
+≠ 41 Ambalaj (document)
+   kılavuz:  Kırınkıl Çubuk Kraker 150 gr. (Plastik Ambalaj, Ağustos 2019). İstanbul: BİM, Seri No. 291, Barkod No. 8695077001153.
+   derkenar: Kırınkıl Çubuk Kraker 150 gr (Plastik Ambalaj, Ağustos 2019). İstanbul: BİM, Seri No. 291, Barkod No. 8695077001153.

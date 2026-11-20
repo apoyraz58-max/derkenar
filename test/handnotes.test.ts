@@ -444,7 +444,7 @@ describe("works that name their kind", () => {
     expect(p("Kut, Günay. Yazma Eserler Kataloğu. Ankara: Milli Kütüphane, 1990.")).toMatchObject({ itemType: "book", fields: { publisher: "Milli Kütüphane", date: "1990" } });
   });
   it("EU legislation and text editions in articles", () => {
-    expect(p("Commission Decision (EU) 2017/1002 of 7 June 2017 on the proposed initiative (Stop extremism), Official Journal of the European Union L 152/1 (15 June 2017), 2.")).toMatchObject({ itemType: "statute", fields: { shortTitle: "Stop extremism", code: "Official Journal of the European Union", codeNumber: "L 152/1", date: "2017-06-15" } });
+    expect(p("Commission Decision (EU) 2017/1002 of 7 June 2017 on the proposed initiative (Stop extremism), Official Journal of the European Union L 152/1 (15 June 2017), 2.")).toMatchObject({ itemType: "statute", fields: { shortTitle: "Stop extremism", code: "Official Journal of the European Union", codeNumber: "L 152/1", date: "15 June 2017" } });
     const ed = p("İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl, “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar”, nşr. Kadir Gömbeyaz, Bilimname 38 (2019), 76.");
     expect(ed).toMatchObject({ itemType: "journalArticle", fields: { seriesText: "Risâle fi hakkı ebeveyi’r-Resûl", title: "Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar", publicationTitle: "Bilimname" } });
     expect(ed?.creators.map((c) => c.creatorType)).toEqual(["author", "nasir"]);
@@ -463,6 +463,20 @@ describe("works that name their kind", () => {
     expect(p("Dahiliye Nezâreti (DN), Vilayet Yolları Haritasıdır (İstanbul: Dahiliye Nezâreti Müdüriyeti, 1329/1913).")).toMatchObject({ itemType: "map", fields: { publisher: "Dahiliye Nezâreti Müdüriyeti" } });
     // A title in quotes is not a book's.
     expect(p("Kara, Mustafa. “Bir Makale”. Dergâh Dergisi 3 (2001), 5-9.")?.itemType).toBe("journalArticle");
+  });
+  it("bibliography details: single names, numerals in titles, roles in one sentence, ts., broken addresses", () => {
+    expect(p("Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, 1996.")).toMatchObject({ fields: { title: "Metafizik" }, creators: [{ creatorType: "author", name: "Aristoteles" }, { creatorType: "translator" }] });
+    expect(p("Osmanlı Tarihi. Kuruluş Dönemi. İstanbul: Ötüken, 2001.")?.creators).toEqual([]);
+    expect(p("Dvornik, Francis. Konsiller Tarihi İznik’ten II. Vatikan’a. çev. Mehmet Aydın. Ankara: Türk Tarih Kurumu Yayınları, 1990.")?.fields.title).toBe("Konsiller Tarihi İznik’ten II. Vatikan’a");
+    expect(p("Kara, Ahmet. Selim III. İstanbul: Ötüken, 2001.")?.fields).toMatchObject({ title: "Selim III", place: "İstanbul" });
+    const esed = p("Kur’an Mesajı: Meal-Tefsir. çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk. Ankara: İşaret Yayınları, 2002.");
+    expect(esed?.creators.map((c) => `${c.creatorType}:${c.lastName}`)).toEqual(["translator:Esed", "turkceye:Koytak", "turkceye:Ertürk"]);
+    expect(p("İbn Manzûr, Muhammed b. Mükerrem. Lisânü’l-ʿArab. nşr. Abdullah Ali el-Kebîr. 6 Cilt. Kahire: Dârü’l-Maârif, ts.")).toMatchObject({ fields: { title: "Lisânü’l-ʿArab", place: "Kahire", publisher: "Dârü’l-Maârif", numberOfVolumes: "6" } });
+    expect(p("Furat, Ahmet Hamdi vd. (ed.). Osmanlı’da İlim ve Fikir Dünyası-XVIII. Yüzyıl. 2 Cilt. İstanbul: Zeytinburnu Belediyesi Kültür Yayınları, 2018.")?.fields.title).toBe("Osmanlı’da İlim ve Fikir Dünyası-XVIII. Yüzyıl");
+    expect(p("Şahin, Derya. Amisos Mozaiği. PDF: Kültür ve Turizm Bakanlığı Yayınları, 2004. http://www.kulturvarliklari.gov.tr/Eklenti/38967,amis os-mozaigi.pdf")?.fields.url).toBe("http://www.kulturvarliklari.gov.tr/Eklenti/38967,amisos-mozaigi.pdf");
+    expect(p("Kara, Mustafa. Tasavvuf. İstanbul: Dergâh, 2005. http://www.dergah.com Erişim 3 Mart 2020.")?.fields.url).toBe("http://www.dergah.com");
+    expect(p("Yargıtay, Yargıtay 11. Hukuk Dairesi. K. 2019/1204 (22 Ağustos 2019).")).toMatchObject({ itemType: "case", fields: { court: "Yargıtay", docketNumber: "2019/1204", dateDecided: "2019-08-22" } });
+    expect(p("FSEK, Fikir ve Sanat Eserleri Kanunu (Kanun No. 5846). Resmî Gazete 7981 (13 Aralık 1951).")).toMatchObject({ itemType: "statute", fields: { shortTitle: "FSEK", title: "Fikir ve Sanat Eserleri Kanunu", publicLawNumber: "5846", codeNumber: "7981" } });
   });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");

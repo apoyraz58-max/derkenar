@@ -1,4 +1,4 @@
-Toplam 414 karşılaştırma: 277 birebir, 43 yalnız dizgi farkıyla, 94 farklı.
+Toplam 414 karşılaştırma: 281 birebir, 39 yalnız dizgi farkıyla, 94 farklı.
 2.1 Kitap-Yazarsız ve Anonim (s. 68): 5/6
 2.2 Kitap-Tek Yazarlı (s. 68): 6/6
 2.3 Kitap-İki Yazarlı (s. 69): 6/6
@@ -108,7 +108,7 @@ Toplam 414 karşılaştırma: 277 birebir, 43 yalnız dizgi farkıyla, 94 farkl�
      kılavuz: Kur’an Mesajı: Meal-Tefsir, çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk (Ankara: İşaret Yayınları, 2002), el-Bakara 2/4.
      derkenar: Kur’an Mesajı: Meal-Tefsir, çev. Muhammed Esed vd. (Ankara: İşaret Yayınları, 2002).
   ✗ kaynakça
-     kılavuz: Kur’ân-ı Kerîm Meâli. çev. Halil Altuntaş - Muzaffer Şahin. Ankara: Diyanet İşleri Başkanlığı Yayınları, 3. Basım, 2009. Kur’an Mesajı: Meal-Tefsir. çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk. Ankara: İşaret Yayınları, 2002.
+     kılavuz: Kur’an Mesajı: Meal-Tefsir. çev. Muhammed Esed, Türkçeye çev. Cahit Koytak - Ahmet Ertürk. Ankara: İşaret Yayınları, 2002.
      derkenar: Kur’an Mesajı: Meal-Tefsir. çev. Muhammed Esed vd. Ankara: İşaret Yayınları, 2002.
 ## 4.2 Meâl-Web (s. 83)
   ✗ ilk
@@ -119,7 +119,7 @@ Toplam 414 karşılaştırma: 277 birebir, 43 yalnız dizgi farkıyla, 94 farkl�
      kılavuz: Kutsal Kitap: Tevrat, Zebur İncil (İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009), Elç.12:10-12.
      derkenar: Kutsal Kitap: Tevrat, Zebur, İncil (İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009).
   ✗ kaynakça
-     kılavuz: Kitabı Mukaddes. İstanbul: Kitabı Mukaddes Şirketi, 2. Basım, 2003. Kutsal Kitap: Tevrat, Zebur İncil. İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009.
+     kılavuz: Kutsal Kitap: Tevrat, Zebur İncil. İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009.
      derkenar: Kutsal Kitap: Tevrat, Zebur, İncil. İstanbul: Kitabı Mukaddes Şirketi - Yeni Yaşam Yayınları, 2009.
 ## 7.1 Yazma Eser-Müellifi Bilinmeyen (s. 90)
   ✗ ilk
@@ -141,19 +141,19 @@ Toplam 414 karşılaştırma: 277 birebir, 43 yalnız dizgi farkıyla, 94 farkl�
      kılavuz: Aristoteles, Metaphysics, çev. Richard Hope (USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960), 139 (1031a 15-20).
      derkenar: Aristoteles, Metaphysics, çev. Richard Hope (Ann Arbor, Michigan, USA: The University of Michigan Press, 1960).
   ✗ kaynakça
-     kılavuz: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, Kasım 1996. Aristoteles. Metaphysics. çev. Richard Hope. USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960. Thomas Aquinas. Commentary on the Metaphysics of Aristotle. çev. John P. Roman. 2 Cilt. Chicago: Henry Regnery Company, 1961.
+     kılavuz: Aristoteles. Metaphysics. çev. Richard Hope. USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960.
      derkenar: Aristoteles. Metaphysics. çev. Richard Hope. Ann Arbor, Michigan, USA: The University of Michigan Press, 1960.
   ✗ sonraki
      kılavuz: (bulunamadı)
      derkenar: Aquinas, Commentary on the Metaphysics of Aristotle.
   ✗ kaynakça
-     kılavuz: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, Kasım 1996. Aristoteles. Metaphysics. çev. Richard Hope. USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960. Thomas Aquinas. Commentary on the Metaphysics of Aristotle. çev. John P. Roman. 2 Cilt. Chicago: Henry Regnery Company, 1961.
+     kılavuz: Thomas Aquinas. Commentary on the Metaphysics of Aristotle. çev. John P. Roman. 2 Cilt. Chicago: Henry Regnery Company, 1961.
      derkenar: Aquinas, Thomas. Commentary on the Metaphysics of Aristotle. çev. John P. Roman. 2 Cilt. Chicago: Henry Regnery Company, 1961.
   ✗ ilk
      kılavuz: Aristoteles, Metafizik, çev. Ahmet Arslan (İstanbul: Sosyal Yayınlar, Kasım 1996), 171 (III.4 999b 5-7).
      derkenar: Aristoteles, Metafizik, çev. Ahmet Arslan (İstanbul: Sosyal Yayınlar, 1996).
   ✗ kaynakça
-     kılavuz: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, Kasım 1996. Aristoteles. Metaphysics. çev. Richard Hope. USA: The University of Michigan Press: Ann Arbor Paperbacks, 1960. Thomas Aquinas. Commentary on the Metaphysics of Aristotle. çev. John P. Roman. 2 Cilt. Chicago: Henry Regnery Company, 1961.
+     kılavuz: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, Kasım 1996.
      derkenar: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, 1996.
 ## 10.1 Kadı Sicili-Matbu (s. 94)
   ✗ sonraki

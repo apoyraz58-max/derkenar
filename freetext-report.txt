@@ -1,12 +1,12 @@
 Serbest künye: 150 metinden 146 tanesi okundu.
-  title: 134/146
-  author: 106/112
-  container: 34/41
-  date: 126/130
-  place: 105/107
-  publisher: 103/105
-  volume: 25/31
-  issue: 13/17
+  title: 140/146
+  author: 108/112
+  container: 35/41
+  date: 128/130
+  place: 106/107
+  publisher: 104/105
+  volume: 26/31
+  issue: 14/17
 
 ✗ okunamadı (dipnot, journalArticle): İsmail Kara, “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu), Nihayet Dergisi 5 (Temmuz 2015), 34-38.
 ✗ dipnot, book: Ebû Abdillâh Ahmed b. Muhammed b. Hanbel eş-Şeybânî Ahmed b. Hanbel, el-Müsned, nşr. Ebû Hâcir Muhammed Saîd Besyûnî (Beyrut: y.y., 1405/1985).
@@ -33,13 +33,6 @@ Serbest künye: 150 metinden 146 tanesi okundu.
      author: "Haccâc" ≠ "Müslim"
 ✗ kaynakça, book: el-Fihrisü’ş-şâmil li’t-türâsi’l-Arabiyyi’l-İslâmiyyi’l-mahtût: el-fıkh ve usûluhû. 12 Cilt. Amman: Müessesetü Âli’l-Beyt li’l-Fikri’l-İslâmî, 1999-2014.
      volume: "12" ≠ "11"
-✗ kaynakça, journalArticle: Şuhâvî, Bedreddin. et-Tırâzu’l-müzheb. “Bedreddin eş-Şuhâvî’nin et-Tırâzu’l-müzheb Adlı Eserinin Tahkik ve Tercümesi”. thk. Osman Bayder. Tahkik İslami İlimler Araştırma ve Neşir Dergisi 2/1 (Haziran 2019), 211-257. https://doi.org/10.5281/zenodo.3475103
-     title: "et-Tırâzu'l-müzheb" ≠ "Bedreddin eş-Şuhâvî'nin et-Tırâzu'l-müzheb Adlı Eserinin Tahkik ve Tercümesi"
-     date: "" ≠ "2019"
-     container: "" ≠ "Tahkik İslami İlimler Araştırma ve Neşir Dergisi"
-     volume: "" ≠ "2"
-     issue: "" ≠ "1"
-     tür: book ≠ journalArticle
 ✗ kaynakça, journalArticle: Kara, İsmail. “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu). Nihayet Dergisi 5 (Temmuz 2015), 34-38. http://www.nihayet.com/roportaj/imkansiza-yonelmedikce-mumkun-olan-ele-gecmez/
      title: "İsmail. “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu). Nihayet Dergisi 5 (Temmuz 2015), 34-38" ≠ "İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez"
      date: "" ≠ "2015"
@@ -48,12 +41,6 @@ Serbest künye: 150 metinden 146 tanesi okundu.
      tür: book ≠ journalArticle
 ✗ kaynakça, book: Taşköprizâde Ahmed Efendi. Miftâḥu’s-saʿâde ve miṣbâḥu’s-siyâde fî mevżûʿâti’l-ʿulûm. nşr. Abdülvehhâb Ebü’n-Nûr - Kâmil Kâmil Bekrî. 3 Cilt. Kahire: Dâru’l-Kütübi’l-Hadîse, 3. Basım, 1968.
      volume: "3" ≠ "2"
-✗ kaynakça, thesis: Eskildsen, Stephen Edward. The Beliefs and Practices of Early Ch‘üan-Chen Taoism. Canada: The University of British Columbia, The Faculty of Graduate Studies, Yüksek Lisans Tezi, 1989. https://open.library.ubc.ca/ cIRcle/collections/ubctheses/831/items/1.0097774
-     title: "Stephen Edward. The Beliefs and Practices of Early Ch‘üan-Chen Taoism. Canada: The University of British Columbia, The Faculty of Graduate Studies, Yüksek Lisans Tezi, 1989. cIRcle/collections/ubctheses/831/items/1.0097774" ≠ "The Beliefs and Practices of Early Ch‘üan-Chen Taoism"
-     date: "" ≠ "1989"
-     place: "" ≠ "Canada"
-     publisher: "" ≠ "The University of British Columbia, The Faculty of Graduate Studies"
-     tür: book ≠ thesis
 ✗ kaynakça, book: Sezgin, Fuat. Geschichte des arabischen Schrifttums. 17 Cilt. Leiden: Brill, 1967-2015.
      volume: "17" ≠ "1"
 ✗ kaynakça, bookSection: Sinanoğlu, Oktay. “Yabancı Dille Eğitime Neden Bu Kadar Karşısınız?” (Görüşmeci: Sinan Hıncal). Bir Nev-York Rüyası Bye Bye Türkçe. İstanbul: Bilim - Gönül Yayınları, 54. Basım, 2011.
@@ -66,16 +53,6 @@ Serbest künye: 150 metinden 146 tanesi okundu.
      tür: book ≠ bookSection
 ✗ okunamadı (kaynakça, journalArticle): İbrahim el-Halebî. Risâle fi hakkı ebeveyi’r-Resûl. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. nşr. Kadir Gömbeyaz. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278
 ✗ okunamadı (kaynakça, book): TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz. Türkiye: Türk Standardları Enstitüsü, Kabul 5 Haziran 2012, TS OIC/SMIIC 2/T1.
-✗ kaynakça, book: Furat, Ahmet Hamdi vd. (ed.). Sahn-ı Semân’dan Dârülfünûn’a Osmanlı’da İlim ve Fikir Dünyası (Âlimler, Müesseseler ve Fikrî Eserler)-XVIII. Yüzyıl. 2 Cilt. İstanbul: Zeytinburnu Belediyesi Kültür Yayınları, 2018.
-     title: "(ed.)" ≠ "Sahn-ı Semân'dan Dârülfünûn'a Osmanlı'da İlim ve Fikir Dünyası (Âlimler, Müesseseler ve Fikrî Eserler)-XVIII. Yüzyıl"
-✗ kaynakça, book: Dvornik, Francis. Konsiller Tarihi İznik’ten II. Vatikan’a. çev. Mehmet Aydın. Ankara: Türk Tarih Kurumu Yayınları, 1990.
-     title: "Konsiller Tarihi İznik'ten II" ≠ "Konsiller Tarihi İznik'ten II. Vatikan'a"
-✗ kaynakça, book: Aristoteles. Metafizik. çev. Ahmet Arslan. İstanbul: Sosyal Yayınlar, 1996.
-     title: "Aristoteles" ≠ "Metafizik"
-     author: "" ≠ "Aristoteles"
-✗ kaynakça, book: Aristoteles. Metaphysics. çev. Richard Hope. Ann Arbor, Michigan, USA: The University of Michigan Press, 1960.
-     title: "Aristoteles" ≠ "Metaphysics"
-     author: "" ≠ "Aristoteles"
 ✗ kaynakça, journalArticle: Şeyh Zindânî, Abdülmecid b. Aziz. “Yemen’de Şeyh Zindânî ile Mülakat” (Görüşmeci: Mehmet Ümit, Görüşme Transkripsiyonu). e-makalat 6/2 (Güz 2013), 135-150.
      title: "“Yemen'de Şeyh Zindânî ile Mülakat” (Görüşmeci: Mehmet Ümit, Görüşme Transkripsiyonu)" ≠ "Yemen'de Şeyh Zindânî ile Mülakat"
      date: "" ≠ "2013"

@@ -58,7 +58,7 @@ const ROLE_RE = /^(Türkçeye çev\.|critical ed\.|thk\.|nşr\.|haz\.|sad\.|mlf\
 
 const MONTHS: Record<string, number> = { ocak: 1, şubat: 2, mart: 3, nisan: 4, mayıs: 5, haziran: 6, temmuz: 7, ağustos: 8, eylül: 9, ekim: 10, kasım: 11, aralık: 12, january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12 };
 
-const DATE = String.raw`(?:(?:ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)\s+)?(?:\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4}(?:-\d{2,4})?)?(?:\s*\[\d{4}\])?|ts\.|n\.d\.)`;
+const DATE = String.raw`(?:(?:ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık|january|february|march|april|may|june|july|august|september|october|november|december)\s+)?(?:\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4}(?:-\d{2,4})?)?(?:\s*\[\d{4}\])?|ts\.?|n\.d\.?)`;
 const ARTICLES = /^(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eḍ|eẓ|al|ad|an|ar|as|at|az)-/i;
 
 /** "12 Mart 2024" → "2024-03-12". */
@@ -113,7 +113,7 @@ function splitNames(s: string): { names: string[]; more: boolean } {
 
 function setDate(item: Item, d: string): void {
   const t = d.trim().replace(/\s*\[\d{4}\]$/, "");
-  if (t && !/^(ts\.|n\.d\.)$/i.test(t)) item.fields.date = t;
+  if (t && !/^(ts\.?|n\.d\.?)$/i.test(t)) item.fields.date = t;
 }
 
 /** "Medine: el-Câmiatü'l-İslâmiyye, 2. Basım, 1413/1993" (also "Bursa: Uludağ Üniversitesi, İlahiyat Fakültesi, Lisans Tezi, 2002"). */
@@ -152,8 +152,10 @@ function readImprint(item: Item, s: string): boolean {
 }
 
 /** "thk. A - B", "çev. C", "Türkçeye çev. D" … after the title. */
-function readRoles(item: Item, parts: string[]): string[] {
+function readRoles(item: Item, parts0: string[]): string[] {
   const rest: string[] = [];
+  // "çev. Muhammed Esed, Türkçeye çev. Cahit Koytak": two roles in one part.
+  const parts = parts0.flatMap((p) => (ROLE_RE.test(p.trim()) ? p.split(/,\s*(?=(?:Türkçeye çev\.|critical ed\.|thk\.|nşr\.|haz\.|sad\.|çev\.|trans\.|eds?\.)\s)/) : [p]));
   for (const p of parts) {
     const m = ROLE_RE.exec(p.trim());
     if (!m) {
@@ -178,8 +180,28 @@ function stripLeading(s: string): string {
     .trim();
 }
 
+/**
+ * An address at the end, broken by a copy from a PDF: "…/Eklenti/38967,amis os-mozaigi.pdf",
+ * "…/status/117094811236766 5153", "http://yazmalar.gov.tr /eser/…". The pieces are joined.
+ */
+function joinBrokenUrl(s: string): string {
+  const words = s.split(" ");
+  const at = words.map((w, i) => (/^(?:https?:\/\/|www\.)/.test(w) ? i : -1)).filter((i) => i >= 0).pop();
+  if (at === undefined || at === words.length - 1) return s;
+  let url = words[at]!;
+  let k = at + 1;
+  for (; k < words.length; k++) {
+    const piece = words[k]!.replace(/\.$/, k === words.length - 1 ? "" : ".");
+    const fits = /^\//.test(piece) || /[=&%+_?#]/.test(piece) || /\.(pdf|html?|aspx?|php|jsp|docx?)$/i.test(piece) || (/^[\w-]+(?:[./-][\w-]+)+$/.test(piece) && !/^\p{Lu}\p{Ll}+$/u.test(piece)) || (/\d$/.test(url) && /^\d+$/.test(piece));
+    if (!fits || /^(Erişim|Access)/i.test(piece)) break;
+    url += piece;
+  }
+  // Only an address that ends the text is mended: what follows it otherwise is the reference's own words.
+  return k === words.length ? [...words.slice(0, at), url].join(" ") : s;
+}
+
 function readUrl(item: Item, s: string): string {
-  let t = s;
+  let t = joinBrokenUrl(s.trim());
   // A DOI, also written as an address ("https://doi.org/10.…").
   const doiUrl = /https?:\/\/(?:dx\.)?doi\.org\/(10\.\d{4,9}\/\S+?)[.,;]?(?=\s|$)/i.exec(t);
   if (doiUrl) {
@@ -208,7 +230,9 @@ function readUrl(item: Item, s: string): string {
     else if (my && mo) item.fields.accessDate = `${my[2]}-${String(mo).padStart(2, "0")}`;
     t = t.replace(access[0], "").trim();
   }
-  return t.replace(/[.,;:\s]+$/, "");
+  // The period of an abbreviation stays: "Kahire: Dârü’l-Maârif, ts.", "… vd.", "… hk.".
+  const end = t.replace(/[.,;:\s]+$/, "");
+  return /(?:^|[\s,(])(ts|vd|hk|vb|vs|y\.y|b\.y|n\.d|et al)$/.test(end) && /^\./.test(t.slice(end.length)) ? `${end}.` : end;
 }
 
 // ---------------------------------------------------------------- İSNAD dipnot
@@ -312,6 +336,13 @@ function isnadNote(s: string): ParsedReference | null {
   return null;
 }
 
+/** "İznik’ten II. Vatikan’a": a numeral inside a title, when what follows is not an imprint or a role. */
+function romanInTitle(word: string, after: string): boolean {
+  if (!/^[IVXLC]{2,6}$/.test(word) || !/^\p{Lu}/u.test(after)) return false;
+  const next = after.split(/\.\s/)[0] ?? "";
+  return !/:/.test(next) && !ROLE_RE.test(after) && !/^\d/.test(after) && next.split(" ").length <= 4 && after.length > next.length;
+}
+
 /**
  * Sentences of a kaynakça entry: split at ". " but not after an abbreviation
  * that belongs to the text ("b. Muhammed", "3. Basım", "thk. X", "M. Sait",
@@ -330,7 +361,7 @@ function sentencesOf(s: string): string[] {
     else if (ch === "”") quote = false;
     if (ch === "." && s[i + 1] === " " && depth === 0 && !quote) {
       const word = /(\S+)$/.exec(cur)?.[1] ?? "";
-      const abbrev = (/^[IVXLC]{1,5}$/.test(word) && cur.trim() === word) || (/^\d{1,2}-\d{1,2}$/.test(word) && /^ (yüzyıl|yy\.)/.test(s.slice(i + 1))) || /^(b|bin|bnt|\d{1,3}|\p{Lu}|thk|nşr|haz|çev|ed|eds|sad|mlf|Türkçeye|trans|s\.a|r\.a|Hz|St|Dr|Prof|Doç|vol|no|No)$/u.test(word) && !/^\d{4}$/.test(word) && s[i + 2] !== "“";
+      const abbrev = (/^[IVXLC]{1,5}$/.test(word) && cur.trim() === word) || romanInTitle(word, s.slice(i + 2)) || (/(?:^|[^\p{L}])[IVXLC]{1,6}$/u.test(word) && /^ (Yüzyıl|yüzyıl|Asır|asır|Century)/.test(s.slice(i + 1))) || (/^(vd|et al)$/.test(word) && s[i + 2] === "(") || (/^\d{1,2}-\d{1,2}$/.test(word) && /^ (yüzyıl|yy\.)/.test(s.slice(i + 1))) || /^(b|bin|bnt|\d{1,3}|\p{Lu}|thk|nşr|haz|çev|ed|eds|sad|mlf|Türkçeye|trans|s\.a|r\.a|Hz|St|Dr|Prof|Doç|vol|no|No)$/u.test(word) && !/^\d{4}$/.test(word) && s[i + 2] !== "“";
       if (!abbrev) {
         out.push(cur.trim());
         cur = "";
@@ -404,8 +435,20 @@ function isnadBib(s: string): ParsedReference | null {
     rest = sents.slice(1).join(". ");
   }
   // Article: “Makale”. Dergi 37/1 (1997), 317-331.
-  const art = /^“([^”]+)”\.?\s*(.+?)\s+(\d+)(?:\/(\d+))?\s+\(([^)]*?\d{4})\),\s*([\d\-–]+)\.?$/u.exec(rest);
+  // A text published in an article (İSNAD 14.3) names the work first: "Eserin Adı. nşr. X. “Makale”. Dergi …".
+  let work = "";
+  const lead = /^([^“”]+?)\.\s+(?=“)/u.exec(rest);
+  if (lead && item.creators.length) {
+    const ss = sentencesOf(lead[1]!);
+    if (!ROLE_RE.test(ss[0]!.trim()) && ss.slice(1).every((x) => ROLE_RE.test(x.trim()))) work = lead[0];
+  }
+  const art = /^“([^”]+)”\.?\s*(.+?)\s+(\d+)(?:\/(\d+))?\s+\(([^)]*?\d{4})\),\s*([\d\-–]+)\.?$/u.exec(work ? rest.slice(work.length) : rest);
   if (art && !/:\s/.test(art[2]!)) {
+    if (work) {
+      const ss = sentencesOf(work.trim().replace(/\.$/, ""));
+      item.fields.seriesText = ss[0]!;
+      readRoles(item, ss.slice(1));
+    }
     item.itemType = "journalArticle";
     item.fields.title = art[1]!;
     const container = readRoles(item, sentencesOf(art[2]!));
@@ -460,6 +503,16 @@ function isnadBib(s: string): ParsedReference | null {
     item.itemType = /Ansiklopedi|Encyclop/i.test(container) ? "encyclopediaArticle" : "bookSection";
   } else item.fields.title = title.replace(/\.$/, "");
   parts = readRoles(item, parts);
+  // "Aristoteles. Metafizik. çev. …", "Thomas Aquinas. Commentary on …": a name by itself, then the title.
+  if (!quoted && !item.creators.some((c) => c.creatorType === "author" || c.creatorType === "editor") && parts.length && !/^\d/.test(parts[0]!.trim()) && /^\p{Lu}\p{L}+(?:\s\p{Lu}\p{L}+){0,2}$/u.test(item.fields.title ?? "")) {
+    const name = item.fields.title!;
+    // "Osmanlı Tarihi. Kuruluş Dönemi.": a title with its subtitle, not a person.
+    if (!/(Tarih|Kitab|Kitâb|Divan|Dîvân|Meal|Meâl|Risale|Risâle|Sözlü|Lugat|Lügat|Mecmua|Külliyat|Tefsir|Tefsîr|Şerh|Dönem|Devri|Eserleri|Hayatı|Felsefe|Ahlak|Ahlâk|Fıkıh|Kelam|Kelâm|Mukaddes|Kur’ân|Kur'an|Kuran|History|Introduction)/iu.test(name)) {
+      item.creators.unshift({ creatorType: "author", name });
+      item.fields.title = parts.shift()!.trim();
+      if (/\s/.test(name)) unsure.push("yazar (başlık mı?)");
+    }
+  }
   for (const p of parts) {
     const vols = /^(\d+)\s+(Cilt|Volumes?|vols?\.?)$/i.exec(p.trim());
     const pages = /^(?:(\d+)\/)?(\d+[-–]\d+)$/.exec(p.trim());
@@ -675,7 +728,7 @@ function legislation(s: string): ParsedReference | null {
     item.fields.shortTitle = rg[2]!;
     item.fields.code = rg[3]!.trim();
     item.fields.codeNumber = rg[4]!.trim();
-    item.fields.date = dayMonthYear(rg[5]!) ?? rg[5]!.trim();
+    item.fields.date = officialDate(rg[5]!);
     if (rg[6]) item.fields.publicLawNumber = rg[6];
     if (rg[7]) item.fields.pages = rg[7];
   } else if (other) {
@@ -683,21 +736,54 @@ function legislation(s: string): ParsedReference | null {
     item.fields.shortTitle = other[2]!;
     item.fields.date = other[4]!;
     item.fields.extra = `authority: ${other[3]!.trim()}\npublisher-place: Türkiye`;
-  } else return null;
+  } else return legislationBib(item, t);
   return { item, form: "isnad-dipnot", unsure: [] };
+}
+
+/** "13 Aralık 1951" → "1951-12-13"; an English date ("15 June 2017", the EU's Official Journal) is kept as written. */
+function officialDate(s: string): string {
+  return /\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(s) ? s.trim() : (dayMonthYear(s) ?? s.trim());
+}
+
+/**
+ * Mevzuat in the bibliography (İSNAD): "FSEK, Fikir ve Sanat Eserleri Kanunu (Kanun No. 5846). Resmî Gazete 7981
+ * (13 Aralık 1951).", "Stop extremism, Commission Decision …. Official Journal … L 152/1 (15 June 2017).",
+ * "YKBAYEY, … Yönergesi. Türkiye: Yükseköğretim Kurulu, 2016." The short name comes first.
+ */
+function legislationBib(item: Item, t: string): ParsedReference | null {
+  const rg = /^([^,]{2,40}),\s+(.+?)(?:\s*\((?:Kanun|Law|KHK)\s*No\.?\s*(\d+)\))?\.\s+(Resm[îi] Gazete|Düstur|Official Journal[^\d(]*?)\s+((?:[A-Z]\s)?[\d/ ]{1,20}?)\s*\(([^()]+)\)$/u.exec(t);
+  if (rg) {
+    item.fields.shortTitle = rg[1]!.trim();
+    item.fields.title = rg[2]!.trim();
+    if (rg[3]) item.fields.publicLawNumber = rg[3];
+    item.fields.code = rg[4]!.trim();
+    item.fields.codeNumber = rg[5]!.trim();
+    item.fields.date = officialDate(rg[6]!);
+    return { item, form: "isnad-kaynakca", unsure: [] };
+  }
+  const other = /^(\p{Lu}[\p{Lu}\d]{1,11}),\s+(.+?(?<=\s)(?:Kanunu|Yönetmeliği|Yönergesi|Tüzüğü|Genelgesi|Kararnamesi|İlkeleri|Esasları|Talimatı|Law|Regulation|Directive))\.\s+(?:([^:]{2,40}):\s*)?([^,]{3,80}),\s*(\d{4})$/u.exec(t);
+  if (!other) return null;
+  item.fields.shortTitle = other[1]!;
+  item.fields.title = other[2]!.trim();
+  item.fields.date = other[5]!;
+  item.fields.extra = `authority: ${other[4]!.trim()}\npublisher-place: ${other[3]?.trim() ?? "Türkiye"}`;
+  return { item, form: "isnad-kaynakca", unsure: [] };
 }
 
 /** A court decision (İSNAD): "Yargıtay 11. Hukuk Dairesi (Yargıtay), K. 2019/1204 (22 Ağustos 2019)". */
 function courtCase(s: string): ParsedReference | null {
   const item = emptyItem("case", "serbest");
   const t = readUrl(item, s).replace(/\.$/, "");
-  const m = /^(.+?)\s*\(([^()]{2,40})\),?\s*(?:K|E|Karar|Esas)\.\s*(?:No\.?\s*)?([\d/.-]+)\s*\(([^()]+)\)$/u.exec(t);
+  const note = /^(.+?)\s*\(([^()]{2,40})\),?\s*(?:K|E|Karar|Esas)\.\s*(?:No\.?\s*)?([\d/.-]+)\s*\(([^()]+)\)$/u.exec(t);
+  // The bibliography: "Yargıtay, Yargıtay 11. Hukuk Dairesi. K. 2019/1204 (22 Ağustos 2019)."
+  const bib = note ? null : /^([^,]{2,40}),\s+(.+?)\.\s+(?:K|E|Karar|Esas)\.\s*(?:No\.?\s*)?([\d/.-]+)\s*\(([^()]+)\)$/u.exec(t);
+  const m = note ?? (bib ? [bib[0], bib[2], bib[1], bib[3], bib[4]] : null);
   if (!m || !/(mahkeme|yargıtay|danıştay|daire|kurul|court|sayıştay)/i.test(`${m[1]} ${m[2]}`)) return null;
   item.creators.push({ creatorType: "author", lastName: m[2]!.trim(), firstName: m[1]!.trim() });
   item.fields.court = m[2]!.trim();
   item.fields.docketNumber = m[3]!;
   item.fields.dateDecided = dayMonthYear(m[4]!) ?? m[4]!.trim();
-  return { item, form: "isnad-dipnot", unsure: [] };
+  return { item, form: bib ? "isnad-kaynakca" : "isnad-dipnot", unsure: [] };
 }
 
 /**
@@ -939,7 +1025,7 @@ function labeled(s: string): ParsedReference | null {
   if (aired) return screen(carry(emptyItem("videoRecording", "serbest")), aired[1]!, true, aired[2]!, aired[3]!, aired[4]!);
 
   // A recording (İSNAD 33): "Sanatçı, “Parça”, Albüm (2001)." / "Soyad, Ad. “Parça”. Albüm, 2001." — no imprint, no page.
-  const track = /^([^“”,]{3,60}),\s*“([^”]+)”,\s*([^(),“”:]{2,80}?)\s*\((\d{4}|ts\.)\)$/u.exec(t) ?? /^([^“”.,]{2,40},\s*[^“”.]{2,60})\.\s+“([^”]+)”\.\s+([^.,:“”]{2,80}),\s*(\d{4}|ts\.)$/u.exec(t);
+  const track = /^([^“”,]{3,60}),\s*“([^”]+)”,\s*([^(),“”:]{2,80}?)\s*\((\d{4}|ts\.)\)$/u.exec(t) ?? /^([^“”.,]{2,40},\s*[^“”.]{2,60})\.\s+“([^”]+)”\.\s+([^.,:“”]{2,80}),\s*(\d{4}|ts\.?)$/u.exec(t);
   if (track && !/\d[\d/\s-]*$/.test(track[3]!.trim()) && !/(dergi|journal|review|studies|bülten|yıllı[gğ]ı|mecmua|ansiklopedi)/i.test(track[3]!)) {
     const item = emptyItem("audioRecording", "serbest");
     const bibTrack = /\.\s+“/.test(t);
@@ -1233,6 +1319,13 @@ function finish(best: ParsedReference): void {
     }
     it.itemType = "map";
     for (const c of it.creators) if (c.creatorType === "author") c.creatorType = "cartographer";
+  }
+  // A report (İSNAD 17): "Yemen Raporu. TASAM, 2018." — a book whose title says so, printed by a body without a place.
+  if (best.item.itemType === "book" && /(Rapor(u|ları)?|Report)$/iu.test(best.item.fields.title ?? "") && best.item.fields.publisher && !best.item.fields.place) {
+    const f = best.item.fields;
+    best.item.itemType = "report";
+    f.institution = f.publisher!;
+    delete f.publisher;
   }
   // A chapter in a symposium's book is a paper (İSNAD 15): "…, IV. Uluslararası … Sempozyumu, ed. … (Yer: Yayınevi, Yıl)".
   if (best.item.itemType === "bookSection" && PROCEEDINGS.test(best.item.fields.bookTitle ?? "")) {
