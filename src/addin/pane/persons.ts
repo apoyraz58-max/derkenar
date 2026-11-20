@@ -113,7 +113,9 @@ export function diaSpelling(items: Item[]): string[] {
     const creators = it.creators.map((c) => {
       const s = diaSuggestion(c, index!);
       // Safe without asking: only marks differ, or the very name as typed is filed under its famous part ("Müslim").
-      const refiled = s && !s.loose && s.creator.firstName === `${c.firstName ?? ""}${/-$/.test(c.firstName ?? "") ? "" : " "}${c.lastName ?? ""}`.trim();
+      // (A famous name of several words, "Müslim b. Haccâc", is printed after the full name, as İSNAD does with
+      // "… Ahmed b. Hanbel": the note changes, so that one is offered in Denetim instead.)
+      const refiled = s && !s.loose && !(s.creator.lastName ?? "").includes(" ") && s.creator.firstName === `${c.firstName ?? ""}${/-$/.test(c.firstName ?? "") ? "" : " "}${c.lastName ?? ""}`.trim();
       if (!s || s.loose || (!onlyMarks(c, s.creator) && !refiled)) return c;
       touched = true;
       changed.push(s.creator.lastName ?? s.creator.name ?? "");

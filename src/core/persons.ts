@@ -497,7 +497,8 @@ export function diaCreator(c: Creator, p: Person): Creator {
   // A full name with the famous name inside it ("Ebü’l-Hüseyn Müslim b. el-Haccâc", surname "Haccâc"): İSNAD keeps the
   // name as typed and files it under the famous name ("Müslim" + "Ebü’l-Hüseyn Müslim b. el-Haccâc").
   const full = typedFull(c);
-  if (c.lastName !== undefined && nameKey(c.lastName) !== nameKey(surname) && !surname.includes(" ") && full.split(/\s+/).some((w) => nameKey(w) === nameKey(surname)) && nameKey(full).split(" ").length >= 3) {
+  const fullWords = ` ${nameKey(full)} `;
+  if (c.lastName !== undefined && nameKey(c.lastName) !== nameKey(surname) && fullWords.includes(` ${nameKey(surname)} `) && nameKey(full).split(" ").length >= 3) {
     return { creatorType: c.creatorType, lastName: surname, firstName: full };
   }
   if (c.name !== undefined) return { creatorType: c.creatorType, name: c.name.trim().split(/\s+/).length > 1 && given ? `${given} ${article}${surname}`.replace(/- /, "-") : surname };
