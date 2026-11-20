@@ -490,6 +490,15 @@ describe("works that name their kind", () => {
     expect(a("Ebû Bekr Ahmed b. Ali b. Ahmed, Kitâb (Beyrut: y.y., 1990).")).toMatchObject({ lastName: "Ahmed" });
     expect(a("Ebû Hâmid Muhammed b. Muhammed el-Gazzâlî, el-Mustasfâ (Beyrut: y.y., 1993).")).toMatchObject({ lastName: "Gazzâlî" });
   });
+  it("old-style footnotes and bibliographies", () => {
+    expect(p("Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi, Dergâh Yayınları, İstanbul 2005, s. 45.")).toMatchObject({ itemType: "book", fields: { title: "Tasavvuf ve Tarikatlar Tarihi", place: "İstanbul", publisher: "Dergâh Yayınları", date: "2005" } });
+    expect(p("KARA, Mustafa: Tasavvuf ve Tarikatlar Tarihi, İstanbul: Dergâh Yay., 2005.")).toMatchObject({ fields: { title: "Tasavvuf ve Tarikatlar Tarihi", place: "İstanbul", publisher: "Dergâh Yayınları" }, creators: [{ lastName: "Kara", firstName: "Mustafa" }] });
+    expect(p("Halil İnalcık, Osmanlı İmparatorluğu Klasik Çağ (1300-1600), çev. Ruşen Sezer, YKY, İstanbul 2003, s. 12-15.")).toMatchObject({ fields: { title: "Osmanlı İmparatorluğu Klasik Çağ (1300-1600)", date: "2003", publisher: "YKY" } });
+    expect(p("Gazzâlî, İhyâu Ulûmi'd-Dîn, Beyrut ts., III, 12.")).toMatchObject({ fields: { title: "İhyâu Ulûmi'd-Dîn", place: "Beyrut" } });
+    expect(p("Gazzâlî, İhyâu Ulûmi'd-Dîn, Beyrut ts., III, 12.")?.fields.date).toBeUndefined();
+    const r = readHandNotes(["İbn Haldun, Mukaddime, çev. Süleyman Uludağ, Dergâh Yay., İstanbul 1982, I, 245.", "Gazzâlî, İhyâu Ulûmi'd-Dîn, Beyrut ts., III, 12."], []);
+    expect(r.map((n) => (n.refs ? `${n.refs[0]!.volume}/${n.refs[0]!.locator}` : n.reason))).toEqual(["I/245", "III/12"]);
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");

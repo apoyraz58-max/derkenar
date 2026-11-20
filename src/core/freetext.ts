@@ -292,7 +292,8 @@ function isnadNote(s: string): ParsedReference | null {
   for (const m of t.matchAll(/\(([^()]*?(?:\d{3,4}(?:-\d{2,4})?(?:\/\d{3,4}(?:-\d{2,4})?)?|ts\.|n\.d\.))\)/gu)) {
     // A bare year, "Kitap (2001)", is an imprint with gaps; not after a volume ("Dergisi 37 (1997)") or a quoted title (an article).
     const before = t.slice(0, m.index).trim();
-    if (/[:,]/.test(m[1]!) || (!/[“"]/.test(before) && !/\d[\s/]*$/.test(before) && /,/.test(before))) imp = Object.assign([m[0], t.slice(0, m.index).trim(), m[1]!, t.slice(m.index! + m[0].length)], { index: m.index!, input: t }) as unknown as RegExpExecArray;
+    const follows = t.slice(m.index! + m[0].length);
+    if (/[:,]/.test(m[1]!) || (!/[“"]/.test(before) && !/\d[\s/]*$/.test(before) && /,/.test(before) && /^[\s,.\d/–-]*$/.test(follows))) imp = Object.assign([m[0], t.slice(0, m.index).trim(), m[1]!, t.slice(m.index! + m[0].length)], { index: m.index!, input: t }) as unknown as RegExpExecArray;
   }
   if (imp) {
     if (!readImprint(item, imp[2]!)) return null;
@@ -598,7 +599,7 @@ function topSplit(s: string, sep: string): string[] {
   return out.filter(Boolean);
 }
 
-const YEAR_END = /^(.*?)[\s,]*\(?((?:1[0-9]|20)\d{2}(?:\s*\/\s*(?:1[0-9]|20)\d{2})?|\d{3,4}\s*\/\s*(?:1[0-9]|20)\d{2})\)?$/;
+const YEAR_END = /^(.*?)[\s,]*\(?((?:1[0-9]|20)\d{2}(?:\s*\/\s*(?:1[0-9]|20)\d{2})?|\d{3,4}\s*\/\s*(?:1[0-9]|20)\d{2}|ts\.?|t\.y\.?|n\.d\.?)\)?$/;
 
 /**
  * Eski usul, Turkish theses' most common form before İSNAD:
@@ -610,7 +611,9 @@ const YEAR_END = /^(.*?)[\s,]*\(?((?:1[0-9]|20)\d{2}(?:\s*\/\s*(?:1[0-9]|20)\d{2
 function oldStyle(s: string): ParsedReference | null {
   const item = emptyItem("book", "serbest");
   const unsure: string[] = [];
-  const parts = topSplit(readUrl(item, s).replace(/\.$/, ""), ",");
+  // "KARA, Mustafa: Başlık, …": the old way of ending the name with a colon.
+  const t0 = readUrl(item, s).replace(/\.$/, "").replace(/^(\p{Lu}[\p{L}'’-]+,\s*(?:\p{Lu}[\p{Ll}âîûÂÎÛ.]*\s?){1,4}):\s+/u, "$1, ");
+  const parts = topSplit(t0, ",");
   if (parts.length < 3) return null;
   let i = 1;
   const first = parts[0]!;
@@ -660,6 +663,12 @@ function oldStyle(s: string): ParsedReference | null {
   if (!place && k > 0 && /^\p{Lu}[\p{L}\s-]{1,25}$/u.test(rest[k - 1]!) && !/\b(yay|yayın|neşriyat|kitabevi|matbaa|press|vakfı)/i.test(rest[k - 1]!)) place = rest[--k]!;
   if (place) item.fields.place = place;
   const before = rest.slice(0, k);
+  // "İstanbul: Dergâh Yay., 2005": the place is written before the publisher.
+  const colon = before.length ? /^(\p{Lu}[^:]{1,30}):\s*(.+)$/u.exec(before[before.length - 1]!) : null;
+  if (colon && !place && placeIn(colon[1]!)) {
+    item.fields.place = colon[1]!.trim();
+    before[before.length - 1] = colon[2]!;
+  }
   for (const p of before) {
     const ed = /^(\d+)\.\s*(?:bs|baskı|basım|ed)\.?$/i.exec(p);
     if (ed) item.fields.edition = ed[1]!;
@@ -667,7 +676,7 @@ function oldStyle(s: string): ParsedReference | null {
     else if (/\b(tezi|thesis|dissertation)\b/i.test(p)) {
       item.itemType = "thesis";
       item.fields.thesisType = p;
-    } else if (!item.fields.publisher) item.fields.publisher = p.replace(/\bYay\.$/, "Yayınları");
+    } else if (!item.fields.publisher) item.fields.publisher = p.replace(/\bYay\.?$/, "Yayınları");
     else item.fields.publisher += `, ${p}`;
   }
   if (item.itemType === "thesis" && item.fields.publisher) {
@@ -1373,7 +1382,12 @@ export function parseReference(raw: string): ParsedReference | null {
     }
   }
   const r = readReference(raw);
-  return r ? markAuthority(r, stripLeading(raw)) : r;
+  if (r) return markAuthority(r, stripLeading(raw));
+  // A footnote copied with its page ("…, İstanbul 2005, s. 45.", "…, Beyrut ts., III, 12."): the page is not the work's.
+  const page = /,\s*(?:(?:s|ss|sh|p|pp)\.\s*|(?:[IVXLC]+|\d+)\s*,\s*(?:s\.\s*)?|(?:c\.\s*[IVXLC\d]+\s*,\s*s\.\s*))?\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?\.?\s*$/u.exec(raw);
+  if (!page) return null;
+  const again = readReference(raw.slice(0, page.index));
+  return again ? markAuthority(again, stripLeading(raw)) : null;
 }
 
 function readReference(raw: string): ParsedReference | null {
