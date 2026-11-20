@@ -478,6 +478,18 @@ describe("works that name their kind", () => {
     expect(p("Yargıtay, Yargıtay 11. Hukuk Dairesi. K. 2019/1204 (22 Ağustos 2019).")).toMatchObject({ itemType: "case", fields: { court: "Yargıtay", docketNumber: "2019/1204", dateDecided: "2019-08-22" } });
     expect(p("FSEK, Fikir ve Sanat Eserleri Kanunu (Kanun No. 5846). Resmî Gazete 7981 (13 Aralık 1951).")).toMatchObject({ itemType: "statute", fields: { shortTitle: "FSEK", title: "Fikir ve Sanat Eserleri Kanunu", publicLawNumber: "5846", codeNumber: "7981" } });
   });
+  it("interviews printed in journals and books; full names followed by the known name", () => {
+    const iv = p("İsmail Kara, “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu), Nihayet Dergisi 5 (Temmuz 2015), 34-38.");
+    expect(iv).toMatchObject({ itemType: "journalArticle", fields: { title: "İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez", publicationTitle: "Nihayet Dergisi", extra: "interviewer: Barbarosoğlu || Fatma\nmedium: Görüşme Transkripsiyonu" } });
+    expect(p("Sinanoğlu, Oktay. “Yabancı Dille Eğitime Neden Bu Kadar Karşısınız?” (Görüşmeci: Sinan Hıncal). Bir Nev-York Rüyası Bye Bye Türkçe. İstanbul: Bilim - Gönül Yayınları, 2011.")).toMatchObject({ itemType: "bookSection", fields: { bookTitle: "Bir Nev-York Rüyası Bye Bye Türkçe", extra: "interviewer: Hıncal || Sinan" } });
+    const a = (s: string) => p(s)?.creators[0];
+    expect(a("Ebû Abdillâh Ahmed b. Muhammed b. Hanbel eş-Şeybânî Ahmed b. Hanbel, el-Müsned (Beyrut: y.y., 1985).")).toMatchObject({ lastName: "Ahmed b. Hanbel", firstName: "Ebû Abdillâh Ahmed b. Muhammed b. Hanbel eş-Şeybânî" });
+    expect(a("Ebû Abdillâh Mâlik b. Enes el-Asbahî İmam Mâlik, el-Muvaṭṭaʾ (Kahire: y.y., 1962).")).toMatchObject({ lastName: "İmam Mâlik" });
+    expect(a("Abdülmecid b. Aziz Şeyh Zindânî, “Mülakat”, e-makalat 6/2 (Güz 2013), 135.")).toMatchObject({ lastName: "Şeyh Zindânî" });
+    // A chain of fathers' names is not a repetition.
+    expect(a("Ebû Bekr Ahmed b. Ali b. Ahmed, Kitâb (Beyrut: y.y., 1990).")).toMatchObject({ lastName: "Ahmed" });
+    expect(a("Ebû Hâmid Muhammed b. Muhammed el-Gazzâlî, el-Mustasfâ (Beyrut: y.y., 1993).")).toMatchObject({ lastName: "Gazzâlî" });
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");

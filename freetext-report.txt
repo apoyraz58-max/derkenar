@@ -1,26 +1,15 @@
-Serbest künye: 150 metinden 146 tanesi okundu.
-  title: 140/146
-  author: 108/112
-  container: 35/41
-  date: 128/130
+Serbest künye: 150 metinden 148 tanesi okundu.
+  title: 148/148
+  author: 112/114
+  container: 43/43
+  date: 132/132
   place: 106/107
   publisher: 104/105
-  volume: 26/31
-  issue: 14/17
+  volume: 28/32
+  issue: 16/19
 
-✗ okunamadı (dipnot, journalArticle): İsmail Kara, “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu), Nihayet Dergisi 5 (Temmuz 2015), 34-38.
-✗ dipnot, book: Ebû Abdillâh Ahmed b. Muhammed b. Hanbel eş-Şeybânî Ahmed b. Hanbel, el-Müsned, nşr. Ebû Hâcir Muhammed Saîd Besyûnî (Beyrut: y.y., 1405/1985).
-     author: "Hanbel" ≠ "Ahmed b. Hanbel"
-✗ dipnot, bookSection: Oktay Sinanoğlu, “Yabancı Dille Eğitime Neden Bu Kadar Karşısınız?” (Görüşmeci: Sinan Hıncal), Bir Nev-York Rüyası Bye Bye Türkçe (İstanbul: Bilim - Gönül Yayınları, 2011).
-     title: "“Yabancı Dille Eğitime Neden Bu Kadar Karşısınız?” (Görüşmeci: Sinan Hıncal), Bir Nev-York Rüyası Bye Bye Türkçe" ≠ "Yabancı Dille Eğitime Neden Bu Kadar Karşısınız?"
-     container: "" ≠ "Bir Nev-York Rüyası Bye Bye Türkçe"
-     tür: book ≠ bookSection
-✗ dipnot, bookSection: Fatma Karabıyık Barbarosoğlu, “Nefs-i Emmareye Hitap Eden Herşey Reyting Rekoru Kırar” (Görüşmeci: Halime Kökçe), Sözüm Söz (İstanbul: Profil Yayıncılık, 2012), 81-84.
-     title: "“Nefs-i Emmareye Hitap Eden Herşey Reyting Rekoru Kırar” (Görüşmeci: Halime Kökçe), Sözüm Söz" ≠ "Nefs-i Emmareye Hitap Eden Herşey Reyting Rekoru Kırar"
-     container: "" ≠ "Sözüm Söz"
-     tür: book ≠ bookSection
-✗ dipnot, book: Ebû Abdillâh Mâlik b. Enes el-Asbahî İmam Mâlik, el-Muvaṭṭaʾ, nşr. Abdüvehhâb Abdüllatîf (Kahire: y.y., 1382/1962).
-     author: "Mâlik" ≠ "İmam Mâlik"
+✗ dipnot, journalArticle: İsmail Kara, “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu), Nihayet Dergisi 5 (Temmuz 2015), 34-38.
+     issue: "" ≠ "5"
 ✗ dipnot, journalArticle: İbrahim el-Halebî, Risâle fi hakkı ebeveyi’r-Resûl, “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”, nşr. Kadir Gömbeyaz, Bilimname 38 (2019), 57-81.
      author: "Halebî" ≠ "İbrahim el-Halebî"
      issue: "" ≠ "38"
@@ -28,37 +17,17 @@ Serbest künye: 150 metinden 146 tanesi okundu.
      place: "" ≠ "Türkiye"
      publisher: "" ≠ "Türk Standardları Enstitüsü"
      tür: report ≠ book
-✗ okunamadı (dipnot, journalArticle): Abdülmecid b. Aziz Şeyh Zindânî, “Yemen’de Şeyh Zindânî ile Mülakat” (Görüşmeci: Mehmet Ümit, Görüşme Transkripsiyonu), e-makalat 6/2 (Güz 2013), 135-150.
 ✗ dipnot, book: Ebü’l-Hüseyn Müslim b. el-Haccâc, el-Câmiʿu’ṣ-ṣaḥîḥ, nşr. Muhammed Fuâd Abdülbâkī (Kahire: y.y., 1374-75/1955-56).
      author: "Haccâc" ≠ "Müslim"
 ✗ kaynakça, book: el-Fihrisü’ş-şâmil li’t-türâsi’l-Arabiyyi’l-İslâmiyyi’l-mahtût: el-fıkh ve usûluhû. 12 Cilt. Amman: Müessesetü Âli’l-Beyt li’l-Fikri’l-İslâmî, 1999-2014.
      volume: "12" ≠ "11"
 ✗ kaynakça, journalArticle: Kara, İsmail. “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu). Nihayet Dergisi 5 (Temmuz 2015), 34-38. http://www.nihayet.com/roportaj/imkansiza-yonelmedikce-mumkun-olan-ele-gecmez/
-     title: "İsmail. “İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez” (Görüşmeci: Fatma Barbarosoğlu, Görüşme Transkripsiyonu). Nihayet Dergisi 5 (Temmuz 2015), 34-38" ≠ "İmkânsıza Yönelmedikçe Mümkün Olan Ele Geçmez"
-     date: "" ≠ "2015"
-     container: "" ≠ "Nihayet Dergisi"
      issue: "" ≠ "5"
-     tür: book ≠ journalArticle
 ✗ kaynakça, book: Taşköprizâde Ahmed Efendi. Miftâḥu’s-saʿâde ve miṣbâḥu’s-siyâde fî mevżûʿâti’l-ʿulûm. nşr. Abdülvehhâb Ebü’n-Nûr - Kâmil Kâmil Bekrî. 3 Cilt. Kahire: Dâru’l-Kütübi’l-Hadîse, 3. Basım, 1968.
      volume: "3" ≠ "2"
 ✗ kaynakça, book: Sezgin, Fuat. Geschichte des arabischen Schrifttums. 17 Cilt. Leiden: Brill, 1967-2015.
      volume: "17" ≠ "1"
-✗ kaynakça, bookSection: Sinanoğlu, Oktay. “Yabancı Dille Eğitime Neden Bu Kadar Karşısınız?” (Görüşmeci: Sinan Hıncal). Bir Nev-York Rüyası Bye Bye Türkçe. İstanbul: Bilim - Gönül Yayınları, 54. Basım, 2011.
-     title: "“Yabancı Dille Eğitime Neden Bu Kadar Karşısınız?” (Görüşmeci: Sinan Hıncal)" ≠ "Yabancı Dille Eğitime Neden Bu Kadar Karşısınız?"
-     container: "" ≠ "Bir Nev-York Rüyası Bye Bye Türkçe"
-     tür: book ≠ bookSection
-✗ kaynakça, bookSection: Barbarosoğlu, Fatma Karabıyık. “Nefs-i Emmareye Hitap Eden Herşey Reyting Rekoru Kırar” (Görüşmeci: Halime Kökçe). Sözüm Söz. 81-84. İstanbul: Profil Yayıncılık, 2012.
-     title: "“Nefs-i Emmareye Hitap Eden Herşey Reyting Rekoru Kırar” (Görüşmeci: Halime Kökçe)" ≠ "Nefs-i Emmareye Hitap Eden Herşey Reyting Rekoru Kırar"
-     container: "" ≠ "Sözüm Söz"
-     tür: book ≠ bookSection
 ✗ okunamadı (kaynakça, journalArticle): İbrahim el-Halebî. Risâle fi hakkı ebeveyi’r-Resûl. “Ebeveyn-i Resûl Meselesine Özgün Yaklaşımlar: İbrahim el-Halebî’ye (ö. 956/1549) Nispet Edilen Bir Risalenin Neşri ve Analizi”. nşr. Kadir Gömbeyaz. Bilimname 38 (2019), 57-81. https://doi.org/10.28949/bilimname.592278
 ✗ okunamadı (kaynakça, book): TSE, Türk Standardları Enstitüsü. Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz. Türkiye: Türk Standardları Enstitüsü, Kabul 5 Haziran 2012, TS OIC/SMIIC 2/T1.
-✗ kaynakça, journalArticle: Şeyh Zindânî, Abdülmecid b. Aziz. “Yemen’de Şeyh Zindânî ile Mülakat” (Görüşmeci: Mehmet Ümit, Görüşme Transkripsiyonu). e-makalat 6/2 (Güz 2013), 135-150.
-     title: "“Yemen'de Şeyh Zindânî ile Mülakat” (Görüşmeci: Mehmet Ümit, Görüşme Transkripsiyonu)" ≠ "Yemen'de Şeyh Zindânî ile Mülakat"
-     date: "" ≠ "2013"
-     container: "" ≠ "e-makalat"
-     volume: "" ≠ "6"
-     issue: "" ≠ "2"
-     tür: book ≠ journalArticle
 ✗ kaynakça, book: Resāʾilü İḫvāni’ṣ-Ṣafā ve ḫullāni’l-vefāʾ. nşr. Butrus el-Bustânî. 4 Cilt. Beyrut: y.y., 1376-1377/1957.
      volume: "4" ≠ "1"

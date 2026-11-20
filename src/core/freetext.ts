@@ -81,6 +81,19 @@ function nameInOrder(raw: string, creatorType: string): Creator {
   // An institution: "Türk Standardları Enstitüsü".
   if (/\b(Enstitüsü|Üniversitesi|Başkanlığı|Bakanlığı|Kurumu|Vakfı|Derneği|Merkezi|University|Institute|Foundation|Ministry)\b/.test(n)) return { creatorType, name: n };
   const words = n.split(" ");
+  // İSNAD writes the full name and then the name the author is known by: "Ebû Abdillâh Ahmed b. Muhammed b. Hanbel
+  // eş-Şeybânî Ahmed b. Hanbel", "Ebû Abdillâh Mâlik b. Enes el-Asbahî İmam Mâlik". The repeated tail is the surname.
+  if (words.length >= 5) {
+    for (let k = Math.min(4, words.length - 3); k >= 2; k--) {
+      const tail = words.slice(-k);
+      const head = words.slice(0, -k).map((w) => w.replace(/^(el|er|ez|es|eş|en|et|ed)-/i, ""));
+      const named = tail.filter((w) => !/^(b\.|bin|bint|İmam|İmâm|Şeyh|Hz\.)$/i.test(w));
+      const marked = tail.some((w) => /^(b\.|bin)$/i.test(w)) || /^(İmam|İmâm|Şeyh|Hz\.)$/i.test(tail[0]!);
+      // "… Ali b. Muhammed b. Ali": a patronymic chain is not a repeated name; the tail starts with a name.
+      if (/^(b\.|bin|bint)$/i.test(tail[0]!)) continue;
+      if (marked && named.length && named.every((w) => head.includes(w.replace(/^(el|er|ez|es|eş|en|et|ed)-/i, "")))) return { creatorType, lastName: tail.join(" "), firstName: words.slice(0, -k).join(" ") };
+    }
+  }
   // "Ahmed b. Hanbel": the well-known name is the whole "X b. Y" (DİA, İSNAD).
   if (words.length === 3 && /^(b\.|bin|bint|bt\.)$/i.test(words[1]!)) return { creatorType, name: n };
   // "… Muhammed b. Yezîd İbn Mâce", "… İbnü’l-Arabî": "İbn Mâce" is the surname.
@@ -89,6 +102,11 @@ function nameInOrder(raw: string, creatorType: string): Creator {
     return { creatorType, lastName: last2, firstName: words.join(" ") };
   }
   if (words.length === 2 && /^(İbn|Ibn|İbni)$/.test(words[0]!)) return { creatorType, name: n };
+  // "Abdülmecid b. Aziz Şeyh Zindânî", "… İmam Mâlik": a title of learning belongs to the surname.
+  if (words.length >= 3 && /^(Şeyh|İmam|İmâm|Molla|Mollâ)$/.test(words[words.length - 2]!)) {
+    const last2 = words.splice(-2).join(" ");
+    return { creatorType, lastName: last2, firstName: words.join(" ") };
+  }
   const last = words.pop()!;
   const art = ARTICLES.exec(last);
   if (art) return { creatorType, lastName: last.slice(art[0].length), firstName: `${words.join(" ")} ${art[0].toLocaleLowerCase("tr")}` };
@@ -1338,6 +1356,22 @@ function finish(best: ParsedReference): void {
 
 /** One reference (a line) → a record, or null when it cannot be read. Every reading is tried; the most sensible wins. */
 export function parseReference(raw: string): ParsedReference | null {
+  // An interview printed in a journal or a book (İSNAD 21.3): "“Başlık” (Görüşmeci: X[, Görüşme Transkripsiyonu]), Dergi …".
+  // The parenthesis is read apart; the rest is an ordinary article or chapter.
+  const iv = /”\s*\((Görüşmeci|Interviewer|Söyleşi yapan):\s*([^()]+)\)(?=\s*[.,]\s*\S)/u.exec(raw);
+  if (iv) {
+    const r = readReference(raw.slice(0, iv.index + 1) + raw.slice(iv.index + iv[0].length));
+    if (r && r.item.itemType !== "book") {
+      const [who, ...rest] = iv[2]!.split(/,\s*/);
+      const lines = splitNames(who!).names.map((n) => {
+        const c = nameInOrder(n, "interviewer");
+        return `interviewer: ${c.lastName ? `${c.lastName} || ${c.firstName ?? ""}` : c.name}`;
+      });
+      if (rest.length) lines.push(`medium: ${rest.join(", ")}`);
+      r.item.fields.extra = [r.item.fields.extra, ...lines].filter(Boolean).join("\n");
+      return markAuthority(r, stripLeading(raw));
+    }
+  }
   const r = readReference(raw);
   return r ? markAuthority(r, stripLeading(raw)) : r;
 }
