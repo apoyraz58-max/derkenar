@@ -552,7 +552,8 @@ function isnadBib(s: string): ParsedReference | null {
 function apa(s: string): ParsedReference | null {
   const item = emptyItem("book", "serbest");
   const t = readUrl(item, s);
-  const m = /^(.+?)\s+\((\d{4}|n\.d\.|t\.y\.)[a-z]?(?:,\s*[^)]+)?\)\.\s+(.+)$/u.exec(t);
+  // "Kara, M. (2005). Başlık." and the Turkish habit "Kara, Mustafa (2005), Başlık, İstanbul: Dergâh."
+  const m = /^(.+?)\s+\((\d{4}|n\.d\.|t\.y\.|ts\.)[a-z]?(?:,\s*[^)]+)?\)[.,:]\s+(.+)$/u.exec(t);
   if (!m) return null;
   for (const n of m[1]!.split(/,\s*(?:&\s*)?(?=\p{Lu}[^,]*,\s*\p{Lu}\.)|\s*&\s*/u)) {
     const c = n.trim().replace(/,$/, "");
@@ -570,10 +571,18 @@ function apa(s: string): ParsedReference | null {
     item.fields.pages = art[5]!.replace("–", "-");
     return { item: settle(item), form: "apa", unsure: [] };
   }
-  const book = /^(.+?)\.\s+(?:\(([^)]+)\)\.\s+)?([^.]+)\.?$/u.exec(rest);
+  const book = /^(.+?)\.\s+(?:\(([^)]+)\)\.\s+)?([^.]+)\.?$/u.exec(rest) ?? /^(.+?),\s+((?:\p{Lu}[^,:]{1,30}):\s*[^,]+)\.?$/u.exec(rest);
   if (!book) return null;
-  item.fields.title = book[1]!;
-  item.fields.publisher = book[3]!.trim();
+  item.fields.title = book[1]!.trim();
+  // "İstanbul: Dergâh Yayınları": APA 6 writes the place before the publisher.
+  const pub = (book[3] ?? book[2]!).trim().replace(/\.$/, "");
+  const at = /^(\p{Lu}[^:]{1,30}):\s*(.+)$/u.exec(pub);
+  if (at && placeIn(at[1]!)) {
+    item.fields.place = at[1]!.trim();
+    item.fields.publisher = at[2]!.trim();
+    return { item: settle(item), form: "apa", unsure: [] };
+  }
+  item.fields.publisher = pub;
   return { item: settle(item), form: "apa", unsure: ["yer"] };
 }
 
@@ -675,7 +684,8 @@ function oldStyle(s: string): ParsedReference | null {
     else if (/^(?:[IVX]+-[IVX]+|\d+\s*c(?:ilt)?\.?)$/i.test(p)) item.fields.numberOfVolumes = p;
     else if (/\b(tezi|thesis|dissertation)\b/i.test(p)) {
       item.itemType = "thesis";
-      item.fields.thesisType = p;
+      // "(Yayımlanmamış Doktora Tezi)" → "Doktora Tezi" (İSNAD writes the kind only).
+      item.fields.thesisType = p.replace(/^\((.*)\)$/, "$1").replace(/^(Yayımlanmamış|Yayınlanmamış|Basılmamış|Basılmış|Unpublished)\s+/i, "").trim();
     } else if (!item.fields.publisher) item.fields.publisher = p.replace(/\bYay\.?$/, "Yayınları");
     else item.fields.publisher += `, ${p}`;
   }
@@ -1384,7 +1394,7 @@ export function parseReference(raw: string): ParsedReference | null {
   const r = readReference(raw);
   if (r) return markAuthority(r, stripLeading(raw));
   // A footnote copied with its page ("…, İstanbul 2005, s. 45.", "…, Beyrut ts., III, 12."): the page is not the work's.
-  const page = /,\s*(?:(?:s|ss|sh|p|pp)\.\s*|(?:[IVXLC]+|\d+)\s*,\s*(?:s\.\s*)?|(?:c\.\s*[IVXLC\d]+\s*,\s*s\.\s*))?\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?\.?\s*$/u.exec(raw);
+  const page = /,\s*(?:(?:s|ss|sh|p|pp)\.\s*|(?:[IVXLC]+|\d{1,2})\s*,\s*(?:s\.\s*)?|(?:c\.\s*[IVXLC\d]+\s*,\s*s\.\s*))?\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?\.?\s*$/u.exec(raw);
   if (!page) return null;
   const again = readReference(raw.slice(0, page.index));
   return again ? markAuthority(again, stripLeading(raw)) : null;

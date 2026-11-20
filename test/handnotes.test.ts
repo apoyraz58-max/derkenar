@@ -496,6 +496,10 @@ describe("works that name their kind", () => {
     expect(p("Halil İnalcık, Osmanlı İmparatorluğu Klasik Çağ (1300-1600), çev. Ruşen Sezer, YKY, İstanbul 2003, s. 12-15.")).toMatchObject({ fields: { title: "Osmanlı İmparatorluğu Klasik Çağ (1300-1600)", date: "2003", publisher: "YKY" } });
     expect(p("Gazzâlî, İhyâu Ulûmi'd-Dîn, Beyrut ts., III, 12.")).toMatchObject({ fields: { title: "İhyâu Ulûmi'd-Dîn", place: "Beyrut" } });
     expect(p("Gazzâlî, İhyâu Ulûmi'd-Dîn, Beyrut ts., III, 12.")?.fields.date).toBeUndefined();
+    expect(p("Mustafa Kara, Tekke ve Zâviyeler, İstanbul: Dergâh, 2005, s. 20.")?.fields).toMatchObject({ date: "2005", place: "İstanbul", publisher: "Dergâh" });
+    expect(p("Kara, Mustafa (2005), Tasavvuf ve Tarikatlar Tarihi, İstanbul: Dergâh Yayınları.")).toMatchObject({ fields: { date: "2005", title: "Tasavvuf ve Tarikatlar Tarihi", place: "İstanbul", publisher: "Dergâh Yayınları" } });
+    expect(p("Kara, M. (2005). Tasavvuf ve tarikatlar tarihi. İstanbul: Dergâh Yayınları.")?.fields).toMatchObject({ place: "İstanbul", publisher: "Dergâh Yayınları" });
+    expect(p("Ali Yıldırım, Hadis Usulü, (Yayımlanmamış Doktora Tezi), Marmara Üniversitesi Sosyal Bilimler Enstitüsü, İstanbul 2010.")).toMatchObject({ itemType: "thesis", fields: { thesisType: "Doktora Tezi", university: "Marmara Üniversitesi Sosyal Bilimler Enstitüsü" } });
     const r = readHandNotes(["İbn Haldun, Mukaddime, çev. Süleyman Uludağ, Dergâh Yay., İstanbul 1982, I, 245.", "Gazzâlî, İhyâu Ulûmi'd-Dîn, Beyrut ts., III, 12."], []);
     expect(r.map((n) => (n.refs ? `${n.refs[0]!.volume}/${n.refs[0]!.locator}` : n.reason))).toEqual(["I/245", "III/12"]);
   });
