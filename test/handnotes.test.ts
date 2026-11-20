@@ -452,6 +452,18 @@ describe("works that name their kind", () => {
     expect(r[1]!.refs?.[0]?.item).toBe(r[0]!.refs?.[0]?.item);
     expect(p("Bedreddin eş- Şuhâvî, et-Tırâzu’l-müzheb, “Bir Tahkik”, thk. Osman Bayder, Tahkik Dergisi 2/1 (Haziran 2019), 229.")?.creators[0]).toMatchObject({ lastName: "Şuhâvî", firstName: "Bedreddin eş-" });
   });
+  it("newspapers, magazines and maps in the bibliography", () => {
+    expect(p("Hanioğlu, M. Şükrü. “15 Temmuz’u Farklı Kılan Nedir?”. Sabah (15 Temmuz 2018), 8. https://www.sabah.com.tr/x")).toMatchObject({ itemType: "newspaperArticle", fields: { publicationTitle: "Sabah", date: "2018-07-15", pages: "8" }, creators: [{ lastName: "Hanioğlu", firstName: "M. Şükrü" }] });
+    expect(p("Milliyet. “Yetki Kanunları” (17 Eylül 1971), 1. http://www.milliyet.com.tr")).toMatchObject({ itemType: "newspaperArticle", fields: { publicationTitle: "Milliyet", title: "Yetki Kanunları", url: "http://www.milliyet.com.tr" } });
+    expect(p("Arslan, Mustafa. “Sanal Dünya”. Diyanet Aylık Dergi 315 (Mart 2017), 12-30.")?.fields.date).toBe("2017-03");
+    const pr = p("Pîrî Reis, Muhyiddin b. Hacı Mehmed. Piri Reis Haritası. İstanbul: Deniz Kuvvetleri Komutanlığı Hidrografi Neşriyatı, 1966. İstanbul Büyükşehir Belediyesi Atatürk Kitaplığı, No. Bel_Osm_B.00038.");
+    expect(pr).toMatchObject({ itemType: "map", fields: { title: "Piri Reis Haritası", archive: "İstanbul Büyükşehir Belediyesi Atatürk Kitaplığı", callNumber: "No. Bel_Osm_B.00038", date: "1966" } });
+    expect(pr?.creators[0]).toMatchObject({ creatorType: "cartographer", lastName: "Pîrî Reis" });
+    expect(p("Google. Google Maps. Erişim 12 Ocak 2019. https://www.google.com/maps")).toMatchObject({ itemType: "map", creators: [{ name: "Google" }] });
+    expect(p("Dahiliye Nezâreti (DN), Vilayet Yolları Haritasıdır (İstanbul: Dahiliye Nezâreti Müdüriyeti, 1329/1913).")).toMatchObject({ itemType: "map", fields: { publisher: "Dahiliye Nezâreti Müdüriyeti" } });
+    // A title in quotes is not a book's.
+    expect(p("Kara, Mustafa. “Bir Makale”. Dergâh Dergisi 3 (2001), 5-9.")?.itemType).toBe("journalArticle");
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");

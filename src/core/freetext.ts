@@ -397,8 +397,10 @@ function isnadBib(s: string): ParsedReference | null {
   const enough = sents.length > 2 || (sents.length === 2 && Boolean(item.fields.url || item.fields.accessDate));
   const inverted = /^[^,“”]+,\s*[^,“”]+(\s+[-–]\s+[^,“”]+,\s*[^,“”]+)*(\s+vd\.?)?$/u.test(who) && enough;
   const honour = /^[^,“”]+\s(Efendi|Paşa|Bey|Hanım|Ağa|Çelebi|Hoca|Dede)$/u.test(who) && enough;
-  if (inverted || honour) {
-    for (const n of splitNames(who).names) item.creators.push(inverted ? nameInverted(n, role) : { creatorType: role, name: n });
+  // A body or a brand as the author of something online: "Google. Google Maps. Erişim …", "Harita Genel Müdürlüğü. Atlas. …".
+  const body = !inverted && !honour && sents.length >= 2 && Boolean(item.fields.url || item.fields.accessDate) && /^\p{Lu}[^,“”:]{1,60}$/u.test(who) && (BODY_WORD.test(who) || /(Müdürlüğü|Collection|Koleksiyonu)$/u.test(who) || /^\p{Lu}\p{L}+$/u.test(who));
+  if (inverted || honour || body) {
+    for (const n of body ? [who] : splitNames(who).names) item.creators.push(inverted ? nameInverted(n, role) : { creatorType: role, name: n });
     rest = sents.slice(1).join(". ");
   }
   // Article: “Makale”. Dergi 37/1 (1997), 317-331.
@@ -410,13 +412,31 @@ function isnadBib(s: string): ParsedReference | null {
     item.fields.publicationTitle = container.join(". ").replace(/\.$/, "");
     item.fields.volume = art[3]!;
     if (art[4]) item.fields.issue = art[4];
-    const d = /(\d{4})$/.exec(art[5]!);
-    item.fields.date = d![1]!;
+    const d = /(\p{L}+)?\s*(\d{4})$/u.exec(art[5]!);
+    const mo = d![1] ? MONTHS[d![1].toLocaleLowerCase("tr")] : undefined;
+    item.fields.date = mo ? `${d![2]}-${String(mo).padStart(2, "0")}` : d![2]!;
     item.fields.pages = art[6]!.replace("–", "-");
     return { item: settle(item), form: "isnad-kaynakca", unsure };
   }
+  // Newspaper: “Başlık”. Gazete (10 Temmuz 2019), 6.
+  const news = /^“([^”]+)”\.?\s*([^()“”]{2,60}?)\s*\((\d{1,2}\s+\p{L}+\s+\d{4})\)(?:,\s*(\d+(?:-\d+)?))?\.?$/u.exec(rest);
+  if (news && dayMonthYear(news[3]!) && item.creators.length) {
+    item.itemType = "newspaperArticle";
+    item.fields.title = news[1]!;
+    item.fields.publicationTitle = news[2]!.trim().replace(/\.$/, "");
+    item.fields.date = dayMonthYear(news[3]!)!;
+    if (news[4]) item.fields.pages = news[4];
+    return { item, form: "isnad-kaynakca", unsure };
+  }
   // The imprint is the last sentence: "Yer: Yayınevi, Yıl." — a web source may have none.
   const sentences = sentencesOf(rest);
+  // A copy kept in a library after the imprint (İSNAD 38, maps): "… 1966. Atatürk Kitaplığı, No. Bel_Osm_B.00038."
+  const kept = sentences.length >= 3 ? /^([^,]{3,80}),\s*((?:No|Nr)\.?\s*.+)$/u.exec(sentences[sentences.length - 1]!.replace(/\.$/, "")) : null;
+  if (kept && LIBRARY.test(kept[1]!) || (kept && /Kitaplığı/.test(kept[1]!))) {
+    item.fields.archive = kept![1]!.trim();
+    item.fields.callNumber = kept![2]!.trim();
+    sentences.pop();
+  }
   const last = sentences[sentences.length - 1]!.replace(/\.$/, "");
   let parts: string[];
   if (readImprint(item, last)) parts = sentences.slice(0, -1);
@@ -599,8 +619,11 @@ function plausibility(r: ParsedReference): number {
   if (/^[\d\s/.-]+$/.test(title)) p -= 6;
   for (const c of r.item.creators) {
     const n = `${c.firstName ?? ""} ${c.lastName ?? c.name ?? ""}`;
-    p += /[:]|\.\s\p{Lu}\p{Ll}+\s\p{Lu}/u.test(n) || n.length > 80 ? -4 : 1;
+    // A sentence read as a name ("… Kitap. Yer Yayın"); an initial ("M. Şükrü Hanioğlu") is not one.
+    p += /[:]|(?<!(?:^|\s)(?:\p{Lu}|b|bt|bnt))\.\s\p{Lu}\p{Ll}+\s\p{Lu}/u.test(n) || n.length > 80 ? -4 : 1;
   }
+  // A title that swallowed a quoted title of its own is a misreading.
+  if (/[“”]/.test(title)) p -= 3;
   if (f.date) p += 1;
   for (const k of Object.keys(f)) if (/publisher|place|university|Title$|volume|pages/.test(k)) p += 1;
   return p - r.unsure.length * 0.5;
@@ -611,16 +634,18 @@ function plausibility(r: ParsedReference): number {
  * an author, "Gazete, “Başlık” (17 Eylül 1971), 1." — a full day, month and year.
  */
 function newspaper(s: string): ParsedReference | null {
-  const t = s.trim().replace(/\.$/, "");
+  const held = emptyItem("newspaperArticle", "serbest");
+  const t = readUrl(held, s).replace(/\.$/, "");
   const withAuthor = /^([^“”]{2,80}?),\s*“([^”]+)”,\s*([^(),]{2,60}?)\s*\((\d{1,2}\s+\p{L}+\s+\d{4})\)(?:,\s*(\d+(?:-\d+)?))?$/u.exec(t);
-  const noAuthor = withAuthor ? null : /^([^“”,]{2,60}),\s*“([^”]+)”\s*\((\d{1,2}\s+\p{L}+\s+\d{4})\)(?:,\s*(\d+(?:-\d+)?))?$/u.exec(t);
+  // Unsigned, in the note "Gazete, “Başlık” (…)" and in the bibliography "Gazete. “Başlık” (…)".
+  const noAuthor = withAuthor ? null : /^([^“”,.]{2,60})[,.]\s*“([^”]+)”\s*\((\d{1,2}\s+\p{L}+\s+\d{4})\)(?:,\s*(\d+(?:-\d+)?))?$/u.exec(t);
   const m = withAuthor ?? noAuthor;
   if (!m) return null;
   const date = dayMonthYear(withAuthor ? m[4]! : m[3]!);
   if (!date) return null;
   // "Yazar, “Başlık”, YouTube (31 Mart 2018)": a video; "…, Diyanet TV (6 Temmuz 2019)": a broadcast.
-  if (withAuthor && !m[5] && (VIDEO_SITE.test(m[3]!.trim()) || TV.test(m[3]!))) return screen(emptyItem("videoRecording", "serbest"), m[1]!, false, m[2]!, m[3]!, m[4]!);
-  const item = emptyItem("newspaperArticle", "serbest");
+  if (withAuthor && !m[5] && (VIDEO_SITE.test(m[3]!.trim()) || TV.test(m[3]!))) { held.itemType = "videoRecording"; return screen(held, m[1]!, false, m[2]!, m[3]!, m[4]!); }
+  const item = held;
   if (withAuthor) {
     for (const n of splitNames(m[1]!).names) item.creators.push(nameInOrder(n, "author"));
     item.fields.title = m[2]!;
@@ -1194,6 +1219,30 @@ function markAuthority(r: ParsedReference, s: string): ParsedReference {
   return r;
 }
 
+/** What the reading of any form settles at the end: a map, a symposium paper. */
+function finish(best: ParsedReference): void {
+  // A map (İSNAD 38): "Piri Reis Haritası", "Vilayet Yolları Haritasıdır", "Google Maps", "Atlas".
+  if ((best.item.itemType === "book" || best.item.itemType === "report") && /(Harita\p{L}*|(?<!\p{L})Maps?(?!\p{L})|(?<!\p{L})Atlas\p{L}*)/iu.test(best.item.fields.title ?? "")) {
+    const it = best.item;
+    if (it.itemType === "report") {
+      if (it.fields.institution) {
+        it.fields.publisher = it.fields.institution;
+        delete it.fields.institution;
+      }
+      best.unsure.push("tür (harita mı, rapor mu?)");
+    }
+    it.itemType = "map";
+    for (const c of it.creators) if (c.creatorType === "author") c.creatorType = "cartographer";
+  }
+  // A chapter in a symposium's book is a paper (İSNAD 15): "…, IV. Uluslararası … Sempozyumu, ed. … (Yer: Yayınevi, Yıl)".
+  if (best.item.itemType === "bookSection" && PROCEEDINGS.test(best.item.fields.bookTitle ?? "")) {
+    const f = best.item.fields;
+    best.item.itemType = "conferencePaper";
+    f.proceedingsTitle = f.bookTitle!;
+    delete f.bookTitle;
+  }
+}
+
 /** One reference (a line) → a record, or null when it cannot be read. Every reading is tried; the most sensible wins. */
 export function parseReference(raw: string): ParsedReference | null {
   const r = readReference(raw);
@@ -1204,7 +1253,10 @@ function readReference(raw: string): ParsedReference | null {
   const s = stripLeading(raw);
   if (s.length < 8) return null;
   const ms = labeled(s) ?? socialPost(s) ?? manuscript(s) ?? archiveRecord(s) ?? newspaper(s) ?? legislation(s) ?? courtCase(s) ?? institution(s) ?? institutionBib(s);
-  if (ms) return withOthers(ms, s);
+  if (ms) {
+    finish(ms);
+    return withOthers(ms, s);
+  }
   let best: ParsedReference | null = null;
   let bestScore = -Infinity;
   for (const f of [isnadBib, isnadNote, apa, oldStyle]) {
@@ -1222,13 +1274,7 @@ function readReference(raw: string): ParsedReference | null {
       bestScore = score;
     }
   }
-  // A chapter in a symposium's book is a paper (İSNAD 15): "…, IV. Uluslararası … Sempozyumu, ed. … (Yer: Yayınevi, Yıl)".
-  if (best?.item.itemType === "bookSection" && PROCEEDINGS.test(best.item.fields.bookTitle ?? "")) {
-    const f = best.item.fields;
-    best.item.itemType = "conferencePaper";
-    f.proceedingsTitle = f.bookTitle!;
-    delete f.bookTitle;
-  }
+  if (best) finish(best);
   return best ? withOthers(best, s) : best;
 }
 
