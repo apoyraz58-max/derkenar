@@ -34,6 +34,7 @@ export const SOURCES = {
   ttk: { name: "Türk Tarih Kurumu Kütüphanesi", license: "Elle doğrulanmış pilot künyeleri", policy: "https://kutuphane.ttk.gov.tr/", priority: 80 },
   asbu: { name: "ASBÜ KKTC Kütüphanesi", license: "Elle doğrulanmış pilot künyeleri", policy: "https://katalogkktc.asbu.edu.tr/", priority: 65 },
   k10plus: { name: "K10plus", license: "CC0 1.0", policy: "https://wiki.k10plus.de/display/K10PLUS/K10plus+Open+Data", priority: 75 },
+  ozgur: { name: "Özgür Yayınları", license: "Yayınevinin katalog aktarım izni", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 78 },
   doab: { name: "Directory of Open Access Books", license: "CC0 1.0 (üstveri)", policy: "https://www.doabooks.org/en/librarians/doab-metadata", priority: 70 },
   openlibrary: { name: "Open Library", license: "Internet Archive yeni hak ileri sürmez, mevcut katkı hakları saklıdır", policy: "https://openlibrary.org/developers/licensing", priority: 45 },
   exchange: { name: "Kullanıcı dosyası", license: "Kullanıcının sağladığı dosya", policy: "https://www.zotero.org/support/dev/data_formats", priority: 35 },

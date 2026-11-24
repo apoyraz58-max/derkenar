@@ -7,6 +7,7 @@ import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
 import { type RecordInput, validIsbn } from "../src/catalog/model.js";
+import { collectOzgur } from "../src/catalog/sources/collect.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
 import { marcFile } from "../src/catalog/sources/marc.js";
 import { Catalog } from "../src/catalog/store.js";
@@ -86,6 +87,23 @@ describe("bibliyografik katalog", () => {
     expect(entries).toHaveLength(1);
     expect(db.item(1)?.fields).toMatchObject({ place: "İstanbul", ISBN: "9786054791712", edition: "1" });
     expect(db.item(1)?.creators.map(c => c.creatorType)).toEqual(expect.arrayContaining(["author", "translator", "editor"]));
+  });
+
+  it("yayınevi MARC dosyasını ayrı kaynak olarak toplar ve kaydın bağlantısını saklar", async () => {
+    const sample = readFileSync(root("test/fixtures/k10plus-9786054791712.xml"), "utf8");
+    const record = sample.match(/<record xmlns=[\s\S]+?<\/record>/)?.[0]!;
+    const link = "https://www.ozguryayinlari.com/book/example";
+    const xml = record.replace("</record>", `<datafield tag="856"><subfield code="u">${link}</subfield></datafield></record>`);
+    const file = join(temp, "publisher.xml");
+    const mock: typeof fetch = async url => {
+      expect(String(url)).toBe("https://www.ozguryayinlari.com/site/libraryFiles/downloadPublic/15");
+      return new Response(xml, { headers: { "Content-Type": "text/xml" } });
+    };
+    await collectOzgur(file, mock);
+    const db = catalog();
+    await ingestFile(db, "ozgur", file);
+    expect(db.stats().sources).toContainEqual(expect.objectContaining({ id: "ozgur", raw: 1, editions: 1 }));
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ source: "ozgur", url: link }));
   });
 
   it("Vefeyât yazımını kaynak kişi bağlantısıyla saklar", async () => {

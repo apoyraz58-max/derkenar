@@ -24,6 +24,7 @@ Pilot girdileri TTK ve ASBÜ’nün elle derlenen katalog alanları ile depodaki
 | Kaynak | Erişim ve arşivleme dayanağı | Uygulama |
 | --- | --- | --- |
 | K10plus/GVK | Açık üstveri ve SRU/MARCXML. Pilot adaptörü tek ISBN sorgusu ve sağlanan MARCXML anlık görüntüsünü destekler. | [Açık veri](https://swblod.bsz-bw.de/od/) · [SRU kullanımı](https://lab.sbb.berlin/bibliographische-daten-aus-dem-stabikat/) |
+| Özgür Yayınları | Yayınevi, kataloglara aktarım için tek dosyada MARCXML yayımlıyor. | [Katalog aktarım koşulları ve dosya](https://www.ozguryayinlari.com/site/tr/libraries) |
 | Directory of Open Access Books | Üstveri CC0. Resmî MARCXML dosyası ve OAI-PMH yayımlanıyor. Kapsam ağırlıkla hakemli açık erişim kitaplar. | [Üstveri ve indirme](https://www.doabooks.org/en/librarians/doab-metadata) · [CC0 açıklaması](https://www.doabooks.org/en/researchers/faq) |
 | Türkiye Bibliyografyası ve Millî Kütüphane | Türkiye kapsamı için derleme temelli kaynak. Katalog sayısı tüm materyal türlerini kapsar. Toplu yeniden kullanım koşullarını ve makinece okunabilir teslim biçimini kurumla doğrulamak gerekir. | [Bibliyografyalar](https://www.millikutuphane.gov.tr/page/Bibliyografyalar) · [Katalog kapsamı](https://www.millikutuphane.gov.tr/page/Kitaplar) |
 | TTK, ASBÜ ve İSAM katalogları | Tekil künye karşılaştırması için erişilebilir. TTK ve ASBÜ’den pilot amaçlı seçili olgular elle alındı. Otomatik arşivleme yetkisi ayrıca değerlendirilmeli. | [TTK veritabanları](https://ttk.gov.tr/veri-tabanlari-2-2/) · [ASBÜ kataloğu](https://katalogkktc.asbu.edu.tr/) · [İSAM katalogları](https://isamveri.org/tanitim.php) |
@@ -64,6 +65,14 @@ npm run catalog -- collect --source k10plus --isbn 9786054791712 --file work/k10
 npm run catalog -- collect --source doab --file work/doab.xml
 npm run catalog -- ingest --db work/staging.sqlite --source doab --file work/doab.xml --vefeyat ../vefeyat/data/catalog.csv --limit 1000
 npm run catalog -- stats --db work/staging.sqlite
+```
+
+Yerel yayınevi örneklemi için [Özgür Yayınları MARCXML dosyası](https://www.ozguryayinlari.com/site/libraryFiles/downloadPublic/15) doğrudan kullanılabilir.
+
+```sh
+npm run catalog -- collect --source ozgur --file work/ozgur.xml
+npm run catalog -- ingest --db work/ozgur.sqlite --source ozgur --file work/ozgur.xml --vefeyat ../vefeyat/data/catalog.csv --limit 200
+npm run catalog -- stats --db work/ozgur.sqlite
 ```
 
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.

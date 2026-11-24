@@ -24,7 +24,7 @@ export async function ingestFile(catalog: Catalog, source: SourceId, file: strin
     const original = await readFile(file, "utf8");
     catalog.archiveExchange(hash, original);
     records = exchange(original, basename(file), hash);
-  } else if (source === "k10plus" || source === "doab") {
+  } else if (source === "k10plus" || source === "doab" || source === "ozgur") {
     records = marcFile(file, source);
   } else if (source === "ttk" || source === "asbu") {
     records = reviewed(file);

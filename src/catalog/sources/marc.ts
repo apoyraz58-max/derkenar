@@ -1,8 +1,11 @@
 import { DOMParser } from "@xmldom/xmldom";
 import type { Creator } from "../../core/zotero.js";
 import { type Attribution, type Claim, type RecordInput } from "../model.js";
+import { OZGUR_MARC } from "./collect.js";
 import { inputStream } from "./files.js";
 import { StringDecoder } from "node:string_decoder";
+
+type MarcSource = "k10plus" | "doab" | "ozgur";
 
 const MARC_NAMESPACE = "http://www.loc.gov/MARC21/slim";
 const relators: Record<string, string> = {
@@ -39,7 +42,7 @@ function roles(field: Element): string[] {
   return /^(100|110|111)$/.test(field.getAttribute("tag") ?? "") ? ["author"] : ["contributor"];
 }
 
-export function marcRecord(raw: string, source: "k10plus" | "doab"): RecordInput | null {
+export function marcRecord(raw: string, source: MarcSource): RecordInput | null {
   let malformed = false;
   // MARC collection and SRU files may declare the record prefix on an ancestor.
   const prefix = /^<([\w.-]+):record\b/.exec(raw)?.[1];
@@ -124,15 +127,18 @@ export function marcRecord(raw: string, source: "k10plus" | "doab"): RecordInput
       });
     }
   }
-  const url = source === "k10plus"
+  const links = df("856").flatMap(e => sub(e, "u"));
+  const url = source === "ozgur"
+    ? links.find(u => /^https:\/\/(?:www\.)?ozguryayinlari\.com\//i.test(u)) ?? `${OZGUR_MARC}#${encodeURIComponent(id)}`
+    : source === "k10plus"
     ? `https://kxp.k10plus.de/DB=2.1/PPNSET?PPN=${encodeURIComponent(id)}`
-    : df("856").flatMap(e => sub(e, "u")).find(u => /^https:\/\/directory\.doabooks\.org\//.test(u))
+    : links.find(u => /^https:\/\/directory\.doabooks\.org\//.test(u))
       ?? `https://memo.doabooks.org/file/oapen/DOAB_MARCXML.xml#${encodeURIComponent(id)}`;
   return { id, url, raw, fields, creators };
 }
 
 /** Frame MARC records in a collection or SRU response with bounded memory. */
-export async function* marcFile(file: string, source: "k10plus" | "doab") {
+export async function* marcFile(file: string, source: MarcSource) {
   const stream = inputStream(file);
   const decoder = new StringDecoder("utf8");
   let buffer = "";

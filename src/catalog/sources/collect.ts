@@ -8,6 +8,7 @@ import { setTimeout } from "node:timers/promises";
 import { validIsbn } from "../model.js";
 
 const DOAB = "https://memo.doabooks.org/file/oapen/DOAB_MARCXML.xml";
+export const OZGUR_MARC = "https://www.ozguryayinlari.com/site/libraryFiles/downloadPublic/15";
 const K10 = "https://sru.k10plus.de/opac-de-627";
 type Fetch = typeof fetch;
 
@@ -41,6 +42,10 @@ async function snapshot(url: string, file: string, fetchFn: Fetch) {
 
 export function collectDoab(file: string, fetchFn: Fetch = fetch) {
   return snapshot(DOAB, file, fetchFn);
+}
+
+export function collectOzgur(file: string, fetchFn: Fetch = fetch) {
+  return snapshot(OZGUR_MARC, file, fetchFn);
 }
 
 export function collectK10plus(isbn: string, file: string, fetchFn: Fetch = fetch) {
