@@ -46,5 +46,16 @@ export async function formatAs(items: readonly Item[], format: "ris" | "bibtex" 
   await import("@citation-js/plugin-bibtex");
   await import("@citation-js/plugin-ris");
   const cite = await Cite.async(items.map(toCslForExport));
-  return (cite as unknown as { format: (f: string, o?: Record<string, unknown>) => string }).format(format, { format: "text" });
+  const output = cite as unknown as {
+    format(f: string, options: { format: "text" }): string;
+    format(f: "ris", options: { format: "object" }): Record<string, string | readonly string[]>[];
+  };
+  if (format !== "ris") return output.format(format, { format: "text" });
+  // Citation.js's text writer wraps mid-word at 70 characters. Its reader
+  // inserts a space at those line breaks, changing long titles and URLs.
+  return output.format("ris", { format: "object" }).map(({ TY, ...record }) => {
+    const fields = Object.entries(record).flatMap(([tag, values]) => [values].flat()
+      .map(value => `${tag}  - ${String(value).replace(/\r?\n/g, " ")}`));
+    return [`TY  - ${TY}`, ...fields, "ER  - "].join("\n");
+  }).join("\n");
 }

@@ -112,3 +112,7 @@ ve alanların veri şeması Zotero projesinden (AGPL). CSL stilleri ve dil dosya
 Türkçe bölümünde varak kısaltması "vr." yapılmıştır (`data/styles/README.md`). Fotoğraftan ve PDF'ten ekleme için
 Tesseract.js ve tesseract.js-core (Apache-2.0), Tesseract dil verileri `tur` ve `eng` (Apache-2.0) ve pdf.js (Apache-2.0)
 eklentiyle birlikte `vendor/` altında sunulur ve ilk kullanımda yüklenir.
+
+## Bibliyografik katalog
+
+Türkiye’de yayımlanan kitaplar için veri toplama, doğrulama, dosya alışverişi ve yerel yönetim paneli. [Pilot ve çalışma kılavuzu](docs/BIBLIYOGRAFIK-KATALOG.md).

@@ -13,7 +13,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "smoke": "node scripts/smoke.mjs",
-    "report:isnad": "vitest run --config vitest.report.config.ts"
+    "report:isnad": "vitest run --config vitest.report.config.ts",
+    "catalog": "node scripts/catalog.mjs"
   },
   "dependencies": {
     "@citation-js/core": "0.7.18",
