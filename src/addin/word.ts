@@ -469,7 +469,7 @@ export async function deleteCitation(id: string): Promise<"note" | "citation" | 
  * the note mark; to notes — each citation in the text goes into a new
  * footnote at its place. Notes with the user's own words stay as they are.
  */
-export async function convertPlacement(toNotes: boolean): Promise<{ moved: number; kept: number }> {
+export async function convertPlacement(toNotes: boolean, merge?: (ids: string[]) => string | null): Promise<{ moved: number; kept: number }> {
   if (!footnotesSupported()) return { moved: 0, kept: 0 };
   return Word.run(async (context) => {
     let moved = 0;
@@ -516,15 +516,16 @@ export async function convertPlacement(toNotes: boolean): Promise<{ moved: numbe
     for (const { n, ccs } of checks) {
       const mine = ccs.items.filter((cc) => citationIdFromTag(cc.tag));
       if (!mine.length) continue;
-      const rest = mine.reduce((t, cc) => t.replace(cc.text, ""), n.body.text).replace(/[\s;\u200b\u0002]+/g, "");
-      if (mine.length !== 1 || rest) {
+      const rest = mine.reduce((t, cc) => t.replace(cc.text, ""), n.body.text).replace(/[\s;.,\u200b\u0002]+/g, "");
+      // "Kara, …; Aydın, …." with nothing else: one citation of both works in the text ("(Kara, 2005: 45; Aydın, 2010: 12)").
+      const into = mine.length === 1 ? citationIdFromTag(mine[0]!.tag) : merge && !rest ? merge(mine.map((cc) => citationIdFromTag(cc.tag)!)) : null;
+      if (rest || !into) {
         kept++;
         continue;
       }
-      const cc = mine[0]!;
-      const r = n.reference.insertText(` ${cc.text}`, "After");
+      const r = n.reference.insertText(` ${mine.map((cc) => cc.text).join("; ")}`, "After");
       const nc = r.insertContentControl();
-      nc.tag = cc.tag;
+      nc.tag = `${TAG_CITATION}${into}`;
       nc.title = "Atıf";
       nc.appearance = "Hidden";
       n.delete();

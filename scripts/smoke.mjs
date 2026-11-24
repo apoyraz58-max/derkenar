@@ -546,7 +546,7 @@ try {
   // 9. İSNAD dipnotlu → metin içi: citations alone in a footnote move into the text; back again.
   await page.click("#tab-belge");
   const notesBefore = (await notes()).length;
-  const lone = await page.evaluate(() => window.__doc.flow.filter((x) => x.fn && x.fn.controls.length === 1 && !x.fn.text.trim()).length);
+  const lone = await page.evaluate(() => window.__doc.flow.filter((x) => x.fn && x.fn.controls.length >= 1 && !x.fn.text.trim()).length);
   await page.selectOption("#style", "isnad-metinici");
   await page.waitForSelector("#message:has-text('dipnottan metne taşındı')");
   if ((await notes()).length !== notesBefore - lone) fail(`to text: ${notesBefore} → ${(await notes()).length}, lone ${lone}`);
@@ -563,7 +563,8 @@ try {
   const apa = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).map((x) => x.cc.text));
   if (!apa.length || apa.some((t) => /a\.mlf\.|b\.y\.|y\.y\./.test(t)) || !apa.every((t) => /^\(.+\)$/.test(t))) fail(`APA citations: ${JSON.stringify(apa)}`);
   // An in-text citation typed by hand (the same text as a rendered one): found, matched, turned into a citation.
-  const typed = apa.find((t) => /\d{4}/.test(t) && !t.includes(";"));
+  // (The shortest: the footnote of two citations joined in 9 is one citation of two places now.)
+  const typed = apa.filter((t) => /\d{4}/.test(t) && !t.includes(";")).sort((a, b) => a.length - b.length)[0];
   await page.evaluate((t) => window.__doc.flow.push({ kind: "text", text: ` Elle yazılmış ${t} burada.` }), typed);
   await page.click("#tab-belge");
   if (!(await page.isVisible("#hand-intext-scan"))) await page.click("#hand-box summary");
@@ -575,6 +576,25 @@ try {
   if (after !== apa.length + 1) fail(`in-text conversion: ${after} citations, expected ${apa.length + 1}`);
   await page.selectOption("#style", "isnad-dipnotlu");
   await page.waitForSelector("#message:has-text('dipnota taşındı')");
+
+  // 9d. Two citations in one footnote (as a user may put them, or another program's fields) become one citation in the text.
+  const joined = await page.evaluate(() => {
+    const fns = window.__doc.flow.filter((x) => x.fn && x.fn.controls.length === 1 && !x.fn.text.trim());
+    if (fns.length < 2) return false;
+    fns[0].fn.controls.push(fns[1].fn.controls[0]);
+    window.__doc.flow.splice(window.__doc.flow.indexOf(fns[1]), 1);
+    return true;
+  });
+  if (!joined) fail("not enough lone footnotes to join two");
+  const before9c = (await notes()).length;
+  await page.selectOption("#style", "isnad-metinici");
+  await page.waitForSelector("#message:has-text('dipnottan metne taşındı')");
+  const joinedText = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).map((x) => x.cc.text));
+  if (!joinedText.some((t) => /Gazzâlî.*1\/45|Cilt 1.*45/.test(t) && /99/.test(t))) fail(`two citations of one footnote not joined: ${JSON.stringify(joinedText)}`);
+  await page.selectOption("#style", "isnad-dipnotlu");
+  await page.waitForSelector("#message:has-text('dipnota taşındı')");
+  if ((await notes()).length !== before9c) fail(`9c back to notes: ${(await notes()).length} vs ${before9c}`);
+  if (!(await notes()).some((n) => /1\/45; .*2\/99|1\/45, 2\/99/.test(n))) fail(`joined citation in a note: ${JSON.stringify(await notes())}`);
 
   // 9a. Yeni kaynak: ekleme yolları; RIS metni yapıştırarak ekleme.
   await page.click("#tab-kutuphane");

@@ -361,12 +361,25 @@ async function changeStyle(id: string): Promise<void> {
   // Dipnotlu ↔ metin içi: the citations move with the style.
   let note = "";
   if (before.meta.note !== after.meta.note) {
-    const r = await serial(() => word.convertPlacement(after.meta.note));
+    // Several citations alone in one footnote become one citation in the text: their works are put together.
+    const merge = (ids: string[]): string | null => {
+      const [first, ...others] = ids;
+      if (!first || !d.citations[first] || others.some((x) => !d.citations[x])) return null;
+      d.citations[first] = { items: ids.flatMap((x) => d.citations[x]!.items) };
+      for (const x of others) {
+        delete d.citations[x];
+        delete d.rendered[x];
+      }
+      delete d.rendered[first];
+      return first;
+    };
+    const r = await serial(() => word.convertPlacement(after.meta.note, merge));
     if (r.moved) note += after.meta.note ? ` ${r.moved} atıf dipnota taşındı.` : ` ${r.moved} atıf dipnottan metne taşındı.`;
-    if (r.kept) note += ` İçinde açıklama da olan ${r.kept} dipnot yerinde bırakıldı; onları elle düzenleyin.`;
+    // İSNAD metin içi keeps explanatory notes; the citations in them are written the in-text way.
+    if (r.kept) note += ` İçinde açıklama da olan ${r.kept} dipnot açıklama dipnotu olarak kaldı; içindeki atıflar metin içi biçimiyle yazılır.`;
   }
   await refresh(true, true);
-  setMessage(`Stil: ${styleTitle(id)}.${note}${note ? " Geri almak için Word'de Geri Al." : ""}`, note.includes("yerinde bırakıldı") ? "warning" : "success");
+  setMessage(`Stil: ${styleTitle(id)}.${note}${note ? " Geri almak için Word'de Geri Al." : ""}`, "success");
 }
 
 /** Kısaltmalar listesi: scans the whole text (abbreviations typed by hand, "Hz.", "s.a.v."), puts the list in, keeps it updated. */

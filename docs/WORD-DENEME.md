@@ -78,6 +78,9 @@ sonucu bildirirseniz çok işe yarar:
 5. **Şahıslar tablosu:** Aktar'dan yükleyin; belgeyi İngilizceye alınca adlar EI3 olmalı;
    İngilizce bir paragrafı seçip **Seçili metindeki adları EI3 yazımına çevir**.
 6. **Arama kutusuna künye yapıştırma:** Atıf sekmesinde "＋ … kütüphaneye ekle ve atıfa koy".
+   Sonunda sayfası olan eski usul bir dipnot da olur ("…, Dergâh Yay., İstanbul 2005, s. 45.").
+7. **Stil değiştirme, iki atıflı dipnot:** bir dipnotta iki ayrı atıf olsun (yalnız atıf, açıklama
+   yok). İSNAD metin içine geçince metinde tek atıf "(…; …)" olmalı; dipnotluya dönünce tek dipnot.
 
 ## Bilinen sınırlar
 
@@ -85,10 +88,9 @@ sonucu bildirirseniz çok işe yarar:
   atıf metne eklenir ve otomatik izleme yalnız metindeki atıflarda çalışır.
 - Otomatik güncelleme pencere açıkken çalışır. Pencere kapalıyken yapılan değişiklikler, pencere
   açılınca ilk saniyede düzeltilir.
-- Dipnotlu stilden metin içi stile geçişte yalnız atıf içeren dipnotlar metne taşınır; içinde
-  açıklama da olan dipnotlar yerinde kalır (sayısı bildirilir).
+- Dipnotlu stilden metin içi stile geçişte yalnız atıf içeren dipnotlar metne taşınır (bir dipnotta
+  birden çok atıf varsa metinde tek atıf olur: "(Kara, 2005: 45; Aydın, 2010: 12)"); içinde açıklama
+  da olan dipnotlar açıklama dipnotu olarak kalır, içlerindeki atıflar metin içi biçimiyle yazılır.
 - Atıf metnini Word'de elle değiştirirseniz Derkenar onun üzerine yazmaz; Denetim'de "Elle
   yazılanı koru" ya da "Derkenar'ın metnine dön" seçilir.
-- Elle yazılmış dipnotlarda kanun, yönetmelik, mahkeme kararı, istatistik ve sanat eseri
-  künyeleri henüz okunmaz; bunlar elle girilir.
 - Vefat tarihleri Derkenar'ın işi değildir (Vefeyât eklentisi).
