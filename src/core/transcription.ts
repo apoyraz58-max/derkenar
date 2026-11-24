@@ -15,7 +15,7 @@ const LETTERS: Record<string, string> = { ḥ: "h", Ḥ: "H", ḫ: "h", Ḫ: "H"
 
 /** Whether a text is written with transcription marks at all. */
 export function isTranscribed(s: string): boolean {
-  return /[ḥḫṣżḍṭẓẕḳġāīūʿʾẖ̱]/u.test(s.normalize("NFC"));
+  return /[ḥḫṣżḍṭẓẕḳġāīūẖḤḪṢŻḌṬẒẔḲĠĀĪŪʿʾ\u0331]/u.test(s.normalize("NFC"));
 }
 
 export function plainTranscription(s: string): string {
