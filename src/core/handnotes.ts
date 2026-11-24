@@ -72,7 +72,9 @@ export interface HandNote {
 const PREFIX = /^((?:[\p{L}\s,]{0,60}?\s)?(?:bk\.|bkz\.|bakınız|krş\.|karş\.)|ayrıca\s+bk\.|ayrıca\s+bkz\.|ayrıca\s+bakınız|bk\.|bkz\.|bakınız|krş\.|karş\.|karşılaştırınız|mesela|örnek\s+olarak|see\s+also|see|cf\.|vgl\.)\s*/iu;
 const SAME = /^(op\.?\s*cit\.?|a\.?\s?g\.?\s?e\.?|a\.?\s?g\.?\s?m\.?|a\.?\s?e\.?|age\.?|agm\.?|aynı\s+eser|aynı\s+yer|a\.?\s?y\.?|ibid\.?|ibidem|ay\.?\s?e\.?|aynı\s+makale)(?=[\s,.]|$)\s*,?\s*/i;
 /** The cited place at the end: "45", "1/45", "45-47", "45 vd.", "vr. 12b", "II/45". */
-const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?((?:\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|s\.\s*\d+(?:\s*[-–]\s*\d+)?)(?:\s*\([^()]{1,40}\))?)\.?\s*$/i;
+/** Works "a.g.m." (adı geçen makale) may point to. */
+const ARTICLE = /^(journalArticle|magazineArticle|newspaperArticle|bookSection|encyclopediaArticle|conferencePaper|dictionaryEntry)$/;
+const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?((?:\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|(?:s|ss|sh|p|pp)\.\s*\d+(?:\s*[-–]\s*\d+)?)(?:\s*\([^()]{1,40}\))?)\.?\s*$/i;
 /** "…, el-Bakara 2/14." (a Kur’ân meâli or tefsir). */
 const SURE = /(?:^|,\s*)((?:[a-zâîû]{1,3}-)?\p{Lu}[\p{L}’'ʿ-]*(?:\s\p{L}[\p{L}’'ʿ-]*)?)\s+(\d{1,3})\s*\/\s*(\d{1,3}(?:\s*[-–]\s*\d{1,3})?)\.?\s*$/u;
 /** "…, “delîl”" (a dictionary's madde, before the place). */
@@ -125,7 +127,7 @@ function cutPlace(s: string): { body: string } & Place {
   // (Only a year of print, 1500-2099, after something that is not a quoted title: "“isnat”, 1029" is a page.)
   if (!m || (!m[1] && /^(1[5-9]|20)\d{2}$/.test(m[2]!) && !/[”"]\s*$/.test(s.slice(0, m.index)) && !/\b(1[0-9]|20)\d{2}\b/.test(s.slice(0, m.index)))) return { body: s.replace(/\.\s*$/, "") };
   const volume = m[1]?.replace(/\s*\/\s*$/, "").trim();
-  const locator = m[2]!.replace(/^s\.\s*/i, "").replace(/(\d[ab]?)\s*[-–]\s*(?=\d)/g, "$1-").trim();
+  const locator = m[2]!.replace(/^(?:s|ss|sh|p|pp)\.\s*/i, "").replace(/(\d[ab]?)\s*[-–]\s*(?=\d)/g, "$1-").trim();
   return { body: s.slice(0, m.index).trim(), ...(volume ? { volume } : {}), locator };
 }
 
@@ -305,7 +307,12 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       const sm = SAME.exec(rest);
       if (sm) {
         // The work cited just before: earlier in this note ("Kara, Tasavvuf, 12; a.g.e., 13"), else in the note before.
-        const prev = refs[refs.length - 1] ?? previous;
+        let prev = refs[refs.length - 1] ?? previous;
+        // "a.g.m." names an article: after a book, the article cited last ("Kutlu, …; Kara, …; a.g.m., 5" is Kutlu's).
+        if (prev && /^(a\.?\s?g\.?\s?m\.?|agm\.?|aynı\s+makale)$/i.test(sm[1]!.trim()) && !ARTICLE.test(prev.item.itemType)) {
+          const art = [...seen].reverse().find((it) => ARTICLE.test(it.itemType));
+          if (art) prev = { item: art, isNew: created.includes(art), form: "age" };
+        }
         if (!prev) {
           reason = "a.g.e. önceki bir eseri göstermiyor";
           break;

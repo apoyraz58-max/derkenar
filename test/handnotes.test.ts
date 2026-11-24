@@ -503,6 +503,10 @@ describe("works that name their kind", () => {
     const r = readHandNotes(["İbn Haldun, Mukaddime, çev. Süleyman Uludağ, Dergâh Yay., İstanbul 1982, I, 245.", "Gazzâlî, İhyâu Ulûmi'd-Dîn, Beyrut ts., III, 12."], []);
     expect(r.map((n) => (n.refs ? `${n.refs[0]!.volume}/${n.refs[0]!.locator}` : n.reason))).toEqual(["I/245", "III/12"]);
   });
+  it("a.g.m. after a book is the article cited last; p./pp./ss. pages", () => {
+    const r = readHandNotes(["Sönmez Kutlu, “İlk Mürciî Metinler”, Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 320.", "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45.", "agm, s. 323.", "a.g.e., 46.", "Ibid., p. 49.", "Kara, a.g.e., ss. 50-52."], []);
+    expect(r.map((n) => `${n.refs?.[0]?.item.fields.title?.slice(0, 8)} ${n.refs?.[0]?.locator}`)).toEqual(["İlk Mürc 320", "Tasavvuf 45", "İlk Mürc 323", "İlk Mürc 46", "İlk Mürc 49", "Tasavvuf 50-52"]);
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");
