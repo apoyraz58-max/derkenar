@@ -98,6 +98,8 @@ export interface DocState {
   abbrSig?: string;
   /** Bibliography divided by kind (Yazma Eserler, Kitaplar, Makaleler …). */
   bibSections?: boolean;
+  /** Kitap adları transkripsiyonsuz: "Câmiu’s-sahîh" for "Câmiʿu’ṣ-ṣaḥîḥ" (the records keep the transcription). */
+  plainTitles?: boolean;
 }
 
 /** Formatted run of text produced from citeproc HTML. */

@@ -1,0 +1,92 @@
+/**
+ * Şamile kataloğu: the books of el-Mektebetü’ş-Şâmile as İSNAD records.
+ *
+ * The catalog is prepared outside the add-in from Şamile's own database and
+ * the user's Şahıslar table, and imported once (like the Şahıslar table; it
+ * is not bundled). Each entry keeps:
+ *   - the title as Şamile names the book, written in DİA's transcription,
+ *     and its plain form ("Câmiu’s-sahîh") for documents that want it;
+ *   - the authors with their DİA name where the Şahıslar table knows them;
+ *   - where it came from (Şamile and the book's number there), so that
+ *     records taken from other programs later are told apart.
+ */
+import { diaParts, type Person } from "./persons.js";
+import { shortTitleOf } from "./isnadstyle.js";
+import { type Creator, type Item, emptyItem } from "./zotero.js";
+
+export interface CatalogAuthor {
+  /** DİA short name ("Gazzâlî", "İbn Kayyim el-Cevziyye"), when the Şahıslar table knows the person. */
+  dia?: string | null;
+  diaFull?: string | null;
+  group?: string | null;
+  /** The name as Şamile writes it (Arabic). */
+  shamela: string;
+  /** The name in İSNAD transcription, for persons DİA has no article on. */
+  name?: string | null;
+  death?: number | null;
+  match?: string;
+}
+
+export interface CatalogEntry {
+  /** The book's number in Şamile. */
+  id: number;
+  /** Şamile's title (Arabic, with its own notes). */
+  ar: string;
+  /** The title in DİA's transcription ("el-Muṣannef"). */
+  title: string;
+  /** The same without the transcription marks ("el-Musannef"). */
+  plain: string;
+  authors: CatalogAuthor[];
+  /** Muhakkik and edition as far as Şamile's title tells (a hint until the book card is read). */
+  thk?: string | null;
+  ed?: string | null;
+  category?: string | null;
+  /** What still wants a look. */
+  review?: string[];
+}
+
+export interface Catalog {
+  /** "el-Mektebetü’ş-Şâmile" … */
+  name: string;
+  /** When and from what it was made. */
+  source: string;
+  entries: CatalogEntry[];
+}
+
+/** The source program, written into every record taken from it. */
+export const SHAMELA = "el-Mektebetü’ş-Şâmile";
+
+function creatorOf(a: CatalogAuthor): Creator | null {
+  if (a.dia) {
+    const p: Person = { dia: a.dia, diaFull: a.diaFull ?? undefined, ei3: "", group: a.group ?? "Arap" };
+    const { surname, given, article } = diaParts(p);
+    const firstName = `${given}${article ? ` ${article}` : ""}`.trim();
+    return { creatorType: "author", lastName: surname, ...(firstName ? { firstName } : {}) };
+  }
+  if (a.name) return { creatorType: "author", name: a.name };
+  return null;
+}
+
+/** A catalog entry as an İSNAD record: transcribed title (the plain form goes with it), DİA names, its source. */
+export function catalogItem(e: CatalogEntry, catalog = SHAMELA): Item {
+  const item = emptyItem("book", "samile");
+  item.fields.title = e.title;
+  const short = shortTitleOf(e.title);
+  if (short && short !== e.title) item.fields.shortTitle = short;
+  item.fields.language = "ar";
+  for (const a of e.authors) {
+    const c = creatorOf(a);
+    if (c) item.creators.push(c);
+  }
+  if (e.thk) item.creators.push({ creatorType: "muhakkik", name: e.thk });
+  if (e.ed) item.fields.publisher = e.ed;
+  item.fields.libraryCatalog = catalog;
+  item.fields.extra = [`Kaynak: ${catalog}, kitap no. ${e.id}`, `Kaynak adı: ${e.ar}`, `Transkripsiyonsuz başlık: ${e.plain}`, ...(e.review?.length ? [`Kontrol: ${e.review.join("; ")}`] : [])].join("\n");
+  return item;
+}
+
+/** Where a record came from, when it came from a catalog ("el-Mektebetü’ş-Şâmile, kitap no. 1234"). */
+export function catalogSource(item: Item): { catalog: string; id: string } | null {
+  const m = /^Kaynak: (.+?), kitap no\. (\S+)$/m.exec(item.fields.extra ?? "");
+  return m ? { catalog: m[1]!, id: m[2]! } : null;
+}

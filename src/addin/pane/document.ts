@@ -316,6 +316,7 @@ function renderPrefs(): void {
   $<HTMLInputElement>("keep-library").checked = d.keepLibrary !== false;
   $<HTMLInputElement>("bib-title").value = d.bibTitle ?? "Kaynakça";
   $<HTMLInputElement>("bib-sections").checked = d.bibSections === true;
+  $<HTMLSelectElement>("title-form").value = d.plainTitles ? "plain" : "transcribed";
 }
 
 let customListed: CustomStyle[] = [];
@@ -483,6 +484,14 @@ export function wireDocument(): void {
       doc().bibSections = $<HTMLInputElement>("bib-sections").checked;
       await refresh(false, true);
       setMessage(doc().bibSections ? "Kaynakça türlere ayrıldı (Yazma Eserler, Kitaplar, Makaleler …)." : "Kaynakça tek liste oldu.", "success");
+    });
+  $<HTMLSelectElement>("title-form").onchange = () =>
+    void run("Atıflar yenileniyor", async () => {
+      const d = doc();
+      d.plainTitles = $<HTMLSelectElement>("title-form").value === "plain";
+      d.rendered = {};
+      await refresh(false, true);
+      setMessage(d.plainTitles ? "Kitap adları transkripsiyonsuz yazılıyor (Câmiu’s-sahîh); kayıtlar transkripsiyonlu kaldı, istediğiniz zaman geri dönebilirsiniz." : "Kitap adları transkripsiyonlu yazılıyor (Câmiʿu’ṣ-ṣaḥîḥ).", "success");
     });
   $("refresh").onclick = () => void run("Belge güncelleniyor", () => refresh(true));
   $<HTMLInputElement>("bib-add-q").oninput = searchUncited;

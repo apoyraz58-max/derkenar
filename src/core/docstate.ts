@@ -3,6 +3,7 @@
  * the Word layer reads the citation controls in document order, this module
  * decides which ones change, and the Word layer writes only those.
  */
+import { plainTranscription } from "./transcription.js";
 import { type Bibliography, type OrderedCitation, Renderer } from "./engine.js";
 import type { CiteRef, CslItem, DocState, StoredCitation } from "./types.js";
 import { sameAuthors } from "./names.js";
@@ -92,7 +93,7 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
     // a.mlf. in footnotes and in in-text citations alike (guide s. 65 and s. 139).
     ordered.push({ id: f.id, items: renderer.meta.isnad ? withSameAuthor(c.items, state.items, renderer.language) : c.items, noteIndex: renderer.meta.note ? f.noteIndex : 0 });
   }
-  renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items)), renderer.meta.isnad, renderer.language));
+  renderer.setItems(cslMap(state.items, volumesCited(ordered.flatMap((c) => c.items)), renderer.meta.isnad, renderer.language, state.plainTitles === true));
   const uncited = (state.bibUncited ?? []).filter((k) => state.items[k]);
   const html = renderer.renderCitations(ordered, uncited);
   const updates = new Map<string, string>();
@@ -194,7 +195,17 @@ export function setEnglishNames(fn: ((c: Creator) => Creator) | null): void {
   englishNames = fn;
 }
 
-export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set(), isnad = true, lang = "tr-TR"): Record<string, CslItem> {
+/** Title variables a transcribed title may be in. */
+const TITLE_VARS = ["title", "title-short", "container-title", "container-title-short", "collection-title", "original-title", "volume-title"] as const;
+
+/** Kitap adları transkripsiyonsuz: the titles of the records are printed without the transcription marks (the records keep them). */
+export function plainTitles(csl: CslItem): CslItem {
+  const c = csl as CslItem & Record<string, unknown>;
+  for (const k of TITLE_VARS) if (typeof c[k] === "string") c[k] = plainTranscription(c[k] as string);
+  return csl;
+}
+
+export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet<string> = new Set(), isnad = true, lang = "tr-TR", plain = false): Record<string, CslItem> {
   const out: Record<string, CslItem> = {};
   const english = isnad && /^en/.test(lang);
   for (const [k, v0] of Object.entries(items)) {
@@ -207,6 +218,7 @@ export function cslMap(items: Record<string, Item>, citedWithVolume: ReadonlySet
     }
     // citeproc title-cases titles of English-language works; a transliterated or Turkish title is not one ("Kitāb al-Tawḥīd").
     if (isnad && /^en/.test(lang)) englishIsnad(csl);
+    if (plain) plainTitles(csl);
     out[k] = isnad ? fillImprint(spacedInitials(articleToGiven(csl, english)), lang) : plainRoles(csl);
   }
   return out;
