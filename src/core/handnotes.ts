@@ -69,12 +69,14 @@ export interface HandNote {
   readonly reason?: string;
 }
 
-const PREFIX = /^((?:[\p{L}\s,]{0,60}?\s)?(?:bk\.|bkz\.|bakınız|krş\.|karş\.)|ayrıca\s+bk\.|ayrıca\s+bkz\.|ayrıca\s+bakınız|bk\.|bkz\.|bakınız|krş\.|karş\.|karşılaştırınız|mesela|örnek\s+olarak|see\s+also|see|cf\.|vgl\.)\s*/iu;
+/** The ordinary first words of a reference's prefix, which may be lower-cased. */
+const PREFIX_WORD = /^(Bu|Şu|Daha|Geniş|Ayrıca|Bk|Bkz|Bakınız|Krş|Karş|Karşılaştırınız|Mesela|Meselâ|Örnek|Örneğin|Nakleden|Naklen|Aktaran|Akt|Zikreden|Alıntılayan|Benzer|Konu|Konuyla|Bilgi|Detaylı|Ayrıntılı|Farklı|Aksi|İlgili|Bunun|Bunlar|See|Cf|Vgl|Quoted|Cited)(?=\.?(?:\s|$|:))/u;
+const PREFIX = /^((?:[\p{L}\s,;]{0,80}?\s)?(?:bk\.|bkz\.|bakınız|krş\.|karş\.)|(?:nakleden|naklen|aktaran|akt\.|zikreden|alıntılayan|quoted\s+in|cited\s+in)\s*:?|ayrıca\s+bk\.|ayrıca\s+bkz\.|ayrıca\s+bakınız|bk\.|bkz\.|bakınız|krş\.|karş\.|karşılaştırınız|mesela|örnek\s+olarak|see\s+also|see|cf\.|vgl\.)\s*/iu;
 const SAME = /^(op\.?\s*cit\.?|a\.?\s?g\.?\s?e\.?|a\.?\s?g\.?\s?m\.?|a\.?\s?e\.?|age\.?|agm\.?|aynı\s+eser|aynı\s+yer|a\.?\s?y\.?|ibid\.?|ibidem|ay\.?\s?e\.?|aynı\s+makale)(?=[\s,.]|$)\s*,?\s*/i;
 /** The cited place at the end: "45", "1/45", "45-47", "45 vd.", "vr. 12b", "II/45". */
 /** Works "a.g.m." (adı geçen makale) may point to. */
 const ARTICLE = /^(journalArticle|magazineArticle|newspaperArticle|bookSection|encyclopediaArticle|conferencePaper|dictionaryEntry)$/;
-const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?((?:\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|(?:s|ss|sh|p|pp)\.\s*\d+(?:\s*[-–]\s*\d+)?)(?:\s*\([^()]{1,40}\))?)\.?\s*$/i;
+const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?((?:\d{1,3}[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:,\s*\d{1,3}[ab]?(?:\s*[-–]\s*\d+[ab]?)?)+|\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|(?:s|ss|sh|p|pp)\.\s*\d+(?:\s*[-–]\s*\d+)?)(?:\s*\([^()]{1,40}\))?)\.?\s*$/i;
 /** "…, el-Bakara 2/14." (a Kur’ân meâli or tefsir). */
 const SURE = /(?:^|,\s*)((?:[a-zâîû]{1,3}-)?\p{Lu}[\p{L}’'ʿ-]*(?:\s\p{L}[\p{L}’'ʿ-]*)?)\s+(\d{1,3})\s*\/\s*(\d{1,3}(?:\s*[-–]\s*\d{1,3})?)\.?\s*$/u;
 /** "…, “delîl”" (a dictionary's madde, before the place). */
@@ -98,6 +100,20 @@ export function splitNote(text: string): string[] {
   }
   out.push(cur);
   return out.map((s) => s.trim()).filter(Boolean);
+}
+
+/**
+ * "Kara bu görüşü eleştirir; bk. Kara, Tasavvuf, 53.": the author's own words before "; bk." belong to the
+ * reference that follows, as its prefix; they are not a reference of their own.
+ */
+function withComments(parts: string[]): string[] {
+  const out: string[] = [];
+  for (const p of parts) {
+    const prev = out[out.length - 1];
+    if (prev !== undefined && /^(?:ayrıca\s+)?(?:bk\.|bkz\.|bakınız|krş\.|karş\.|cf\.|see)\s/iu.test(p) && !/\d/.test(prev) && /^[\p{L}\s,’'-]{3,80}$/u.test(prev) && prev.split(" ").length >= 2 && !/,/.test(prev)) out[out.length - 1] = `${prev}; ${p}`;
+    else out.push(p);
+  }
+  return out;
 }
 
 /** "…, c. I, s. 245" · "…, C. 2, s. 45" · "…, I, 245" (eski usul cilt ve sayfa). */
@@ -199,6 +215,8 @@ function findShort(body0: string, pool: readonly Item[]): Item | null {
     if (hits.length === 1) return hits[0]!;
   }
   const comma = firstComma(body);
+  // "Nakleden: Kara, …": words of the writer's own before the name are not part of it (nothing may be lost).
+  if (comma > 0 && (/[:;]/.test(body.slice(0, comma)) || body.slice(0, comma).trim().split(/\s+/).length > 5)) return null;
   const author = comma > 0 ? authorKey(body.slice(0, comma)) : "";
   // A manuscript's short form keeps its shelf mark: "Keşşî, et-Temhîd (Şehit Ali Paşa, 1153)".
   const raw = (comma > 0 ? body.slice(comma + 1) : body).replace(/\s*\([^()]*\)\s*$/, "").trim();
@@ -283,9 +301,10 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
     }
     const refs: HandRef[] = [];
     let reason = "";
-    for (const part of splitNote(text)) {
+    for (const part of withComments(splitNote(text))) {
       const pm = PREFIX.exec(part);
-      const prefix = pm ? pm[1]!.replace(/^\p{Lu}/u, (c) => c.toLocaleLowerCase("tr")).replace(/\s+/g, " ") : undefined;
+      // "Bk." → "bk." (the note's first letter is set when it is written); a name ("Kara bu görüşü …") keeps its capital.
+      const prefix = pm ? pm[1]!.replace(/^\p{Lu}(?=\p{Ll}*\.?(?:\s|$|:))/u, (c, i, all: string) => (PREFIX_WORD.test(all) ? c.toLocaleLowerCase("tr") : c)).replace(/\s+/g, " ") : undefined;
       const rest = pm ? part.slice(pm[0].length) : part;
       // "Kara, a.g.e., s. 47": the work of that author cited last.
       const named = /^((?:İbn\s|el-|eş-|er-)?\p{Lu}[\p{L}'’-]*(?:\s\p{Lu}[\p{L}'’-]*){0,2}),\s*(?=a\.?\s?g\.?\s?[em]\.?|age\.?|agm\.?|aynı\s+eser|op\.?\s*cit\.?)/iu.exec(rest);

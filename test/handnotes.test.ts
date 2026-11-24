@@ -507,6 +507,14 @@ describe("works that name their kind", () => {
     const r = readHandNotes(["Sönmez Kutlu, “İlk Mürciî Metinler”, Ankara Üniversitesi İlahiyat Fakültesi Dergisi 37 (1997), 320.", "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45.", "agm, s. 323.", "a.g.e., 46.", "Ibid., p. 49.", "Kara, a.g.e., ss. 50-52."], []);
     expect(r.map((n) => `${n.refs?.[0]?.item.fields.title?.slice(0, 8)} ${n.refs?.[0]?.locator}`)).toEqual(["İlk Mürc 320", "Tasavvuf 45", "İlk Mürc 323", "İlk Mürc 46", "İlk Mürc 49", "Tasavvuf 50-52"]);
   });
+  it("the writer's words around a reference are kept", () => {
+    const full = "Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45.";
+    const r = readHandNotes([full, "Kara bu görüşü eleştirir; bk. Kara, Tasavvuf ve Tarikatlar Tarihi, 53.", "Nakleden: Kara, Tasavvuf ve Tarikatlar Tarihi, 54.", "Kara, Tasavvuf ve Tarikatlar Tarihi, 57, 59.", "Bk. Kara, Tasavvuf ve Tarikatlar Tarihi, 60."], []);
+    expect(r.slice(1).map((n) => `${n.refs?.[0]?.prefix ?? ""}|${n.refs?.[0]?.locator}`)).toEqual(["Kara bu görüşü eleştirir; bk.|53", "nakleden:|54", "|57, 59", "bk.|60"]);
+    // A short form whose "author" holds the writer's words is not read as that author's.
+    const odd = readHandNotes([full, "Kara’ya göre: Kara, Tasavvuf ve Tarikatlar Tarihi, 61."], [])[1]!;
+    expect(!odd.refs || /göre/.test(odd.refs[0]!.prefix ?? "")).toBe(true);
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");
