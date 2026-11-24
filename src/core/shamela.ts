@@ -90,3 +90,57 @@ export function catalogSource(item: Item): { catalog: string; id: string } | nul
   const m = /^Kaynak: (.+?), kitap no\. (\S+)$/m.exec(item.fields.extra ?? "");
   return m ? { catalog: m[1]!, id: m[2]! } : null;
 }
+
+// ---------------------------------------------------------------- searching the catalog
+
+/** Arabic for searching: no vowel signs, one alif, yā and tā marbūṭa as plain letters. */
+const arabicKey = (s: string) =>
+  s
+    .replace(/[ً-ٰٟـ]/g, "")
+    .replace(/[إأآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[^؀-ۿ\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/** Latin for searching: no marks, no ayn or hamza, no article ("ʿUmdetü’l-ḳārî" → "umdetul kari"). */
+const latinKey = (s: string) =>
+  s
+    .replace(/[İIı]/g, "i")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[ʿʾ‘’'`]/g, "")
+    .replace(/(^|\s)(el|er|ez|es|es|en|et|ed|al)-/g, "$1")
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const keys = new WeakMap<CatalogEntry, string>();
+function keyOf(e: CatalogEntry): string {
+  let k = keys.get(e);
+  if (k === undefined) {
+    k = ` ${latinKey(`${e.title} ${e.plain} ${e.authors.map((a) => `${a.dia ?? ""} ${a.name ?? ""}`).join(" ")}`)} ${arabicKey(`${e.ar} ${e.authors.map((a) => a.shamela).join(" ")}`)} `;
+    keys.set(e, k);
+  }
+  return k;
+}
+
+/**
+ * Books of the catalog for a search: every word of the query, in Latin letters (with or without
+ * the marks: "umdetul kari", "Aynî umde") or Arabic ("عمدة القاري"), begins a word of the entry.
+ */
+export function searchCatalog(q: string, catalog: Catalog, limit = 8): CatalogEntry[] {
+  const words = [...latinKey(q).split(" "), ...arabicKey(q).split(" ")].filter((w) => w.length >= 2);
+  if (!words.length) return [];
+  const out: CatalogEntry[] = [];
+  for (const e of catalog.entries) {
+    const k = keyOf(e);
+    if (words.every((w) => k.includes(` ${w}`))) {
+      out.push(e);
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
+}

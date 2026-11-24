@@ -2,6 +2,8 @@
  * Atıf: search, build the citation (several works, cilt/sayfa, prefixes),
  * insert it or update the citation under the cursor.
  */
+import { catalogHits } from "./catalog.js";
+import { catalogSource } from "../../core/shamela.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import { LOCATOR_LABELS } from "../../core/engine.js";
 import { htmlToSegments } from "../../core/html.js";
@@ -58,6 +60,30 @@ let freetext: Freetext | null = null;
 let freetextLoading = false;
 
 /** A DOI, an ISBN or a whole reference typed or pasted into the search box: it can be added and cited in one go. */
+/** Books of the loaded catalog (Şamile) the library does not have yet: one click adds the İSNAD record and cites it. */
+function catalogRows(): HTMLElement[] {
+  const q = $<HTMLInputElement>("q").value.trim();
+  const have = new Set(S.items.filter((i) => !i.deleted).map((i) => catalogSource(i)).filter(Boolean).map((c) => `${c!.catalog}#${c!.id}`));
+  return catalogHits(q)
+    .filter((hit) => !have.has(`${hit.catalog}#${hit.entry.id}`))
+    .map((hit) => {
+      const e = hit.entry;
+      const who = e.authors.map((a) => a.dia ?? a.name ?? a.shamela).join(", ");
+      const b = h("button", { type: "button", class: "outside" }, h("div", { class: "r-title" }, `＋ ${e.title}`), h("div", { class: "r-more" }, `${who || "—"}${e.authors[0]?.death ? ` (ö. ${e.authors[0].death})` : ""} · ${hit.catalog}, no. ${e.id}${e.review?.length ? " · kontrol edilecek" : ""}`));
+      b.onclick = () =>
+        void run("Ekleniyor", async () => {
+          const io = await import("./io.js");
+          const [item] = await io.addParsed([hit.item()]);
+          if (!item) return;
+          addToBasket(item);
+          $<HTMLInputElement>("q").value = "";
+          search();
+          setMessage(`${hit.catalog} kataloğundan eklendi: ${creatorLine(item) || "—"}, ${titleOf(item)}.${e.review?.length ? ` Kontrol edilecek: ${e.review.join("; ")}.` : ""} Basım bilgisini (yer, yayınevi, yıl) künye kartından tamamlayın.`, e.review?.length ? "warning" : "success");
+        });
+      return b;
+    });
+}
+
 function outsideOffer(): HTMLElement | null {
   const q = $<HTMLInputElement>("q").value.trim();
   if (!q) return null;
@@ -117,7 +143,7 @@ function outsideOffer(): HTMLElement | null {
 function renderResults(): void {
   const inBasket = new Set(S.basket.map((b) => b.id));
   const offer = results.length < 3 ? outsideOffer() : null;
-  $("outside-offer").replaceChildren(...(offer ? [offer] : []));
+  $("outside-offer").replaceChildren(...(offer ? [offer] : []), ...catalogRows());
   $("results").replaceChildren(
     ...results.map((item, i) => {
       const li = resultRow(item, { role: "option", "aria-selected": String(i === cursor), class: inBasket.has(item.key) ? "in-basket" : "" });

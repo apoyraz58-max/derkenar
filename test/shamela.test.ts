@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { emptyState, planRefresh, putCitation } from "../src/core/docstate.js";
 import { Renderer } from "../src/core/engine.js";
 import { htmlToText } from "../src/core/html.js";
-import { catalogItem, catalogSource, type CatalogEntry } from "../src/core/shamela.js";
+import { catalogItem, catalogSource, searchCatalog, type CatalogEntry } from "../src/core/shamela.js";
 import { plainTranscription } from "../src/core/transcription.js";
 
 const styles = new URL("../data/styles/", import.meta.url);
@@ -64,5 +64,18 @@ describe("Şamile kataloğu", () => {
     // The source program is not printed.
     expect(`${t.note} ${t.bib}`).not.toContain("Şâmile");
     expect(it.fields.title).toBe(entry.title);
+  });
+});
+
+describe("searching the catalog", () => {
+  const catalog = { name: "el-Mektebetü’ş-Şâmile", source: "test", entries: [entry, { ...entry, id: 1, ar: "المصنف", title: "el-Muṣannef", plain: "el-Musannef", authors: [{ dia: "Abdürrezzâk es-San‘ânî", shamela: "عبد الرزاق الصنعاني", death: 211 }] }] };
+  it("finds a book by its title with or without marks, by its author, or in Arabic", () => {
+    const ids = (q: string) => searchCatalog(q, catalog).map((e) => e.id);
+    expect(ids("umdetul kari")).toEqual([5756]);
+    expect(ids("ʿUmdetü’l-ḳārî")).toEqual([5756]);
+    expect(ids("Aynî umde")).toEqual([5756]);
+    expect(ids("عمدة القاري")).toEqual([5756]);
+    expect(ids("musannef")).toEqual([1]);
+    expect(ids("xyz")).toEqual([]);
   });
 });

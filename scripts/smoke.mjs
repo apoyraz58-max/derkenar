@@ -596,6 +596,23 @@ try {
   if ((await notes()).length !== before9c) fail(`9c back to notes: ${(await notes()).length} vs ${before9c}`);
   if (!(await notes()).some((n) => /1\/45; .*2\/99|1\/45, 2\/99/.test(n))) fail(`joined citation in a note: ${JSON.stringify(await notes())}`);
 
+  // 9e. Şamile kataloğu: imported in Aktar; a search in Atıf offers its books; one click adds the İSNAD record.
+  const catalogJson = JSON.stringify({ name: "el-Mektebetü’ş-Şâmile", source: "smoke", entries: [
+    { id: 5756, ar: "عمدة القاري شرح صحيح البخاري", title: "ʿUmdetü’l-ḳārî şerḥu Ṣaḥîḥi’l-Buḫârî", plain: "Umdetü’l-kârî şerhu Sahîhi’l-Buhârî", authors: [{ dia: "Aynî, Bedreddin", diaFull: "Ebû Muhammed Bedrüddîn Mahmûd b. Ahmed el-Aynî", group: "Arap", shamela: "بدر الدين العيني", death: 855, match: "kesin" }] },
+  ] });
+  await page.click("#tab-aktar");
+  await page.setInputFiles("#catalog-file", { name: "samile.json", mimeType: "application/json", buffer: Buffer.from(catalogJson) });
+  await page.waitForSelector("#message:has-text('kataloğu yüklendi')");
+  await page.click("#tab-atif");
+  await page.fill("#q", "umdetul kari");
+  await page.locator("#outside-offer button", { hasText: "Umdetü’l-ḳārî" }).first().click();
+  await page.waitForSelector("#message:has-text('kataloğundan eklendi')");
+  await page.fill("#q", "umdetul kari");
+  if (await page.locator("#outside-offer button", { hasText: "Umdetü’l-ḳārî" }).count()) fail("catalog book offered again after it was added");
+  if (!(await page.textContent("#basket"))?.includes("Umdetü’l-ḳārî")) fail("catalog book not in the citation");
+  await page.fill("#q", "");
+  await page.click("#clear-basket");
+
   // 9a. Yeni kaynak: ekleme yolları; RIS metni yapıştırarak ekleme.
   await page.click("#tab-kutuphane");
   await page.selectOption("#lib-new", "__ways");
