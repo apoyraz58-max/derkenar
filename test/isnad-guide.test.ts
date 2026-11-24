@@ -523,3 +523,17 @@ describe("eklerken kendiliğinden düzeltmeler doğru kaydı bozmaz", () => {
     expect((fired.get("short-title") ?? 0) + (fired.get("title-period") ?? 0)).toBeLessThanOrEqual(10);
   });
 });
+
+describe("transcribed Arabic titles", () => {
+  it("keep the article small whatever its letter, and ayn is not a mixed quote mark", async () => {
+    const { isnadTitle } = await import("../src/core/isnadstyle.js");
+    const { checkItem } = await import("../src/core/isnad.js");
+    const { emptyItem } = await import("../src/core/zotero.js");
+    for (const t of ["eṭ-Ṭabaḳātü’l-kübrâ", "eṣ-Ṣavâʿiḳu’l-mürsele ʿale’l-Cehmiyye ve’l-Muʿaṭṭıla", "eż-Żuʿafâʾ", "eẕ-Ẕeyl", "es̱-S̱iḳāt"]) expect(isnadTitle(t)).toBe(t);
+    const it = emptyItem("book", "x");
+    it.fields.title = "Mecmaʿu’z-zevâʾid ve menbaʿu’l-fevâʾid";
+    expect(checkItem(it).some((i) => i.code === "apostrophes" || i.code === "title-case")).toBe(false);
+    it.fields.title = "Mecma‘u’z-zevâʾid ve menbaʿu'l-fevâʾid";
+    expect(checkItem(it).some((i) => i.code === "apostrophes")).toBe(true);
+  });
+});
