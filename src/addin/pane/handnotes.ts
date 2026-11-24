@@ -3,7 +3,7 @@
  * citations in place (the note, its number and its place stay). First a
  * look at what would change; then the change, which Word's Undo takes back.
  */
-import { type HandInText, type HandNote, SHORT_UNKNOWN, bibliographyLines, sectionHeadings, checkBibliography, checkInTextBibliography, inTextAuthorYears, readHandNotes, readInText } from "../../core/handnotes.js";
+import { type HandInText, type HandNote, SHORT_UNKNOWN, unkeptWords, bibliographyLines, sectionHeadings, checkBibliography, checkInTextBibliography, inTextAuthorYears, readHandNotes, readInText } from "../../core/handnotes.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import type { CiteRef } from "../../core/types.js";
 import { type Item, creatorLine, titleOf } from "../../core/zotero.js";
@@ -86,6 +86,8 @@ interface BibLine {
   text: string;
   item: Item | null;
   isNew: boolean;
+  /** Words of the line the record would not keep: the work is taken, the typed list stays in place. */
+  lost?: string[];
 }
 let bib: { text: string; lines: BibLine[] } | null = null;
 
@@ -95,13 +97,18 @@ function readBibliography(text: string): BibLine[] {
   return bibliographyLines(text)
     .map((l) => {
       const r = parseReference(l);
-      if (!r || !r.item.fields.title) return { text: l, item: null, isNew: false };
+      if (!r || (!r.item.fields.title && !r.item.fields.docketNumber)) return { text: l, item: null, isNew: false };
+      const lostIn = (it: Item) => unkeptWords(l, [{ item: it, isNew: false, form: "full" }]);
       const old = copies.find(r.item);
-      if (old) return { text: l, item: old, isNew: created.includes(old) };
+      if (old) {
+        const lost = lostIn(old).filter((w) => lostIn(r.item).includes(w));
+        return { text: l, item: old, isNew: created.includes(old), ...(lost.length ? { lost } : {}) };
+      }
       const item = { ...r.item, source: "kaynakca" };
       created.push(item);
       copies.add(item);
-      return { text: l, item, isNew: true };
+      const lost = lostIn(item);
+      return { text: l, item, isNew: true, ...(lost.length ? { lost } : {}) };
     });
 }
 
@@ -111,14 +118,15 @@ async function scanBibliography(): Promise<void> {
   const lines = readBibliography(text);
   bib = { text, lines };
   const read = lines.filter((l) => l.item);
-  const unread = lines.filter((l) => !l.item);
+  // A line whose words the record would not all keep counts as not read for replacing the typed list.
+  const unread = lines.filter((l) => !l.item || l.lost);
   const fresh = read.filter((l) => l.isNew).length;
   $("hand-bib-result").replaceChildren(
-    h("p", { class: "small" }, `${lines.length} künyeden ${read.length} tanesi okundu${fresh ? ` (${fresh} eser kütüphanede yok, eklenecek)` : ""}.${unread.length ? ` ${unread.length} satır okunamadı; seçili metin bu yüzden yerinde bırakılacak, eserler yine de kütüphaneye ve kaynakçaya girer.` : " Seçili metnin yerine Derkenar kaynakçası gelecek."}`),
+    h("p", { class: "small" }, `${lines.length} künyeden ${read.length} tanesi okundu${fresh ? ` (${fresh} eser kütüphanede yok, eklenecek)` : ""}.${unread.length ? ` ${unread.length} satır okunamadı ya da kaydına tam sığmıyor; seçili metin bu yüzden yerinde bırakılacak, okunan eserler yine de kütüphaneye ve kaynakçaya girer.` : " Seçili metnin yerine Derkenar kaynakçası gelecek."}`),
     h(
       "ol",
       { class: "hand-list small" },
-      ...lines.slice(0, 300).map((l) => h("li", { class: l.item ? "" : "muted" }, h("div", { class: "hand-src" }, short(l.text, 140)), h("div", { class: l.item ? "hand-to" : "hand-keep" }, l.item ? `→ ${creatorLine(l.item) || "—"}, ${short(titleOf(l.item), 60)}${l.isNew ? " (yeni)" : ""}` : "okunamadı"))),
+      ...lines.slice(0, 300).map((l) => h("li", { class: l.item ? "" : "muted" }, h("div", { class: "hand-src" }, short(l.text, 140)), h("div", { class: l.item ? "hand-to" : "hand-keep" }, l.item ? `→ ${creatorLine(l.item) || "—"}, ${short(titleOf(l.item), 60)}${l.isNew ? " (yeni)" : ""}${l.lost ? ` — kayıtta yeri olmayan: ${l.lost.slice(0, 4).join(", ")}` : ""}` : "okunamadı"))),
     ),
     ...(lines.length > 300 ? [h("p", { class: "muted small" }, `Listede ilk 300 künye gösteriliyor; ${read.length} künyenin hepsi alınır.`)] : []),
     read.length ? h("button", { type: "button", class: "primary", onclick: () => void run("Kaynakça çevriliyor", convertBibliography) }, unread.length ? `${read.length} eseri kütüphaneye ve kaynakçaya al` : "Derkenar kaynakçasına çevir") : h("p", { class: "muted small" }, "Okunan künye yok."),
@@ -156,14 +164,14 @@ async function convertBibliography(): Promise<void> {
     d.bibSections = true;
     $<HTMLInputElement>("bib-sections").checked = true;
   }
-  const unread = bib.lines.length - read.length;
+  const unread = bib.lines.filter((l) => !l.item || l.lost).length;
   const replaced = unread ? false : await serial(() => word.selectionToBibliography());
   await word.saveState(d);
   await refresh(false, true);
   bib = null;
   $("hand-bib-result").replaceChildren();
   setMessage(
-    `${read.length} eser kaynakçaya alındı${fresh.length ? `, ${fresh.length} tanesi kütüphaneye eklendi` : ""}.${fixedNote}${sectioned ? " Elle yazılmış kaynakça ara başlıklarla bölünmüştü; Derkenar'ınki de türlere ayrıldı (Belge → Kaynakçayı türlere ayır)." : ""} ${replaced ? "Elle yazılmış kaynakçanın yerinde artık Derkenar kaynakçası var." : unread ? `Okunamayan ${unread} satır yüzünden elle yazılmış kaynakça yerinde bırakıldı; Kaynakça ekle ile Derkenar'ınkini koyup eskisini silin.` : "Belgede zaten bir Derkenar kaynakçası var; elle yazılmış olanı silebilirsiniz."}`,
+    `${read.length} eser kaynakçaya alındı${fresh.length ? `, ${fresh.length} tanesi kütüphaneye eklendi` : ""}.${fixedNote}${sectioned ? " Elle yazılmış kaynakça ara başlıklarla bölünmüştü; Derkenar'ınki de türlere ayrıldı (Belge → Kaynakçayı türlere ayır)." : ""} ${replaced ? "Elle yazılmış kaynakçanın yerinde artık Derkenar kaynakçası var." : unread ? `Okunamayan ya da kaydına tam sığmayan ${unread} satır yüzünden elle yazılmış kaynakça yerinde bırakıldı; Kaynakça ekle ile Derkenar'ınkini koyup eskisini, o satırları karşılaştırarak silin.` : "Belgede zaten bir Derkenar kaynakçası var; elle yazılmış olanı silebilirsiniz."}`,
     unread ? "warning" : "success",
   );
 }

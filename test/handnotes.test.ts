@@ -529,6 +529,14 @@ describe("works that name their kind", () => {
     const meal = readHandNotes(["Kur’ân-ı Kerîm Meâli, çev. Halil Altuntaş - Muzaffer Şahin (Ankara: Diyanet İşleri Başkanlığı Yayınları, 2009), el-Enfâl 8/2."], [])[0]!;
     expect(meal.refs && unkeptWords(meal.text, meal.refs)).toEqual([]);
   });
+  it("the same check for a bibliography line", () => {
+    const lost = (l: string) => unkeptWords(l, [{ item: parseReference(l)!.item, isNew: true, form: "full" }]);
+    expect(lost("Şahin, Derya. Amisos Mozaiği. PDF: Kültür ve Turizm Bakanlığı Yayınları, 2004. http://www.kulturvarliklari.gov.tr/Eklenti/38967,amis os-mozaigi.pdf")).toEqual([]);
+    expect(lost("Çiftci, Adem. “Suça Teşebbüsten Vazgeçme”. Cumhuriyet İlahiyat Dergisi 19/1 (Haziran 2015), 9-35. https://doi.org/10.18505/cuid.21359")).toEqual([]);
+    expect(lost("Üçer, Cenksu. “Mizan”. Diyanet TV. Yayın Tarihi 6 Temmuz 2019. https://www.diyanet.tv/mizan")).toEqual([]);
+    // A date with no field to hold it.
+    expect(lost("David Rumsey Map Collection. Istanbul Vilayeti. 19 Eylül 2019. https://www.davidrumsey.com")).toContain("2019");
+  });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
     expect(p("Kelly, John D. “Seeing Red”. Anthropology and Global Counterinsurgency. ed. John D. Kelly vd. 67-83. Chicago: University of Chicago Press, 2010.")?.fields.place).toBe("Chicago");

@@ -287,7 +287,7 @@ export const SHORT_UNKNOWN = "kısa künye; eser daha önce tam künyeyle anılm
 
 /** Reads the notes in order; `library` is searched for each work before a new record is made. */
 /** Words a reference may drop: abbreviations Derkenar writes its own way, roles, months (dates are stored as numbers). */
-const DROPPABLE = new Set("s ss sh p pp c cilt sy sayi vol vols no nr bk bkz krs kars age agm ay ae ayni eser yer makale ibid ibidem op cit amlf id idem yay yayinlari yayinevi ts ty yy by nd thk nsr cev haz sad mlf turkceye ed eds trans vd et al dia tdv bs basim baski erisim tarih tarihi md madde vr kanun alici yayimlanmamis yayinlanmamis basilmamis unpublished ve and ile de da bu el".split(" "));
+const DROPPABLE = new Set("s ss sh p pp c cilt sy sayi vol vols no nr bk bkz krs kars age agm ay ae ayni eser yer makale ibid ibidem op cit amlf id idem yay yayinlari yayinevi ts ty yy by nd thk nsr cev haz sad mlf turkceye ed eds trans vd et al dia tdv bs basim baski erisim yayin tarih tarihi md madde vr kanun alici yayimlanmamis yayinlanmamis basilmamis unpublished ve and ile de da bu el".split(" "));
 const MONTH = /^(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik|january|february|march|april|may|june|july|august|september|october|november|december)$/;
 
 /**
@@ -325,7 +325,9 @@ export function unkeptWords(text: string, refs: readonly HandRef[]): string[] {
   // A short title made of a title's initials ("GAS") or of a word's beginning ("Şerḥu’l-ʿAḳāʾid" for "…ʿAḳāʾidi’n-…").
   const initials = new Set(refs.flatMap((r) => [r.item.fields.title ?? "", r.item.fields.shortTitle ?? ""]).map((t) => foldText(t).split(" ").filter((w) => w.length > 3).map((w) => w[0]).join("")));
   const covered = (w: string) => kept.has(num(w)) || sureNames.has(w) || initials.has(w) || (w.length >= 4 && words.some((k) => k.startsWith(w)));
-  const lost = foldText(text)
+  // An address is the record's url or DOI (copied from a PDF it may be broken by spaces): not compared word by word.
+  const typed = refs.some((r) => r.item.fields.url || r.item.fields.DOI) ? text.replace(/(?:https?:\/\/|www\.).*$/su, "") : text;
+  const lost = foldText(typed)
     .split(" ")
     .filter((w) => w.length > 1 && !DROPPABLE.has(w) && !MONTH.test(w) && !/^[ivxlc]+$/.test(w) && !covered(w));
   return [...new Set(lost)];
