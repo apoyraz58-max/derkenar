@@ -76,7 +76,7 @@ const SAME = /^(op\.?\s*cit\.?|a\.?\s?g\.?\s?e\.?|a\.?\s?g\.?\s?m\.?|a\.?\s?e\.?
 /** The cited place at the end: "45", "1/45", "45-47", "45 vd.", "vr. 12b", "II/45". */
 /** Works "a.g.m." (adı geçen makale) may point to. */
 const ARTICLE = /^(journalArticle|magazineArticle|newspaperArticle|bookSection|encyclopediaArticle|conferencePaper|dictionaryEntry)$/;
-const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?((?:\d{1,3}[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:,\s*\d{1,3}[ab]?(?:\s*[-–]\s*\d+[ab]?)?)+|\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|(?:s|ss|sh|p|pp)\.\s*\d+(?:\s*[-–]\s*\d+)?)(?:\s*\([^()]{1,40}\))?)\.?\s*$/i;
+const LOCATOR = /,\s*((?:[IVXLC]+|\d+)\s*\/\s*)?((?:\d{1,2}:\d{2}(?::\d{2})?(?:\s*[-–]\s*\d{1,2}:\d{2}(?::\d{2})?)?|\d{1,3}[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:,\s*\d{1,3}[ab]?(?:\s*[-–]\s*\d+[ab]?)?)+|\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?(?:\s*vd\.)?|vr\.\s*\d+[ab]?(?:\s*[-–]\s*\d+[ab]?)?|(?:s|ss|sh|p|pp)\.\s*\d+(?:\s*[-–]\s*\d+)?)(?:\s*\([^()]{1,40}\))?)\.?\s*$/i;
 /** "…, el-Bakara 2/14." (a Kur’ân meâli or tefsir). */
 const SURE = /(?:^|,\s*)((?:[a-zâîû]{1,3}-)?\p{Lu}[\p{L}’'ʿ-]*(?:\s\p{L}[\p{L}’'ʿ-]*)?)\s+(\d{1,3})\s*\/\s*(\d{1,3}(?:\s*[-–]\s*\d{1,3})?)\.?\s*$/u;
 /** "…, “delîl”" (a dictionary's madde, before the place). */
@@ -286,6 +286,51 @@ const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(title
 export const SHORT_UNKNOWN = "kısa künye; eser daha önce tam künyeyle anılmamış, kütüphanede de yok";
 
 /** Reads the notes in order; `library` is searched for each work before a new record is made. */
+/** Words a reference may drop: abbreviations Derkenar writes its own way, roles, months (dates are stored as numbers). */
+const DROPPABLE = new Set("s ss sh p pp c cilt sy sayi vol vols no nr bk bkz krs kars age agm ay ae ayni eser yer makale ibid ibidem op cit amlf id idem yay yayinlari yayinevi ts ty yy by nd thk nsr cev haz sad mlf turkceye ed eds trans vd et al dia tdv bs basim baski erisim tarih tarihi md madde vr kanun alici yayimlanmamis yayinlanmamis basilmamis unpublished ve and ile de da bu el".split(" "));
+const MONTH = /^(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik|january|february|march|april|may|june|july|august|september|october|november|december)$/;
+
+/**
+ * The words of a footnote that its citation would not keep: none of the cited records, places
+ * or prefixes holds them ("Nakleden", a second page). A note with such words is not converted,
+ * so that nothing the writer typed is lost.
+ */
+export function unkeptWords(text: string, refs: readonly HandRef[]): string[] {
+  const num = (w: string) => (/^\d+$/.test(w) ? String(Number(w)) : w);
+  const kept = new Set<string>();
+  const add = (v: unknown) => {
+    if (typeof v === "string") for (const w of foldText(v).split(" ")) if (w) kept.add(num(w));
+  };
+  for (const r of refs) {
+    for (const v of Object.values(r.item.fields)) add(v);
+    for (const c of r.item.creators) {
+      add(c.lastName);
+      add(c.firstName);
+      add(c.name);
+    }
+    for (const k of ["prefix", "locator", "volume", "madde", "kitab", "bab", "hadisNo", "sure", "ayet", "kitap", "cumle"] as const) add((r as unknown as Record<string, unknown>)[k]);
+    // "Yar.1:12" is the kitap and its bab written together.
+    if (r.kitap) add(`${r.kitap.replace(/\.$/, "")}${r.bab ?? ""}`);
+  }
+  // A short form's title is the writer's own short title ("MAK, Cinsel İstismar … Raporu, 45"): the citation writes
+  // its own short title in its place, so those words are not lost. (What comes before the name is: "Nakleden: …".)
+  if (refs.length === 1 && refs[0]!.form === "short") {
+    const seg = /^[^,]+,(.*?)(?:,[^,]*)?$/u.exec(text.replace(/\.$/, ""));
+    if (seg) add(seg[1]);
+  }
+  // A sûre's name before its number ("el-Bakara 2/14"): the number is kept, the name is written from it.
+  const sureNames = new Set<string>();
+  if (refs.some((r) => r.sure)) for (const m of text.matchAll(/([\p{L}’'-]+)\s+\d{1,3}\s*\/\s*\d/gu)) for (const w of foldText(m[1]!).split(" ")) sureNames.add(w);
+  const words = [...kept];
+  // A short title made of a title's initials ("GAS") or of a word's beginning ("Şerḥu’l-ʿAḳāʾid" for "…ʿAḳāʾidi’n-…").
+  const initials = new Set(refs.flatMap((r) => [r.item.fields.title ?? "", r.item.fields.shortTitle ?? ""]).map((t) => foldText(t).split(" ").filter((w) => w.length > 3).map((w) => w[0]).join("")));
+  const covered = (w: string) => kept.has(num(w)) || sureNames.has(w) || initials.has(w) || (w.length >= 4 && words.some((k) => k.startsWith(w)));
+  const lost = foldText(text)
+    .split(" ")
+    .filter((w) => w.length > 1 && !DROPPABLE.has(w) && !MONTH.test(w) && !/^[ivxlc]+$/.test(w) && !covered(w));
+  return [...new Set(lost)];
+}
+
 export function readHandNotes(notes: readonly string[], library: readonly Item[]): HandNote[] {
   const created: Item[] = [];
   const copies = copyFinder(library);
@@ -294,7 +339,8 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
   let previous: HandRef | null = null;
   const out: HandNote[] = [];
   for (const [index, raw] of notes.entries()) {
-    const text = raw.replace(/[\u0002​]/g, "").replace(/\s+/g, " ").trim();
+    // (A stray comma at the end, "…, 14,", is the note's end all the same.)
+    const text = raw.replace(/[\u0002​]/g, "").replace(/\s+/g, " ").trim().replace(/\s*,$/, ".");
     if (!text) {
       out.push({ index, text, refs: null, reason: "boş" });
       continue;
@@ -402,7 +448,7 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
         const r = parseReference(`${body}.`);
         const f = r?.item.fields;
         // A full reference has an author or an imprint; a sentence of the author's own has neither.
-        const looksFull = r && (f?.title || f?.docketNumber) && (r.item.creators.length > 0 || f.date || f.issueDate || f.archive || f.accessDate) && (f.date || f.dateDecided || f.issueDate || f.patentNumber || f.company || f.publisher || f.publicationTitle || f.encyclopediaTitle || f.dictionaryTitle || f.university || f.place || f.archive || f.accessDate || f.url);
+        const looksFull = r && (f?.title || f?.docketNumber) && (r.item.creators.length > 0 || f.date || f.issueDate || f.archive || f.accessDate) && (f.date || f.dateDecided || f.issueDate || f.patentNumber || f.company || f.seriesTitle || f.publisher || f.publicationTitle || f.encyclopediaTitle || f.dictionaryTitle || f.university || f.place || f.archive || f.accessDate || f.url);
         if (!r || !looksFull) {
           // "Buhârî, “Îmân”, 2" with no full reference anywhere before: a short form of a work not known yet.
           reason = shortable && /^[^,()“”"]{2,50},\s*[^()]{2,90}$/.test(body) && (c.locator || c.madde || c.volume) ? SHORT_UNKNOWN : "künye olarak okunamadı";
@@ -446,6 +492,12 @@ export function readHandNotes(notes: readonly string[], library: readonly Item[]
       continue;
     }
     previous = refs[refs.length - 1]!;
+    // Nothing the writer typed may be lost: a note whose words the citation would not keep stays as it is.
+    const lost = unkeptWords(text, refs);
+    if (lost.length) {
+      out.push({ index, text, refs: null, reason: `atıfta kalmayacak kelimeler var (${lost.slice(0, 4).join(", ")}); dipnot olduğu gibi bırakıldı` });
+      continue;
+    }
     out.push({ index, text, refs });
   }
   return out;

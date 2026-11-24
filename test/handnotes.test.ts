@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readHandNotes, splitNote } from "../src/core/handnotes.js";
+import { readHandNotes, splitNote, unkeptWords } from "../src/core/handnotes.js";
 import { emptyItem } from "../src/core/zotero.js";
 
 const lib = (() => {
@@ -514,6 +514,20 @@ describe("works that name their kind", () => {
     // A short form whose "author" holds the writer's words is not read as that author's.
     const odd = readHandNotes([full, "Kara’ya göre: Kara, Tasavvuf ve Tarikatlar Tarihi, 61."], [])[1]!;
     expect(!odd.refs || /göre/.test(odd.refs[0]!.prefix ?? "")).toBe(true);
+  });
+  it("a note is converted only when its citation keeps every word typed", () => {
+    // Time stamps of a film or a recording are the cited place.
+    const film = readHandNotes(["Frank Darabont, The Shawshank Redemption [Esaretin Bedeli] (Film, 1995), 01:11:10-01:15:15."], [])[0]!;
+    expect(film.refs?.[0]?.locator).toBe("01:11:10-01:15:15");
+    // What no field would hold leaves the note as it is.
+    const tse = readHandNotes(["Türk Standardları Enstitüsü (TSE), Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz (Türkiye: Türk Standardları Enstitüsü, Kabul 05 Haziran 2012, TS OIC/SMIIC 2/T1)."], [])[0]!;
+    expect(tse.refs).toBeNull();
+    expect(tse.reason).toMatch(/atıfta kalmayacak kelimeler var \(.*kabul/);
+    // Derkenar's own ways of writing are not losses: a.g.e., "s.", "Yay.", "DİA", months, a sûre's name, a short title.
+    const r = readHandNotes(["Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi, Dergâh Yay., İstanbul 2005, s. 45.", "a.g.e., s. 46.", "Kara, Tasavvuf, 47.", "Ahmet Yaşar Ocak, “Kalenderîler”, DİA, XXIV, 251-253."], []);
+    expect(r.map((n) => n.reason ?? "ok")).toEqual(["ok", "ok", "ok", "ok"]);
+    const meal = readHandNotes(["Kur’ân-ı Kerîm Meâli, çev. Halil Altuntaş - Muzaffer Şahin (Ankara: Diyanet İşleri Başkanlığı Yayınları, 2009), el-Enfâl 8/2."], [])[0]!;
+    expect(meal.refs && unkeptWords(meal.text, meal.refs)).toEqual([]);
   });
   it("leaves books alone", () => {
     expect(p("Kerim Akçay, Bir Kitap (İstanbul, 2001), 12.")?.itemType).toBe("book");
