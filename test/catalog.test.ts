@@ -7,7 +7,7 @@ import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
 import { type RecordInput, validIsbn } from "../src/catalog/model.js";
-import { collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
+import { collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
 import { ozgurKbart } from "../src/catalog/sources/kbart.js";
 import { marcFile } from "../src/catalog/sources/marc.js";
@@ -118,6 +118,31 @@ describe("bibliyografik katalog", () => {
     expect(db.stats().sources).toContainEqual(expect.objectContaining({ id: "ozgur", raw: 1, editions: 1 }));
     expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ source: "ozgur", url: link }));
   });
+
+  it("K10plus sorgusunu sayfalayarak tek MARCXML koleksiyonuna yazar", async () => {
+    const sample = readFileSync(root("test/fixtures/k10plus-9786054791712.xml"), "utf8");
+    const record = sample.match(/<record xmlns=[\s\S]+?<\/record>/)?.[0]!;
+    const starts: string[] = [];
+    let failures = 1;
+    const mock: typeof fetch = async url => {
+      const params = new URL(String(url)).searchParams;
+      expect(params.get("query")).toBe("pica.lcd=XB-TR and pica.mat=B");
+      if (failures-- > 0) return new Response("busy", { status: 503 });
+      starts.push(params.get("startRecord")!);
+      const n = Number(params.get("maximumRecords"));
+      const body = Array.from({ length: n }, (_, i) =>
+        `<zs:record><zs:recordData>${record.replace(/(<controlfield tag="001">)[^<]*/, `$1TEST${params.get("startRecord")}-${i}`)}</zs:recordData></zs:record>`).join("");
+      return new Response(`<zs:searchRetrieveResponse xmlns:zs="http://www.loc.gov/zing/srw/"><zs:numberOfRecords>5</zs:numberOfRecords><zs:records>${body}</zs:records></zs:searchRetrieveResponse>`,
+        { headers: { "Content-Type": "text/xml" } });
+    };
+    const file = join(temp, "k10plus-query.xml");
+    expect(await collectK10plusQuery("pica.lcd=XB-TR and pica.mat=B", file, { pageSize: 2, limit: 3 }, mock))
+      .toEqual({ query: "pica.lcd=XB-TR and pica.mat=B", total: 5, written: 3 });
+    expect(starts).toEqual(["1", "3"]);
+    const entries = [];
+    for await (const entry of marcFile(file, "k10plus")) entries.push(entry.id);
+    expect(entries).toEqual(["TEST1-0", "TEST1-1", "TEST3-0"]);
+  }, 20_000);
 
   it("KBART satırını taşıyıcılarına ayırır ve yayın yeri kanıtı yoksa incelemeye alır", async () => {
     const columns = ["publication_type", "publication_title", "publisher_name", "title_url", "title_id",

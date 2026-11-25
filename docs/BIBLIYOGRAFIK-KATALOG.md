@@ -134,4 +134,15 @@ DOAB dışa aktarımında her kaydın leader alanı `"     naaaa"` yer tutucusud
 
 Tam DOAB dosyasının ayrı veritabanına aktarımı tek yazma süreciyle 1 dk 54 sn sürdü ve 1,26 GB yer kapladı. Bu, ham kayıt başına yaklaşık 11 KB ve saniyede yaklaşık 1000 kayıt demektir. Aktarım 171 Türkiye baskısını kabul etti; en büyük pay 115 kayıtla Istanbul University Press’indir. 115.463 kayıt incelemede kaldı: 61.143’ü birden çok ISBN, 54.310’u kapsam kanıtı eksikliği, 789’u geçersiz ISBN ve 10’u başlık eksikliği nedeniyle. Aynı oranla bir milyon ham kayıt yaklaşık 16–17 dakika ve ham MARC saklandığı için yaklaşık 11 GB gerektirir. Türkiye kapsamı dar kaynaklarda inceleme kuyruğunun büyümesini önlemek için yalnız Türkiye yayın yeri taşıyan kayıtları ayıklayan bir ön süzgeç değerlendirilmelidir.
 
+### K10plus Türkiye örneklemi
+
+K10plus SRU’da `pica.lcd` dizini yayın ülkesi kodunu tutar. 25 Kasım 2026’da `pica.lcd=XB-TR and pica.mat=B` sorgusu 117.791 kitap kaydı döndürdü. Ülke kodu olmayan ama yayın yeri İstanbul, Ankara, İzmir, Konya veya Bursa olan ek 60.561 kayıt `pica.vlo` ile bulunabilir. `collect`, sorguyu 500 kayıtlık sayfalarla ve sayfalar arasında bir saniye bekleyerek tek MARCXML koleksiyonuna yazar. Dosya yalnız bütün sayfalar geldiğinde yerine konur.
+
+```sh
+NODE_USE_ENV_PROXY=1 npm run catalog -- collect --source k10plus --query "pica.lcd=XB-TR and pica.mat=B" --limit 1000 --file work/k10plus-tr-1000.xml
+npm run catalog -- ingest --db work/k10plus.sqlite --source k10plus --file work/k10plus-tr-1000.xml --limit 200
+```
+
+İlk 1000 kaydın 973’ü Türkiye baskısı olarak kabul edildi. Sayfa sayısı %3,3, baskı numarası %31,9, ISBN %4 oranında eksiktir. İncelemede kalan 27 kaydın 21’i kapsam çelişkisidir. Bunlarda 044 alanı Türkiye’yi, yayın yeri ise Kazablanka, Şam, Kahire veya Lüneburg’u gösterir. Çoğu çok merkezli yayınevlerinin Arapça baskılarıdır.
+
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.

@@ -1,4 +1,4 @@
-import { createWriteStream } from "node:fs";
+import { createWriteStream, type WriteStream } from "node:fs";
 import { link, unlink } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
@@ -58,4 +58,58 @@ export function collectK10plus(isbn: string, file: string, fetchFn: Fetch = fetc
   if (!normalized) throw new Error("Geçerli bir ISBN gerekli.");
   const query = new URLSearchParams({ version: "1.1", operation: "searchRetrieve", query: `pica.isb=${normalized}`, maximumRecords: "20", recordSchema: "marcxml" });
   return snapshot(`${K10}?${query}`, file, fetchFn);
+}
+
+const extractRecords = (xml: string) => xml.match(/<record xmlns="http:\/\/www\.loc\.gov\/MARC21\/slim">[\s\S]*?<\/record>/g) ?? [];
+const writeChunk = (out: WriteStream, text: string) => new Promise<void>((resolve, reject) =>
+  out.write(text, error => error ? reject(error) : resolve()));
+
+/**
+ * Pages a K10plus SRU query into one MARCXML collection. The finished file is
+ * linked into place only when every requested page arrived, so an interrupted
+ * harvest never leaves a partial snapshot behind.
+ */
+export async function collectK10plusQuery(query: string, file: string, options: { limit?: number; pageSize?: number; delayMs?: number } = {},
+  fetchFn: Fetch = fetch) {
+  if (!file.endsWith(".xml")) throw new Error("İndirilen anlık görüntü için .xml uzantısı kullanın.");
+  if (!query.trim()) throw new Error("K10plus sorgusu gerekli.");
+  const pageSize = Math.min(options.pageSize ?? 500, 500);
+  const temp = `${file}.${randomUUID()}.part`;
+  const out = createWriteStream(temp, { flags: "wx" });
+  let total = 0;
+  let written = 0;
+  try {
+    await writeChunk(out, '<?xml version="1.0" encoding="UTF-8"?>\n<collection xmlns="http://www.loc.gov/MARC21/slim">\n');
+    for (let start = 1; ; start += pageSize) {
+      const want = Math.min(pageSize, (options.limit ?? Number.MAX_SAFE_INTEGER) - written);
+      if (want <= 0) break;
+      const params = new URLSearchParams({ version: "1.1", operation: "searchRetrieve", query, maximumRecords: String(want),
+        startRecord: String(start), recordSchema: "marcxml" });
+      let response: Response | undefined;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        response = await fetchFn(`${K10}?${params}`, { signal: AbortSignal.timeout(120_000),
+          headers: { Accept: "application/xml,text/xml", "User-Agent": "Derkenar-Catalog/0.1" } }).catch(() => undefined);
+        if (response?.ok) break;
+        await response?.body?.cancel();
+        await setTimeout(2000 * 2 ** attempt);
+      }
+      if (!response?.ok) throw new Error(`K10plus ${start}. kayıttan itibaren yanıt vermedi.`);
+      const page = await response.text();
+      const diagnostic = /<(?:\w+:)?message>([^<]*)</.exec(page)?.[1];
+      if (diagnostic && !/<(?:\w+:)?recordData>/.test(page)) throw new Error(`K10plus: ${diagnostic}`);
+      total = Number(/<(?:\w+:)?numberOfRecords>(\d+)</.exec(page)?.[1] ?? 0);
+      const records = extractRecords(page);
+      for (const record of records) await writeChunk(out, `${record}\n`);
+      written += records.length;
+      if (!records.length || start + pageSize > total) break;
+      if (options.delayMs) await setTimeout(options.delayMs);
+    }
+    await writeChunk(out, "</collection>\n");
+    await new Promise<void>((resolve, reject) => out.end((error?: Error | null) => error ? reject(error) : resolve()));
+    await link(temp, file);
+    return { query, total, written };
+  } finally {
+    out.destroy();
+    await unlink(temp).catch(() => undefined);
+  }
 }
