@@ -69,7 +69,7 @@ function catalogRows(): HTMLElement[] {
     .map((hit) => {
       const e = hit.entry;
       const who = e.authors.map((a) => a.dia ?? a.name ?? a.shamela).join(", ");
-      const b = h("button", { type: "button", class: "outside" }, h("div", { class: "r-title" }, `＋ ${e.title}`), h("div", { class: "r-more" }, `${who || "—"}${e.authors[0]?.death ? ` (ö. ${e.authors[0].death})` : ""} · ${hit.catalog}, no. ${e.id}${e.review?.length ? " · kontrol edilecek" : ""}`));
+      const b = h("button", { type: "button", class: "outside" }, h("div", { class: "r-title" }, `＋ ${e.title}`), h("div", { class: "r-more" }, `${who || "—"}${e.authors[0]?.death ? ` (ö. ${e.authors[0].death})` : ""}${e.note ? ` · ${e.note}` : ""} · ${hit.catalog}, no. ${e.id}${e.review?.length ? " · kontrol edilecek" : ""}`));
       b.onclick = () =>
         void run("Ekleniyor", async () => {
           const io = await import("./io.js");

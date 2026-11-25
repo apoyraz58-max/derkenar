@@ -8,8 +8,9 @@
  * The long vowels (â, î, û) stay; the dotted letters become plain (ḳ → k, ġ → ğ,
  * s̱ → s …); ayn is written ‘ and hamza ’ (DİA's signs in names: "Mes‘ûd",
  * "Me’mûn"), but neither at a word's start ("ʿİlel" → "İlel"), nor after a long
- * vowel ("Fevâʾid" → "Fevâid"), nor before a case ending joined to the article
- * ("Câmiʿu’l-beyân" → "Câmiu’l-beyân").
+ * vowel ("Fevâʾid" → "Fevâid"; but a word's last ayn stays: "el-İcmâʿ" →
+ * "el-İcmâ‘"), nor before a case ending joined to the article ("Câmiʿu’l-beyân"
+ * → "Câmiu’l-beyân").
  */
 const LETTERS: Record<string, string> = { ḥ: "h", Ḥ: "H", ḫ: "h", Ḫ: "H", ṣ: "s", Ṣ: "S", ż: "z", Ż: "Z", ḍ: "d", Ḍ: "D", ṭ: "t", Ṭ: "T", ẓ: "z", Ẓ: "Z", ẕ: "z", Ẕ: "Z", ḳ: "k", Ḳ: "K", ġ: "ğ", Ġ: "Ğ", ā: "â", Ā: "Â", ī: "î", Ī: "Î", ū: "û", Ū: "Û", ẖ: "h" };
 
@@ -23,7 +24,8 @@ export function plainTranscription(s: string): string {
   let t = s.normalize("NFC").replace(/̱/g, "");
   t = t
     .replace(/(^|[\s(“"’-])[ʿʾ]/gu, "$1")
-    .replace(/([âîûāīūÂÎÛĀĪŪ])[ʿʾ]/gu, "$1")
+    .replace(/([âîûāīūÂÎÛĀĪŪ])ʾ/gu, "$1")
+    .replace(/([âîûāīūÂÎÛĀĪŪ])ʿ(?=\p{L})/gu, "$1")
     .replace(/[ʿʾ](?=[uüiı]’)/gu, "")
     .replace(/ʿ/g, "‘")
     .replace(/ʾ/g, "’");

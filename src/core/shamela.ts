@@ -40,6 +40,8 @@ export interface CatalogEntry {
   /** Muhakkik and edition as far as Şamile's title tells (a hint until the book card is read). */
   thk?: string | null;
   ed?: string | null;
+  /** Which of two same-named books this is, as Şamile tells them apart (the commentator, the edition). */
+  note?: string | null;
   category?: string | null;
   /** What still wants a look. */
   review?: string[];

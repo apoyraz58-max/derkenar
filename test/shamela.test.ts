@@ -24,6 +24,8 @@ describe("transkripsiyonsuz yazım", () => {
     expect(plainTranscription("Aḥkâmü’l-Ḳurʾân")).toBe("Ahkâmü’l-Kur’ân");
     expect(plainTranscription("eṭ-Ṭabaḳātü’l-kübrâ")).toBe("et-Tabakâtü’l-kübrâ");
     expect(plainTranscription("el-ʿİlel")).toBe("el-İlel");
+    expect(plainTranscription("Merâtibü’l-icmâʿ")).toBe("Merâtibü’l-icmâ‘");
+    expect(plainTranscription("Esmâʾü’r-ricâl ve’l-esmâʾ")).toBe("Esmâü’r-ricâl ve’l-esmâ");
     // Only a capital marked letter in it.
     expect(plainTranscription("el-Ḳader")).toBe("el-Kader");
     expect(plainTranscription("Tefsîrü’l-Ḥaddâd")).toBe("Tefsîrü’l-Haddâd");
