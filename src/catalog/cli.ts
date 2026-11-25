@@ -14,8 +14,9 @@ import { SOURCES, type SourceId } from "./model.js";
 
 const HELP = `Derkenar bibliyografik katalog • Node.js 22.13+
   npm run catalog -- pilot     --db DB [--vefeyat CSV]
-  npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|ozgur|ozgur-kbart|exchange --file DOSYA [--vefeyat CSV] [--limit N]
+  npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|ozgur|ozgur-kbart|ozgur-kunye|exchange --file DOSYA [--vefeyat CSV] [--limit N]
   npm run catalog -- collect   --source doab|k10plus|ozgur|ozgur-kbart --file DOSYA [--isbn ISBN]
+  npm run catalog -- recheck  --db DB --source KAYNAK [--limit N] [--after N]
   npm run catalog -- stats     --db DB
   npm run catalog -- show      --db DB --id N
   npm run catalog -- cite      --db DB --id N [--first SAYFA] [--later SAYFA] [--volume CİLT]
@@ -57,7 +58,13 @@ async function main() {
     serve(db, integer(o.port ?? "4179", 1, 65535));
     return;
   }
-  const db = new Catalog(required("db"), !["ingest", "pilot"].includes(command));
+  const sourceArg = () => {
+    if (!o.source || !Object.prototype.hasOwnProperty.call(SOURCES, o.source) || o.source === "openlibrary") {
+      throw new Error("Arşivlemeye açık kaynak seçin.");
+    }
+    return o.source as SourceId;
+  };
+  const db = new Catalog(required("db"), !["ingest", "pilot", "recheck"].includes(command));
   try {
     switch (command) {
       case "pilot": {
@@ -75,14 +82,16 @@ async function main() {
         break;
       }
       case "ingest": {
-        if (!o.source || !Object.prototype.hasOwnProperty.call(SOURCES, o.source) || o.source === "openlibrary") throw new Error("Arşivlemeye açık kaynak seçin.");
         const authority = o.vefeyat ? loadAuthority(o.vefeyat) : undefined;
-        const result = await ingestFile(db, o.source as SourceId, required("file"), {
+        const result = await ingestFile(db, sourceArg(), required("file"), {
           limit: o.limit ? integer(o.limit) : undefined, authority,
         });
         output(result);
         break;
       }
+      case "recheck":
+        output(db.recheckScope(sourceArg(), integer(o.after ?? "0", 0), integer(o.limit ?? "1000", 1, 10000)));
+        break;
       case "stats":
         output(db.stats());
         break;

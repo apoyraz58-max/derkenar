@@ -82,4 +82,13 @@ npm run catalog -- collect --source ozgur-kbart --file work/ozgur.tsv
 npm run catalog -- ingest --db work/kbart.sqlite --source ozgur-kbart --file work/ozgur.tsv --limit 200
 ```
 
+Yayın yeri kanıtı taşıyan MARC veya elle doğrulanmış künye eklendiğinde, bekleyen adaylar yeniden denetlenebilir. Özgür Yayınları için kaynak URL’si ve PDF sayfasıyla ilişkilendirilmiş seçili künye alanları `data/catalog/pilot/ozgur-kunye.jsonl` dosyasında yer alır.
+
+```sh
+npm run catalog -- ingest --db work/kbart.sqlite --source ozgur-kunye --file data/catalog/pilot/ozgur-kunye.jsonl
+npm run catalog -- recheck --db work/kbart.sqlite --source ozgur-kbart
+```
+
+`recheck`, yalnız yayın kapsamı kanıtı eksik olan ham kayıtları tarar. Doğrulanmış tek bir baskıyla uyumlu kayıt mevcut künye ve özgün kanıtlar korunarak bağlanır. Farklı ISBN veya başlık gibi çelişkiler incelemede görünür. İşlem varsayılan olarak 1000 aday tarar. Daha büyük kuyruklarda çıktının `after` değerini bir sonraki çalıştırmada `--after` olarak kullanın. Yeni bir kanıt partisi geldiğinde tarama baştan çalıştırılabilir.
+
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.

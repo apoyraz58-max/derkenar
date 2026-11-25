@@ -60,12 +60,16 @@ CREATE TABLE IF NOT EXISTS validation (
   target_id INTEGER REFERENCES editions, code TEXT NOT NULL, level TEXT NOT NULL, detail TEXT NOT NULL
 ) STRICT;
 CREATE INDEX IF NOT EXISTS validation_raw ON validation(raw_id);
+CREATE INDEX IF NOT EXISTS validation_code_raw ON validation(code, raw_id);
 CREATE INDEX IF NOT EXISTS validation_edition ON validation(edition_id, raw_id);
 `;
 
 type Scalar = Record<string, string>;
 type EditionRow = { id: number; work_id: number; title_key: string; author_key: string; created_at: string };
 type ClaimRow = { id: number; field: string; position: number; value: string; priority: number };
+type PreviousRecord = { edition_id: number | null; state: string };
+type Identity = { scheme: "ISBN" | "DOI"; claimId: number };
+const isbnTokens = (value: string) => value.split(/[,;|]+|\s+(?=(?:ISBN\b|[0-9-]{10,}))/iu);
 const CHOICES = ["title", "publisher", "place", "country", "date", "edition", "format", "language", "numPages", "numberOfVolumes", "volume", "series", "seriesNumber", "shortTitle", "url", "citationKey", "workTitle"];
 const REQUIRED = ["title", "publisher", "place", "date", "language", "edition", "format", "numPages"];
 const localFields = new Set(["country", "format"]);
@@ -177,37 +181,58 @@ export class Catalog {
       claims.push({ id, field, position, value, priority: SOURCES[source].priority });
     };
 
-    const effective: Scalar = Object.create(null);
-    const identifiers = new Map<string, string>();
     for (const observed of input.fields) {
       const claim = cleanClaim(observed);
-      if (!claim.value) continue;
-      add(claim.field, observed.value, claim.value, claim.path);
-      effective[claim.field] ??= claim.value;
+      if (claim.value) add(claim.field, observed.value, claim.value, claim.path);
+    }
+    for (const contribution of input.creators) {
+      const match = authority?.(contribution);
+      const creator = match?.creator ?? contribution.creator;
+      add(`creator:${creator.creatorType}`, JSON.stringify(contribution.creator), JSON.stringify(creator), contribution.path,
+        match ? JSON.stringify(match) : null);
+    }
+    this.resolve(source, input.id, raw, claims, previous);
+  }
+
+  recheckScope(source: SourceId, after: number, limit: number) {
+    return this.transaction(() => {
+      const candidates = this.rows<{ id: number; external_id: string }>(`
+        SELECT r.id,r.external_id FROM validation v JOIN raw_records r ON r.id=v.raw_id
+        WHERE v.code='scope-unknown' AND r.state='review' AND r.source=? AND v.raw_id>?
+        ORDER BY v.raw_id LIMIT ?`, source, after, limit);
+      const report = { examined: candidates.length, matched: 0, stillUnknown: 0, changedIssue: 0, after: candidates.at(-1)?.id ?? null };
+      for (const candidate of candidates) {
+        const claims = this.rows<ClaimRow>(`
+          SELECT id,field,position,value,? AS priority FROM claims WHERE raw_id=? ORDER BY id`, SOURCES[source].priority, candidate.id);
+        this.resolve(source, candidate.external_id, candidate.id, claims, undefined, true);
+        const state = this.row<{state: string}>("SELECT state FROM raw_records WHERE id=?", candidate.id)?.state;
+        if (state === "matched") report.matched++;
+        else if (this.row("SELECT id FROM validation WHERE raw_id=? AND code='scope-unknown'", candidate.id)) report.stillUnknown++;
+        else report.changedIssue++;
+      }
+      return report;
+    });
+  }
+
+  private resolve(source: SourceId, externalId: string, raw: number, claims: readonly ClaimRow[],
+    previous?: PreviousRecord, recheckingScope = false) {
+    const effective: Scalar = Object.create(null);
+    const identities = new Map<string, Identity>();
+    const creatorValues = new Set<string>();
+    for (const claim of claims) {
+      if (claim.field.startsWith("creator:")) creatorValues.add(claim.value);
+      else effective[claim.field] ??= claim.value;
       if (claim.field === "ISBN") {
-        const tokens = claim.value.split(/[,;|]+|\s+(?=(?:ISBN\b|[0-9-]{10,}))/iu);
-        for (const token of tokens) {
+        for (const token of isbnTokens(claim.value)) {
           const isbn = validIsbn(token);
-          if (isbn) identifiers.set(isbn, "ISBN");
-          else this.issue(raw, null, "invalid-isbn", token.trim());
+          if (isbn && !identities.has(isbn)) identities.set(isbn, { scheme: "ISBN", claimId: claim.id });
+          else if (!isbn && !recheckingScope) this.issue(raw, null, "invalid-isbn", token.trim());
         }
       }
       if (claim.field === "DOI") {
         const doi = doiKey(claim.value);
-        if (doi) identifiers.set(doi, "DOI");
+        if (doi && !identities.has(doi)) identities.set(doi, { scheme: "DOI", claimId: claim.id });
       }
-    }
-    const creators: Creator[] = [];
-    const seen = new Set<string>();
-    for (const c of input.creators) {
-      const match = authority?.(c);
-      const creator = match?.creator ?? c.creator;
-      const field = `creator:${creator.creatorType}`;
-      const value = JSON.stringify(creator);
-      // Keep duplicate observations but use each distinct name only once per role.
-      add(field, JSON.stringify(c.creator), value, c.path, match ? JSON.stringify(match) : null);
-      if (!seen.has(value)) creators.push(creator);
-      seen.add(value);
     }
 
     const state = (value: string, edition: number | null = null) =>
@@ -226,18 +251,21 @@ export class Catalog {
       this.issue(raw, null, "source-revision", "Kaynak kaydının yeni sürümü.", previous.edition_id);
       return;
     }
-    const authors = authorKey(creators);
+    const authors = authorKey([...creatorValues].map(value => JSON.parse(value) as Creator));
     const allHits = new Map<number, EditionRow>();
-    if ([...identifiers.values()].filter(scheme => scheme === "ISBN").length > 1) {
+    if ([...identities.values()].filter(i => i.scheme === "ISBN").length > 1) {
       this.issue(raw, null, "multiple-isbn", "Birden çok ISBN-13 eşdeğeri tek baskıya güvenle bağlanamadı.");
       return;
     }
-    for (const [value, scheme] of identifiers) {
+    for (const [value, { scheme }] of identities) {
       for (const hit of this.rows<EditionRow>(`SELECT e.* FROM editions e JOIN identifiers i ON e.id=i.edition_id
         WHERE i.scheme=? AND i.value=?`, scheme, value)) allHits.set(hit.id, hit);
     }
     const hits = [...allHits.values()].map(hit => ({ hit, fields: this.fields(hit.id) }));
-    const compatible = hits.filter(({ hit, fields }) => title === hit.title_key &&
+    const identifierConflict = (id: number) => this.rows<{ scheme: Identity["scheme"]; value: string }>(
+      "SELECT scheme,value FROM identifiers WHERE edition_id=?", id).some(existing =>
+        !identities.has(existing.value) && [...identities.values()].some(i => i.scheme === existing.scheme));
+    const compatible = hits.filter(({ hit, fields }) => title === hit.title_key && !identifierConflict(hit.id) &&
       !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher) &&
       !different(effective.place, fields.place) && !comparableDate(effective.date, fields.date) &&
       !different(editionNumber(effective.edition), editionNumber(fields.edition)) && !diffFormat(effective.format, fields.format) &&
@@ -246,19 +274,24 @@ export class Catalog {
       !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher) &&
       (different(editionNumber(effective.edition), editionNumber(fields.edition)) || diffFormat(effective.format, fields.format) ||
         different(effective.volume, fields.volume));
-    if (compatible.length > 1 || (compatible.length === 0 && hits.some(h => !distinct(h)))) {
+    const clearScopeIssue = () => {
+      if (recheckingScope) this.put("DELETE FROM validation WHERE raw_id=? AND code='scope-unknown'", raw);
+    };
+    if (compatible.length > 1 || hits.some(h => !compatible.includes(h) && !distinct(h))) {
+      clearScopeIssue();
       for (const { hit } of hits) this.issue(raw, null, "identifier-conflict", "Kimlik eşleşmesi tek bir baskıyı doğrulamıyor.", hit.id);
       return;
     }
     if (scope !== "TR" && !compatible.length) {
-      this.issue(raw, null, "scope-unknown", "Türkiye’de yayımlandığına ilişkin yayın yeri veya ülke kanıtı eksik.");
+      if (!recheckingScope) this.issue(raw, null, "scope-unknown", "Türkiye’de yayımlandığına ilişkin yayın yeri veya ülke kanıtı eksik.");
       return;
     }
+    clearScopeIssue();
     let edition = compatible[0]?.hit.id;
     const wasMerged = edition !== undefined;
     if (edition === undefined) {
       const candidates = this.rows<EditionRow>("SELECT * FROM editions WHERE title_key=? AND author_key=? LIMIT 51", title, authors);
-      const incomingIsbn = [...identifiers].find(([, scheme]) => scheme === "ISBN")?.[0];
+      const incomingIsbn = [...identities].find(([, i]) => i.scheme === "ISBN")?.[0];
       const possible = candidates.filter(candidate => {
         const existing = this.row<{value: string}>("SELECT value FROM identifiers WHERE edition_id=? AND scheme='ISBN' LIMIT 1", candidate.id)?.value;
         if (incomingIsbn && existing && incomingIsbn !== existing) return false;
@@ -272,7 +305,7 @@ export class Catalog {
         return;
       }
       const workKey = effective.workId ? `${source}:${effective.workId}` :
-        authors ? `title-author:${equivalent(effective.workTitle || title)}:${authors}` : `${source}:${input.id}`;
+        authors ? `title-author:${equivalent(effective.workTitle || title)}:${authors}` : `${source}:${externalId}`;
       const existingWork = hits.find(distinct)?.hit.work_id;
       this.put("INSERT OR IGNORE INTO works(identity_key) VALUES (?)", existingWork ? this.row<{identity_key: string}>("SELECT identity_key FROM works WHERE id=?", existingWork)!.identity_key : workKey);
       const work = existingWork ?? this.row<{id: number}>("SELECT id FROM works WHERE identity_key=?", workKey)!.id;
@@ -293,11 +326,8 @@ export class Catalog {
         this.put("INSERT OR REPLACE INTO edition_fields VALUES (?,?,?)", edition, field, fresh.id);
       }
     }
-    for (const [value, scheme] of identifiers) {
-      const claim = claims.find(c => c.field === scheme && (scheme === "ISBN"
-        ? c.value.split(/[,;|]+|\s+(?=(?:ISBN\b|[0-9-]{10,}))/iu).some(v => validIsbn(v) === value)
-        : doiKey(c.value) === value));
-      if (claim) this.put("INSERT OR IGNORE INTO identifiers VALUES (?,?,?,?)", edition, scheme, value, claim.id);
+    for (const [value, { scheme, claimId }] of identities) {
+      this.put("INSERT OR IGNORE INTO identifiers VALUES (?,?,?,?)", edition, scheme, value, claimId);
     }
     for (const field of new Set(claims.filter(c => c.field.startsWith("creator:")).map(c => c.field))) {
       const role = field.slice(8);

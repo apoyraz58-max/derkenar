@@ -132,6 +132,52 @@ describe("bibliyografik katalog", () => {
     expect(db.review(0, 25).map(x => (x as { code: string }).code)).toEqual(["scope-unknown", "scope-unknown"]);
   });
 
+  it("kapsamı kanıtlanan ham kaydı kaynağıyla bağlar ve ISBN çelişkisini korur", () => {
+    const db = catalog();
+    const record = (id: string, fields: Record<string, string>): RecordInput => ({
+      id, raw: JSON.stringify(fields), url: `https://example.org/${id}`, creators: [],
+      fields: Object.entries({ title: "Bir Kitap", ...fields }).map(([field, value]) => ({ field, value, path: field })),
+    });
+    const doi = "10.1111/example";
+    const isbn = "9789751604439";
+    db.job("ozgur-kbart", "sample", "sample");
+    db.batch("ozgur-kbart", "sample", 0, [
+      record("verified", { DOI: doi, ISBN: isbn, publisher: "Özgür Yayınları" }),
+      record("different-isbn", { DOI: doi, ISBN: "9786054791712" }),
+      record("unknown", { DOI: "10.1111/other", ISBN: "not-an-isbn" }),
+    ], true);
+    db.job("ozgur-kunye", "proof", "proof");
+    db.batch("ozgur-kunye", "proof", 0, [record("proof", { DOI: doi, ISBN: isbn, place: "Gaziantep" })], true);
+    expect(db.recheckScope("ozgur-kbart", 0, 2)).toEqual({ examined: 2, matched: 1, stillUnknown: 0, changedIssue: 1, after: 2 });
+    expect(db.recheckScope("ozgur-kbart", 2, 2)).toEqual({ examined: 1, matched: 0, stillUnknown: 1, changedIssue: 0, after: 3 });
+    expect(db.recheckScope("ozgur-kbart", 0, 5).matched).toBe(0);
+    expect(db.stats().counts).toMatchObject({ raw: 4, editions: 1 });
+    expect(db.item(1)?.fields).toMatchObject({ ISBN: isbn, place: "Gaziantep", publisher: "Özgür Yayınları" });
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "publisher", source: "ozgur-kbart", selected: 1 }));
+    const review = db.review(0, 25);
+    expect(review).toContainEqual(expect.objectContaining({ external_id: "different-isbn", code: "identifier-conflict" }));
+    expect(review.filter(r => (r as { code: string }).code === "invalid-isbn")).toHaveLength(1);
+  });
+
+  it("ISBN ve DOI ayrı baskıları gösteriyorsa kaydı tek baskıya bağlamaz", () => {
+    const db = catalog();
+    const record = (id: string, fields: Record<string, string>): RecordInput => ({
+      id, raw: JSON.stringify(fields), url: `https://example.org/${id}`, creators: [],
+      fields: Object.entries({ place: "Ankara", ...fields }).map(([field, value]) => ({ field, value, path: field })),
+    });
+    const isbn = "9789751604439";
+    const doi = "10.1111/example";
+    db.job("exchange", "identity", "identity");
+    db.batch("exchange", "identity", 0, [
+      record("a", { title: "Bir Kitap", ISBN: isbn }),
+      record("b", { title: "Başka Kitap", DOI: doi }),
+      record("conflict", { title: "Bir Kitap", ISBN: isbn, DOI: doi }),
+    ], true);
+    expect(db.stats().counts.editions).toBe(2);
+    expect(db.item(1)?.fields.DOI).toBeUndefined();
+    expect(db.review(0, 10)).toContainEqual(expect.objectContaining({ external_id: "conflict", code: "identifier-conflict" }));
+  });
+
   it("Vefeyât yazımını kaynak kişi bağlantısıyla saklar", async () => {
     const file = join(temp, "vefeyat.csv");
     writeFileSync(file, "\uFEFFKısa Ad;Tam Ad;Orijinal Ad;Vefat Tarihi;Tanıtım;Kaynak Link\r\nİbn Haldûn;---;---;---;;https://islamansiklopedisi.org.tr/ibn-haldun\r\n");

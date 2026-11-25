@@ -82,7 +82,15 @@ export class Renderer {
 
   setItems(items: Record<string, CslItem>): void {
     this.items = {};
-    for (const [id, item] of Object.entries(items)) this.items[id] = { ...item, id };
+    for (const [id, item] of Object.entries(items)) {
+      const view: CslItem = { ...item, id };
+      // İSNAD 2, Kitap-Elektronik: the format precedes the publisher.
+      // The publication place stays in the catalog and exchange data.
+      if (this.meta.isnad && view.type === "book" && typeof view.medium === "string" && /^(pdf|epub)$/i.test(view.medium.trim())) {
+        delete view["publisher-place"];
+      }
+      this.items[id] = view;
+    }
   }
 
   /** Renders every citation, in order, so ibid./short forms come out right. Returns id → HTML. */

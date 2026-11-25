@@ -35,6 +35,7 @@ export const SOURCES = {
   asbu: { name: "ASBÜ KKTC Kütüphanesi", license: "Elle doğrulanmış pilot künyeleri", policy: "https://katalogkktc.asbu.edu.tr/", priority: 65 },
   k10plus: { name: "K10plus", license: "CC0 1.0", policy: "https://wiki.k10plus.de/display/K10PLUS/K10plus+Open+Data", priority: 75 },
   ozgur: { name: "Özgür Yayınları", license: "Yayınevinin katalog aktarım izni", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 78 },
+  "ozgur-kunye": { name: "Özgür Yayınları (kitap künyeleri)", license: "Elle doğrulanmış bibliyografik alanlar", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 82 },
   "ozgur-kbart": { name: "Özgür Yayınları (KBART)", license: "Yayınevinin katalog aktarım izni", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 60 },
   doab: { name: "Directory of Open Access Books", license: "CC0 1.0 (üstveri)", policy: "https://www.doabooks.org/en/librarians/doab-metadata", priority: 70 },
   openlibrary: { name: "Open Library", license: "Internet Archive yeni hak ileri sürmez, mevcut katkı hakları saklıdır", policy: "https://openlibrary.org/developers/licensing", priority: 45 },
@@ -68,7 +69,7 @@ export function cleanClaim(claim: Claim): Claim {
   if (claim.field === "place") return { ...claim, value: isnadPlace(value) };
   if (claim.field === "country" && /^(TR|TUR|Türkiye|Turkey|XB-TR|tu)$/i.test(value)) return { ...claim, value: "TR" };
   if (claim.field === "language") {
-    const aliases: Record<string,string> = {tur:"tr", eng:"en", ara:"ar", ota:"ota", fra:"fr", fre:"fr", ger:"de", deu:"de", per:"fa", fas:"fa", türkçe:"tr", arapça:"ar", "osmanlı türkçesi":"ota", ingilizce:"en"};
+    const aliases: Record<string,string> = {tur:"tr", turkish:"tr", eng:"en", english:"en", "turkish-english":"tr, en", ara:"ar", ota:"ota", fra:"fr", fre:"fr", ger:"de", deu:"de", per:"fa", fas:"fa", türkçe:"tr", arapça:"ar", "osmanlı türkçesi":"ota", ingilizce:"en"};
     return { ...claim, value: value.split(/\s*[,;]\s*/).map(language => aliases[language.toLocaleLowerCase("tr")] ?? language).join(", ") };
   }
   if (claim.field === "date") return { ...claim, value: value.replace(/^©\s*(?=\d{4}$)/, "") };

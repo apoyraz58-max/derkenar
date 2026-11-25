@@ -30,11 +30,11 @@ export async function* lines(file: string) {
   }
 }
 
-export async function* reviewed(file: string) {
+export async function* reviewed(file: string, allowedUrl = /^https:\/\//) {
   for await (const line of lines(file)) {
     if (!line.trim()) continue;
     const r = JSON.parse(line);
-    if (!r.id || !/^https:\/\//.test(r.url) || !r.fields || !Array.isArray(r.creators)) throw new Error("Pilot satırı eksik.");
+    if (!r.id || !allowedUrl.test(r.url) || !r.fields || !Array.isArray(r.creators)) throw new Error("Kaynaklı künye satırı eksik veya adres geçersiz.");
     const fields = Object.entries(r.fields).flatMap(([field, value]) => {
       const entry = value as { value: unknown; label: string };
       return typeof entry.value === "string" && entry.label ? [{ field, value: entry.value, path: entry.label }] : [];

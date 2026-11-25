@@ -229,9 +229,14 @@ describe("İSNAD 2 kılavuzu: kurum kısaltması, soru işareti", () => {
 
 describe("İSNAD 2 kılavuzu: türler", () => {
   it("kitap-elektronik: yayın formatı, b.y. eklenmez (s. 72)", () => {
-    const r = render(work("Amisos Mozaiği"), { locator: "44" }, { locator: "98" });
+    const original = work("Amisos Mozaiği");
+    const item = { ...original, fields: { ...original.fields, place: "Samsun" } };
+    const r = render(item, { locator: "44" }, { locator: "98" });
     expect(r.first).toBe("Derya Şahin, Amisos Mozaiği (PDF: Kültür ve Turizm Bakanlığı Yayınları, 2004), 44.");
     expect(r.later).toBe("Şahin, Amisos Mozaiği, 98.");
+    expect(r.bib).toContain("PDF: Kültür ve Turizm Bakanlığı Yayınları, 2004.");
+    expect(r.bib).not.toContain("Samsun");
+    expect(item.fields.place).toBe("Samsun");
   });
   it("kitap bölümü-editörlü eserde (s. 77)", () => {
     const r = render(work("Mâtürîdîliğin Ortaya Çıkışı"), { locator: "297" }, { locator: "298-299" });

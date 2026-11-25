@@ -29,6 +29,8 @@ export async function ingestFile(catalog: Catalog, source: SourceId, file: strin
     records = marcFile(file, source);
   } else if (source === "ozgur-kbart") {
     records = ozgurKbart(file);
+  } else if (source === "ozgur-kunye") {
+    records = reviewed(file, /^https:\/\/(?:www\.)?ozguryayinlari\.com\/site\/(?:tr\/|en\/)?catalog\/download\/\d+\/\d+\/\d+$/i);
   } else if (source === "ttk" || source === "asbu") {
     records = reviewed(file);
   } else {
