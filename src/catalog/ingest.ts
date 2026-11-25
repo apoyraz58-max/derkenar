@@ -4,6 +4,7 @@ import type { Authority } from "./authority.js";
 import { type SourceId, type RecordInput } from "./model.js";
 import { Catalog } from "./store.js";
 import { exchange, fileHash, reviewed } from "./sources/files.js";
+import { ozgurKbart } from "./sources/kbart.js";
 import { marcFile } from "./sources/marc.js";
 
 export async function ingestFile(catalog: Catalog, source: SourceId, file: string, options: { limit?: number; authority?: Authority } = {}) {
@@ -26,6 +27,8 @@ export async function ingestFile(catalog: Catalog, source: SourceId, file: strin
     records = exchange(original, basename(file), hash);
   } else if (source === "k10plus" || source === "doab" || source === "ozgur") {
     records = marcFile(file, source);
+  } else if (source === "ozgur-kbart") {
+    records = ozgurKbart(file);
   } else if (source === "ttk" || source === "asbu") {
     records = reviewed(file);
   } else {

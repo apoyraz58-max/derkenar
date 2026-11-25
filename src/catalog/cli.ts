@@ -9,13 +9,13 @@ import { loadAuthority } from "./authority.js";
 import { Catalog } from "./store.js";
 import { serve } from "./panel.js";
 import { ingestFile } from "./ingest.js";
-import { collectDoab, collectK10plus, collectOzgur } from "./sources/collect.js";
+import { collectDoab, collectK10plus, collectOzgur, collectOzgurKbart } from "./sources/collect.js";
 import { SOURCES, type SourceId } from "./model.js";
 
 const HELP = `Derkenar bibliyografik katalog • Node.js 22.13+
   npm run catalog -- pilot     --db DB [--vefeyat CSV]
-  npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|ozgur|exchange --file DOSYA [--vefeyat CSV] [--limit N]
-  npm run catalog -- collect   --source doab|k10plus|ozgur --file XML [--isbn ISBN]
+  npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|ozgur|ozgur-kbart|exchange --file DOSYA [--vefeyat CSV] [--limit N]
+  npm run catalog -- collect   --source doab|k10plus|ozgur|ozgur-kbart --file DOSYA [--isbn ISBN]
   npm run catalog -- stats     --db DB
   npm run catalog -- show      --db DB --id N
   npm run catalog -- cite      --db DB --id N [--first SAYFA] [--later SAYFA] [--volume CİLT]
@@ -47,8 +47,9 @@ async function main() {
   if (command === "collect") {
     if (o.source === "doab") await collectDoab(required("file"));
     else if (o.source === "ozgur") await collectOzgur(required("file"));
+    else if (o.source === "ozgur-kbart") await collectOzgurKbart(required("file"));
     else if (o.source === "k10plus") await collectK10plus(required("isbn"), required("file"));
-    else throw new Error("Toplama kaynağı doab, k10plus veya ozgur olmalı.");
+    else throw new Error("Toplama kaynağı doab, k10plus, ozgur veya ozgur-kbart olmalı.");
     return;
   }
   if (command === "serve") {

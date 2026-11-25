@@ -75,4 +75,11 @@ npm run catalog -- ingest --db work/ozgur.sqlite --source ozgur --file work/ozgu
 npm run catalog -- stats --db work/ozgur.sqlite
 ```
 
+MARCXML bağlantısına erişilemiyorsa aynı yayınevinin [KBART başlık listesi](https://www.ozguryayinlari.com/site/tr/libraryFiles/downloadPublic/16) bir aday listesi sağlar. KBART satırları yayın ülkesini veya yerini taşımadığında kayıt, başka bir kaynaktaki bir baskıyla doğrulanana kadar inceleme kuyruğunda kalır. İlk yazar ve editör bilgisi kaynak alanı olarak korunur.
+
+```sh
+npm run catalog -- collect --source ozgur-kbart --file work/ozgur.tsv
+npm run catalog -- ingest --db work/kbart.sqlite --source ozgur-kbart --file work/ozgur.tsv --limit 200
+```
+
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.

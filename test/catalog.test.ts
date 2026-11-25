@@ -7,8 +7,9 @@ import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
 import { type RecordInput, validIsbn } from "../src/catalog/model.js";
-import { collectOzgur } from "../src/catalog/sources/collect.js";
+import { collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
+import { ozgurKbart } from "../src/catalog/sources/kbart.js";
 import { marcFile } from "../src/catalog/sources/marc.js";
 import { Catalog } from "../src/catalog/store.js";
 import { cslJson, formatAs } from "../src/core/exporters.js";
@@ -104,6 +105,31 @@ describe("bibliyografik katalog", () => {
     await ingestFile(db, "ozgur", file);
     expect(db.stats().sources).toContainEqual(expect.objectContaining({ id: "ozgur", raw: 1, editions: 1 }));
     expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ source: "ozgur", url: link }));
+  });
+
+  it("KBART satırını taşıyıcılarına ayırır ve yayın yeri kanıtı yoksa incelemeye alır", async () => {
+    const columns = ["publication_type", "publication_title", "publisher_name", "title_url", "title_id",
+      "print_identifier", "online_identifier", "date_monograph_published_print", "date_monograph_published_online",
+      "monograph_volume", "monograph_edition", "first_author", "first_editor"];
+    const row = ["monograph", "Kitap", "Özgür Yayınları", "https://www.ozguryayinlari.com/site/catalog/book/1",
+      "10.1111/example", "9789751604439", "9786054791712", "2018", "2026", "", "", "Yazar Soyadı", "Editör Soyadı"];
+    const tsv = [columns, row].map(cells => cells.join("\t")).join("\n");
+    const file = join(temp, "publisher.tsv");
+    const mock: typeof fetch = async url => {
+      expect(String(url)).toBe("https://www.ozguryayinlari.com/site/tr/libraryFiles/downloadPublic/16");
+      return new Response(tsv, { headers: { "Content-Type": "text/plain" } });
+    };
+    await collectOzgurKbart(file, mock);
+    const records = [];
+    for await (const record of ozgurKbart(file)) records.push(record);
+    expect(records.map(r => r.id)).toEqual(["10.1111/example:online", "10.1111/example:print"]);
+    expect(records[0]?.fields).toContainEqual({ field: "firstEditor", value: "Editör Soyadı", path: "first_editor" });
+    expect(records[0]?.fields).toContainEqual({ field: "workDOI", value: "10.1111/example", path: "title_id" });
+    expect(records[0]?.creators).toEqual([]);
+    const db = catalog();
+    await ingestFile(db, "ozgur-kbart", file);
+    expect(db.stats().counts).toMatchObject({ raw: 2, editions: 0 });
+    expect(db.review(0, 25).map(x => (x as { code: string }).code)).toEqual(["scope-unknown", "scope-unknown"]);
   });
 
   it("Vefeyât yazımını kaynak kişi bağlantısıyla saklar", async () => {
