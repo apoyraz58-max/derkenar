@@ -55,6 +55,18 @@
       "sha256": "b74cfc8071f9f104597b74a6e61c1db8bd23495e8ff5e2615535322d06143d53",
       "records": 117791,
       "collected_at": "2026-11-25T19:56:19Z"
+    },
+    {
+      "source": "k10plus",
+      "file": "work/k10plus-yer.xml",
+      "url": "https://sru.k10plus.de/opac-de-627",
+      "query": "(pica.vlo=istanbul or pica.vlo=ankara or pica.vlo=izmir or pica.vlo=van or pica.vlo=konya or pica.vlo=bursa or pica.vlo=erzurum or pica.vlo=eskisehir or pica.vlo=kayseri or pica.vlo=adana or pica.vlo=antalya or pica.vlo=mus or pica.vlo=trabzon or pica.vlo=gaziantep or pica.vlo=samsun or pica.vlo=afyon or pica.vlo=balikesir or pica.vlo=sivas or pica.vlo=diyarbakir or pica.vlo=edirne or pica.vlo=mersin or pica.vlo=manisa or pica.vlo=elazig or pica.vlo=cankiri or pica.vlo=canakkale or pica.vlo=kastamonu or pica.vlo=agri or pica.vlo=isparta or pica.vlo=malatya or pica.vlo=denizli or pica.vlo=aydin or pica.vlo=corum or pica.vlo=bolu or pica.vlo=tokat or pica.vlo=sanliurfa or pica.vlo=kutahya or pica.vlo=mardin or pica.vlo=amasya or pica.vlo=kocaeli or pica.vlo=kars or pica.vlo=konstantinopel or pica.vlo=constantinople or pica.vlo=constantinopel or pica.vlo=stambul or pica.vlo=dersaadet or pica.vlo=kostantiniyye or pica.vlo=istanbol or pica.vlo=smyrna or pica.vlo=smyrne or pica.vlo=angora) and pica.mat=B not pica.lcd=XB-TR",
+      "policy": "https://wiki.k10plus.de/display/K10PLUS/K10plus+Open+Data",
+      "format": "MARCXML (SRU, sorgunun tamamı)",
+      "bytes": 258829409,
+      "sha256": "6d86cd8d909ca0517f87122296f86439f85c755c7a239450f847c7582dd8987e",
+      "records": 61415,
+      "collected_at": "2026-11-25T23:15:00Z"
     }
   ]
 }

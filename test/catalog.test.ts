@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
-import { type RecordInput, validIsbn } from "../src/catalog/model.js";
+import { publicationScope, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
 import { ozgurKbart } from "../src/catalog/sources/kbart.js";
@@ -38,6 +38,18 @@ describe("bibliyografik katalog", () => {
     expect(validIsbn("9789751604438")).toBeNull();
     expect(validIsbn("8111111111111")).toBeNull();
     expect(validIsbn("0/8044/2957/X")).toBeNull();
+  });
+
+  it("tarihî ve çok yerli yayın yeri yazımlarında Türkiye kapsamını tanır", () => {
+    for (const place of ["Konstantinopel", "Constantinople", "Dersaadet", "Der-i Saadet", "Smyrna", "Angora", "İstanbul [u.a.]",
+      "Ankara ; Berlin", "Istanbul : Selbstverl.", "Eskişehir", "Istanbul, Turkiye", "Sarıyer/Istanbul", "Kadıköy-Istanbul",
+      "Kızılay, Ankara", "Istanbul - Türkiyä", "Imak, Istanbul", "İst[anbul]", "Dersaʿādet (=Der-i Saʿādet) [=İstanbul]",
+      "Dersaadet [d.i. İstanbul]", "(Ankara [usw.]", "[Ḳosṭanṭinīye", "Qusṭanṭinīye", "Qośṭandina [Konstantinopel]", "En Smyrnē"]) expect(turkeyPlace(place), place).toBe(true);
+    for (const place of ["Berlin", "Wien [u.a.]", "London ; New York", "Kahire", "Paris", "Frankfurt am Main", "Barcelona, Spain", "Garmisch-Partenkirchen", "Van Nuys, Calif.",
+      "Nea Smyrnē", "[Chicago:] Field Mus. of Natural History", "Los Angeles"]) expect(turkeyPlace(place), place).toBe(false);
+    expect(publicationScope({ place: "Konstantinopel" })).toBe("TR");
+    expect(publicationScope({ place: "Berlin ; İstanbul", country: "gw" })).toBe("conflict");
+    expect(publicationScope({ place: "Imak, Istanbul", country: "gw" })).toBe("conflict");
   });
 
   it("pilot anlık görüntüsüne kaldığı satırdan devam eder ve tekrar aktarmaz", async () => {

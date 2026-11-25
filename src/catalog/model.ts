@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { isbnForms } from "../core/isbn.js";
-import { isnadPlace, isnadTitle, isTurkishPlace } from "../core/isnadstyle.js";
+import { foldText, isnadPlace, isnadTitle, isTurkishPlace } from "../core/isnadstyle.js";
 import { creatorFull, type Creator } from "../core/zotero.js";
 
 export interface Claim {
@@ -90,11 +90,42 @@ export function cleanClaim(claim: Claim): Claim {
   return { ...claim, value };
 }
 
+/** Historical and foreign-language names of places inside today's Türkiye, used only as scope evidence. */
+const HISTORICAL_TR_PLACES = new Set([
+  "konstantinopel", "constantinopel", "constantinople", "konstantinopolis", "constantinopolis", "costantinopoli",
+  "stambul", "istanbol", "dersaadet", "der i saadet", "der saadet", "dersaadet istanbul", "asitane", "dar ul hilafe",
+  "kostantiniyye", "kustantiniyye", "konstantiniyye", "galata", "pera", "uskudar", "kadikoy", "beyoglu",
+  "smyrna", "smyrne", "angora", "adrianopel", "adrianople", "trapezunt", "trebizond", "brussa", "brousse",
+  "turkiye", "turkey", "turkei", "turquie", "turchia", "turkiya", "turkiyä",
+  "kostantiniye", "qostantiniye", "qustantiniye", "kustantiniye", "qostandina", "qonstantinopla", "konstantinupolis",
+  "en smyrne", "en konstantinoupolei", "konstantinoupolis", "kostandiniye",
+]);
+const placeKey = (value: string) => foldText(value).replace(/-/g, " ").replace(/\s+/g, " ").trim();
+const turkishPart = (value: string) => isTurkishPlace(value) || HISTORICAL_TR_PLACES.has(placeKey(value));
+
+/**
+ * Whether an imprint place shows publication inside Türkiye. Accepts several
+ * places ("Ankara ; Berlin", "İstanbul [u.a.]") when one of them is Turkish.
+ * The selected place value and its İSNAD rendering are not changed.
+ */
+export function turkeyPlace(place: string): boolean {
+  // "İst[anbul]", "Dersaadet [d.i. İstanbul]", "Der-i Saʻādet [i.e. İstanbul]": cataloguer additions in brackets.
+  const notes = [...place.matchAll(/\[(?:=|d\.\s?i\.|i\.\s?e\.|that is)?\s*([^\]]+)\]/gi)].map(m => m[1]!);
+  return [place, place.replace(/[[\]()]/g, ""), ...notes].some(candidate => turkeyPlaceText(candidate));
+}
+
+function turkeyPlaceText(place: string): boolean {
+  const parts = place.replace(/\[?\b(?:u\.\s?a\.|usw\.|etc\.|vd\.|et al\.)\]?/gi, "")
+    .split(/\s*[;|]\s*|\s+(?:und|and|ve|et)\s+/i).map(p => p.replace(/^\[|\]$/g, "").replace(/\s*:.*$/, "").trim()).filter(Boolean);
+  // "Sarıyer/Istanbul", "Kadıköy-Istanbul", "Imak, Istanbul": district or publisher before the city.
+  return parts.some(p => turkishPart(p) || p.split(/\s*[/,]\s*|\s+-\s+|(?<=\p{L})-(?=\p{Lu})/u).some(turkishPart));
+}
+
 export function publicationScope(fields: Record<string, string>): "TR" | "outside" | "unknown" | "conflict" {
   if (fields.country === "TR") return "TR";
-  if (fields.country && isTurkishPlace(fields.place ?? "")) return "conflict";
+  if (fields.country && turkeyPlace(fields.place ?? "")) return "conflict";
   if (fields.country) return "outside";
-  if (fields.place && isTurkishPlace(fields.place)) return "TR";
+  if (fields.place && turkeyPlace(fields.place)) return "TR";
   return "unknown";
 }
 
