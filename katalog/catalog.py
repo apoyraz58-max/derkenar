@@ -417,8 +417,20 @@ def oai_token(root):
     return (tok.text or "").strip() or None, tok.get("completeListSize")
 
 
+_XML_ILLEGAL = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f\ufffe\uffff\ud800-\udfff]")
+
+
+def xml_root(body: bytes):
+    """XML'de geçersiz karakterleri (ör. U+FFFE) atarak ayrıştırır; kaynaklarda arada bir görülüyor."""
+    try:
+        return ET.fromstring(body)
+    except ET.ParseError:
+        text = body.decode("utf-8", errors="replace")
+        return ET.fromstring(_XML_ILLEGAL.sub("", text).encode("utf-8"))
+
+
 def parse_dergipark(body: bytes):
-    root = ET.fromstring(body)
+    root = xml_root(body)
     err = oai_check_error(root)
     if err:
         if err[0] == "noRecordsMatch":
@@ -510,7 +522,7 @@ def parse_dergipark(body: bytes):
 
 
 def parse_isam(body: bytes):
-    root = ET.fromstring(body)
+    root = xml_root(body)
     err = oai_check_error(root)
     if err:
         if err[0] == "noRecordsMatch":
@@ -1474,7 +1486,9 @@ def run_group(conn, raw, sources, group_pages, verify_limit, log=print, do_expor
                 harvest_oai(conn, raw, src, group_pages, log)
         except AccessError as e:
             blocked[src] = str(e)[:200]
-            log(f"{src} ENGELLENDİ/ERİŞİLEMEDİ: {e} — diğer kaynaklarla devam ediliyor")
+            kind = ("ENGELLENDİ" if e.http in (401, 403, 407, 451) else
+                    "YANIT HATASI" if e.http is None and "ayrıştırılamadı" in str(e) else "ERİŞİLEMEDİ")
+            log(f"{src} {kind}: {e} — diğer kaynaklarla devam ediliyor")
     if verify_limit:
         verify(conn, verify_limit, log)
     n = export_csv(conn) if do_export else None
@@ -1484,7 +1498,7 @@ def run_group(conn, raw, sources, group_pages, verify_limit, log=print, do_expor
     text = report(conn, RUN_ID, before, title="Aktarım grubu raporu",
                   group={"page_id": page_id, "sources": sources})
     if blocked:
-        text += "\n## Engellenen kaynaklar\n\n" + "\n".join(f"- {SOURCE_LABEL[k]}: {v}" for k, v in blocked.items()) + "\n"
+        text += "\n## Durdurulan kaynaklar (engel ya da yanıt hatası)\n\n" + "\n".join(f"- {SOURCE_LABEL[k]}: {v}" for k, v in blocked.items()) + "\n"
     tag = "-".join(sources)
     p = write_report(text, f"aktarim-{tag}-{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%S')}.md")
     log(text)
