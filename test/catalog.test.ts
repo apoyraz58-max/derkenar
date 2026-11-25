@@ -178,6 +178,32 @@ describe("bibliyografik katalog", () => {
     expect(db.review(0, 10)).toContainEqual(expect.objectContaining({ external_id: "conflict", code: "identifier-conflict" }));
   });
 
+  it("iki kimliği ortak olan başlık varyantını gerekçeyle bağlar ve seçili künye değerlerini korur", () => {
+    const db = catalog();
+    const make = (id: string, fields: Record<string, string>): RecordInput => ({
+      id, raw: JSON.stringify(fields), url: `https://example.org/${id}`, creators: [],
+      fields: Object.entries({ date: "2026", format: "PDF", ...fields }).map(([field, value]) => ({ field, value, path: field })),
+    });
+    const isbn = "9789751604439";
+    const doi = "10.1111/example";
+    db.job("exchange", "target", "target");
+    db.batch("exchange", "target", 0, [make("target", { title: "Sayı", ISBN: isbn, DOI: doi, place: "Gaziantep", publisher: "Publisher" })], true);
+    db.job("ttk", "variants", "variants");
+    db.batch("ttk", "variants", 0, [
+      make("variant", { title: "Sayılar", ISBN: isbn, DOI: doi, publisher: "Yayınevi" }),
+      make("incorrect", { title: "Sayılar", ISBN: "9786054791712", DOI: doi }),
+      make("date-conflict", { title: "Sayılar", ISBN: isbn, DOI: doi, date: "2024" }),
+    ], true);
+    expect(() => db.approveTitleVariant(3, 1, "Yanlış ISBN")).toThrow(/ISBN ve DOI/);
+    expect(() => db.approveTitleVariant(4, 1, "Farklı tarih")).toThrow(/Yayın ve katkı/);
+    expect(db.approveTitleVariant(2, 1, "İki kayıtta da aynı ISBN ve DOI görüldü.")).toEqual({ raw: 2, edition: 1, changed: true });
+    expect(db.approveTitleVariant(2, 1, "Yeniden deneme")).toEqual({ raw: 2, edition: 1, changed: false });
+    expect(db.item(1)?.fields).toMatchObject({ title: "Sayı", publisher: "Publisher", place: "Gaziantep" });
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "title", source: "ttk", observed: "Sayılar", selected: 0 }));
+    expect(db.details(1)?.validation).toContainEqual(expect.objectContaining({ code: "review:title-variant", detail: "İki kayıtta da aynı ISBN ve DOI görüldü." }));
+    expect(db.review(0, 25)).not.toContainEqual(expect.objectContaining({ external_id: "variant" }));
+  });
+
   it("Vefeyât yazımını kaynak kişi bağlantısıyla saklar", async () => {
     const file = join(temp, "vefeyat.csv");
     writeFileSync(file, "\uFEFFKısa Ad;Tam Ad;Orijinal Ad;Vefat Tarihi;Tanıtım;Kaynak Link\r\nİbn Haldûn;---;---;---;;https://islamansiklopedisi.org.tr/ibn-haldun\r\n");

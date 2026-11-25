@@ -17,6 +17,7 @@ const HELP = `Derkenar bibliyografik katalog • Node.js 22.13+
   npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|ozgur|ozgur-kbart|ozgur-kunye|exchange --file DOSYA [--vefeyat CSV] [--limit N]
   npm run catalog -- collect   --source doab|k10plus|ozgur|ozgur-kbart --file DOSYA [--isbn ISBN]
   npm run catalog -- recheck  --db DB --source KAYNAK [--limit N] [--after N]
+  npm run catalog -- approve-title --db DB --raw-id N --id BASKI --reason GEREKÇE
   npm run catalog -- stats     --db DB
   npm run catalog -- show      --db DB --id N
   npm run catalog -- cite      --db DB --id N [--first SAYFA] [--later SAYFA] [--volume CİLT]
@@ -30,7 +31,7 @@ async function main() {
     options: {
       db: { type: "string" }, source: { type: "string" }, file: { type: "string" }, vefeyat: { type: "string" },
       limit: { type: "string" }, after: { type: "string" }, format: { type: "string" }, id: { type: "string" },
-      isbn: { type: "string" }, first: { type: "string" }, later: { type: "string" }, volume: { type: "string" },
+      "raw-id": { type: "string" }, reason: { type: "string" }, isbn: { type: "string" }, first: { type: "string" }, later: { type: "string" }, volume: { type: "string" },
       port: { type: "string" }, help: { type: "boolean" },
     },
   });
@@ -64,7 +65,7 @@ async function main() {
     }
     return o.source as SourceId;
   };
-  const db = new Catalog(required("db"), !["ingest", "pilot", "recheck"].includes(command));
+  const db = new Catalog(required("db"), !["ingest", "pilot", "recheck", "approve-title"].includes(command));
   try {
     switch (command) {
       case "pilot": {
@@ -91,6 +92,9 @@ async function main() {
       }
       case "recheck":
         output(db.recheckScope(sourceArg(), integer(o.after ?? "0", 0), integer(o.limit ?? "1000", 1, 10000)));
+        break;
+      case "approve-title":
+        output(db.approveTitleVariant(integer(o["raw-id"] ?? ""), integer(o.id ?? ""), o.reason ?? ""));
         break;
       case "stats":
         output(db.stats());

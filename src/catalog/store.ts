@@ -83,6 +83,40 @@ const diffFormat = (a?: string, b?: string) => different(a, b) &&
 const comparableDate = (a?: string, b?: string) => different(rank(a ?? ""), rank(b ?? ""));
 const doiKey = (value: string) => /^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)?(10\.\d{4,9}\/[^\s]+)$/i.exec(value)?.[1]?.toLowerCase() ?? null;
 
+function readIdentities(claims: readonly ClaimRow[], invalidIsbn?: (value: string) => void) {
+  const identities = new Map<string, Identity>();
+  for (const claim of claims) {
+    if (claim.field === "ISBN") {
+      for (const token of isbnTokens(claim.value)) {
+        const isbn = validIsbn(token);
+        if (isbn && !identities.has(isbn)) identities.set(isbn, { scheme: "ISBN", claimId: claim.id });
+        else if (!isbn) invalidIsbn?.(token.trim());
+      }
+    }
+    if (claim.field === "DOI") {
+      const doi = doiKey(claim.value);
+      if (doi && !identities.has(doi)) identities.set(doi, { scheme: "DOI", claimId: claim.id });
+    }
+  }
+  return identities;
+}
+
+function readClaims(claims: readonly ClaimRow[]) {
+  const fields: Scalar = Object.create(null);
+  const creators = new Set<string>();
+  for (const claim of claims) {
+    if (claim.field.startsWith("creator:")) creators.add(claim.value);
+    else fields[claim.field] ??= claim.value;
+  }
+  return { fields, authors: authorKey([...creators].map(value => JSON.parse(value) as Creator)) };
+}
+
+function imprintConflict(fresh: Scalar, known: Scalar) {
+  return different(fresh.place, known.place) || different(fresh.country, known.country) || comparableDate(fresh.date, known.date) ||
+    different(editionNumber(fresh.edition), editionNumber(known.edition)) || diffFormat(fresh.format, known.format) ||
+    different(fresh.volume, known.volume);
+}
+
 export class Catalog {
   private readonly db: SqliteDatabase;
   private readonly statements = new Map<string, StatementSync>();
@@ -202,9 +236,7 @@ export class Catalog {
         ORDER BY v.raw_id LIMIT ?`, source, after, limit);
       const report = { examined: candidates.length, matched: 0, stillUnknown: 0, changedIssue: 0, after: candidates.at(-1)?.id ?? null };
       for (const candidate of candidates) {
-        const claims = this.rows<ClaimRow>(`
-          SELECT id,field,position,value,? AS priority FROM claims WHERE raw_id=? ORDER BY id`, SOURCES[source].priority, candidate.id);
-        this.resolve(source, candidate.external_id, candidate.id, claims, undefined, true);
+        this.resolve(source, candidate.external_id, candidate.id, this.claims(candidate.id), undefined, true);
         const state = this.row<{state: string}>("SELECT state FROM raw_records WHERE id=?", candidate.id)?.state;
         if (state === "matched") report.matched++;
         else if (this.row("SELECT id FROM validation WHERE raw_id=? AND code='scope-unknown'", candidate.id)) report.stillUnknown++;
@@ -214,36 +246,65 @@ export class Catalog {
     });
   }
 
+  private claims(raw: number) {
+    return this.rows<ClaimRow>(`
+      SELECT c.id,c.field,c.position,c.value,s.priority FROM claims c
+      JOIN raw_records r ON r.id=c.raw_id JOIN sources s ON s.id=r.source
+      WHERE c.raw_id=? ORDER BY c.id`, raw);
+  }
+
+  approveTitleVariant(raw: number, edition: number, reason: string) {
+    if (!reason.trim()) throw new Error("Başlık varyantı için karar gerekçesi gerekli.");
+    return this.transaction(() => {
+      const record = this.row<PreviousRecord>("SELECT state,edition_id FROM raw_records WHERE id=?", raw);
+      if (record?.state === "matched" && record.edition_id === edition &&
+        this.row("SELECT id FROM validation WHERE raw_id=? AND edition_id=? AND code='review:title-variant'", raw, edition)) {
+        return { raw, edition, changed: false };
+      }
+      const target = this.row<EditionRow>("SELECT * FROM editions WHERE id=?", edition);
+      if (!target || record?.state !== "review" ||
+        !this.row("SELECT id FROM validation WHERE raw_id=? AND target_id=? AND code='identifier-conflict'", raw, edition)) {
+        throw new Error("Ham kayıt ve hedef baskı için açık bir kimlik çelişkisi bulunamadı.");
+      }
+      const claims = this.claims(raw);
+      const identities = readIdentities(claims);
+      const isbn = [...identities].find(([, i]) => i.scheme === "ISBN")?.[0];
+      const doi = [...identities].find(([, i]) => i.scheme === "DOI")?.[0];
+      const agreed = this.rows<{edition_id: number}>(`
+        SELECT i.edition_id FROM identifiers i JOIN identifiers d ON d.edition_id=i.edition_id
+        WHERE i.scheme='ISBN' AND i.value=? AND d.scheme='DOI' AND d.value=?`, isbn ?? "", doi ?? "");
+      const canonical = this.rows<{value: string}>("SELECT value FROM identifiers WHERE edition_id=?", edition);
+      if (!isbn || !doi || identities.size !== 2 || agreed.length !== 1 || agreed[0]?.edition_id !== edition ||
+        canonical.some(i => !identities.has(i.value))) {
+        throw new Error("Hedef baskı için aynı geçerli ISBN ve DOI birlikte ve tekil olarak doğrulanamadı.");
+      }
+      const { fields, authors } = readClaims(claims);
+      const scope = publicationScope(fields);
+      const selected = this.fields(edition);
+      if (!fields.title || !different(fields.title, selected.title) ||
+        scope === "outside" || scope === "conflict" || different(authors, target.author_key) ||
+        imprintConflict(fields, selected)) {
+        throw new Error("Kayıt başlık varyantı olarak bağlanamadı. Yayın ve katkı alanlarını inceleyin.");
+      }
+      this.attach(raw, edition, claims, identities, "matched", true);
+      this.put("DELETE FROM validation WHERE raw_id=? AND code='identifier-conflict'", raw);
+      this.issue(raw, edition, "review:title-variant", reason.trim(), null, "info");
+      return { raw, edition, changed: true };
+    });
+  }
+
   private resolve(source: SourceId, externalId: string, raw: number, claims: readonly ClaimRow[],
     previous?: PreviousRecord, recheckingScope = false) {
-    const effective: Scalar = Object.create(null);
-    const identities = new Map<string, Identity>();
-    const creatorValues = new Set<string>();
-    for (const claim of claims) {
-      if (claim.field.startsWith("creator:")) creatorValues.add(claim.value);
-      else effective[claim.field] ??= claim.value;
-      if (claim.field === "ISBN") {
-        for (const token of isbnTokens(claim.value)) {
-          const isbn = validIsbn(token);
-          if (isbn && !identities.has(isbn)) identities.set(isbn, { scheme: "ISBN", claimId: claim.id });
-          else if (!isbn && !recheckingScope) this.issue(raw, null, "invalid-isbn", token.trim());
-        }
-      }
-      if (claim.field === "DOI") {
-        const doi = doiKey(claim.value);
-        if (doi && !identities.has(doi)) identities.set(doi, { scheme: "DOI", claimId: claim.id });
-      }
-    }
-
-    const state = (value: string, edition: number | null = null) =>
-      this.put("UPDATE raw_records SET state=?, edition_id=? WHERE id=?", value, edition, raw);
+    const { fields: effective, authors } = readClaims(claims);
+    const identities = readIdentities(claims, recheckingScope ? undefined :
+      value => this.issue(raw, null, "invalid-isbn", value));
     const scope = publicationScope(effective);
     const countries = new Set(claims.filter(c => c.field === "country").map(c => equivalent(c.value)));
     if (countries.size > 1 || scope === "conflict") {
       this.issue(raw, null, "scope-conflict", "Yayın ülkesi ve yayın yeri kanıtları uyuşmuyor.");
       return;
     }
-    if (scope === "outside") { state("outside"); return; }
+    if (scope === "outside") { this.put("UPDATE raw_records SET state='outside' WHERE id=?", raw); return; }
     const title = equivalent(effective.title ?? "");
     if (!title) { this.issue(raw, null, "missing-title", "Başlık bulunamadı.", null, "error"); return; }
     // A changed snapshot of a source ID needs review before it can override or split a published record.
@@ -251,7 +312,6 @@ export class Catalog {
       this.issue(raw, null, "source-revision", "Kaynak kaydının yeni sürümü.", previous.edition_id);
       return;
     }
-    const authors = authorKey([...creatorValues].map(value => JSON.parse(value) as Creator));
     const allHits = new Map<number, EditionRow>();
     if ([...identities.values()].filter(i => i.scheme === "ISBN").length > 1) {
       this.issue(raw, null, "multiple-isbn", "Birden çok ISBN-13 eşdeğeri tek baskıya güvenle bağlanamadı.");
@@ -266,10 +326,7 @@ export class Catalog {
       "SELECT scheme,value FROM identifiers WHERE edition_id=?", id).some(existing =>
         !identities.has(existing.value) && [...identities.values()].some(i => i.scheme === existing.scheme));
     const compatible = hits.filter(({ hit, fields }) => title === hit.title_key && !identifierConflict(hit.id) &&
-      !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher) &&
-      !different(effective.place, fields.place) && !comparableDate(effective.date, fields.date) &&
-      !different(editionNumber(effective.edition), editionNumber(fields.edition)) && !diffFormat(effective.format, fields.format) &&
-      !different(effective.volume, fields.volume));
+      !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher) && !imprintConflict(effective, fields));
     const distinct = ({ hit, fields }: typeof hits[number]) => hit.title_key === title &&
       !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher) &&
       (different(editionNumber(effective.edition), editionNumber(fields.edition)) || diffFormat(effective.format, fields.format) ||
@@ -312,7 +369,12 @@ export class Catalog {
       edition = Number(this.put("INSERT INTO editions(work_id,title_key,author_key) VALUES (?,?,?)", work, title, authors).lastInsertRowid);
       for (const { hit } of hits) this.issue(raw, edition, "shared-identifier", "Farklı baskı, taşıyıcı veya cilt için aynı kimlik bildirildi.", hit.id);
     }
-    state(wasMerged ? "matched" : "accepted", edition);
+    this.attach(raw, edition, claims, identities, wasMerged ? "matched" : "accepted");
+  }
+
+  private attach(raw: number, edition: number, claims: readonly ClaimRow[], identities: ReadonlyMap<string, Identity>,
+    state: "matched" | "accepted", keepSelected = false) {
+    this.put("UPDATE raw_records SET state=?, edition_id=? WHERE id=?", state, edition, raw);
     for (const field of CHOICES) {
       const fresh = claims.find(c => c.field === field);
       if (!fresh) continue;
@@ -321,8 +383,9 @@ export class Catalog {
         WHERE f.edition_id=? AND f.field=?`, edition, field);
       if (current && different(fresh.value, current.value) &&
         (field !== "format" || diffFormat(fresh.value, current.value))) this.issue(raw, edition, "field-conflict", field);
-      if (!current || (field === "format" && ["Basılı", "Elektronik"].includes(current.value) && !diffFormat(fresh.value, current.value)) ||
-        (fresh.priority > current.priority && !(field === "format" && ["Basılı", "Elektronik"].includes(fresh.value) && !diffFormat(fresh.value, current.value)))) {
+      if (!current || (!keepSelected &&
+        ((field === "format" && ["Basılı", "Elektronik"].includes(current.value) && !diffFormat(fresh.value, current.value)) ||
+        (fresh.priority > current.priority && !(field === "format" && ["Basılı", "Elektronik"].includes(fresh.value) && !diffFormat(fresh.value, current.value)))))) {
         this.put("INSERT OR REPLACE INTO edition_fields VALUES (?,?,?)", edition, field, fresh.id);
       }
     }
@@ -338,7 +401,7 @@ export class Catalog {
       if (old.length && JSON.stringify(old.map(c => c.value)) !== JSON.stringify(group.map(c => c.value))) {
         this.issue(raw, edition, "contributor-conflict", role);
       }
-      if (!old.length || group[0]!.priority > old[0]!.priority) {
+      if (!old.length || (!keepSelected && group[0]!.priority > old[0]!.priority)) {
         this.put("DELETE FROM contributions WHERE edition_id=? AND role=?", edition, role);
         group.forEach((c, i) => this.put("INSERT INTO contributions VALUES (?,?,?,?)", edition, role, i, c.id));
       }

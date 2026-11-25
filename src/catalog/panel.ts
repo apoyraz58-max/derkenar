@@ -126,8 +126,8 @@ async function start() {
   table("validation",["Kod","Düzey","Sayı"],s.validation.map(r => [r.code,r.level,r.count]));
   table("jobs",["Kaynak","Anlık görüntü","Konum","Durum","İstanbul saati"],s.jobs.map(r => [r.source,r.label,r.cursor,r.state,dateTime.format(new Date(r.updated_at.replace(" ","T")+"Z"))]));
   await Promise.all([
-    paging("review-next","review",rows => table("review",["Başlık","Kaynak","Kod","Açıklama","Olası baskı"],
-      rows.map(r => [r.title,link(r.url,r.source+" / "+r.external_id),r.code,r.detail,r.target_id ? detailButton(r.target_id,r.target_id) : "—"]))),
+    paging("review-next","review",rows => table("review",["Ham kayıt","Başlık","Kaynak","Kod","Açıklama","Olası baskı"],
+      rows.map(r => [r.raw_id,r.title,link(r.url,r.source+" / "+r.external_id),r.code,r.detail,r.target_id ? detailButton(r.target_id,r.target_id) : "—"]))),
     paging("edition-next","editions",rows => table("editions",["Baskı","Eser","Başlık","Yayınevi","Tarih","ISBN"],
       rows.map(r => [detailButton(r.id,r.id),r.work_id,r.title,r.publisher,r.date,r.ISBN])))
   ]);

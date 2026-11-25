@@ -25,6 +25,7 @@ Pilot girdileri TTK ve ASBÜ’nün elle derlenen katalog alanları ile depodaki
 | --- | --- | --- |
 | K10plus/GVK | Açık üstveri ve SRU/MARCXML. Pilot adaptörü tek ISBN sorgusu ve sağlanan MARCXML anlık görüntüsünü destekler. | [Açık veri](https://swblod.bsz-bw.de/od/) · [SRU kullanımı](https://lab.sbb.berlin/bibliographische-daten-aus-dem-stabikat/) |
 | Özgür Yayınları | Yayınevi, kataloglara aktarım için tek dosyada MARCXML yayımlıyor. | [Katalog aktarım koşulları ve dosya](https://www.ozguryayinlari.com/site/tr/libraries) |
+| Haliç Yayınevi | Katalog aktarımına açık MARC21, ONIX ve KBART beslemeleri. MARC 264 yayın bilgisi taşır. Kaynak, 164 tam metin kitap bildiriyor. | [Katalog beslemeleri](https://halicyayinevi.com/metadata) |
 | Directory of Open Access Books | Üstveri CC0. Resmî MARCXML dosyası ve OAI-PMH yayımlanıyor. Kapsam ağırlıkla hakemli açık erişim kitaplar. | [Üstveri ve indirme](https://www.doabooks.org/en/librarians/doab-metadata) · [CC0 açıklaması](https://www.doabooks.org/en/researchers/faq) |
 | Türkiye Bibliyografyası ve Millî Kütüphane | Türkiye kapsamı için derleme temelli kaynak. Katalog sayısı tüm materyal türlerini kapsar. Toplu yeniden kullanım koşullarını ve makinece okunabilir teslim biçimini kurumla doğrulamak gerekir. | [Bibliyografyalar](https://www.millikutuphane.gov.tr/page/Bibliyografyalar) · [Katalog kapsamı](https://www.millikutuphane.gov.tr/page/Kitaplar) |
 | TTK, ASBÜ ve İSAM katalogları | Tekil künye karşılaştırması için erişilebilir. TTK ve ASBÜ’den pilot amaçlı seçili olgular elle alındı. Otomatik arşivleme yetkisi ayrıca değerlendirilmeli. | [TTK veritabanları](https://ttk.gov.tr/veri-tabanlari-2-2/) · [ASBÜ kataloğu](https://katalogkktc.asbu.edu.tr/) · [İSAM katalogları](https://isamveri.org/tanitim.php) |
@@ -90,5 +91,13 @@ npm run catalog -- recheck --db work/kbart.sqlite --source ozgur-kbart
 ```
 
 `recheck`, yalnız yayın kapsamı kanıtı eksik olan ham kayıtları tarar. Doğrulanmış tek bir baskıyla uyumlu kayıt mevcut künye ve özgün kanıtlar korunarak bağlanır. Farklı ISBN veya başlık gibi çelişkiler incelemede görünür. İşlem varsayılan olarak 1000 aday tarar. Daha büyük kuyruklarda çıktının `after` değerini bir sonraki çalıştırmada `--after` olarak kullanın. Yeni bir kanıt partisi geldiğinde tarama baştan çalıştırılabilir.
+
+Yayınevinin kitap sayfası ve PDF künye başlığı gibi iki resmî kaynağı karşılaştırarak bir başlık varyantı doğrulandığında, paneldeki ham kayıt ve hedef baskı kimlikleriyle karar kaydedilebilir.
+
+```sh
+npm run catalog -- approve-title --db work/kbart.sqlite --raw-id HAM_KAYIT --id BASKI --reason "Başlık varyantının yayıncı kaynaklarındaki dayanağı"
+```
+
+Bu işlem yalnız aynı geçerli ISBN ve DOI tek bir hedef baskıyı birlikte gösterdiğinde çalışır. Yayın ve katkı alanlarında çelişki denetlenir. İki gözlem, seçili başlık ve karar gerekçesi baskı ayrıntılarında görünür.
 
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.
