@@ -43,6 +43,18 @@
       "sha256": "892dcad54d3fb792f84a911a973a1288b50a349f6e66f98cfc6c5f8d8b80af1e",
       "records": 1000,
       "query_total": 117791
+    },
+    {
+      "source": "k10plus",
+      "file": "work/k10plus-tr.xml",
+      "url": "https://sru.k10plus.de/opac-de-627",
+      "query": "pica.lcd=XB-TR and pica.mat=B",
+      "policy": "https://wiki.k10plus.de/display/K10PLUS/K10plus+Open+Data",
+      "format": "MARCXML (SRU, sorgunun tamamı)",
+      "bytes": 651392390,
+      "sha256": "b74cfc8071f9f104597b74a6e61c1db8bd23495e8ff5e2615535322d06143d53",
+      "records": 117791,
+      "collected_at": "2026-11-25T19:56:19Z"
     }
   ]
 }
