@@ -76,6 +76,10 @@ const localFields = new Set(["country", "format"]);
 const rank = (a: string) => (/^\d{4}(?:[-/]\d{2}(?:[-/]\d{2})?)?$/.test(a) ? a.slice(0, 4) : a);
 const editionNumber = (value?: string) => /^\d+$/.test(value ?? "") ? value : undefined;
 const print = new Set(["Basılı", "Paperback", "Hardcover"]);
+const creatorKey = (value: string) => {
+  const parsed = JSON.parse(value) as Record<string, unknown>;
+  return JSON.stringify(Object.keys(parsed).sort().map(key => [key, parsed[key]]));
+};
 const different = (a?: string, b?: string) => Boolean(a && b && equivalent(a) !== equivalent(b));
 const diffFormat = (a?: string, b?: string) => different(a, b) &&
   !((a === "Basılı" || b === "Basılı") && print.has(a!) && print.has(b!)) &&
@@ -394,11 +398,11 @@ export class Catalog {
     }
     for (const field of new Set(claims.filter(c => c.field.startsWith("creator:")).map(c => c.field))) {
       const role = field.slice(8);
-      const group = claims.filter(c => c.field === field).filter((c, i, list) => list.findIndex(x => x.value === c.value) === i);
+      const group = claims.filter(c => c.field === field).filter((c, i, list) => list.findIndex(x => creatorKey(x.value) === creatorKey(c.value)) === i);
       const old = this.rows<ClaimRow>(`SELECT c.id,c.value,s.priority FROM contributions k
         JOIN claims c ON c.id=k.claim_id JOIN raw_records r ON r.id=c.raw_id JOIN sources s ON s.id=r.source
         WHERE k.edition_id=? AND k.role=? ORDER BY k.position`, edition, role);
-      if (old.length && JSON.stringify(old.map(c => c.value)) !== JSON.stringify(group.map(c => c.value))) {
+      if (old.length && JSON.stringify(old.map(c => creatorKey(c.value))) !== JSON.stringify(group.map(c => creatorKey(c.value)))) {
         this.issue(raw, edition, "contributor-conflict", role);
       }
       if (!old.length || (!keepSelected && group[0]!.priority > old[0]!.priority)) {

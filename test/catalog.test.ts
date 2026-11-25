@@ -90,6 +90,18 @@ describe("bibliyografik katalog", () => {
     expect(db.item(1)?.creators.map(c => c.creatorType)).toEqual(expect.arrayContaining(["author", "translator", "editor"]));
   });
 
+  it("DOAB'ın sabit leader ve 008 ülke kodunu kanıt saymadan yayın yerine göre ayırır", async () => {
+    const db = catalog();
+    await ingestFile(db, "doab", root("test/fixtures/doab-sample.xml"));
+    expect(db.stats().counts).toMatchObject({ raw: 2, editions: 1 });
+    const turkish = db.item(1)!;
+    expect(turkish.fields).toMatchObject({ title: "Current Issues in Archival Science", place: "İstanbul",
+      publisher: "Istanbul University Press", ISBN: "9786050717839", numPages: "104", language: "en" });
+    expect(turkish.fields.country).toBeUndefined();
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "place", source: "doab", observed: "Istanbul, Turkiye", path: "260$a" }));
+    expect(db.review(0, 10)).toContainEqual(expect.objectContaining({ code: "scope-unknown" }));
+  });
+
   it("yayınevi MARC dosyasını ayrı kaynak olarak toplar ve kaydın bağlantısını saklar", async () => {
     const sample = readFileSync(root("test/fixtures/k10plus-9786054791712.xml"), "utf8");
     const record = sample.match(/<record xmlns=[\s\S]+?<\/record>/)?.[0]!;
@@ -157,6 +169,24 @@ describe("bibliyografik katalog", () => {
     const review = db.review(0, 25);
     expect(review).toContainEqual(expect.objectContaining({ external_id: "different-isbn", code: "identifier-conflict" }));
     expect(review.filter(r => (r as { code: string }).code === "invalid-isbn")).toHaveLength(1);
+  });
+
+  it("katkı adlarını alan sırasından bağımsız karşılaştırır, ad farkını incelemeye bırakır", () => {
+    const db = catalog();
+    const make = (id: string, creators: string[]): RecordInput => ({
+      id, raw: id, url: `https://example.org/${id}`,
+      creators: creators.map(value => ({ creator: JSON.parse(value), path: "100", kind: "person" as const })),
+      fields: Object.entries({ title: "Bir Kitap", ISBN: "9789751604439", place: "Gaziantep", date: "2026" })
+        .map(([field, value]) => ({ field, value, path: field })),
+    });
+    db.job("ozgur-kunye", "a", "a");
+    db.batch("ozgur-kunye", "a", 0, [make("a", ['{"creatorType":"author","firstName":"Ozan Ekin","lastName":"Derin"}'])], true);
+    db.job("ozgur", "b", "b");
+    db.batch("ozgur", "b", 0, [make("b", ['{"creatorType":"author","lastName":"Derin","firstName":"Ozan Ekin"}'])], true);
+    expect(db.details(1)?.validation.map(v => (v as { code: string }).code)).not.toContain("contributor-conflict");
+    db.job("ttk", "c", "c");
+    db.batch("ttk", "c", 0, [make("c", ['{"creatorType":"author","lastName":"Dérin","firstName":"Ozan Ekin"}'])], true);
+    expect(db.details(1)?.validation).toContainEqual(expect.objectContaining({ code: "contributor-conflict", detail: "author" }));
   });
 
   it("ISBN ve DOI ayrı baskıları gösteriyorsa kaydı tek baskıya bağlamaz", () => {

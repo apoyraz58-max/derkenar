@@ -308,7 +308,7 @@ export function isnadPlace(place: string): string {
   const p = place
     .trim()
     .replace(/^\[(.*)\]$/, "$1")
-    .replace(/\s*[,/-]\s*(Türkiye|Turkey|TR|Türkiye Cumhuriyeti)\.?$/i, "")
+    .replace(/\s*[,/-]\s*(Türkiye|Turkiye|Turkey|TR|Türkiye Cumhuriyeti)\.?$/i, "")
     .replace(/\s*:$/, "")
     .trim();
   return PLACES[foldText(p)] ?? p;

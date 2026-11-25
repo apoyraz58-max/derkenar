@@ -55,7 +55,9 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
     throw new Error("Geçersiz MARCXML kaydı.");
   }
   const leader = elements(record, "leader")[0]?.textContent ?? "";
-  if (leader[6] !== "a" || leader[7] !== "m") return null;
+  // DOAB yalnız kitap listeler; dışa aktarımındaki leader sabit bir yer tutucudur ("     naaaa").
+  const doabPlaceholder = source === "doab" && /^ {5}naaaa\b/.test(leader);
+  if (leader[6] !== "a" || (leader[7] !== "m" && !doabPlaceholder)) return null;
   const control = (tag: string) => elements(record, "controlfield").find(e => e.getAttribute("tag") === tag)?.textContent ?? "";
   const id = control("001").trim();
   if (!id) throw new Error("MARCXML 001 alanı boş.");
@@ -85,7 +87,8 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
   add("place", imprint(sub(pub, "a")[0] ?? ""), `${pubTag}$a`);
   add("publisher", imprint(sub(pub, "b")[0] ?? ""), `${pubTag}$b`);
   add("date", date || fixedYear, date ? `${pubTag}$c` : "008/06–10");
-  const country = fixed.slice(15, 18).trim();
+  // DOAB dışa aktarımında 008/15–17 her kayıtta "sp"dir; yayın ülkesi kanıtı sayılmaz.
+  const country = source === "doab" ? "" : fixed.slice(15, 18).trim();
   const explicitTr = df("044").some(e => sub(e, "c").some(c => /^(TR|XB-TR)$/i.test(c)));
   if (explicitTr) add("country", "TR", "044$c");
   if (/^[a-z]{2,3}$/.test(country) && !/^(xx|vp|xxu)$/.test(country)) add("country", country, "008/15–17");
@@ -94,7 +97,7 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
   if (/^[a-z]{3}$/.test(language) && !["und", "zxx", "mul"].includes(language)) add("language", language, first("041", "a") ? "041$a" : "008/35–37");
   add("edition", imprint(first("250", "a")).replace(/\.$/, ""), "250$a");
   const physical = first("300", "a");
-  add("numPages", /(?:^|\s)(\d+)\s*(?:sayfa|Seiten|pages|p\.|s\.)/i.exec(physical)?.[1] ?? "", "300$a");
+  add("numPages", /(?:^|[\s(])(\d+)\s*(?:sayfa|Seiten|pages|p\.|s\.)/i.exec(physical)?.[1] ?? "", "300$a");
   add("numberOfVolumes", /^(\d+)\s*(?:cilt|vol\.|c\.|v\.)/i.exec(physical)?.[1] ?? "", "300$a");
   const carriers = df("338").flatMap(e => sub(e, "b"));
   if (carriers.includes("nc")) add("format", "Basılı", "338$b");

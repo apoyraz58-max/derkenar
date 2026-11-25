@@ -1,0 +1,36 @@
+{
+  "collected_at": "2026-11-25T19:23:00Z",
+  "note": "Anlık görüntü dosyaları depoya konmaz; work/ altına indirilir. Aynı SHA-256 özetiyle devam ve yeniden karşılaştırma yapılır.",
+  "snapshots": [
+    {
+      "source": "ozgur",
+      "file": "work/ozgur.xml",
+      "url": "https://www.ozguryayinlari.com/site/libraryFiles/downloadPublic/15",
+      "policy": "https://www.ozguryayinlari.com/site/tr/libraries",
+      "format": "MARCXML",
+      "bytes": 8515131,
+      "sha256": "9ef24c92a4073b18e1603bc9f2eadf6c5b513d42b4aefe4b58620f70ca4d75a2",
+      "records": 1173
+    },
+    {
+      "source": "ozgur-kbart",
+      "file": "work/ozgur.tsv",
+      "url": "https://www.ozguryayinlari.com/site/tr/libraryFiles/downloadPublic/16",
+      "policy": "https://www.ozguryayinlari.com/site/tr/libraries",
+      "format": "KBART",
+      "bytes": 266405,
+      "sha256": "3b53cffd51b0a4b69ab9139a280cd50d7eb41b5617515324ede8483ee0ed6f98",
+      "records": 1173
+    },
+    {
+      "source": "doab",
+      "file": "work/doab.xml",
+      "url": "https://memo.doabooks.org/file/oapen/DOAB_MARCXML.xml",
+      "policy": "https://www.doabooks.org/en/librarians/doab-metadata",
+      "format": "MARCXML",
+      "bytes": 924690278,
+      "sha256": "667fdd91b6c56e0114b78e0f3d0b9391f6ba12c14d73aee100b08be4a3826c8c",
+      "records": 115634
+    }
+  ]
+}

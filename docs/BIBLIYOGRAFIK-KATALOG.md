@@ -100,4 +100,36 @@ npm run catalog -- approve-title --db work/kbart.sqlite --raw-id HAM_KAYIT --id 
 
 Bu işlem yalnız aynı geçerli ISBN ve DOI tek bir hedef baskıyı birlikte gösterdiğinde çalışır. Yayın ve katkı alanlarında çelişki denetlenir. İki gözlem, seçili başlık ve karar gerekçesi baskı ayrıntılarında görünür.
 
+### Özgür Yayınları MARCXML partisi (25 Kasım 2026)
+
+Anlık görüntülerin kaynağı, tarihi, boyutu ve SHA-256 özeti `data/catalog/snapshots/2026-11-25.json` dosyasındadır. Önceki KBART veritabanı bulut ortamına taşınmadığı için aynı gün indirilen KBART dosyasıyla yeniden kuruldu. İlk 200 satır önceki sonucu aynen verdi: 70 eşleşme, 3 başlık çelişkisi ve 127 kapsam kanıtı bekleyen kayıt.
+
+Ağ erişimi bir HTTPS vekil sunucusundan geçiyorsa Node.js 22’nin `fetch` işlevi vekili kendiliğinden kullanmaz. `collect` komutunu `NODE_USE_ENV_PROXY=1` ile çalıştırın.
+
+```sh
+NODE_USE_ENV_PROXY=1 npm run catalog -- collect --source ozgur --file work/ozgur.xml
+NODE_USE_ENV_PROXY=1 npm run catalog -- collect --source ozgur-kbart --file work/ozgur.tsv
+npm run catalog -- ingest --db work/kbart.sqlite --source ozgur-kbart --file work/ozgur.tsv --limit 200
+npm run catalog -- ingest --db work/kbart.sqlite --source ozgur-kunye --file data/catalog/pilot/ozgur-kunye.jsonl
+npm run catalog -- recheck --db work/kbart.sqlite --source ozgur-kbart
+npm run catalog -- ingest --db work/kbart.sqlite --source ozgur --file work/ozgur.xml --limit 200
+npm run catalog -- recheck --db work/kbart.sqlite --source ozgur-kbart
+```
+
+MARCXML’in 1173 kaydının hepsi 008/15–17’de `tu` ve 264’te Gaziantep taşır. İlk 200 MARC kaydı, KBART’taki ilk 200 satırla aynı kitaplardır. `recheck`, bekleyen 127 KBART kaydının tamamını MARC baskılarıyla ISBN ve DOI üzerinden eşleştirdi.
+
+Başlık kararları KBART, MARC 245 ve PDF künyesi karşılaştırılarak verildi. Aynı kararlar bu sırayla yeniden kaydedilebilir. Ham kayıt kimlikleri yukarıdaki aktarım sırasına bağlıdır.
+
+| Kitap | Ham kayıt → baskı | KBART ve MARC 245 | PDF künyesi |
+| --- | --- | --- | --- |
+| ozgur1447 | 2 → 11 (KBART), 275 → 11 (MARC) | Purchase Intentions | Purchase Intention |
+| ozgur1287 | 143 → 36 (KBART), 416 → 36 (MARC) | iki nokta ve virgüllü alt başlık | noktalamasız |
+| ozgur1279 | 150 → 37 (KBART), 423 → 37 (MARC) | Antioxidant Defense, and | Antioxidant Defence and |
+
+Kitap 1447’de KBART `first_author` ve MARC 100 alanları “Bağçı”, PDF künyesi “Bağcı” yazar. Seçili katkı PDF künyesinde kalır, fark baskıda `contributor-conflict` olarak görünür. Kitap 1277 (ham kayıt 425) incelemede kalır. MARC 700 “Yaman, Bekir Sıddık Binboğa”, PDF künyesi “Yarman” yazar. MARC başlığı ise “Clinical Ai the Fidelity– Utility” biçiminde bozulmuştur. `approve-title` bu kaydı katkı çelişkisi nedeniyle reddeder. On altı kitapta PDF künyesi “Türkçe, İngilizce”, MARC 041 tek dil verir. Seçili değer PDF künyesindedir, MARC gözlemi kanıt olarak saklanır.
+
+### DOAB deneme partisi
+
+DOAB dışa aktarımında her kaydın leader alanı `"     naaaa"` yer tutucusudur ve 008/15–17 her kayıtta `sp`’dir. Adaptör DOAB için bu leader’ı kitap kaydı sayar ve 008 ülke kodunu kanıt olarak kullanmaz. Türkiye kapsamı yalnız 260/264 yayın yerinden kanıtlanır. 25 Kasım 2026 anlık görüntüsündeki 115.634 kaydın yaklaşık 221’i Türkiye yayın yeri veya Türk yayınevi taşır. Bunların çoğu Istanbul University Press’e aittir. DOAB bu nedenle Türkiye kapsamına küçük bir katkı sağlar. Türkiye dışı yayın yeri, ülke kanıtı olmadığından `scope-unknown` olarak incelemeye düşer.
+
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.
