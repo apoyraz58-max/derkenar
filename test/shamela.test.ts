@@ -83,6 +83,13 @@ describe("the book card", () => {
     expect(it.fields).toMatchObject({ university: "Câmiʿatü’l-İmâm Muḥammed b. Suʿûd el-İslâmiyye", thesisType: "Yüksek Lisans Tezi", place: "Riyad" });
     expect(it.fields.publisher).toBeUndefined();
   });
+  it("an article in a journal issue becomes an article: the journal, its volume and issue, no publisher or place", () => {
+    const it = catalogItem({ ...entry, journal: "Mecelletü’l-Câmiati’l-İslâmiyye", volume: "34", issue: "115", place: "Medine", date: "1422/2002", ed: "x" });
+    expect(it.itemType).toBe("journalArticle");
+    expect(it.fields).toMatchObject({ publicationTitle: "Mecelletü’l-Câmiati’l-İslâmiyye", volume: "34", issue: "115", date: "1422/2002" });
+    expect(it.fields.publisher).toBeUndefined();
+    expect(it.fields.place).toBeUndefined();
+  });
 });
 
 describe("searching the catalog", () => {
