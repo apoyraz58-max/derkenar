@@ -69,6 +69,22 @@ describe("Şamile kataloğu", () => {
   });
 });
 
+describe("the book card", () => {
+  it("brings the print's place, publisher, year, edition and the muhakkiks; the first edition is not written", () => {
+    const it = catalogItem({ ...entry, thk: "Muḥammed Fuâd ʿAbdülbâḳī; Muḥibbüddîn el-Ḫaṭîb", ed: "Dârü’l-maʿrife", place: "Beyrut", date: "1379/1959", edition: 1, volumes: 25 });
+    expect(it.fields).toMatchObject({ publisher: "Dârü’l-maʿrife", place: "Beyrut", date: "1379/1959", numberOfVolumes: "25" });
+    expect(it.fields.edition).toBeUndefined();
+    expect(it.creators.filter((c) => c.creatorType === "muhakkik").map((c) => c.name)).toEqual(["Muḥammed Fuâd ʿAbdülbâḳī", "Muḥibbüddîn el-Ḫaṭîb"]);
+    expect(catalogItem({ ...entry, edition: 3 }).fields.edition).toBe("3");
+  });
+  it("a thesis on the card becomes a thesis: university and degree, no publisher", () => {
+    const it = catalogItem({ ...entry, university: "Câmiʿatü’l-İmâm Muḥammed b. Suʿûd el-İslâmiyye", thesisType: "Yüksek Lisans Tezi", place: "Riyad", date: "1438/2017", ed: "x" });
+    expect(it.itemType).toBe("thesis");
+    expect(it.fields).toMatchObject({ university: "Câmiʿatü’l-İmâm Muḥammed b. Suʿûd el-İslâmiyye", thesisType: "Yüksek Lisans Tezi", place: "Riyad" });
+    expect(it.fields.publisher).toBeUndefined();
+  });
+});
+
 describe("searching the catalog", () => {
   const catalog = { name: "el-Mektebetü’ş-Şâmile", source: "test", entries: [entry, { ...entry, id: 1, ar: "المصنف", title: "el-Muṣannef", plain: "el-Musannef", authors: [{ dia: "Abdürrezzâk es-San‘ânî", shamela: "عبد الرزاق الصنعاني", death: 211 }] }] };
   it("finds a book by its title with or without marks, by its author, or in Arabic", () => {

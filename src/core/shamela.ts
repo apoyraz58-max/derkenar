@@ -42,6 +42,14 @@ export interface CatalogEntry {
   ed?: string | null;
   /** Which of two same-named books this is, as Şamile tells them apart (the commentator, the edition). */
   note?: string | null;
+  /** From the book card (بطاقة الكتاب): the print's place (İSNAD's spelling: "Beyrut"), year ("1413/1992"), edition (2, 3 …; the first is not written), volumes. */
+  place?: string | null;
+  date?: string | null;
+  edition?: number | null;
+  volumes?: number | null;
+  /** A thesis: the university and the degree ("Yüksek Lisans Tezi", "Doktora Tezi"). */
+  university?: string | null;
+  thesisType?: string | null;
   category?: string | null;
   /** What still wants a look. */
   review?: string[];
@@ -71,7 +79,7 @@ function creatorOf(a: CatalogAuthor): Creator | null {
 
 /** A catalog entry as an İSNAD record: transcribed title (the plain form goes with it), DİA names, its source. */
 export function catalogItem(e: CatalogEntry, catalog = SHAMELA): Item {
-  const item = emptyItem("book", "samile");
+  const item = emptyItem(e.university ? "thesis" : "book", "samile");
   item.fields.title = e.title;
   const short = shortTitleOf(e.title);
   if (short && short !== e.title) item.fields.shortTitle = short;
@@ -80,8 +88,16 @@ export function catalogItem(e: CatalogEntry, catalog = SHAMELA): Item {
     const c = creatorOf(a);
     if (c) item.creators.push(c);
   }
-  if (e.thk) item.creators.push({ creatorType: "muhakkik", name: e.thk });
-  if (e.ed) item.fields.publisher = e.ed;
+  // Several muhakkiks are written one by one ("A; B").
+  for (const name of (e.thk ?? "").split(/\s*;\s*/).filter(Boolean)) item.creators.push({ creatorType: "muhakkik", name });
+  if (e.university) {
+    item.fields.university = e.university;
+    if (e.thesisType) item.fields.thesisType = e.thesisType;
+  } else if (e.ed) item.fields.publisher = e.ed;
+  if (e.place) item.fields.place = e.place;
+  if (e.date) item.fields.date = e.date;
+  if (e.edition && e.edition > 1) item.fields.edition = String(e.edition);
+  if (e.volumes && e.volumes > 1) item.fields.numberOfVolumes = String(e.volumes);
   item.fields.libraryCatalog = catalog;
   item.fields.extra = [`Kaynak: ${catalog}, kitap no. ${e.id}`, `Kaynak adı: ${e.ar}`, `Transkripsiyonsuz başlık: ${e.plain}`, ...(e.review?.length ? [`Kontrol: ${e.review.join("; ")}`] : [])].join("\n");
   return item;
