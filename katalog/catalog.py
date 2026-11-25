@@ -27,6 +27,7 @@ import csv
 import datetime as dt
 import difflib
 import html
+import http.client
 import json
 import os
 import re
@@ -356,7 +357,8 @@ def http_get(conn, url: str, accept: str | None = None, tries: int = 5,
                 delay = min(delay * 2, 300)
                 continue
             raise AccessError(url, e.code, body[:120])
-        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
+        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError,
+                http.client.HTTPException) as e:   # IncompleteRead: kesik yanıt, yeniden dene
             log_access(conn, url, None, f"deneme {attempt}: {e}")
             if attempt < tries:
                 time.sleep(delay)
