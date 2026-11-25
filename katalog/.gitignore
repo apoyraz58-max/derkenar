@@ -5,3 +5,4 @@
 log/
 __pycache__/
 derkenar-uc-kaynak.csv
+*.zip
