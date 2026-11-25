@@ -1398,18 +1398,25 @@ def stats(conn) -> dict:
     return s
 
 
-def report(conn, run_id=None, before=None, title="Durum raporu") -> str:
+def report(conn, run_id=None, before=None, title="Durum raporu", group=None) -> str:
     s = stats(conn)
     L = [f"# {title}", "", f"Zaman: {now()}" + (f" · çalışma {run_id}" if run_id else ""), ""]
+    if group:
+        g = conn.execute("SELECT COUNT(*), COALESCE(SUM(n_records),0), COALESCE(SUM(n_new_articles),0), "
+                         "COALESCE(SUM(n_merged),0) FROM harvest_page WHERE run_id=? AND id>?",
+                         (run_id, group["page_id"])).fetchone()
+        L += [f"- Grup: {', '.join(SOURCE_LABEL[x] for x in group['sources'])}, {g[0]:,} sayfa, {g[1]:,} kaynak kaydı",
+              f"- Bu grubun açtığı yeni tekil makale: **{g[2]:,}** · var olan makaleye bağlanan kayıt: {g[3]:,}"]
     if before is not None:
-        L.append(f"- Bu grupta yeni tekil makale: **{s['toplam'] - before:,}**")
+        L.append(f"- Katalogdaki artış (paralel süreçler dahil): {s['toplam'] - before:,}")
     L += [f"- Toplam tekil makale: **{s['toplam']:,}** / hedef {TARGET:,} (%{100 * s['toplam'] / TARGET:.2f})",
           f"- Hazır İSNAD 2 künyesi: **{s['hazir']:,}** (eksik alanı olan: {s['toplam'] - s['hazir']:,})", "",
           "## DOI durumu", ""]
     for k in (DOI_OK, DOI_PENDING, DOI_NONE):
         L.append(f"- {k}: {s['doi'].get(k, 0):,}")
-    for k, v in sorted(s["doi_yol"].items(), key=lambda x: -x[1]):
-        L.append(f"  - {k}: {v:,}")
+        if k == DOI_OK:
+            for m, v in sorted(s["doi_yol"].items(), key=lambda x: -x[1]):
+                L.append(f"  - {m}: {v:,}")
     L += [f"- Kayıt ajansında denetim bekleyen tekil DOI: {s['doi_bekleyen_dogrulama']:,}",
           f"- Ajans denetimi sonuçları: " + ", ".join(f"{k} {v:,}" for k, v in s["doi_check"].items()), "",
           "## Kaynağa göre kapsam", "",
@@ -1456,6 +1463,7 @@ def count_articles(conn):
 
 def run_group(conn, raw, sources, group_pages, verify_limit, log=print, do_export=True):
     before = count_articles(conn)
+    page_id = conn.execute("SELECT COALESCE(MAX(id),0) FROM harvest_page").fetchone()[0]
     conn.execute("INSERT OR IGNORE INTO run(run_id,started_at,articles_before) VALUES (?,?,?)", (RUN_ID, now(), before))
     blocked = {}
     for src in sources:
@@ -1473,11 +1481,12 @@ def run_group(conn, raw, sources, group_pages, verify_limit, log=print, do_expor
     after = count_articles(conn)
     conn.execute("UPDATE run SET finished_at=?, articles_after=?, note=? WHERE run_id=?",
                  (now(), after, json.dumps(blocked, ensure_ascii=False) or None, RUN_ID))
-    text = report(conn, RUN_ID, before, title="Aktarım grubu raporu")
+    text = report(conn, RUN_ID, before, title="Aktarım grubu raporu",
+                  group={"page_id": page_id, "sources": sources})
     if blocked:
         text += "\n## Engellenen kaynaklar\n\n" + "\n".join(f"- {SOURCE_LABEL[k]}: {v}" for k, v in blocked.items()) + "\n"
     tag = "-".join(sources)
-    p = write_report(text, f"aktarim-{tag}-{RUN_ID}.md")
+    p = write_report(text, f"aktarim-{tag}-{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%S')}.md")
     log(text)
     log((f"CSV: {CSV_PATH} ({n:,} satır) · " if n is not None else "") + f"rapor: {p}")
     return blocked
