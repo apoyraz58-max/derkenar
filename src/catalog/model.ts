@@ -114,7 +114,7 @@ export function cleanClaim(claim: Claim): Claim {
 /** Historical and foreign-language names of places inside today's Türkiye, used only as scope evidence. */
 const HISTORICAL_TR_PLACES = new Set([
   "konstantinopel", "constantinopel", "constantinople", "konstantinopolis", "constantinopolis", "costantinopoli",
-  "stambul", "istanbol", "dersaadet", "der i saadet", "der saadet", "dersaadet istanbul", "asitane", "dar ul hilafe",
+  "stambul", "istanbol", "dersaadet", "derseadet", "der i saadet", "der saadet", "dersaadet istanbul", "asitane", "dar ul hilafe",
   "kostantiniyye", "kustantiniyye", "konstantiniyye", "galata", "pera", "uskudar", "kadikoy", "beyoglu",
   "smyrna", "smyrne", "angora", "adrianopel", "adrianople", "trapezunt", "trebizond", "brussa", "brousse",
   "turkiye", "turkey", "turkei", "turquie", "turchia", "turkiya", "turkiyä",
@@ -122,7 +122,11 @@ const HISTORICAL_TR_PLACES = new Set([
   "en smyrne", "en konstantinoupolei", "konstantinoupolis", "kostandiniye",
 ]);
 const placeKey = (value: string) => foldText(value).replace(/-/g, " ").replace(/\s+/g, " ").trim();
-const turkishPart = (value: string) => isTurkishPlace(value) || HISTORICAL_TR_PLACES.has(placeKey(value));
+// Northern Cyprus (KKTC) uses Turkish ISBNs and appears in the İSNAD place list, but it is not Türkiye.
+const KKTC_PLACES = new Set(["lefkosa", "lefkoşa", "gazimagusa", "magusa", "girne", "guzelyurt", "iskele", "lefke", "kktc", "kibris",
+  "nicosia", "famagusta", "kyrenia", "north cyprus", "northern cyprus", "kuzey kibris", "kuzey kibris turk cumhuriyeti"]);
+export const kktcPlace = (value: string) => value.split(/\s*[;,/]\s*|\s+-\s+/).some(p => KKTC_PLACES.has(placeKey(p.replace(/[[\]()]/g, ""))));
+const turkishPart = (value: string) => !KKTC_PLACES.has(placeKey(value)) && (isTurkishPlace(value) || HISTORICAL_TR_PLACES.has(placeKey(value)));
 
 /**
  * Whether an imprint place shows publication inside Türkiye. Accepts several
@@ -203,6 +207,7 @@ export function mayBeTurkish(input: RecordInput): boolean {
 
 export function publicationScope(fields: Record<string, string>): "TR" | "outside" | "unknown" | "conflict" {
   const turkish = turkeyPlace(fields.place ?? "") || turkeyPlace(fields.otherPlaces ?? "");
+  if (fields.country === "TR" && !turkish && kktcPlace(fields.place ?? "")) return "conflict";
   if (fields.country === "TR") return "TR";
   if (fields.country && turkish) return "conflict";
   if (fields.country) return "outside";

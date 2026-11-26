@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 14:15 UTC
+
+- Yapılan: Türkçe olup önceki sorgulara girmeyen 28.052 K10plus kitabı toplandı ve `--only-tr` süzgeciyle eklendi. Getiri düşük: kayıtların çoğu yurt dışında basılmış ya da yer bilgisi yok. “Derseadet” yazımı tarihî adlara eklendi. Yan bulgu: KKTC şehirleri İSNAD yer listesinde olduğu için Türkiye sayılıyordu (123 baskı). Katalog kapsamında bunlar artık Türkiye sayılmıyor. Ülke kodu Türkiye, yeri KKTC olan kayıtlar kapsam çelişkisi oluyor. Katalog yeniden kuruldu (8 dakika 44 saniye).
+- Kullanıcıya soru: KKTC baskıları katalogda yer almalı mı? Tek satırlık bir değişiklikle geri alınabilir.
+- Durum: 174.087 benzersiz baskı, 161.741 eser. OCLC ile bağlanan 967 kayıt, bağlı bölüm 29.651, başlık kararı 6.
+- İncelemede 20.318 kayıt var: 7593 kapsam kanıtı eksikliği, 6835 kimlik çelişkisi, 3476 olası mükerrer, 1615 kapsam çelişkisi, 1123 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,7, ISBN %49,2, sayfa sayısı %29,8, dil %8,5, yayınevi %8,3, katkı %4,9, yayın yeri %1,0.
+- Testler: 233 geçti. Typecheck ve build temiz.
+
 ### 2026-11-26 12:55 UTC
 
 - Yapılan: K10plus Türkiye e-kitapları toplandı (ülke kodu sorgusuyla 3617, yayın yeri sorgusuyla 1409 kayıt) ve kataloğa ile kurulum betiğine eklendi. DataCite denendi, ancak ülke süzgeci çalışmıyor (`country=TR` tüm yayıncıları döndürüyor). Bu yüzden bırakıldı.
