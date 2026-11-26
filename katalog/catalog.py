@@ -1856,6 +1856,68 @@ def export_csv(conn, path=CSV_PATH):
     return n
 
 
+# ---------------------------------------------------------------------------
+# Derkenar eklentisinin yerleşik veritabanı: yalnız kesin makaleler
+# ---------------------------------------------------------------------------
+BUILTIN_PATH = os.path.join(HERE, "..", "data", "builtin", "makale.jsonl.gz")
+BUILTIN_BAD_REVIEW = {"olasi-tekrar", "yil-farki", "doi-baslik-uyusmazligi", "birden-fazla-doi", "baslik-buyuk-harf"}
+BUILTIN_BAD_CONFLICT = {"year", "volume", "issue", "spage", "epage", "ilk_yazar", "doi"}
+
+
+def builtin_how(conn, aid, st, meth, ns, year) -> str | None:
+    """Kesinlik yolu: 'ajans' (DOI kayıt ajansında, başlık tutuyor), 'iki' (en az iki kaynak çelişkisiz),
+    'arsiv' (DergiPark yayın kaydı, cilt/sayı derginin arşivindeki sayı tarihiyle tutuyor)."""
+    if st == DOI_OK and "ajans" in (meth or ""):
+        return "ajans"
+    if ns >= 2:
+        return "iki"
+    for url, vol, iss in conn.execute("SELECT url, volume, issue FROM source_record WHERE article_id=? AND "
+                                      "source='dergipark' AND in_scope=1", (aid,)):
+        y, _, _, _ = dp_issue_info(conn, dp_slug(url), vol if _nv(vol) else None, iss if _nv(iss) else None)
+        if y and y == year:
+            return "arsiv"
+    return None
+
+
+def builtin_export(conn, path=BUILTIN_PATH, log=print) -> dict:
+    import gzip
+    counts = {"ajans": 0, "iki": 0, "arsiv": 0, "işaretli": 0, "çelişkili": 0, "doğrulanamadı": 0}
+    clean = lambda x: re.sub(r"[|;]", " ", x or "").strip()
+    rows = []
+    for (aid, cid, st, meth, ns, rev, conf, authors, title, journal, year, month, vol, iss, sp, ep, ano, doi, issn,
+         eissn, lang) in conn.execute("""SELECT id, catalog_id, doi_status, doi_method, n_sources, review, conflicts,
+            authors, title, journal, year, month, volume, issue, spage, epage, article_no, doi, issn, eissn, title_lang
+            FROM article WHERE n_sources>0 AND isnad_ready=1"""):
+        if set((rev or "").split(",")) & BUILTIN_BAD_REVIEW:
+            counts["işaretli"] += 1
+            continue
+        if conf and set(json.loads(conf)) & BUILTIN_BAD_CONFLICT:
+            counts["çelişkili"] += 1
+            continue
+        how = builtin_how(conn, aid, st, meth, ns, year)
+        if not how:
+            counts["doğrulanamadı"] += 1
+            continue
+        counts[how] += 1
+        au = ";".join(f"{clean(a[0])}|{clean(a[1] if len(a) > 1 else '')}" for a in json.loads(authors or "[]"))
+        num = lambda x: "" if not x or not _nv(x) else (str(int(x)) if str(x).isdigit() else str(x))
+        vol, iss = num(vol), num(iss)
+        rows.append((-(year or 0), aid, [cid, au, title, journal or "", year, month, vol, iss, sp or "",
+                                         ep or "", ano or "", doi if st == DOI_OK else "", issn or eissn or "",
+                                         (lang or "")[:2], how]))
+    rows.sort(key=lambda r: (r[0], r[1]))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with gzip.open(tmp, "wt", encoding="utf-8", compresslevel=9) as fh:
+        for _, _, rec in rows:
+            fh.write(json.dumps(rec, ensure_ascii=False, separators=(",", ":")) + "\n")
+    os.replace(tmp, path)
+    log(f"yerleşik veritabanı: {len(rows):,} kesin makale -> {os.path.relpath(path, HERE)} "
+        f"(ajans {counts['ajans']:,}, iki kaynak {counts['iki']:,}, arşiv {counts['arsiv']:,}; dışarıda: işaretli "
+        f"{counts['işaretli']:,}, çelişkili {counts['çelişkili']:,}, doğrulanamadı {counts['doğrulanamadı']:,})")
+    return counts
+
+
 def stats(conn) -> dict:
     q = lambda s, *a: conn.execute(s, a).fetchone()[0]
     s = {}
@@ -2009,6 +2071,7 @@ def main(argv=None):
     r.add_argument("--verify", type=int, default=500, help="her grup sonunda denetlenecek DOI sayısı")
     r.add_argument("--no-export", action="store_true", help="CSV'yi bu süreç yazmasın (verify-loop yazar)")
     sub.add_parser("dp-archive", help="DergiPark dergi arşivleri: sayı tarihleri ve ISSN")
+    sub.add_parser("builtin-export", help="eklentinin yerleşik veritabanı için kesin makaleler (data/builtin/makale.jsonl.gz)")
     cb = sub.add_parser("crossref-bulk", help="Crossref önek bazında toplu DOI doğrulama ve DOI bulma")
     cb.add_argument("--max-total", type=int, default=150_000)
     rb = sub.add_parser("rebuild-all", help="bütün makaleleri yeniden üret (kaldığı yerden)")
@@ -2040,6 +2103,9 @@ def main(argv=None):
         return
     if a.cmd == "rebuild-all":
         rebuild_all(conn, a.name, log=lambda m: print(m, flush=True))
+        return
+    if a.cmd == "builtin-export":
+        builtin_export(conn)
         return
     if a.cmd == "dp-archive":
         harvest_dp_archive(conn, raw_connect(), log=lambda m: print(m, flush=True))

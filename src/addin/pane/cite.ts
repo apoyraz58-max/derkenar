@@ -3,6 +3,8 @@
  * insert it or update the citation under the cursor.
  */
 import { catalogHits } from "./catalog.js";
+import { builtinHits, onBuiltinReady } from "./builtin.js";
+import { ARTICLE_CATALOG, DIA_CATALOG, articleAuthors, articleItem, builtinSource, diaItem } from "../../core/builtin.js";
 import { catalogSource } from "../../core/shamela.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import { LOCATOR_LABELS } from "../../core/engine.js";
@@ -23,6 +25,7 @@ import { personIssues } from "./persons.js";
 
 let results: Item[] = [];
 let cursor = 0;
+onBuiltinReady(() => renderResults());
 
 /** Types whose cilt comes from the record (journal, encyclopedia): no Cilt box. */
 const OWN_VOLUME = new Set(["journalArticle", "magazineArticle", "newspaperArticle", "encyclopediaArticle", "dictionaryEntry"]);
@@ -84,6 +87,43 @@ function catalogRows(): HTMLElement[] {
     });
 }
 
+/** Yerleşik veritabanının (DİA, Derkenar makale kataloğu) kütüphanede olmayan kayıtları: tek tıkla eklenir ve atıfa konur. */
+function builtinRows(): HTMLElement[] {
+  const q = $<HTMLInputElement>("q").value;
+  const hits = builtinHits(q);
+  if (!hits.dia.length && !hits.articles.length) return [];
+  const have = new Set(S.items.filter((i) => !i.deleted).map((i) => builtinSource(i)).filter(Boolean));
+  const row = (title: string, more: string, make: () => Item, warn?: string) => {
+    const b = h("button", { type: "button", class: "outside" }, h("div", { class: "r-title" }, `＋ ${title}`), h("div", { class: "r-more" }, more + (warn ? " · kontrol edilecek" : "")));
+    b.onclick = () =>
+      void run("Ekleniyor", async () => {
+        const io = await import("./io.js");
+        const [item] = await io.addParsed([make()]);
+        if (!item) return;
+        addToBasket(item);
+        $<HTMLInputElement>("q").value = "";
+        search();
+        setMessage(`Yerleşik veritabanından eklendi: ${creatorLine(item) || "—"}, ${titleOf(item)}.${warn ? ` Kontrol edilecek: ${warn}.` : ""} Sayfayı yazıp Ekle'ye basın.`, warn ? "warning" : "success");
+      });
+    return b;
+  };
+  const out: HTMLElement[] = [];
+  for (const e of hits.dia) {
+    if (have.has(`${DIA_CATALOG}#${e.n}`)) continue;
+    const who = e.a.map((a) => [a[1], a[0]].filter(Boolean).join(" ")).join(", ");
+    const where = [e.v && e.pg ? `${e.v}/${e.pg}` : e.v, e.y].filter(Boolean).join(", ");
+    out.push(row(e.t, `${who || "—"} · DİA${where ? ` ${where}` : ""}`, () => diaItem(e), e.r?.join("; ")));
+  }
+  for (const r of hits.articles) {
+    if (have.has(`${ARTICLE_CATALOG}#${r[0]}`)) continue;
+    const au = articleAuthors(r);
+    const who = au.length ? `${au[0]![0]}${au.length > 2 ? " vd." : au.length === 2 ? ` – ${au[1]![0]}` : ""}` : "—";
+    const vi = [r[6], r[7]].filter(Boolean).join("/");
+    out.push(row(r[2], `${who} · ${r[3]}${vi ? ` ${vi}` : ""}${r[4] ? ` (${r[4]})` : ""}${r[11] ? " · DOI" : ""}`, () => articleItem(r)));
+  }
+  return out;
+}
+
 function outsideOffer(): HTMLElement | null {
   const q = $<HTMLInputElement>("q").value.trim();
   if (!q) return null;
@@ -143,7 +183,7 @@ function outsideOffer(): HTMLElement | null {
 function renderResults(): void {
   const inBasket = new Set(S.basket.map((b) => b.id));
   const offer = results.length < 3 ? outsideOffer() : null;
-  $("outside-offer").replaceChildren(...(offer ? [offer] : []), ...catalogRows());
+  $("outside-offer").replaceChildren(...(offer ? [offer] : []), ...catalogRows(), ...builtinRows());
   $("results").replaceChildren(
     ...results.map((item, i) => {
       const li = resultRow(item, { role: "option", "aria-selected": String(i === cursor), class: inBasket.has(item.key) ? "in-basket" : "" });

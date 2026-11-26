@@ -605,11 +605,23 @@ try {
   await page.waitForSelector("#message:has-text('kataloğu yüklendi')");
   await page.click("#tab-atif");
   await page.fill("#q", "umdetul kari");
-  await page.locator("#outside-offer button", { hasText: "Umdetü’l-ḳārî" }).first().click();
+  // The built-in database (DİA, makale kataloğu) may offer works with the same words: the catalog book is the one with its number.
+  await page.locator("#outside-offer button", { hasText: "Şâmile, no. 5756" }).first().click();
   await page.waitForSelector("#message:has-text('kataloğundan eklendi')");
   await page.fill("#q", "umdetul kari");
-  if (await page.locator("#outside-offer button", { hasText: "Umdetü’l-ḳārî" }).count()) fail("catalog book offered again after it was added");
+  await page.waitForTimeout(300);
+  if (await page.locator("#outside-offer button", { hasText: "Şâmile, no. 5756" }).count()) fail("catalog book offered again after it was added");
   if (!(await page.textContent("#basket"))?.includes("Umdetü’l-ḳārî")) fail("catalog book not in the citation");
+  await page.fill("#q", "");
+  await page.click("#clear-basket");
+  // Yerleşik veritabanı: DİA maddesi hiçbir dosya yüklenmeden aranır, tek tıkla eklenir ve atıfa girer.
+  await page.fill("#q", "gazzali");
+  await page.locator("#outside-offer button", { hasText: "DİA 13/489-505" }).first().click();
+  await page.waitForSelector("#message:has-text('Yerleşik veritabanından eklendi')");
+  if (!(await page.textContent("#basket"))?.includes("Gazzâlî")) fail("built-in DİA madde not in the citation");
+  await page.fill("#q", "gazzali");
+  await page.waitForTimeout(300);
+  if (await page.locator("#outside-offer button", { hasText: "DİA 13/489-505" }).count()) fail("built-in DİA madde offered again after it was added");
   await page.fill("#q", "");
   await page.click("#clear-basket");
 

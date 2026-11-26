@@ -41,6 +41,20 @@ eklentisiyle yazılmış belgelerin atıfları (ADDIN ZOTERO_ITEM alanları) ve 
 saklanır; Office önbelleği silinse, eklenti yeniden eklense ya da başka bilgisayara geçilse de belge
 açılınca kütüphane kendiliğinden geri gelir.
 
+## Yerleşik veritabanı
+
+Eklentiyle birlikte yayımlanır; kullanıcıdan dosya istenmez. Atıf sekmesinde aranan sözcüklerle eşleşen ve
+kütüphanede olmayan kayıtlar listede çıkar, tek tıkla İSNAD kaydı olarak eklenip atıfa girer.
+
+| Kaynak | Dosya | İçerik |
+| --- | --- | --- |
+| TDV İslâm Ansiklopedisi | `data/builtin/dia.rdf.gz` (Zotero RDF, sabit) | 17.601 madde: basılı künye (cilt, yıl, yer, sayfa, baskı), yazarlar, basılı nüsha PDF'i ve web sayfası bağlantı eki olarak, "bk." göndermeleri arama eşanlamlısı olarak. Basılı nüshada başlığı farklı olan maddeler basılı başlıkla; tarihi cildin basım yılından farklı ya da basılı künyesi eksik maddeler "Kontrol" notuyla. |
+| Derkenar makale kataloğu | `data/builtin/makale.jsonl.gz` (`katalog/catalog.py builtin-export`) | DergiPark, TR Dizin ve İSAM'dan birleştirilen makalelerin yalnız kesin olanları: künyesi tam, olası tekrar/yıl farkı/çelişki işareti yok ve DOI'si kayıt ajansında doğrulanmış, en az iki kaynakta tutan ya da yayın kaydı derginin sayı arşiviyle doğrulanmış. |
+
+`npm run build` bu kaynaklardan `dist/addin/data/` altına parçaları üretir (`scripts/builtin.ts`): DİA tek
+dosya (`dia.json`), makaleler sözcüklerin ilk üç harfine göre dizin parçaları (`makale/t/`) ve 250'şer kayıtlık
+parçalar (`makale/r/`). Pencere yalnız aranan sözcüğün parçalarını indirir (`src/addin/pane/builtin.ts`).
+
 ## Kütüphane özellikleri
 
 | Özellik | Derkenar |

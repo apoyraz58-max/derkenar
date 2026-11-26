@@ -66,4 +66,5 @@ python3 catalog.py init
 ./toplu.sh                       # toplu aktarım, kesintiden sonra yeniden çalıştırmak yeterli
 python3 catalog.py report        # anlık durum
 python3 catalog.py export        # CSV'yi yeniden yaz
+python3 catalog.py builtin-export   # eklentinin yerleşik veritabanı: ../data/builtin/makale.jsonl.gz (yalnız kesin makaleler)
 ```
