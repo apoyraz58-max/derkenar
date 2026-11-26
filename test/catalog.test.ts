@@ -218,6 +218,22 @@ describe("bibliyografik katalog", () => {
     expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "otherPlaces", observed: "Ankara", path: "264$a[1…]" }));
   });
 
+  it("245$b paralel başlığını seçili başlıktan ayırır, alt başlığı korur", async () => {
+    const rec = (id: string, b: string) => `<record><leader>00000nam a2200000 i 4500</leader><controlfield tag="001">${id}</controlfield>
+      <controlfield tag="008">261124s2021    tu            000 0 tur d</controlfield>
+      <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Kamusallığın Yapısal Dönüşümü :</subfield><subfield code="b">${b}</subfield></datafield>
+      <datafield tag="264" ind1=" " ind2="1"><subfield code="a">İstanbul</subfield><subfield code="b">İletişim</subfield><subfield code="c">2021</subfield></datafield></record>`;
+    const file = join(temp, "paralel.xml");
+    writeFileSync(file, `<collection xmlns="http://www.loc.gov/MARC21/slim">${rec("p1", "= Strukturwandel der Öffentlichkeit")}${rec("p2", "Burjuva Toplumu = Strukturwandel")}</collection>`);
+    const entries = [];
+    for await (const entry of marcFile(file, "k10plus")) entries.push(entry);
+    const field = (i: number, name: string) => entries[i]!.fields.find(f => f.field === name)?.value;
+    expect(field(0, "title")).toBe("Kamusallığın Yapısal Dönüşümü");
+    expect(field(0, "parallelTitle")).toBe("Strukturwandel der Öffentlichkeit");
+    expect(field(1, "title")).toBe("Kamusallığın Yapısal Dönüşümü: Burjuva Toplumu");
+    expect(field(1, "parallelTitle")).toBe("Strukturwandel");
+  });
+
   it("DOAB'ın sabit leader ve 008 ülke kodunu kanıt saymadan yayın yerine göre ayırır", async () => {
     const db = catalog();
     await ingestFile(db, "doab", root("test/fixtures/doab-sample.xml"));

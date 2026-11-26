@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 17:15 UTC
+
+- Yapılan: MARC 245$b’deki paralel başlıklar seçili başlıktan ayrıldı ve `parallelTitle` kanıtı olarak saklandı (7343 kayıt). Katalog yeniden kuruldu (9 dakika 4 saniye).
+- Durum: 176.917 benzersiz baskı (−26 çift), 164.341 eser (−131). OCLC ile bağlanan 1085 kayıt, bağlı bölüm 29.651, başlık kararı 6.
+- İncelemede 21.438 kayıt var: 7599 kapsam kanıtı eksikliği, 7274 kimlik çelişkisi, 3847 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,1, ISBN %48,5, sayfa sayısı %29,5, dil %8,3, yayınevi %8,1, katkı %4,8, yayın yeri %1,0.
+- Testler: 236 geçti. Typecheck ve build temiz.
+- Sıradaki: kimlik çelişkilerinin güncel sınıflandırması. Kullanıcı kararı bekleyen sorular: Crossref yersiz kitapları, kimliksiz çift kayıtlar, KKTC.
+
 ### 2026-11-26 16:30 UTC
 
 - Yapılan: DNB kimlik çelişkileri sınıflandırıldı. Başlıca neden yayınevi yazımı (“İletişim” / “İletişim Yayınları”, “YKY” / “Yapı Kredi Yayınları”, “Ayrinti”), ikinci neden “7. bas” ve “1. Auf” kısaltmaları. Karşılaştırmaya özel yayınevi anahtarı eklendi ve baskı ifadesi tanımı genişletildi. Seçili değerler değişmedi. Katalog iki kez yeniden kuruldu: ilk kurulum bir test hatası düzeltilmeden yapılmıştı, düzeltmeden sonra yenilendi.

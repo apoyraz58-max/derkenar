@@ -70,7 +70,11 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
   const add = (field: string, value: string, path: string) => {
     if (value && !/^(?:\[?s\.\s?[ln]\.\]?|\[?(?:basım yeri|yayıncı|yayın tarihi) yok\]?)$/i.test(value)) fields.push({ field, value, path });
   };
-  const title = [strip(first("245", "a")), strip(first("245", "b"))].filter(Boolean).join(": ");
+  // 245$b may carry a parallel title ("= Futbol", "subtitle = parallel title"); İSNAD writes the title without it.
+  const remainder = strip(first("245", "b"));
+  const [subtitle, ...parallel] = remainder.startsWith("=") ? ["", remainder.replace(/^=\s*/, "")] : remainder.split(/\s+=\s+/);
+  const title = [strip(first("245", "a")), strip(subtitle ?? "")].filter(Boolean).join(": ");
+  add("parallelTitle", strip(parallel.join(" = ")), "245$b");
   const part = [strip(first("245", "n")), strip(first("245", "p"))].filter(Boolean).join(" ");
   add("title", [title, part].filter(Boolean).join(". "), "245$a$b$n$p");
   for (const tag of ["130", "240"]) {
