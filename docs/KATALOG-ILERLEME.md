@@ -19,6 +19,17 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 17:55 UTC
+
+- Yapılan: K10plus’ta Türkiye ISBN grubu taraması yapıldı. Önceki sorgulara girmeyen yalnız 647 kayıt kaldı. Bunlar `--only-tr` ile alındı (+33 baskı) ve kurulum betiğine eklendi. Kapsam ölçümü yapıldı: yayın yılı dağılımı kılavuza eklendi. K10plus’taki Türkiye kapsamı büyük ölçüde tükendi. Güncel ticari kitaplar katalogda zayıftır, örneğin 2010’lar için yalnız 37.954 baskı vardır.
+- Kaynaklara göre bağlı baskılar: K10plus 168.199, Crossref 5682, DNB 3414, Özgür 1173, DOAB 120.
+- Durum: 176.950 benzersiz baskı (+33), 164.374 eser.
+- İncelemede 21.442 kayıt var: 7599 kapsam kanıtı eksikliği, 7278 kimlik çelişkisi, 3847 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,1, ISBN %48,5, sayfa sayısı %29,5, dil %8,3, yayınevi %8,1, katkı %4,8, yayın yeri %1,0.
+- Testler: 236 geçti. Typecheck ve build temiz. Kod değişmedi, yalnız kurulum betiği ve belgeler değişti.
+- Sıradaki: izinli açık kaynaklarda büyük kazanç kalmadı. Büyümenin sürmesi kullanıcı kararlarına bağlı: yayınevi alan adı onayları, Crossref kuralı, Millî Kütüphane başvurusu. Bu arada inceleme kuyruğu kuralları ve eksik alan tamamlama (Crossref ve DNB’den sayfa sayısı) sürdürülebilir.
+
 ### 2026-11-26 17:15 UTC
 
 - Yapılan: MARC 245$b’deki paralel başlıklar seçili başlıktan ayrıldı ve `parallelTitle` kanıtı olarak saklandı (7343 kayıt). Katalog yeniden kuruldu (9 dakika 4 saniye).

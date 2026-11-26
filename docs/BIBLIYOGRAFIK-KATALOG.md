@@ -209,4 +209,27 @@ K10plus kayıtlarının 035 alanındaki WorldCat (OCLC) numaraları `OCLC` kanı
 
 Katalogcuların “bilinmiyor” işaretleri yayınevi veya yer kanıtı sayılmaz. Örnekler: “Verlag nicht ermittelbar”, “Erscheinungsort nicht ermittelbar”, “[s.n.]”, “publisher not identified”, “y.y.”. Bu işaretler seçili değerden çıkarılır (“Adana [s.n.]” → “Adana”), özgün yazım ham kayıtta kalır. Yıl karşılaştırmasında tek yıl içeren yazımlar aynı yıl sayılır: “(1976)”, “1976?”, “2024-”, “Aralık 2023”. Bu kural seçili değeri değiştirmez. İki yıl içeren hicrî/milâdî veya aralık yazımları olduğu gibi karşılaştırılır. Bu değişiklikle daha önce yalnız yazım farkı yüzünden ayrı baskı sayılan 144 kayıt ya mevcut baskıya bağlandı ya da olası mükerrer olarak incelemeye alındı.
 
+### Kapsam ölçümü (26 Kasım 2026)
+
+K10plus’ta Türkiye ISBN grubundaki (978-975, 978-605, 978-625, 975) kitap kayıtlarından ülke, şehir ve dil sorgularına girmeyen yalnız 647 kayıt kaldı. K10plus’taki Türkiye kapsamı bu sorgularla büyük ölçüde taranmış durumdadır. Birleşik katalogdaki baskıların yayın yılına göre dağılımı şöyledir:
+
+| Dönem | Baskı |
+| --- | --- |
+| 1900 öncesi | 6977 |
+| 1900–1927 | 5297 |
+| 1928–1929 | 802 |
+| 1930’lar | 3807 |
+| 1940’lar | 4031 |
+| 1950’ler | 4752 |
+| 1960’lar | 7537 |
+| 1970’ler | 10.140 |
+| 1980’ler | 14.914 |
+| 1990’lar | 21.114 |
+| 2000’ler | 28.026 |
+| 2010’lar | 37.954 |
+| 2020’ler | 23.757 |
+| Yılı ayrıştırılamayan | 7270 |
+
+Açık yabancı kataloglar eski ve akademik yayınlarda güçlüdür. Güncel Türk yayıncılığında zayıftırlar. Bir milyon hedefinin asıl boşluğu güncel ticari kitaplardır. Bu boşluk ancak Millî Kütüphane, ISBN Türkiye veya yayınevi beslemeleriyle kapanabilir. Bu kaynaklar kurum izni ya da kullanıcının alan adı onayını gerektirir.
+
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.
