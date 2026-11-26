@@ -1632,7 +1632,10 @@ def crossref_bulk(conn, log=print, max_total: int = 150_000):
                                ok_404=True)
             total = json.loads(body).get("message", {}).get("total-results", 0) if body else 0
         except (AccessError, ValueError) as e:
-            log(f"  {p}: toplam alınamadı ({str(e)[:80]})")
+            log(f"  {p}: Crossref'te önek yok ya da toplam alınamadı ({str(e)[:80]}); DOI'ler tek tek denetlenecek")
+            if isinstance(e, ValueError):  # 404 gövdesi: önek Crossref'te değil (ör. DataCite)
+                conn.execute("INSERT OR REPLACE INTO cr_prefix(prefix,n_source,total,mode,updated_at) "
+                             "VALUES (?,?,?,?,?)", (p, pref[p], 0, "tek", now()))
             continue
         mode = "toplu" if 0 < total <= max(max_total, 3 * pref[p]) and total <= 600_000 else "tek"
         conn.execute("INSERT OR REPLACE INTO cr_prefix(prefix,n_source,total,mode,updated_at) VALUES (?,?,?,?,?)",
