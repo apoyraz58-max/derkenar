@@ -194,6 +194,8 @@ MARC 245$b alanındaki paralel başlıklar seçili başlığa yazılmaz. Bu baş
 
 İSNAD yayın yeri olarak şehir adını yazar. “Cağaloğlu, İstanbul”, “Sarıyer/Istanbul”, “Kızılay - Ankara” gibi semt ve şehir yazımları “İstanbul” ve “Ankara” olarak seçilir. İlk parça Türkçeye özgü harf içermeli ya da bilinen semtler listesinde olmalıdır. Bu nedenle “Paris, Istanbul” ve “Konya - Ankara” gibi yazımlar olduğu gibi kalır. Özgün yazım kanıt olarak saklanır. Kural Word eklentisinin İSNAD yer biçimlendirmesiyle ortaktır. 26 Kasım 2026 kurulumunda 9201 baskının yeri bu yolla şehir adına indirildi. Kimlik çelişkileri 7204’ten 6754’e indi.
 
+MARC 111/711 toplantı adları (kongre, sempozyum) yazar sayılmaz, `meetingName` kanıtı olarak saklanır. İSNAD bildiri kitaplarını başlık ve editörle yazar. 110 kurum yazarları ve 100/700 kişi adları değişmez.
+
 ### DNB Türkçe kitapları
 
 DNB SRU servisinde yayın yeri ve yayın ülkesi dizini yoktur. `geo` dizini konu bölgesini gösterir, yayın yerini göstermez. Bu nedenle Türkçe kitaplar (`spr=tur and mat=books`, 10.197 kayıt) toplandı ve `--only-tr` süzgeciyle alındı. Servis sayfa başına en fazla 100 kayıt verir. Toplayıcı kayıtların `type` niteliğini kaldırarak K10plus ile aynı MARCXML biçiminde yazar. Kayıt bağlantısı `https://d-nb.info/<IDN>` biçimindedir.

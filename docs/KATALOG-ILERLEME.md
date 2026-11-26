@@ -19,6 +19,15 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 21:10 UTC
+
+- Yapılan: MARC 111/711 toplantı adları artık yazar sayılmıyor, `meetingName` kanıtı olarak saklanıyor (4473 kayıt). Bildiri kitaplarındaki “Sempozyum Adı, Sempozyum Adı…” tekrarı kalktı. Katalog yeniden kuruldu (10 dakika 19 saniye).
+- Durum: 177.032 benzersiz baskı (−12 çift), 164.427 eser. OCLC ile bağlanan 1088 kayıt, bağlı bölüm 29.651.
+- İncelemede 20.920 kayıt var: 7593 kapsam kanıtı eksikliği, 6753 kimlik çelişkisi, 3863 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,4, sayfa sayısı %29,4, dil %8,3, yayınevi %8,1, katkı %5,2 (editörsüz bildiri kitapları artık yazarsız), yayın yeri %1,0.
+- Testler: 237 geçti. Typecheck ve build temiz.
+
 ### 2026-11-26 20:15 UTC
 
 - Yapılan: İSNAD başlık biçimlendirmesinde ISBD ayırıcısı (“ : ”) artık “: ” yazılıyor. Ardından parantez geliyorsa yalnız boşluk kalıyor (“Kendi Hattıyla : (İnceleme)” → “Kendi Hattıyla (İnceleme)”). Boşluksuz iki noktaya dokunulmuyor (“10:30”). Kural Word eklentisiyle ortak. “ : ” artığı taşıyan başlıklar 3666’dan 4’e indi. Katalog yeniden kuruldu (10 dakika 18 saniye).

@@ -133,6 +133,8 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
     for (const [i, e] of df(tag).entries()) {
       const value = imprint(sub(e, "a")[0] ?? "").replace(/,\s*$/, "");
       if (!value) continue;
+      // A meeting (111/711) names a congress or symposium; İSNAD cites its proceedings by title and editor, not by the meeting.
+      if (tag.endsWith("11")) { add("meetingName", value, `${tag}[${i}]$a`); continue; }
       const personal = tag.endsWith("00");
       const comma = value.indexOf(",");
       const name: Omit<Creator, "creatorType"> = personal && comma > 0

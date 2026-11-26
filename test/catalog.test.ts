@@ -235,6 +235,21 @@ describe("bibliyografik katalog", () => {
     expect(field(1, "parallelTitle")).toBe("Strukturwandel");
   });
 
+  it("toplantı adını (111/711) yazar saymaz, kanıt olarak saklar", async () => {
+    const file = join(temp, "toplanti.xml");
+    writeFileSync(file, `<collection xmlns="http://www.loc.gov/MARC21/slim"><record><leader>00000nam a2200000 i 4500</leader>
+      <controlfield tag="001">t1</controlfield><controlfield tag="008">261124s2024    tu            100 0 tur d</controlfield>
+      <datafield tag="111" ind1="2" ind2=" "><subfield code="a">Sorumluluk Hukuku Sempozyumu</subfield></datafield>
+      <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Sorumluluk Hukuku Sempozyumu - III</subfield></datafield>
+      <datafield tag="264" ind1=" " ind2="1"><subfield code="a">Ankara</subfield><subfield code="b">Yayınevi</subfield><subfield code="c">2024</subfield></datafield>
+      <datafield tag="700" ind1="1" ind2=" "><subfield code="a">Kaya, Ali</subfield><subfield code="4">edt</subfield></datafield>
+    </record></collection>`);
+    const entries = [];
+    for await (const entry of marcFile(file, "k10plus")) entries.push(entry);
+    expect(entries[0]!.creators.map(c => c.creator.creatorType)).toEqual(["editor"]);
+    expect(entries[0]!.fields).toContainEqual(expect.objectContaining({ field: "meetingName", value: "Sorumluluk Hukuku Sempozyumu", path: "111[0]$a" }));
+  });
+
   it("DOAB'ın sabit leader ve 008 ülke kodunu kanıt saymadan yayın yerine göre ayırır", async () => {
     const db = catalog();
     await ingestFile(db, "doab", root("test/fixtures/doab-sample.xml"));
