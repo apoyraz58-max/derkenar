@@ -477,6 +477,17 @@ def log_access(conn, url, http_code, err):
                  (RUN_ID, host, url[:500], http_code, (err or "")[:500], now()))
 
 
+class _SameHostRedirect(urllib.request.HTTPRedirectHandler):
+    """Başka alan adına yönlendirmeyi izleme (ortamın ağ kuralı dışında kalabilir): 3xx hatası olarak döner."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if urllib.parse.urlparse(newurl).hostname != urllib.parse.urlparse(req.full_url).hostname:
+            raise urllib.error.HTTPError(newurl, code, f"dış alana yönlendirme: {newurl}", headers, fp)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_OPENER = urllib.request.build_opener(_SameHostRedirect)
+
+
 def http_get(conn, url: str, accept: str | None = None, tries: int = 5,
              ok_404: bool = False) -> tuple[int, bytes]:
     host = urllib.parse.urlparse(url).hostname or ""
@@ -489,7 +500,7 @@ def http_get(conn, url: str, accept: str | None = None, tries: int = 5,
         _last_call[host] = time.monotonic()
         req = urllib.request.Request(url, headers={"User-Agent": UA, **({"Accept": accept} if accept else {})})
         try:
-            with urllib.request.urlopen(req, timeout=90) as r:
+            with _OPENER.open(req, timeout=90) as r:
                 return r.status, r.read()
         except urllib.error.HTTPError as e:
             body = e.read()[:300]
@@ -1491,7 +1502,7 @@ def parse_dp_archive(body: bytes, slug: str):
 
 
 def harvest_dp_archive(conn, raw, limit: int = 0, log=print):
-    have = {r[0] for r in conn.execute("SELECT slug FROM dp_journal WHERE status IN ('tamam','yok')")}
+    have = {r[0] for r in conn.execute("SELECT slug FROM dp_journal WHERE status IN ('tamam','yok','dis-alan')")}
     slugs = sorted({dp_slug(u) for (u,) in conn.execute(
         "SELECT url FROM source_record WHERE source='dergipark' AND url IS NOT NULL")} - {None} - have)
     if limit:
@@ -1503,8 +1514,11 @@ def harvest_dp_archive(conn, raw, limit: int = 0, log=print):
         try:
             code, body = http_get(conn, url, ok_404=True)
         except AccessError as e:
+            dis = e.http in (301, 302, 303, 307, 308)
             conn.execute("INSERT OR REPLACE INTO dp_journal(slug,status,http,fetched_at,note) VALUES (?,?,?,?,?)",
-                         (slug, "hata", e.http, now(), str(e)[:200]))
+                         (slug, "dis-alan" if dis else "hata", e.http, now(), e.url[:200] if dis else str(e)[:200]))
+            if dis:
+                continue
             log(f"  {slug}: ERİŞİM HATASI {str(e)[:120]}")
             continue
         if code != 200:
