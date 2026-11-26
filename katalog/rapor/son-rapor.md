@@ -1,23 +1,23 @@
 # Durum raporu
 
-Zaman: 2026-11-26T07:11:43Z
+Zaman: 2026-11-26T08:11:15Z
 
 - Toplam tekil makale: **1,425,615** / hedef 1,000,000 (%142.56)
-- Hazır İSNAD 2 künyesi: **1,335,263** (eksik alanı olan: 90,352)
+- Hazır İSNAD 2 künyesi: **1,336,193** (eksik alanı olan: 89,422)
 
 ## DOI durumu
 
-- Doğrulandı: 464,818
-  - yayın kaydı (DergiPark): 399,844
-  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 53,221
-  - kayıt ajansı (Crossref): 11,555
-  - kayıt ajansı (DataCite): 137
-  - kayıt ajansı (DataCite) + yayın kaydı (DergiPark): 60
-  - kayıt ajansı (Public): 1
-- Doğrulama bekliyor: 118,483
-- Bulunamadı: 842,314
-- Kayıt ajansında denetim bekleyen tekil DOI: 516,030
-- Ajans denetimi sonuçları: var 65,179, yok 1,304
+- Doğrulandı: 466,285
+  - yayın kaydı (DergiPark): 393,425
+  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 59,526
+  - kayıt ajansı (Crossref): 13,096
+  - kayıt ajansı (DataCite): 172
+  - kayıt ajansı (DataCite) + yayın kaydı (DergiPark): 62
+  - kayıt ajansı (Public): 4
+- Doğrulama bekliyor: 116,835
+- Bulunamadı: 842,495
+- Kayıt ajansında denetim bekleyen tekil DOI: 507,945
+- Ajans denetimi sonuçları: var 73,083, yok 1,482
 
 ## Kaynağa göre kapsam
 
@@ -33,14 +33,14 @@ Zaman: 2026-11-26T07:11:43Z
 - Birden fazla kaynak bağlantısı olan makale: 357,482
 - Eşleşme yöntemi: doi: 222,233, doi-baslik-uyusmazligi: 2,105, kunye: 156,571, yeni: 1,423,510
 - Denetim bekleyen belirsiz eşleşme: 131,558
-- Kaynaklar arası farkı işaretli makale: 166,475
+- Kaynaklar arası farkı işaretli makale: 168,908
 - Tarihsel bağlantılar: kayıt yok
-- Eksik alanlar: ISSN 706,974, sayfa/makale no 36,912, yıl 26,182, yazar 26,159, cilt/sayı 3,040, başlık 317
+- Eksik alanlar: ISSN 705,266, sayfa/makale no 35,982, yıl 26,182, yazar 26,159, cilt/sayı 3,040, başlık 317
 
 ## Erişim hataları
 
 - api.crossref.org HTTP None: 1 kez (son: deneme 1: <urlopen error [Errno 111] Connection refused>)
-- api.crossref.org HTTP 429: 494 kez (son: deneme 2: b'')
+- api.crossref.org HTTP 429: 620 kez (son: deneme 2: b'')
 - dergipark.org.tr HTTP None: 6 kez (son: sayfa alınamadı: not well-formed (invalid token): line 8112, column 172)
 - dergipark.org.tr HTTP 500: 7 kez (son: sayfa alınamadı: 500 b'<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8" />\n    <meta name="robots" )
 
