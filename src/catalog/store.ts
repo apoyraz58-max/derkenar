@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import type { DatabaseSync as SqliteDatabase, StatementSync, SupportedValueType } from "node:sqlite";
 import type { Authority } from "./authority.js";
-import { authorKey, cleanClaim, digest, equivalent, otherVolume, parseEditionNumber, publicationScope, SOURCES, validIsbn, type PartInput, type RecordInput, type SourceId } from "./model.js";
+import { authorKey, cleanClaim, digest, equivalent, otherVolume, samePublisher, parseEditionNumber, publicationScope, SOURCES, validIsbn, type PartInput, type RecordInput, type SourceId } from "./model.js";
 import { checkItem } from "../core/isnad.js";
 import { emptyItem, type Creator, type Item } from "../core/zotero.js";
 
@@ -344,9 +344,9 @@ export class Catalog {
       "SELECT scheme,value FROM identifiers WHERE edition_id=?", id).some(existing =>
         !identities.has(existing.value) && [...identities.values()].some(i => i.scheme === existing.scheme));
     const compatible = hits.filter(({ hit, fields }) => title === hit.title_key && !identifierConflict(hit.id) &&
-      !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher) && !imprintConflict(effective, fields));
+      !different(authors, hit.author_key) && samePublisher(effective.publisher, fields.publisher) && !imprintConflict(effective, fields));
     const distinct = ({ hit, fields }: typeof hits[number]) => {
-      const sameAgent = !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher);
+      const sameAgent = !different(authors, hit.author_key) && samePublisher(effective.publisher, fields.publisher);
       if (sameAgent && otherVolume(effective.title ?? "", fields.title ?? "")) return true;
       return hit.title_key === title && sameAgent &&
         (different(editionNumber(effective.edition), editionNumber(fields.edition)) || diffFormat(effective.format, fields.format) ||
@@ -375,7 +375,7 @@ export class Catalog {
         if (incomingIsbn && existing && incomingIsbn !== existing) return false;
         const f = this.fields(candidate.id);
         return !comparableDate(effective.date, f.date) && !different(editionNumber(effective.edition), editionNumber(f.edition)) &&
-          !diffFormat(effective.format, f.format) && !different(effective.publisher, f.publisher);
+          !diffFormat(effective.format, f.format) && samePublisher(effective.publisher, f.publisher);
       });
       // A shared WorldCat number confirms one of the candidates whose title, authors, date,
       // edition and publisher already agree; it does not override any of those checks.

@@ -150,7 +150,7 @@ function turkeyPlaceText(place: string): boolean {
 const ROMAN: Record<string, number> = { I: 1, V: 5, X: 10, L: 50, C: 100 };
 const ORDINAL_WORDS: Record<string, number> = { birinci: 1, ilk: 1, ikinci: 2, ucuncu: 3, dorduncu: 4, besinci: 5, altinci: 6,
   yedinci: 7, sekizinci: 8, dokuzuncu: 9, onuncu: 10, first: 1, second: 2, third: 3, fourth: 4, fifth: 5 };
-const EDITION_WORD = "(?:bas[ıi]m|bask[ıi]|tab[ıi]|aufl(?:age)?|aufl\\.|ed(?:ition|ition\\.|\\.)?|[çc]ap)(?![\\p{L}])";
+const EDITION_WORD = "(?:bas(?:[ıi]m|k[ıi])?\\.?|tab[ıi]|auf(?:l(?:age)?)?\\.?|ed(?:ition|ition\\.|\\.)?|[çc]ap)(?![\\p{L}])";
 
 /**
  * Edition number stated in a source's edition statement: "2", "2. baskı",
@@ -204,6 +204,28 @@ export function mayBeTurkish(input: RecordInput): boolean {
   }
   const scope = publicationScope(fields);
   return turkishCountry || scope === "TR" || scope === "conflict";
+}
+
+const GENERIC_PUBLISHER = new Set(["yayinlari", "yayinevi", "yayincilik", "yayin", "yayinlar", "yay", "yayinevleri", "neşriyat", "nesriyat",
+  "kitabevi", "kitabevleri", "kitap", "kitaplari", "kitaplar", "basimevi", "matbaasi", "matbaa", "publishing", "publications", "publication",
+  "publisher", "publishers", "press", "verlag", "ltd", "sti", "as", "tic", "san", "ve", "ltd sti", "a s", "co", "inc"]);
+const publisherWords = (value: string) => foldText(value).replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(" ").filter(Boolean);
+
+/**
+ * Whether two publisher statements name the same publisher once generic
+ * words ("Yayınları", "yay.", "Verlag"), diacritics and initialisms ("YKY" /
+ * "Yapı Kredi Yayınları") are set aside. Used for comparison only.
+ */
+export function samePublisher(a?: string, b?: string): boolean {
+  if (!a || !b) return true;
+  const wa = publisherWords(a), wb = publisherWords(b);
+  if (wa.join(" ") === wb.join(" ")) return true;
+  const ka = wa.filter(w => !GENERIC_PUBLISHER.has(w)).join(" "), kb = wb.filter(w => !GENERIC_PUBLISHER.has(w)).join(" ");
+  if (ka && ka === kb) return true;
+  const initials = (words: string[]) => words.map(w => w[0]).join("");
+  const acronym = (one: string[], other: string[]) => one.length === 1 && one[0]!.length >= 2 && other.length >= 2 &&
+    (one[0] === initials(other) || one[0] === initials(other.filter(w => !GENERIC_PUBLISHER.has(w))));
+  return acronym(wa, wb) || acronym(wb, wa);
 }
 
 export function publicationScope(fields: Record<string, string>): "TR" | "outside" | "unknown" | "conflict" {

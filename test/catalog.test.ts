@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
-import { otherVolume, parseEditionNumber, publicationScope, withoutPlaceholder, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
+import { otherVolume, parseEditionNumber, publicationScope, samePublisher, withoutPlaceholder, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectDnbQuery, collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { collectCrossref, crossrefParts } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
@@ -45,7 +45,8 @@ describe("bibliyografik katalog", () => {
     const cases: [string, string | undefined][] = [["2", "2"], ["02", "2"], ["2. baskı", "2"], ["Gözden geçirilmiş 2. baskı", "2"],
       ["II. basım", "2"], ["IV. Baskı", "4"], ["ikinci baskı", "2"], ["Üçüncü Basım", "3"], ["3. Aufl.", "3"], ["2nd ed.", undefined],
       ["2. ed.", "2"], ["1. tab'ı", undefined], ["Çapa ewil", undefined], ["Genişletilmiş baskı", undefined], ["2 Editör", undefined],
-      ["1. basımevi", undefined], ["", undefined]];
+      ["1. basımevi", undefined], ["", undefined], ["7. bas", "7"], ["1. bas.", "1"], ["1. Auf", "1"], ["1. Auflage", "1"],
+      ["4. Basim", "4"], ["2 bastı", undefined]];
     for (const [value, expected] of cases) expect(parseEditionNumber(value), value).toBe(expected);
   });
 
@@ -109,6 +110,22 @@ describe("bibliyografik katalog", () => {
     expect(db.stats().counts.editions).toBe(2);
     expect(db.item(1)?.fields.publisher).toBe("Yayınevi");
     expect(db.details(1)?.validation).toContainEqual(expect.objectContaining({ code: "oclc-match" }));
+  });
+
+  it("yayınevi adlarını genel ekler, harf farkları ve baş harf kısaltmalarından bağımsız karşılaştırır", () => {
+    const same: [string, string][] = [["İletişim", "İletişim Yayınları"], ["Ayrıntı", "Ayrinti"], ["İletişim yay.", "İletişim Yayınları"],
+      ["YKY", "Yapı Kredi Yayınları"], ["Yetkin Hukuk Yayınları", "Yetkin Hukuk"], ["Kolektif Kitap", "Kolektif"], ["Timaş", "Timas"], ["Yayınevi", "Yayınevi"]];
+    for (const [a, b] of same) expect(samePublisher(a, b), `${a} / ${b}`).toBe(true);
+    const differentPublishers: [string, string][] = [["İletişim", "Ayrıntı"], ["Nobel Akademik", "Nobel Tıp"], ["YKY", "İletişim Yayınları"],
+      ["Türk Tarih Kurumu", "Türk Dil Kurumu"], ["Yayınevi", "Kitabevi"]];
+    for (const [a, b] of differentPublishers) expect(samePublisher(a, b), `${a} / ${b}`).toBe(false);
+    const db = catalog();
+    const make = (id: string, publisher: string, edition: string, date: string): RecordInput => ({ id, raw: id, url: `https://example.org/${id}`, creators: [],
+      fields: Object.entries({ title: "Kalecinin Endişesi", ISBN: "9789751604439", place: "İstanbul", publisher, edition, date }).map(([field, value]) => ({ field, value, path: field })) });
+    db.job("k10plus", "p", "p");
+    db.batch("k10plus", "p", 0, [make("a", "Ayrıntı Yayınları", "1", "1995"), make("b", "Ayrinti", "7. bas", "2022"), make("c", "Ayrıntı", "1. bas", "1995")], true);
+    expect(db.stats().counts.editions).toBe(2);
+    expect(db.review(0, 10)).not.toContainEqual(expect.objectContaining({ code: "identifier-conflict" }));
   });
 
   it("tarihî ve çok yerli yayın yeri yazımlarında Türkiye kapsamını tanır", () => {

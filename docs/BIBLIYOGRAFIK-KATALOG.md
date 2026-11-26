@@ -186,6 +186,10 @@ npm run catalog -- parts --db work/katalog.sqlite --file work/crossref-bolum.jso
 
 26 Kasım 2026 anlık görüntüsünde 50 yayınevinden 53.621 bölüm vardır. Bunların 28.128’i katalogdaki 1952 baskıya bağlandı. 434 bölüm kitap ISBN’i taşımaz.
 
+### Yayınevi adı karşılaştırması
+
+Eşleştirmede yayınevi adları ayrı bir anahtarla karşılaştırılır. Genel ekler (“Yayınları”, “Yayınevi”, “yay.”, “Kitabevi”, “Verlag”, “Ltd. Şti.”), harf farkları (“Ayrıntı”/“Ayrinti”) ve baş harf kısaltmaları (“YKY”/“Yapı Kredi Yayınları”) yok sayılır. Seçili yayınevi değeri değişmez. Baskı ifadesi tanımına “7. bas”, “1. bas.” ve “1. Auf” kısaltmaları eklendi. DNB ile K10plus arasındaki aynı ISBN’li kayıtların çoğu yalnız yayınevi yazımında ayrışıyordu. Değişiklikten sonra kimlik çelişkileri 7772’den 7326’ya indi. Yazım farkı yüzünden ayrı sayılan 150 baskı birleşti.
+
 ### DNB Türkçe kitapları
 
 DNB SRU servisinde yayın yeri ve yayın ülkesi dizini yoktur. `geo` dizini konu bölgesini gösterir, yayın yerini göstermez. Bu nedenle Türkçe kitaplar (`spr=tur and mat=books`, 10.197 kayıt) toplandı ve `--only-tr` süzgeciyle alındı. Servis sayfa başına en fazla 100 kayıt verir. Toplayıcı kayıtların `type` niteliğini kaldırarak K10plus ile aynı MARCXML biçiminde yazar. Kayıt bağlantısı `https://d-nb.info/<IDN>` biçimindedir.

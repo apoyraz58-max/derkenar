@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 16:30 UTC
+
+- Yapılan: DNB kimlik çelişkileri sınıflandırıldı. Başlıca neden yayınevi yazımı (“İletişim” / “İletişim Yayınları”, “YKY” / “Yapı Kredi Yayınları”, “Ayrinti”), ikinci neden “7. bas” ve “1. Auf” kısaltmaları. Karşılaştırmaya özel yayınevi anahtarı eklendi ve baskı ifadesi tanımı genişletildi. Seçili değerler değişmedi. Katalog iki kez yeniden kuruldu: ilk kurulum bir test hatası düzeltilmeden yapılmıştı, düzeltmeden sonra yenilendi.
+- Durum: 176.943 benzersiz baskı (−150 çift kayıt), 164.472 eser. OCLC ile bağlanan 1074 kayıt, bağlı bölüm 29.651, başlık kararı 6.
+- İncelemede 21.465 kayıt var: 7599 kapsam kanıtı eksikliği, 7326 kimlik çelişkisi (önceki 7772), 3812 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,1, ISBN %48,5, sayfa sayısı %29,5, dil %8,3, yayınevi %8,1, katkı %4,8, yayın yeri %1,0.
+- Testler: 235 geçti. Typecheck ve build temiz.
+- Sıradaki: DNB başlıklarındaki paralel başlıklar (“Kamusallığın Yapısal Dönüşümü: = Strukturwandel …”) başlık anahtarını bozuyor. Karşılaştırmada “= …” ile başlayan paralel başlık kısmı yok sayılmalı.
+
 ### 2026-11-26 15:05 UTC
 
 - Yapılan: DNB kaynağı eklendi (CC0, SRU MARC21-xml, sayfa başına 100 kayıt). K10plus sorgu toplayıcısı ortak SRU toplayıcısına dönüştürüldü. DNB’deki 10.197 Türkçe kitap `--only-tr` ile alındı ve kurulum betiğine eklendi.
