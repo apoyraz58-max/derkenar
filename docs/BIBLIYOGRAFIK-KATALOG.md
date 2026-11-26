@@ -186,6 +186,17 @@ npm run catalog -- parts --db work/katalog.sqlite --file work/crossref-bolum.jso
 
 26 Kasım 2026 anlık görüntüsünde 50 yayınevinden 53.621 bölüm vardır. Bunların 28.128’i katalogdaki 1952 baskıya bağlandı. 434 bölüm kitap ISBN’i taşımaz.
 
+### DNB Türkçe kitapları
+
+DNB SRU servisinde yayın yeri ve yayın ülkesi dizini yoktur. `geo` dizini konu bölgesini gösterir, yayın yerini göstermez. Bu nedenle Türkçe kitaplar (`spr=tur and mat=books`, 10.197 kayıt) toplandı ve `--only-tr` süzgeciyle alındı. Servis sayfa başına en fazla 100 kayıt verir. Toplayıcı kayıtların `type` niteliğini kaldırarak K10plus ile aynı MARCXML biçiminde yazar. Kayıt bağlantısı `https://d-nb.info/<IDN>` biçimindedir.
+
+```sh
+NODE_USE_ENV_PROXY=1 npm run catalog -- collect --source dnb --query "spr=tur and mat=books" --file work/dnb-tur.xml
+npm run catalog -- ingest --db work/katalog.sqlite --source dnb --file work/dnb-tur.xml --only-tr
+```
+
+26 Kasım 2026 anlık görüntüsünden 3006 yeni baskı geldi. 292 kayıt mevcut baskılara bağlandı, 1300 kayıt incelemede kaldı.
+
 ### OCLC destekli çift kayıt eşleştirmesi
 
 K10plus kayıtlarının 035 alanındaki WorldCat (OCLC) numaraları `OCLC` kanıtı olarak saklanır. Bu numara tek başına kimlik sayılmaz ve ISBN gibi eşleştirme yapmaz. Başlık, yazar, yıl, baskı ve yayınevi zaten uyuşan adaylar arasında yalnız biri aynı OCLC numarasını taşıyorsa ISBN’siz kayıt o baskıya bağlanır. Karar `oclc-match` bilgi kaydıyla izlenir. OCLC numaraları farklı olan adaylar olası mükerrer olarak incelemede kalır. 26 Kasım 2026 kurulumunda 942 kayıt bu yolla bağlandı.

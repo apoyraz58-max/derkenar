@@ -60,7 +60,10 @@ export function collectK10plus(isbn: string, file: string, fetchFn: Fetch = fetc
   return snapshot(`${K10}?${query}`, file, fetchFn);
 }
 
-const extractRecords = (xml: string) => xml.match(/<record xmlns="http:\/\/www\.loc\.gov\/MARC21\/slim">[\s\S]*?<\/record>/g) ?? [];
+// DNB adds type="Bibliographic"; the attribute is dropped so every snapshot frames records alike.
+const extractRecords = (xml: string) => (xml.match(/<record xmlns="http:\/\/www\.loc\.gov\/MARC21\/slim"[^>]*>[\s\S]*?<\/record>/g) ?? [])
+  .map(r => r.replace(/^<record[^>]*>/, '<record xmlns="http://www.loc.gov/MARC21/slim">'));
+const DNB = "https://services.dnb.de/sru/dnb";
 const writeChunk = (out: WriteStream, text: string) => new Promise<void>((resolve, reject) =>
   out.write(text, error => error ? reject(error) : resolve()));
 
@@ -69,11 +72,22 @@ const writeChunk = (out: WriteStream, text: string) => new Promise<void>((resolv
  * linked into place only when every requested page arrived, so an interrupted
  * harvest never leaves a partial snapshot behind.
  */
-export async function collectK10plusQuery(query: string, file: string, options: { limit?: number; pageSize?: number; delayMs?: number } = {},
+export function collectK10plusQuery(query: string, file: string, options: { limit?: number; pageSize?: number; delayMs?: number } = {},
   fetchFn: Fetch = fetch) {
+  return collectSruQuery({ base: K10, schema: "marcxml", maxPage: 500, name: "K10plus" }, query, file, options, fetchFn);
+}
+
+/** Deutsche Nationalbibliothek SRU (CC0 metadata); at most 100 records per page. */
+export function collectDnbQuery(query: string, file: string, options: { limit?: number; pageSize?: number; delayMs?: number } = {},
+  fetchFn: Fetch = fetch) {
+  return collectSruQuery({ base: DNB, schema: "MARC21-xml", maxPage: 100, name: "DNB" }, query, file, options, fetchFn);
+}
+
+async function collectSruQuery(service: { base: string; schema: string; maxPage: number; name: string }, query: string, file: string,
+  options: { limit?: number; pageSize?: number; delayMs?: number }, fetchFn: Fetch) {
   if (!file.endsWith(".xml")) throw new Error("İndirilen anlık görüntü için .xml uzantısı kullanın.");
   if (!query.trim()) throw new Error("K10plus sorgusu gerekli.");
-  const pageSize = Math.min(options.pageSize ?? 500, 500);
+  const pageSize = Math.min(options.pageSize ?? service.maxPage, service.maxPage);
   const temp = `${file}.${randomUUID()}.part`;
   const out = createWriteStream(temp, { flags: "wx" });
   let total = 0;
@@ -84,19 +98,19 @@ export async function collectK10plusQuery(query: string, file: string, options: 
       const want = Math.min(pageSize, (options.limit ?? Number.MAX_SAFE_INTEGER) - written);
       if (want <= 0) break;
       const params = new URLSearchParams({ version: "1.1", operation: "searchRetrieve", query, maximumRecords: String(want),
-        startRecord: String(start), recordSchema: "marcxml" });
+        startRecord: String(start), recordSchema: service.schema });
       let response: Response | undefined;
       for (let attempt = 0; attempt < 4; attempt++) {
-        response = await fetchFn(`${K10}?${params}`, { signal: AbortSignal.timeout(120_000),
+        response = await fetchFn(`${service.base}?${params}`, { signal: AbortSignal.timeout(120_000),
           headers: { Accept: "application/xml,text/xml", "User-Agent": "Derkenar-Catalog/0.1" } }).catch(() => undefined);
         if (response?.ok) break;
         await response?.body?.cancel();
         await setTimeout(2000 * 2 ** attempt);
       }
-      if (!response?.ok) throw new Error(`K10plus ${start}. kayıttan itibaren yanıt vermedi.`);
+      if (!response?.ok) throw new Error(`${service.name} ${start}. kayıttan itibaren yanıt vermedi.`);
       const page = await response.text();
       const diagnostic = /<(?:\w+:)?message>([^<]*)</.exec(page)?.[1];
-      if (diagnostic && !/<(?:\w+:)?recordData>/.test(page)) throw new Error(`K10plus: ${diagnostic}`);
+      if (diagnostic && !/<(?:\w+:)?recordData>/.test(page)) throw new Error(`${service.name}: ${diagnostic}`);
       total = Number(/<(?:\w+:)?numberOfRecords>(\d+)</.exec(page)?.[1] ?? 0);
       const records = extractRecords(page);
       for (const record of records) await writeChunk(out, `${record}\n`);

@@ -25,6 +25,7 @@ if [ ! -f work/k10plus-tur.xml ]; then
   query=$(node -e 'const d=require("./data/catalog/snapshots/2026-11-25.json");console.log(d.snapshots.find(s=>s.file==="work/k10plus-tur.xml").query)')
   cat collect --source k10plus --query "$query" --file work/k10plus-tur.xml
 fi
+[ -f work/dnb-tur.xml ] || cat collect --source dnb --query "spr=tur and mat=books" --file work/dnb-tur.xml
 [ -f work/doab.xml ] || cat collect --source doab --file work/doab.xml
 [ -f work/crossref-tr.jsonl ] || cat collect --source crossref --file work/crossref-tr.jsonl
 [ -f work/crossref-bolum.jsonl ] || cat collect --source crossref --parts --file work/crossref-bolum.jsonl
@@ -55,6 +56,7 @@ cat ingest --db "$tmp" --source k10plus --file work/k10plus-tur.xml --only-tr
 cat recheck --db "$tmp" --source k10plus --limit 10000
 cat ingest --db "$tmp" --source crossref --file work/crossref-tr.jsonl
 cat recheck --db "$tmp" --source crossref --limit 10000
+cat ingest --db "$tmp" --source dnb --file work/dnb-tur.xml --only-tr
 cat ingest --db "$tmp" --source doab --file work/doab.xml --only-tr
 cat parts --db "$tmp" --file work/crossref-bolum.jsonl
 

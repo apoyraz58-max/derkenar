@@ -45,6 +45,7 @@ export interface Source {
 export const SOURCES = {
   ttk: { name: "Türk Tarih Kurumu Kütüphanesi", license: "Elle doğrulanmış pilot künyeleri", policy: "https://kutuphane.ttk.gov.tr/", priority: 80 },
   asbu: { name: "ASBÜ KKTC Kütüphanesi", license: "Elle doğrulanmış pilot künyeleri", policy: "https://katalogkktc.asbu.edu.tr/", priority: 65 },
+  dnb: { name: "Deutsche Nationalbibliothek", license: "CC0 1.0", policy: "https://www.dnb.de/EN/Professionell/Metadatendienste/Datenbezug/datenbezug_node.html", priority: 74 },
   k10plus: { name: "K10plus", license: "CC0 1.0", policy: "https://wiki.k10plus.de/display/K10PLUS/K10plus+Open+Data", priority: 75 },
   ozgur: { name: "Özgür Yayınları", license: "Yayınevinin katalog aktarım izni", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 78 },
   "ozgur-kunye": { name: "Özgür Yayınları (kitap künyeleri)", license: "Elle doğrulanmış bibliyografik alanlar", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 82 },

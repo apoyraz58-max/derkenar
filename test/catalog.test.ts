@@ -7,7 +7,7 @@ import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
 import { otherVolume, parseEditionNumber, publicationScope, withoutPlaceholder, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
-import { collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
+import { collectDnbQuery, collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { collectCrossref, crossrefParts } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
 import { ozgurKbart } from "../src/catalog/sources/kbart.js";
@@ -343,6 +343,27 @@ describe("bibliyografik katalog", () => {
     db.batch("k10plus", "d", 0, [book("d", "9786054791712")], true);
     expect(db.relinkParts()).toEqual({ linked: 1 });
     expect(db.stats().counts).toMatchObject({ parts: 3, linkedParts: 2 });
+  });
+
+  it("DNB sorgusunu 100'lük sayfalarla toplar ve kayıtları DNB kaynağıyla bağlar", async () => {
+    const sample = readFileSync(root("test/fixtures/k10plus-9786054791712.xml"), "utf8");
+    const record = sample.match(/<record xmlns=[\s\S]+?<\/record>/)?.[0]!
+      .replace('<record xmlns="http://www.loc.gov/MARC21/slim">', '<record xmlns="http://www.loc.gov/MARC21/slim" type="Bibliographic">');
+    const sizes: string[] = [];
+    const mock: typeof fetch = async url => {
+      const params = new URL(String(url)).searchParams;
+      expect(new URL(String(url)).host).toBe("services.dnb.de");
+      expect(params.get("recordSchema")).toBe("MARC21-xml");
+      sizes.push(params.get("maximumRecords")!);
+      return new Response(`<searchRetrieveResponse><numberOfRecords>1</numberOfRecords><records><record><recordData>${record}</recordData></record></records></searchRetrieveResponse>`,
+        { headers: { "Content-Type": "text/xml" } });
+    };
+    const file = join(temp, "dnb.xml");
+    expect(await collectDnbQuery("spr=tur and mat=books", file, {}, mock)).toEqual({ query: "spr=tur and mat=books", total: 1, written: 1 });
+    expect(sizes).toEqual(["100"]);
+    const db = catalog();
+    await ingestFile(db, "dnb", file);
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ source: "dnb", url: expect.stringMatching(/^https:\/\/d-nb\.info\//) }));
   });
 
   it("KBART satırını taşıyıcılarına ayırır ve yayın yeri kanıtı yoksa incelemeye alır", async () => {

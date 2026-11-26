@@ -26,7 +26,7 @@ export async function ingestFile(catalog: Catalog, source: SourceId, file: strin
     const original = await readFile(file, "utf8");
     catalog.archiveExchange(hash, original);
     records = exchange(original, basename(file), hash);
-  } else if (source === "k10plus" || source === "doab" || source === "ozgur") {
+  } else if (source === "k10plus" || source === "doab" || source === "ozgur" || source === "dnb") {
     records = marcFile(file, source);
   } else if (source === "crossref") {
     records = crossrefFile(file);

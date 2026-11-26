@@ -9,14 +9,14 @@ import { loadAuthority } from "./authority.js";
 import { Catalog } from "./store.js";
 import { serve } from "./panel.js";
 import { ingestFile } from "./ingest.js";
-import { collectDoab, collectK10plus, collectK10plusQuery, collectOzgur, collectOzgurKbart } from "./sources/collect.js";
+import { collectDnbQuery, collectDoab, collectK10plus, collectK10plusQuery, collectOzgur, collectOzgurKbart } from "./sources/collect.js";
 import { SOURCES, type PartInput, type SourceId } from "./model.js";
 import { collectCrossref, crossrefParts } from "./sources/crossref.js";
 
 const HELP = `Derkenar bibliyografik katalog • Node.js 22.13+
   npm run catalog -- pilot     --db DB [--vefeyat CSV]
-  npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|crossref|ozgur|ozgur-kbart|ozgur-kunye|exchange --file DOSYA [--vefeyat CSV] [--limit N] [--only-tr]
-  npm run catalog -- collect   --source doab|crossref|k10plus|ozgur|ozgur-kbart --file DOSYA [--isbn ISBN | --query CQL [--limit N]]
+  npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|dnb|doab|crossref|ozgur|ozgur-kbart|ozgur-kunye|exchange --file DOSYA [--vefeyat CSV] [--limit N] [--only-tr]
+  npm run catalog -- collect   --source doab|crossref|dnb|k10plus|ozgur|ozgur-kbart --file DOSYA [--isbn ISBN | --query CQL [--limit N]]
   npm run catalog -- parts     --db DB --file CROSSREF-BOLUM.jsonl   (kitap bölümleri; collect --source crossref --parts ile)
   npm run catalog -- recheck  --db DB --source KAYNAK [--limit N] [--after N]
   npm run catalog -- approve-title --db DB --raw-id N --id BASKI --reason GEREKÇE
@@ -53,11 +53,14 @@ async function main() {
     else if (o.source === "ozgur") await collectOzgur(required("file"));
     else if (o.source === "ozgur-kbart") await collectOzgurKbart(required("file"));
     else if (o.source === "crossref") output(await collectCrossref(required("file"), { limit: o.limit ? integer(o.limit) : undefined, delayMs: 500, parts: o.parts }));
+    else if (o.source === "dnb" && o.query) {
+      output(await collectDnbQuery(o.query, required("file"), { limit: o.limit ? integer(o.limit) : undefined, delayMs: 1000 }));
+    }
     else if (o.source === "k10plus" && o.query) {
       output(await collectK10plusQuery(o.query, required("file"), { limit: o.limit ? integer(o.limit) : undefined, delayMs: 1000 }));
     }
     else if (o.source === "k10plus") await collectK10plus(required("isbn"), required("file"));
-    else throw new Error("Toplama kaynağı doab, crossref, k10plus, ozgur veya ozgur-kbart olmalı.");
+    else throw new Error("Toplama kaynağı doab, crossref, dnb, k10plus, ozgur veya ozgur-kbart olmalı.");
     return;
   }
   if (command === "serve") {

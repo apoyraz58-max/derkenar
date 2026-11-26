@@ -130,6 +130,18 @@
       "sha256": "80a9d5435193b7f9c29aecec07d43c68eef1b175408138f1304a074df4c887e2",
       "records": 28052,
       "collected_at": "2026-11-26T13:50:00Z"
+    },
+    {
+      "source": "dnb",
+      "file": "work/dnb-tur.xml",
+      "url": "https://services.dnb.de/sru/dnb",
+      "query": "spr=tur and mat=books",
+      "policy": "https://www.dnb.de/EN/Professionell/Metadatendienste/Datenbezug/datenbezug_node.html",
+      "format": "MARCXML (SRU MARC21-xml; --only-tr ile alınır)",
+      "bytes": 65651800,
+      "sha256": "4d256172f3503b906bd8f429879564a5848f86ec24e649cca21b5285161197c2",
+      "records": 10197,
+      "collected_at": "2026-11-26T14:58:00Z"
     }
   ]
 }

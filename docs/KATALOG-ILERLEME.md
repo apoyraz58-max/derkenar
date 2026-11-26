@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 15:05 UTC
+
+- Yapılan: DNB kaynağı eklendi (CC0, SRU MARC21-xml, sayfa başına 100 kayıt). K10plus sorgu toplayıcısı ortak SRU toplayıcısına dönüştürüldü. DNB’deki 10.197 Türkçe kitap `--only-tr` ile alındı ve kurulum betiğine eklendi.
+- Durum: 177.093 benzersiz baskı (+3006), 164.546 eser. DNB kayıtlarından 292’si mevcut baskılara bağlandı, 1300’ü incelemede.
+- İncelemede 21.618 kayıt var: 7772 kimlik çelişkisi (+1037, çoğu DNB ile K10plus arasında aynı ISBN’li farklı künye; incelenmeli), 7593 kapsam kanıtı eksikliği, 3498 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,2, ISBN %48,7, sayfa sayısı %29,6, dil %8,4, yayınevi %8,1, katkı %4,8, yayın yeri %1,0.
+- Testler: 234 geçti. Typecheck ve build temiz.
+- Sıradaki: DNB ve K10plus arasındaki yeni kimlik çelişkileri sınıflandırılmalı.
+
 ### 2026-11-26 14:15 UTC
 
 - Yapılan: Türkçe olup önceki sorgulara girmeyen 28.052 K10plus kitabı toplandı ve `--only-tr` süzgeciyle eklendi. Getiri düşük: kayıtların çoğu yurt dışında basılmış ya da yer bilgisi yok. “Derseadet” yazımı tarihî adlara eklendi. Yan bulgu: KKTC şehirleri İSNAD yer listesinde olduğu için Türkiye sayılıyordu (123 baskı). Katalog kapsamında bunlar artık Türkiye sayılmıyor. Ülke kodu Türkiye, yeri KKTC olan kayıtlar kapsam çelişkisi oluyor. Katalog yeniden kuruldu (8 dakika 44 saniye).

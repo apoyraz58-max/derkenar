@@ -5,7 +5,7 @@ import { OZGUR_MARC } from "./collect.js";
 import { inputStream } from "./files.js";
 import { StringDecoder } from "node:string_decoder";
 
-type MarcSource = "k10plus" | "doab" | "ozgur";
+type MarcSource = "k10plus" | "doab" | "ozgur" | "dnb";
 
 const MARC_NAMESPACE = "http://www.loc.gov/MARC21/slim";
 const relators: Record<string, string> = {
@@ -144,6 +144,8 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
   const links = df("856").flatMap(e => sub(e, "u"));
   const url = source === "ozgur"
     ? links.find(u => /^https:\/\/(?:www\.)?ozguryayinlari\.com\//i.test(u)) ?? `${OZGUR_MARC}#${encodeURIComponent(id)}`
+    : source === "dnb"
+    ? `https://d-nb.info/${encodeURIComponent(id)}`
     : source === "k10plus"
     ? `https://kxp.k10plus.de/DB=2.1/PPNSET?PPN=${encodeURIComponent(id)}`
     : links.find(u => /^https:\/\/directory\.doabooks\.org\//.test(u))
