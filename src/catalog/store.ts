@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import type { DatabaseSync as SqliteDatabase, StatementSync, SupportedValueType } from "node:sqlite";
 import type { Authority } from "./authority.js";
-import { authorKey, cleanClaim, digest, equivalent, parseEditionNumber, publicationScope, SOURCES, validIsbn, type PartInput, type RecordInput, type SourceId } from "./model.js";
+import { authorKey, cleanClaim, digest, equivalent, otherVolume, parseEditionNumber, publicationScope, SOURCES, validIsbn, type PartInput, type RecordInput, type SourceId } from "./model.js";
 import { checkItem } from "../core/isnad.js";
 import { emptyItem, type Creator, type Item } from "../core/zotero.js";
 
@@ -338,10 +338,13 @@ export class Catalog {
         !identities.has(existing.value) && [...identities.values()].some(i => i.scheme === existing.scheme));
     const compatible = hits.filter(({ hit, fields }) => title === hit.title_key && !identifierConflict(hit.id) &&
       !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher) && !imprintConflict(effective, fields));
-    const distinct = ({ hit, fields }: typeof hits[number]) => hit.title_key === title &&
-      !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher) &&
-      (different(editionNumber(effective.edition), editionNumber(fields.edition)) || diffFormat(effective.format, fields.format) ||
-        different(effective.volume, fields.volume));
+    const distinct = ({ hit, fields }: typeof hits[number]) => {
+      const sameAgent = !different(authors, hit.author_key) && !different(effective.publisher, fields.publisher);
+      if (sameAgent && otherVolume(effective.title ?? "", fields.title ?? "")) return true;
+      return hit.title_key === title && sameAgent &&
+        (different(editionNumber(effective.edition), editionNumber(fields.edition)) || diffFormat(effective.format, fields.format) ||
+          different(effective.volume, fields.volume));
+    };
     const clearScopeIssue = () => {
       if (recheckingScope) this.put("DELETE FROM validation WHERE raw_id=? AND code='scope-unknown'", raw);
     };

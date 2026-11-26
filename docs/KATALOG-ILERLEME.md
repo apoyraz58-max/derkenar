@@ -4,7 +4,9 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Sıradaki adım
 
-0. Yer bilgisi olmayan 6942 Crossref kitabı ve bunlara bağlı yaklaşık 25.500 bölüm için kapsam kanıtı aranmalı. Yayınevi sitesi veya K10plus ISBN sorgusu kullanılabilir. ISBN önek haritası tek başına kapsam kanıtı sayılmaz.
+0. Yer bilgisi olmayan Crossref kitapları (6572 ISBN) için kapsam kanıtı gerekiyor. Bu ISBN’ler K10plus, DNB ve LoC’de bulunamadı (500 ve 40 ISBN’lik örneklemlerde sıfır isabet). LoC SRU servisi 210 numaralı portta çalışıyor ve vekil sunucu bu bağlantıyı kesiyor (`lx2.loc.gov:210`). Kalan yollar:
+   - Yayınevi sitelerinin künye sayfaları. Bunun için kullanıcının alan adlarını onaylaması gerekir.
+   - Kullanıcının bir kural kararı vermesi. Öneri: Crossref üye adresinin Türkiye olması ile ISBN’in Türkiye grubunda (978-975, 978-605, 978-625) olması birlikte kapsam kanıtı sayılabilir. Ancak KKTC yayınevleri de Türkiye ISBN ajansını kullanır. Bu nedenle kural otomatik uygulanmamalı, kullanıcıya sorulmalıdır.
 1. İnceleme kuyruğu. Baskı numarası ayrıştırması tamamlandı. Kalan kimlik çelişkilerinin büyük bölümünde yayınevi adı farklı yazılmıştır (“İş Bankası Kültür Yayınları” ile “Türkiye İş Bankası Kültür Yayınları”, “Timaş” ile “Timas”). Kanıtlı bir yayınevi adı eşdeğerliği gerekir. Bunun için ISBN yayıncı öneki iyi bir dayanaktır, ancak önek tablosu izin listesi dışındadır. Ayrıca cilt ayrımı (“. 01” ve “. 02” gibi ekler) ele alınmalıdır.
 3. DNB (`services.dnb.de`) ve Library of Congress (`lx2.loc.gov`) ile sayfa sayısı ve ISBN gibi eksik alanlar tamamlanmalı. Önce lisans ve kullanım koşulları doğrulanmalı.
 4. Yeni açık kaynaklar değerlendirilmeli. Millî Kütüphane toplu verisi kurumla yazışma gerektirir. Bu adım kullanıcıya bildirilecek, otomatik yürütülmeyecek.
@@ -16,6 +18,15 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 - Ağ izin listesi dışındaki alan adları istenmez, bu dosyaya not edilir.
 
 ## Günlük
+
+### 2026-11-26 09:05 UTC
+
+- Yapılan: aynı ISBN’i paylaşan çok ciltli takımlarda farklı ciltler artık ayrı baskı sayılıyor. Koşul: başlık cilt eki dışında aynı, yazar ve yayınevi aynı, cilt numarası farklı olmalı. Örnek: “Masonluk Tarihimizde 1920-1924. Cilt 1” ve “… Cilt 3”. Crossref yersiz kitapları için K10plus, DNB ve LoC denendi, isabet yok (ayrıntı “Sıradaki adım” bölümünde). Katalog yeniden kuruldu (8 dakika 14 saniye). Başlık kararları ve bölüm bağlantıları (28.128) korundu.
+- Durum: 169.635 benzersiz baskı (+89), 157.934 eser.
+- İncelemede 20.620 kayıt var: 7632 kapsam kanıtı eksikliği, 6653 kimlik çelişkisi, 4257 olası mükerrer, 1342 kapsam çelişkisi, 1069 birden çok ISBN ve 20 başlık eksikliği.
+- 119 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,2, ISBN %48,3, sayfa sayısı %30,1, dil %8,8, yayınevi %7,6, katkı %4,9, yayın yeri %0,9.
+- Testler: 230 geçti. Typecheck ve build temiz.
 
 ### 2026-11-26 08:05 UTC
 

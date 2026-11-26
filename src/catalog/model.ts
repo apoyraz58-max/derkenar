@@ -162,6 +162,20 @@ export function parseEditionNumber(value: string): string | undefined {
   return ordinal ? String(ordinal) : undefined;
 }
 
+const VOLUME_SUFFIX = /^(.+?)\.\s*(?:(?:cilt|c\.|band|bd\.|vol\.?|volume|kitap|kısım)\s*)?(\d{1,3}|[IVXLC]{1,6})(?=$|[\s:(])/iu;
+
+/**
+ * Two titles of one multi-volume set: the same base title with different
+ * volume designations ("Masonluk Tarihimizde 1920-1924. Cilt 1" / "… Cilt 3",
+ * "Rethinking Mosque Architecture. 01" / "… 02").
+ */
+export function otherVolume(a: string, b: string): boolean {
+  const x = VOLUME_SUFFIX.exec(a.trim()), y = VOLUME_SUFFIX.exec(b.trim());
+  if (!x || !y) return false;
+  const number = (v: string) => /^\d+$/.test(v) ? String(Number(v)) : v.toUpperCase();
+  return equivalent(x[1]!) === equivalent(y[1]!) && number(x[2]!) !== number(y[2]!);
+}
+
 export function publicationScope(fields: Record<string, string>): "TR" | "outside" | "unknown" | "conflict" {
   const turkish = turkeyPlace(fields.place ?? "") || turkeyPlace(fields.otherPlaces ?? "");
   if (fields.country === "TR") return "TR";

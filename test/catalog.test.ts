@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
-import { parseEditionNumber, publicationScope, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
+import { otherVolume, parseEditionNumber, publicationScope, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { collectCrossref, crossrefParts } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
@@ -61,6 +61,22 @@ describe("bibliyografik katalog", () => {
     expect(db.stats().counts.editions).toBe(2);
     expect(db.review(0, 10)).not.toContainEqual(expect.objectContaining({ code: "identifier-conflict" }));
     expect(db.details(2)?.validation).toContainEqual(expect.objectContaining({ code: "shared-identifier" }));
+  });
+
+  it("ortak ISBN'li takımın farklı ciltlerini ayrı baskı olarak tutar", () => {
+    expect(otherVolume("Masonluk Tarihimizde 1920-1924. Cilt 1", "Masonluk Tarihimizde 1920-1924. Cilt 3")).toBe(true);
+    expect(otherVolume("Rethinking Mosque Architecture. 01", "Rethinking Mosque Architecture. 02")).toBe(true);
+    expect(otherVolume("Sürgünde Muhalefet. 1 (1868-1869)", "Sürgünde Muhalefet. 2 (1869-1870)")).toBe(true);
+    expect(otherVolume("Kitap. 01", "Kitap. 1")).toBe(false);
+    expect(otherVolume("Bir Kitap. 1", "Başka Kitap. 2")).toBe(false);
+    expect(otherVolume("Ok, Tüfek ve At", "Ok, Tüfek ve At")).toBe(false);
+    const db = catalog();
+    const make = (id: string, title: string): RecordInput => ({ id, raw: id, url: `https://example.org/${id}`, creators: [],
+      fields: Object.entries({ title, ISBN: "9789751604439", place: "Ankara", publisher: "TTK" }).map(([field, value]) => ({ field, value, path: field })) });
+    db.job("k10plus", "v", "v");
+    db.batch("k10plus", "v", 0, [make("a", "Takım. Cilt 1"), make("b", "Takım. Cilt 2"), make("c", "Takım. Cilt 2")], true);
+    expect(db.stats().counts.editions).toBe(2);
+    expect(db.review(0, 10)).not.toContainEqual(expect.objectContaining({ code: "identifier-conflict" }));
   });
 
   it("tarihî ve çok yerli yayın yeri yazımlarında Türkiye kapsamını tanır", () => {
