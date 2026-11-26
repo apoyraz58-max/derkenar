@@ -50,7 +50,8 @@ TARGET = 1_000_000
 UA = "bibliographic-harvester/0.1 (python-urllib)"
 
 SOURCES = ("dergipark", "trdizin", "isam")
-SOURCE_LABEL = {"dergipark": "DergiPark", "trdizin": "TR Dizin", "isam": "İSAM"}
+SOURCE_LABEL = {"dergipark": "DergiPark", "trdizin": "TR Dizin", "isam": "İSAM",
+                "crossref": "Crossref (DOI'si künyeyle bulunan)"}
 
 # Kaynakların yayımladığı ya da ihtiyatla seçilen istekler arası en kısa süre (saniye).
 #  - TR Dizin: Türkiye dışı IP için dakikada 60 istek (aşımda IP engeli) -> 1.25 sn (48/dk).
@@ -166,6 +167,26 @@ CREATE INDEX IF NOT EXISTS hl_art ON historical_link(dergipark_article);
 CREATE TABLE IF NOT EXISTS run (
     run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT,
     articles_before INTEGER, articles_after INTEGER, note TEXT
+);
+
+-- DergiPark dergi arşiv sayfaları: cilt/sayı -> gerçek yayın tarihi, dergi ISSN'i
+CREATE TABLE IF NOT EXISTS dp_journal (
+    slug TEXT PRIMARY KEY, status TEXT, issn TEXT, eissn TEXT, n_issues INTEGER,
+    http INTEGER, fetched_at TEXT, note TEXT
+);
+CREATE TABLE IF NOT EXISTS dp_issue (
+    slug TEXT, issue_id TEXT, label TEXT, volume TEXT, issue TEXT,
+    year INTEGER, month INTEGER, day INTEGER, PRIMARY KEY (slug, issue_id)
+);
+-- Crossref önek bazında toplu sorgu durumu
+CREATE TABLE IF NOT EXISTS cr_prefix (
+    prefix TEXT PRIMARY KEY, n_source INTEGER, total INTEGER, mode TEXT,
+    fetched INTEGER DEFAULT 0, matched_source INTEGER DEFAULT 0, found INTEGER DEFAULT 0,
+    done INTEGER DEFAULT 0, updated_at TEXT
+);
+-- Tüm makalelerin yeniden üretimi (kaldığı yerden)
+CREATE TABLE IF NOT EXISTS rebuild_state (
+    name TEXT PRIMARY KEY, last_id INTEGER, done INTEGER DEFAULT 0, started_at TEXT, updated_at TEXT
 );
 """
 
@@ -292,6 +313,130 @@ def smart_case(s: str) -> str:
         rest = rest.replace("I", "ı").replace("İ", "i").lower()
         out.append(first + rest)
     return "".join(out)
+
+
+TR_CHARS = set("ÇĞİÖŞÜçğıöşüÂÎÛâîû")
+SMALL_TR = {"ve", "ile", "veya", "ya", "da", "de", "ki", "mi", "mı", "mu", "mü", "ama", "fakat", "yahut", "hem", "ne"}
+SMALL_EN = {"a", "an", "the", "and", "or", "nor", "but", "of", "in", "on", "at", "to", "for", "by", "with",
+            "from", "as", "into", "via", "vs", "vs.", "per", "upon"}
+ROMAN_RE = re.compile(r"^(?=[MDCLXVI])M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$")
+
+
+def tr_lower(s: str) -> str:
+    return s.replace("I", "ı").replace("İ", "i").lower()
+
+
+def _cap(p: str, turkish: bool) -> str:
+    if not p:
+        return p
+    c = p[0]
+    return (("İ" if c == "i" else c.upper()) if turkish else c.upper()) + p[1:]
+
+
+def _case_word(w: str, turkish: bool, first: bool, last: bool = False) -> str:
+    m = re.match(r"^([\W_]*)(.*?)([\W_]*)$", w, re.S)
+    pre, core, post = m.groups()
+    if not core or any(ch.isdigit() for ch in core):
+        return w
+    wt = turkish or any(ch in TR_CHARS for ch in core)
+    low = tr_lower if wt else str.lower
+    lc = low(core)
+    if not first and lc in (SMALL_TR if turkish else SMALL_EN):
+        return pre + lc + post
+    if ROMAN_RE.match(core):
+        return w
+    parts = re.split(r"([’'ʼ])", core, maxsplit=1)
+    head, sep, tail = (parts + ["", ""])[:3]
+    hp = head.split("-")
+    def izafet(i, p):  # Osmanlıca tamlama eki: "Mehâric-i", "Kanun-ı" (sondaki "-I" Romen rakamı olabilir)
+        if not i or low(p) not in {"i", "ı", "u", "ü"}:
+            return False
+        return not (p == "I" and (i == len(hp) - 1) and (last or post))
+    head = "-".join(low(p) if izafet(i, p) else (p if p == "I" and i == len(hp) - 1 and i else _cap(low(p), wt))
+                    for i, p in enumerate(hp))
+    return pre + head + sep + low(tail) + post
+
+
+def title_case(t: str | None, lang: str | None = None) -> str | None:
+    """Tamamı büyük harfli başlığı İSNAD'a uygun büyük/küçük harfe getirir.
+    Türkçe: her kelimenin ilk harfi büyük, bağlaçlar ve 'mi' eki küçük; diğer diller: başlık harfi kuralı."""
+    if not t:
+        return t
+    turkish = (lang or "").lower().startswith("tr") or (not lang and any(ch in TR_CHARS for ch in t))
+    out, first = [], True
+    toks = re.split(r"(\s+)", t)
+    lastw = max((k for k, x in enumerate(toks) if x and not x.isspace()), default=-1)
+    for k, tok in enumerate(toks):
+        if not tok or tok.isspace():
+            out.append(tok)
+            continue
+        out.append(_case_word(tok, turkish, first, k == lastw))
+        first = tok.endswith((":", ".", "?", "!", "–", "—"))
+    return "".join(out)
+
+
+def is_all_caps(s: str | None, minlen: int = 8) -> bool:
+    letters = re.sub(r"[^A-Za-zÇĞİÖŞÜçğıöşüÂâÎîÛû]", "", s or "")
+    return len(letters) > minlen and letters.isupper()
+
+
+def squash(s: str | None) -> str | None:
+    return re.sub(r"\s+", " ", s).strip() if s else s
+
+
+def fix_name_case(fam: str, giv: str) -> tuple[str, str]:
+    fam, giv = squash(fam) or "", squash(giv) or ""
+    fam = smart_case(fam) if fam.isupper() and len(fam) > 1 else fam
+    giv = " ".join(smart_case(w) if w.isupper() and len(w.rstrip(".")) > 1 else w for w in giv.split(" "))
+    return fam, giv
+
+
+# İSAM künyesindeki sorumluluk bildirimi: "Başlık / tanıtan: Ad Soyad. -- Dergi ..."
+ISAM_ROLES = {"tanıtan": None, "röportaj": None, "anlatan": None, "yazan": None,
+              "çeviren": "çev.", "derleyen": "der.", "hazırlayan": "haz.", "sadeleştiren": "sad.",
+              "toplayan": "top.", "aktaran": "akt.", "yayınlayan": "yay.", "fotoğraf": "fot.", "çizen": "çiz."}
+RUMI_HIJRI_MONTHS = ["Kanunusani", "Kanun-ı Sani", "Kanunuevvel", "Kanun-ı Evvel", "Teşrinievvel", "Teşrin-i Evvel",
+                     "Teşrinisani", "Teşrin-i Sani", "Muharrem", "Safer", "Rebiülevvel", "Rebiülahir",
+                     "Rebiülâhir", "Cemaziyelevvel", "Cemaziyelahir", "Cemâziyelevvel", "Cemâziyelâhir",
+                     "Recep", "Receb", "Şaban", "Ramazan", "Şevval", "Zilkade", "Zilkâde", "Zilhicce"]
+
+
+def isam_responsibility(cit: str | None):
+    """(yazarlar, katkılar[(kısaltma, ad)], imzasız_mı, ay_adı) — İSAM künye metninden."""
+    if not cit:
+        return [], [], False, None
+    head = re.split(r"\s?\.?\s?--\s?", cit, maxsplit=1)[0]
+    authors, contrib, plain = [], [], []
+    if " / " in head:
+        resp = head.rsplit(" / ", 1)[1]
+        for part in re.split(r"\s*;\s*", resp):
+            part = part.strip(" ;.")
+            if not part:
+                continue
+            m = re.match(r"([^\W\d_]+)\s*:\s*(.+)$", part)
+            if m and fold(m.group(1)) in {fold(k) for k in ISAM_ROLES}:
+                role = next(k for k in ISAM_ROLES if fold(k) == fold(m.group(1)))
+                name = m.group(2).strip()
+                if ISAM_ROLES[role] is None:
+                    authors.append(list(split_name(name)))
+                else:
+                    contrib.append((ISAM_ROLES[role], name))
+            elif m:
+                continue  # 'konuşan:' gibi diğer roller künyeye girmez
+            else:
+                plain.append(part)
+    if not authors and plain:
+        authors = [list(split_name(p)) for p in plain]
+    month_name = None
+    m = re.search(r",\s*(?:\d{1,2}\s+)?([^\W\d_][^,\d]*?)\s+(\d{3,4})\s*\.?\s*--", cit)
+    if m:
+        cand = m.group(1).strip()
+        for mn in TR_MONTHS + RUMI_HIJRI_MONTHS:
+            if fold(mn) == fold(cand):
+                month_name = cand
+                break
+    unsigned = not authors and not contrib
+    return authors, contrib, unsigned, month_name
 
 
 def title_sim(a: str | None, b: str | None) -> float:
@@ -680,8 +825,10 @@ def load_article_view(conn, aid: int) -> dict:
             v["spages"].add(norm_page(spage))
         if doi:
             v["dois"].add(doi)
-    meta = conn.execute("SELECT doi,doi_status FROM article WHERE id=?", (aid,)).fetchone()
+    meta = conn.execute("SELECT doi,doi_status,year FROM article WHERE id=?", (aid,)).fetchone()
     v["verified_doi"] = meta[0] if meta and meta[1] == DOI_OK else None
+    if meta and meta[2]:
+        v["years"].add(meta[2])  # dergi arşivinden düzeltilmiş yıl
     return v
 
 
@@ -834,6 +981,8 @@ def fmt_isnad2(a: dict) -> str:
     title = isnad_title(a["title"] or "")
     title_s = f"“{title}”" + ("" if title[-1:] in "?!." else ".")
     parts.append(title_s)
+    for abbr, name in a.get("contrib") or []:  # yazarsız eserde çeviren/hazırlayan vb. başlıktan sonra
+        parts.append(f"{abbr} {name}" + ("" if name.endswith(".") else "."))
     vi = ""
     if a["volume"] and a["issue"]:
         vi = f"{a['volume']}/{a['issue']}"
@@ -841,7 +990,12 @@ def fmt_isnad2(a: dict) -> str:
         vi = a["volume"] or a["issue"]
     date = ""
     if a["year"]:
-        date = f"{TR_MONTHS[a['month'] - 1]} {a['year']}" if a.get("month") else str(a["year"])
+        if a.get("month"):
+            date = f"{TR_MONTHS[a['month'] - 1]} {a['year']}"
+        elif a.get("month_name"):
+            date = f"{a['month_name']} {a['year']}"
+        else:
+            date = str(a["year"])
     j = a["journal"] or ""
     seg = j
     if vi:
@@ -912,6 +1066,24 @@ def rebuild_article(conn, aid: int):
         for k in ("titles", "authors", "journals", "extra"):
             d[k] = json.loads(d[k] or ("{}" if k == "extra" else "[]"))
         recs.append(d)
+    for d in recs:
+        for k in ("volume", "issue"):
+            if d.get(k) is not None and _nv(d[k]) == "":
+                d[k] = None  # DergiPark'ın "0" yer tutucusu
+        if d["source"] == "dergipark":
+            y, mo, issn, eissn = dp_issue_info(conn, dp_slug(d["url"]), d["volume"], d["issue"])
+            if y:
+                d["year"], d["month"], d["_arch"] = y, mo, True
+                d["pub_date"] = f"{y}-{mo:02d}" if mo else str(y)
+            d["issn"] = d["issn"] or issn
+            d["eissn"] = d["eissn"] or eissn
+        elif d["source"] == "isam":
+            au, contrib, unsigned, mname = isam_responsibility((d["extra"] or {}).get("citation"))
+            if not d["authors"] and au:
+                d["authors"] = au
+            d["_contrib"] = contrib if not d["authors"] else []
+            d["_unsigned"] = unsigned and not d["authors"]
+            d["_month_name"] = mname
     if not recs:
         conn.execute("UPDATE article SET n_sources=0, updated_at=? WHERE id=?", (now(), aid))
         return
@@ -934,6 +1106,8 @@ def rebuild_article(conn, aid: int):
     if good:
         chosen, agency, cr, _ = good[0]
         status, method = DOI_OK, f"kayıt ajansı ({agency})"
+        if all(r["source"] == "crossref" for r in recs if r["doi"] == chosen):
+            method = f"kayıt ajansı ({agency}; DOI künye eşleşmesiyle bulundu)"
         if any(r["source"] == "dergipark" and r["doi"] == chosen for r in recs):
             method += " + yayın kaydı (DergiPark)"
     elif ok_agency:
@@ -972,27 +1146,53 @@ def rebuild_article(conn, aid: int):
     if not a["title"]:
         a["title"], tsrc = pick("title")
     a["title_lang"] = next((r["lang"] for r in ordered if r["source"] == tsrc and r.get("lang")), None)
-    # Yazarlar: en çok yazar sayısını veren yüksek öncelikli kaynak (TR Dizin büyük harfli adları düzeltilmiş)
+    # Başlık tamamen büyük harfse: başka kaynaktaki aynı başlığın düzgün yazımı, yoksa İSNAD harf kuralı
+    a["title"] = squash(a["title"])
+    case_note = None
+    if is_all_caps(a["title"]):
+        alts = [squash(t) for r in ordered for t in (list(r.get("titles") or []) + [r.get("title")])
+                if t and not is_all_caps(t, 3)]
+        alt = next((t for t in alts if title_sim(t, a["title"]) >= 0.97), None)
+        if alt:
+            a["title"] = alt
+        else:
+            a["title"], case_note = title_case(a["title"], a["title_lang"]), "baslik-harf-duzeltildi"
+    # Yazarlar: yüksek öncelikli kaynak; büyük harfli adlar düzeltilir
     auths = [(r["source"], r["authors"]) for r in ordered if r.get("authors")]
-    a["authors"] = auths[0][1] if auths else []
-    # Dergi: TR Dizin büyük harf yazar; diğerleri önde
-    jr = [(r["source"], r["journal"]) for r in ordered if r.get("journal")]
+    a["authors"] = [list(fix_name_case(x[0], x[1] if len(x) > 1 else "")) for x in auths[0][1]] if auths else []
+    a["contrib"], unsigned = [], False
+    if not a["authors"]:
+        a["contrib"] = next((r["_contrib"] for r in ordered if r.get("_contrib")), [])
+        unsigned = any(r.get("_unsigned") for r in recs)
+    # Dergi: büyük harfli olmayan yazım önde; yalnız büyük harf varsa harf kuralı
+    jr = [(r["source"], squash(r["journal"])) for r in ordered if r.get("journal")]
     jr_nice = [x for x in jr if not x[1].isupper()]
     a["journal"] = (jr_nice or jr or [(None, None)])[0][1]
+    if a["journal"] and is_all_caps(a["journal"], 3):
+        a["journal"] = title_case(a["journal"])
     a["issn"], _ = pick("issn")
     a["eissn"], _ = pick("eissn")
     # Tarih: Crossref > TR Dizin (sayı yılı/ayı) > İSAM > DergiPark (dateIssued güvenilmez olabilir)
-    date_order = sorted(ordered, key=lambda r: {"crossref": 0, "trdizin": 1, "isam": 2, "dergipark": 3}[r["source"]])
+    # DergiPark dergi arşivindeki sayı tarihi (derginin kendi kaydı) en önde
+    date_order = sorted(ordered, key=lambda r: -1 if r.get("_arch") else
+                        {"crossref": 0, "trdizin": 1, "isam": 2, "dergipark": 3}[r["source"]])
     a["year"] = next((r["year"] for r in date_order if r.get("year")), None)
     a["month"] = next((r["month"] for r in date_order if r.get("year") == a["year"] and r.get("month")), None)
     a["pub_date"] = next((r["pub_date"] for r in date_order if r.get("pub_date") and r.get("year") == a["year"]), None)
+    a["month_name"] = None
+    if a["year"] and not a["month"]:
+        a["month_name"] = next((r["_month_name"] for r in recs if r.get("_month_name") and r.get("year") == a["year"]),
+                               None)
     for k in ("volume", "issue", "spage", "epage", "article_no"):
         a[k], _ = pick(k)
+        a[k] = squash(a[k]) if isinstance(a[k], str) else a[k]
+    if a["issue"] and is_all_caps(a["issue"], 3):
+        a["issue"] = title_case(a["issue"])
     a["iz"], _ = pick("iz")
 
     # Eksik alanlar
     missing = []
-    if not a["authors"]:
+    if not a["authors"] and not (a["contrib"] or unsigned):
         missing.append("yazar")
     if not a["title"]:
         missing.append("başlık")
@@ -1033,9 +1233,12 @@ def rebuild_article(conn, aid: int):
         conflicts["ilk_yazar"] = {r["source"]: r["authors"][0][0] for r in allrecs if r.get("authors")}
     if "year" in conflicts:
         review.append("yil-farki")
-    letters = re.sub(r"[^A-Za-zÇĞİÖŞÜçğıöşüÂâÎîÛû]", "", a["title"] or "")
-    if len(letters) > 8 and letters.isupper():
+    if is_all_caps(a["title"]):
         review.append("baslik-buyuk-harf")
+    if case_note:
+        review.append(case_note)
+    if not a["authors"] and (a["contrib"] or unsigned):
+        review.append("yazarsiz")
     open_rev = conn.execute("SELECT COUNT(*) FROM match_review WHERE (article_id=? OR candidate_id=?) AND status='açık'",
                             (aid, aid)).fetchone()[0]
     if open_rev:
@@ -1253,6 +1456,119 @@ def harvest_trdizin(conn, raw, pages: int, log=print):
 # ---------------------------------------------------------------------------
 # DOI doğrulama (Crossref; bulunamazsa doi.org Handle + RA)
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# DergiPark dergi arşivleri: cilt/sayı -> yayın tarihi, dergi ISSN'i
+# (OAI kaydındaki dateIssued bazen yükleme/gönderim tarihi; bazı kayıtlarda hiç yok.)
+# ---------------------------------------------------------------------------
+def dp_slug(url: str | None) -> str | None:
+    m = re.search(r"/pub/([^/]+)/", url or "")
+    return m.group(1) if m else None
+
+
+def parse_dp_archive(body: bytes, slug: str):
+    t = body.decode("utf-8", errors="replace")
+    issn = re.search(r"(?<![eE]-)ISSN:\s*([0-9]{4}-?[0-9]{3}[0-9Xx])", t)
+    eissn = re.search(r"[eE]-ISSN:\s*([0-9]{4}-?[0-9]{3}[0-9Xx])", t)
+    rx = re.compile(r'rounded-full[^>]*>\s*<div[^>]*></div>\s*(\d{4})\s*</div>'
+                    r'|href="/\w+/pub/' + re.escape(slug) + r'/issue/(\d+)"[^>]*>\s*([^<]+?)\s*</a>\s*'
+                    r'(?:<span[^>]*>(.*?)</span>)?', re.S)
+    year, out = None, []
+    for m in rx.finditer(t):
+        if m.group(1):
+            year = int(m.group(1))
+            continue
+        label = squash(html.unescape(m.group(3)))
+        dtxt = squash(html.unescape(re.sub("<[^>]+>", "", m.group(4) or ""))) or ""
+        d = re.search(r"(\d{1,2})\.(\d{1,2})\.(\d{4})", dtxt)
+        vol = re.search(r"Cilt:\s*(.+?)(?=\s+Sayı:|$)", label)
+        iss = re.search(r"Sayı:\s*(.+)$", label)
+        y = int(d.group(3)) if d else year
+        out.append(dict(issue_id=m.group(2), label=label, volume=vol.group(1).strip() if vol else None,
+                        issue=iss.group(1).strip() if iss else None, year=y,
+                        month=int(d.group(2)) if d and int(d.group(3)) == y else None,
+                        day=int(d.group(1)) if d and int(d.group(3)) == y else None))
+    return (norm_issn(issn.group(1)) if issn else None), (norm_issn(eissn.group(1)) if eissn else None), out
+
+
+def harvest_dp_archive(conn, raw, limit: int = 0, log=print):
+    have = {r[0] for r in conn.execute("SELECT slug FROM dp_journal WHERE status IN ('tamam','yok')")}
+    slugs = sorted({dp_slug(u) for (u,) in conn.execute(
+        "SELECT url FROM source_record WHERE source='dergipark' AND url IS NOT NULL")} - {None} - have)
+    if limit:
+        slugs = slugs[:limit]
+    log(f"DergiPark arşivi: {len(slugs)} dergi alınacak ({len(have)} hazır)")
+    n = 0
+    for slug in slugs:
+        url = f"https://dergipark.org.tr/tr/pub/{slug}/archive"
+        try:
+            code, body = http_get(conn, url, ok_404=True)
+        except AccessError as e:
+            conn.execute("INSERT OR REPLACE INTO dp_journal(slug,status,http,fetched_at,note) VALUES (?,?,?,?,?)",
+                         (slug, "hata", e.http, now(), str(e)[:200]))
+            log(f"  {slug}: ERİŞİM HATASI {str(e)[:120]}")
+            continue
+        if code != 200:
+            conn.execute("INSERT OR REPLACE INTO dp_journal(slug,status,http,fetched_at) VALUES (?,?,?,?)",
+                         (slug, "yok", code, now()))
+            continue
+        issn, eissn, issues = parse_dp_archive(body, slug)
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute("DELETE FROM dp_issue WHERE slug=?", (slug,))
+        conn.executemany("INSERT OR REPLACE INTO dp_issue VALUES (?,?,?,?,?,?,?,?)",
+                         [(slug, i["issue_id"], i["label"], i["volume"], i["issue"], i["year"], i["month"], i["day"])
+                          for i in issues])
+        conn.execute("INSERT OR REPLACE INTO dp_journal(slug,status,issn,eissn,n_issues,http,fetched_at) "
+                     "VALUES (?,?,?,?,?,?,?)", (slug, "tamam", issn, eissn, len(issues), code, now()))
+        conn.execute("COMMIT")
+        raw.execute("INSERT OR REPLACE INTO raw_page VALUES (?,?,?,?,?,?)",
+                    ("dergipark-arsiv", slug, 1, url, zlib.compress(body, 6), now()))
+        raw.commit()
+        n += 1
+        if n % 100 == 0:
+            log(f"  {n}/{len(slugs)} dergi")
+    log(f"DergiPark arşivi: {n} dergi alındı")
+    return n
+
+
+def _nv(x) -> str:
+    s = fold(str(x)) if x not in (None, "") else ""
+    s = re.sub(r"\b0+(\d)", r"\1", s)
+    return "" if s in ("0",) else s
+
+
+_DP_CACHE: dict = {}
+
+
+def dp_issue_info(conn, slug: str | None, volume, issue):
+    """(yıl, ay, issn, eissn) — dergi arşivinden; bulunamazsa None'lar."""
+    if not slug:
+        return None, None, None, None
+    if slug not in _DP_CACHE:
+        j = conn.execute("SELECT issn, eissn FROM dp_journal WHERE slug=? AND status='tamam'", (slug,)).fetchone()
+        rows = conn.execute("SELECT volume, issue, year, month FROM dp_issue WHERE slug=?", (slug,)).fetchall()
+        entry = (j, [(_nv(v), _nv(i), y, m) for v, i, y, m in rows])
+        if not j:  # arşiv henüz alınmadı: önbelleğe koyma, sonra yeniden bak
+            return None, None, None, None
+        _DP_CACHE[slug] = entry
+        if len(_DP_CACHE) > 5000:
+            _DP_CACHE.pop(next(iter(_DP_CACHE)))
+    j, rows = _DP_CACHE[slug]
+    issn, eissn = (j or (None, None))
+    v, i = _nv(volume), _nv(issue)
+    if not (v or i):
+        return None, None, issn, eissn
+    c = [r for r in rows if r[0] == v and r[1] == i]
+    if not c and not v:
+        c = [r for r in rows if r[1] == i]
+    if not c and v and not i:
+        c = [r for r in rows if r[0] == v and not r[1]]
+    years = {r[2] for r in c if r[2]}
+    if len(years) != 1:
+        return None, None, issn, eissn
+    months = {r[3] for r in c}
+    return years.pop(), (months.pop() if len(months) == 1 else None), issn, eissn
+
+
 def check_doi(conn, doi: str) -> tuple[str, str | None, int | None, dict | None]:
     url = "https://api.crossref.org/works/" + urllib.parse.quote(doi, safe="/:;()<>.-_")
     code, body = http_get(conn, url, accept="application/json", ok_404=True)
@@ -1274,6 +1590,154 @@ def check_doi(conn, doi: str) -> tuple[str, str | None, int | None, dict | None]
             agency = "Handle"
         return "var", agency or "Handle", 200, None
     return "yok", None, hcode, None
+
+
+CR_KEEP = ("DOI", "title", "original-title", "author", "container-title", "ISSN", "issn-type", "volume", "issue",
+           "page", "article-number", "issued", "published-print", "published-online", "type", "prefix", "member")
+CR_SELECT = ",".join(k for k in CR_KEEP)
+CR_LIST_GAP = 1.0  # liste sorguları: public havuzda saniyede 1, eşzamanlılık 1
+
+
+def crossref_bulk(conn, log=print, max_total: int = 150_000):
+    """Kaynaklardaki DOI'lerin öneklerini Crossref'ten sayfa sayfa (1000 kayıt) çeker.
+    - Kaynakta geçen DOI'ler: kayıt ajansı denetimi (doi_check) tek istekte 1000 DOI ilerler.
+    - Kaynaklarda DOI'si yazılmamış ama Crossref'te olan makaleler: künye eşleşmesiyle (başlık + yazar/sayı/
+      sayfa, aynı kurallar) bulunur ve 'crossref' kaynak kaydı olarak makaleye bağlanır.
+    Büyük uluslararası önekler (max_total üstü) tek tek denetime (verify) bırakılır."""
+    pref: dict[str, int] = {}
+    for (d,) in conn.execute("SELECT DISTINCT doi FROM source_record WHERE doi IS NOT NULL AND in_scope=1"):
+        p = d.split("/", 1)[0]
+        pref[p] = pref.get(p, 0) + 1
+    known = {r[0] for r in conn.execute("SELECT prefix FROM cr_prefix")}
+    todo = sorted(set(pref) - known, key=lambda p: -pref[p])
+    log(f"Crossref önekleri: {len(pref)} ({len(todo)} için toplam sorulacak)")
+    for p in todo:
+        time.sleep(CR_LIST_GAP)
+        try:
+            _, body = http_get(conn, f"https://api.crossref.org/prefixes/{p}/works?rows=0", accept="application/json",
+                               ok_404=True)
+            total = json.loads(body).get("message", {}).get("total-results", 0) if body else 0
+        except (AccessError, ValueError) as e:
+            log(f"  {p}: toplam alınamadı ({str(e)[:80]})")
+            continue
+        mode = "toplu" if 0 < total <= max(max_total, 3 * pref[p]) and total <= 600_000 else "tek"
+        conn.execute("INSERT OR REPLACE INTO cr_prefix(prefix,n_source,total,mode,updated_at) VALUES (?,?,?,?,?)",
+                     (p, pref[p], total, mode, now()))
+    rows = conn.execute("SELECT prefix, total FROM cr_prefix WHERE mode='toplu' AND done=0 ORDER BY n_source DESC"
+                        ).fetchall()
+    log(f"Toplu çekilecek önek: {len(rows)}, toplam {sum(r[1] for r in rows):,} Crossref kaydı")
+    for p, total in rows:
+        cursor, fetched, ms, found = "*", 0, 0, 0
+        while True:
+            time.sleep(CR_LIST_GAP)
+            url = (f"https://api.crossref.org/prefixes/{p}/works?rows=1000&select={CR_SELECT}"
+                   f"&cursor={urllib.parse.quote(cursor, safe='')}")
+            try:
+                _, body = http_get(conn, url, accept="application/json")
+                msg = json.loads(body).get("message", {})
+            except (AccessError, ValueError) as e:
+                log(f"  {p}: sayfa alınamadı ({str(e)[:100]}); önek sonra yeniden denenecek")
+                break
+            items = msg.get("items") or []
+            if not items:
+                conn.execute("UPDATE cr_prefix SET done=1, fetched=?, matched_source=?, found=?, updated_at=? "
+                             "WHERE prefix=?", (fetched, ms, found, now(), p))
+                break
+            a, b = crossref_store_page(conn, items)
+            fetched, ms, found = fetched + len(items), ms + a, found + b
+            conn.execute("UPDATE cr_prefix SET fetched=?, matched_source=?, found=?, updated_at=? WHERE prefix=?",
+                         (fetched, ms, found, now(), p))
+            cursor = msg.get("next-cursor")
+            if not cursor or len(items) < 1000:
+                conn.execute("UPDATE cr_prefix SET done=1, updated_at=? WHERE prefix=?", (now(), p))
+                break
+        log(f"  {p}: {fetched:,}/{total:,} Crossref kaydı; kaynak DOI'si doğrulanan {ms:,}, "
+            f"künyeyle DOI'si bulunan {found:,}")
+
+
+def crossref_store_page(conn, items) -> tuple[int, int]:
+    ms = found = 0
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        for it in items:
+            doi = norm_doi(it.get("DOI"))
+            if not doi:
+                continue
+            meta = {k: it.get(k) for k in CR_KEEP}
+            in_src = [r[0] for r in conn.execute(
+                "SELECT DISTINCT article_id FROM source_record WHERE doi=? AND article_id IS NOT NULL", (doi,))]
+            if in_src or conn.execute("SELECT 1 FROM source_record WHERE doi=? LIMIT 1", (doi,)).fetchone():
+                prev = conn.execute("SELECT status, meta FROM doi_check WHERE doi=?", (doi,)).fetchone()
+                if not (prev and prev[0] == "var" and prev[1]):
+                    conn.execute("INSERT OR REPLACE INTO doi_check(doi,status,agency,http,meta,checked_at) "
+                                 "VALUES (?,?,?,?,?,?)", (doi, "var", "Crossref", 200,
+                                                          json.dumps(meta, ensure_ascii=False), now()))
+                    ms += 1
+                    for aid in in_src:
+                        rebuild_article(conn, aid)
+                continue
+            if it.get("type") != "journal-article":
+                continue
+            rec = crossref_view(meta)
+            rec["source"], rec["source_id"] = "crossref", doi
+            if not rec["title"] or conn.execute("SELECT 1 FROM source_record WHERE source='crossref' AND source_id=?",
+                                                (doi,)).fetchone():
+                continue
+            aid, method, score, _ = find_match(conn, rec)
+            if not aid or method != "kunye":
+                continue
+            v = load_article_view(conn, aid)
+            if v["dois"] or best_title_sim(rec["titles"], v["titles"]) < 0.9:
+                continue  # makalenin zaten DOI'si var ya da başlık yeterince tutmuyor
+            vals = dict(rec)
+            for k in ("titles", "authors", "journals", "extra"):
+                vals[k] = json.dumps(rec[k], ensure_ascii=False)
+            cols = ["source", "source_id", "in_scope", "scope_note", "url", "doi", "iz", "title", "titles", "lang",
+                    "authors", "journal", "journals", "issn", "eissn", "pub_date", "year", "month", "volume", "issue",
+                    "spage", "epage", "article_no", "doc_type", "extra"]
+            vals["url"] = f"https://doi.org/{doi}"
+            vals["scope_note"] = "Crossref'te künye eşleşmesiyle bulundu"
+            conn.execute(f"INSERT INTO source_record({', '.join(cols)}, article_id, match_method, match_score, "
+                         f"partition, page_no, fetched_at, updated_at) VALUES ({', '.join('?' * len(cols))},?,?,?,?,?,?,?)",
+                         [vals[c] for c in cols] + [aid, "kunye-crossref", round(score, 3), "onek", 0, now(), now()])
+            conn.execute("INSERT OR REPLACE INTO doi_check(doi,status,agency,http,meta,checked_at) VALUES (?,?,?,?,?,?)",
+                         (doi, "var", "Crossref", 200, json.dumps(meta, ensure_ascii=False), now()))
+            add_keys(conn, aid, rec)
+            rebuild_article(conn, aid)
+            found += 1
+        conn.execute("COMMIT")
+    except BaseException:
+        conn.execute("ROLLBACK")
+        raise
+    return ms, found
+
+
+def rebuild_all(conn, name: str = "isnad-denetim-1", batch: int = 500, log=print):
+    st = conn.execute("SELECT last_id, done FROM rebuild_state WHERE name=?", (name,)).fetchone()
+    if st and st[1]:
+        log(f"yeniden üretim '{name}' zaten tamam")
+        return
+    last = st[0] if st else 0
+    if not st:
+        conn.execute("INSERT INTO rebuild_state(name,last_id,started_at,updated_at) VALUES (?,?,?,?)",
+                     (name, 0, now(), now()))
+    top = conn.execute("SELECT MAX(id) FROM article").fetchone()[0] or 0
+    t0, n0 = time.monotonic(), last
+    while True:
+        ids = [r[0] for r in conn.execute("SELECT id FROM article WHERE id>? ORDER BY id LIMIT ?", (last, batch))]
+        if not ids:
+            conn.execute("UPDATE rebuild_state SET done=1, updated_at=? WHERE name=?", (now(), name))
+            log(f"yeniden üretim tamam ({top:,} makale kimliğine kadar)")
+            return
+        conn.execute("BEGIN IMMEDIATE")
+        for i in ids:
+            rebuild_article(conn, i)
+        last = ids[-1]
+        conn.execute("UPDATE rebuild_state SET last_id=?, updated_at=? WHERE name=?", (last, now(), name))
+        conn.execute("COMMIT")
+        if (last // batch) % 100 == 0:
+            rate = (last - n0) / max(time.monotonic() - t0, 1)
+            log(f"{now()} yeniden üretim: {last:,}/{top:,} ({rate:,.0f}/sn)")
 
 
 def verify(conn, limit: int, log=print):
@@ -1527,6 +1991,11 @@ def main(argv=None):
     r.add_argument("--groups", type=int, default=1, help="0 = kaynaklar bitene kadar")
     r.add_argument("--verify", type=int, default=500, help="her grup sonunda denetlenecek DOI sayısı")
     r.add_argument("--no-export", action="store_true", help="CSV'yi bu süreç yazmasın (verify-loop yazar)")
+    sub.add_parser("dp-archive", help="DergiPark dergi arşivleri: sayı tarihleri ve ISSN")
+    cb = sub.add_parser("crossref-bulk", help="Crossref önek bazında toplu DOI doğrulama ve DOI bulma")
+    cb.add_argument("--max-total", type=int, default=150_000)
+    rb = sub.add_parser("rebuild-all", help="bütün makaleleri yeniden üret (kaldığı yerden)")
+    rb.add_argument("--name", default="isnad-denetim-1")
     vl = sub.add_parser("verify-loop", help="DOI doğrulama + CSV + genel rapor döngüsü")
     vl.add_argument("--batch", type=int, default=2000)
     vl.add_argument("--export-every", type=int, default=600, help="saniye")
@@ -1548,6 +2017,15 @@ def main(argv=None):
         return
     if a.cmd == "verify":
         verify(conn, a.limit)
+        return
+    if a.cmd == "crossref-bulk":
+        crossref_bulk(conn, log=lambda m: print(m, flush=True), max_total=a.max_total)
+        return
+    if a.cmd == "rebuild-all":
+        rebuild_all(conn, a.name, log=lambda m: print(m, flush=True))
+        return
+    if a.cmd == "dp-archive":
+        harvest_dp_archive(conn, raw_connect(), log=lambda m: print(m, flush=True))
         return
     if a.cmd == "verify-loop":
         last = 0.0
