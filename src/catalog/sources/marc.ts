@@ -117,6 +117,13 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
   for (const [i, e] of df("024").entries()) {
     if (sub(e, "2").includes("doi")) add("DOI", sub(e, "a")[0] ?? "", `024[${i}]$a`);
   }
+  // WorldCat numbers: supporting evidence for ISBN-less duplicates, never an identifier on their own.
+  for (const [i, e] of df("035").entries()) {
+    for (const value of sub(e, "a")) {
+      const oclc = /^\(OCoLC\)(?:ocm|ocn|on)?0*(\d+)$/.exec(value.trim())?.[1];
+      if (oclc) add("OCLC", oclc, `035[${i}]$a`);
+    }
+  }
   const creators: Attribution[] = [];
   for (const tag of ["100", "110", "111", "700", "710", "711"]) {
     for (const [i, e] of df(tag).entries()) {

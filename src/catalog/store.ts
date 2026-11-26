@@ -372,6 +372,19 @@ export class Catalog {
         return !comparableDate(effective.date, f.date) && !different(editionNumber(effective.edition), editionNumber(f.edition)) &&
           !diffFormat(effective.format, f.format) && !different(effective.publisher, f.publisher);
       });
+      // A shared WorldCat number confirms one of the candidates whose title, authors, date,
+      // edition and publisher already agree; it does not override any of those checks.
+      const oclc = claims.filter(c => c.field === "OCLC").map(c => c.value);
+      if (oclc.length && possible.length && candidates.length <= 50) {
+        const marks = oclc.map(() => "?").join(",");
+        const shared = possible.filter(candidate => this.row(`SELECT 1 FROM raw_records r JOIN claims c ON c.raw_id=r.id
+          WHERE r.edition_id=? AND c.field='OCLC' AND c.value IN (${marks}) LIMIT 1`, candidate.id, ...oclc));
+        if (shared.length === 1) {
+          this.attach(raw, shared[0]!.id, claims, identities, "matched");
+          this.issue(raw, shared[0]!.id, "oclc-match", "Başlık, yazar, yıl, baskı ve yayınevi uyuşan baskıyla ortak OCLC numarası.", null, "info");
+          return;
+        }
+      }
       if (possible.length || candidates.length > 50) {
         for (const candidate of possible) this.issue(raw, null, "possible-duplicate", "Başlık ve baskı ipuçları aynı, ortak güvenilir kimlik yok.", candidate.id);
         if (candidates.length > 50) this.issue(raw, null, "too-many-candidates", "Aynı başlık için ayrıntılı inceleme gerekli.");

@@ -79,6 +79,21 @@ describe("bibliyografik katalog", () => {
     expect(db.review(0, 10)).not.toContainEqual(expect.objectContaining({ code: "identifier-conflict" }));
   });
 
+  it("ISBN'siz çift kaydı yalnız ortak OCLC numarası ve uyuşan künyeyle birleştirir", () => {
+    const db = catalog();
+    const make = (id: string, oclc: string, extra: Record<string, string> = {}): RecordInput => ({ id, raw: id, url: `https://example.org/${id}`,
+      creators: [{ creator: { creatorType: "author", lastName: "Kaya", firstName: "Ali" }, path: "100" }],
+      fields: Object.entries({ title: "ISBN'siz Kitap", place: "Ankara", publisher: "Yayınevi", date: "1976", OCLC: oclc, ...extra })
+        .map(([field, value]) => ({ field, value, path: field })) });
+    db.job("k10plus", "o", "o");
+    db.batch("k10plus", "o", 0, [make("a", "123"), make("b", "123"), make("c", "999"), make("d", "123", { date: "1980" })], true);
+    expect(db.stats().counts.editions).toBe(2);
+    expect(db.details(1)?.validation).toContainEqual(expect.objectContaining({ code: "oclc-match" }));
+    const review = db.review(0, 10);
+    expect(review).toContainEqual(expect.objectContaining({ external_id: "c", code: "possible-duplicate" }));
+    expect(review.filter(r => (r as { external_id: string }).external_id === "b")).toEqual([]);
+  });
+
   it("tarihî ve çok yerli yayın yeri yazımlarında Türkiye kapsamını tanır", () => {
     for (const place of ["Konstantinopel", "Constantinople", "Dersaadet", "Der-i Saadet", "Smyrna", "Angora", "İstanbul [u.a.]",
       "Ankara ; Berlin", "Istanbul : Selbstverl.", "Eskişehir", "Istanbul, Turkiye", "Sarıyer/Istanbul", "Kadıköy-Istanbul",

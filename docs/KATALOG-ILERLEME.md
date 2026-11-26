@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 11:00 UTC
+
+- Yapılan: olası mükerrerler incelendi. Çoğu K10plus’ın kendi içindeki ISBN’siz çift kayıtlarıdır. Bunların 913’ü hedefle ortak OCLC numarası taşıyor, 2104’ünde numara farklı, 1239’unda numara yok. MARC adaptörü 035 OCLC numaralarını kanıt olarak okuyor. Künyesi uyuşan tek aday ortak OCLC numarası taşıyorsa kayıt o adaya bağlanıyor ve `oclc-match` ile işaretleniyor. Katalog yeniden kuruldu (7 dakika 53 saniye).
+- Durum: 169.785 benzersiz baskı, 158.081 eser. 942 kayıt OCLC ile bağlandı. Bağlanan bölüm sayısı 29.654, başlık kararları 6.
+- İncelemede 19.735 kayıt var (önceki 20.675): 7632 kapsam kanıtı eksikliği, 6676 kimlik çelişkisi, 3305 olası mükerrer (önceki 4257), 1342 kapsam çelişkisi, 1106 birden çok ISBN ve 20 başlık eksikliği.
+- 122 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,3, ISBN %48,3, sayfa sayısı %30,0, dil %8,8, yayınevi %7,6, katkı %4,9, yayın yeri %0,9.
+- Testler: 232 geçti. Typecheck ve build temiz.
+- Sıradaki: kalan olası mükerrerler. Yıl yazımları (“(1976)” ile “1976”, “2024-” ile “2024”) ve “Verlag nicht ermittelbar” gibi yer tutucular karşılaştırmayı bozuyor. Bunlar kanıt değeri taşımayan biçim farklarıdır, normalleştirilmeleri gerekir.
+
 ### 2026-11-26 09:55 UTC
 
 - Yapılan: geniş kaynaklar için `ingest --only-tr` Türkiye ön süzgeci eklendi. Süzülen kayıtlar saklanmaz ama iş konumunu ilerletir. DOAB bu süzgeçle birleşik kataloğa alındı ve kurulum betiğine eklendi.

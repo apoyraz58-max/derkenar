@@ -182,4 +182,8 @@ npm run catalog -- parts --db work/katalog.sqlite --file work/crossref-bolum.jso
 
 26 Kasım 2026 anlık görüntüsünde 50 yayınevinden 53.621 bölüm vardır. Bunların 28.128’i katalogdaki 1952 baskıya bağlandı. 434 bölüm kitap ISBN’i taşımaz.
 
+### OCLC destekli çift kayıt eşleştirmesi
+
+K10plus kayıtlarının 035 alanındaki WorldCat (OCLC) numaraları `OCLC` kanıtı olarak saklanır. Bu numara tek başına kimlik sayılmaz ve ISBN gibi eşleştirme yapmaz. Başlık, yazar, yıl, baskı ve yayınevi zaten uyuşan adaylar arasında yalnız biri aynı OCLC numarasını taşıyorsa ISBN’siz kayıt o baskıya bağlanır. Karar `oclc-match` bilgi kaydıyla izlenir. OCLC numaraları farklı olan adaylar olası mükerrer olarak incelemede kalır. 26 Kasım 2026 kurulumunda 942 kayıt bu yolla bağlandı.
+
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.
