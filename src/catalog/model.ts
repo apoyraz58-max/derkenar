@@ -76,8 +76,16 @@ export function equivalent(value: string): string {
     .replace(/\p{M}+/gu, "").replace(/[ʿʾ‘’'`´.]/gu, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 }
 
+// Cataloguers' "unknown" markers are not publisher or place evidence ("Verlag nicht ermittelbar", "[s.n.]", "y.y.").
+const PLACEHOLDER = /\$?n?\[?(?<![\p{L}])(?:(?:kein\s+)?(?:verlag(?:sname)?|ort|erscheinungsort)\s+(?:nicht\s+)?ermittelbar|s\.\s?n\.?|s\.\s?l\.?|sine\s+(?:nomine|loco)|publisher\s+not\s+identified|place\s+of\s+publication\s+not\s+identified|y\.\s?y\.?|yayınevi\s+yok|yer\s+yok)(?![\p{L}])\]?/giu;
+
+export function withoutPlaceholder(value: string): string {
+  return value.replace(PLACEHOLDER, " ").replace(/^[\s:;,/\[\]]+|[\s:;,/\[]+$/gu, "").replace(/\s+/gu, " ").trim();
+}
+
 export function cleanClaim(claim: Claim): Claim {
-  const value = claim.value.normalize("NFC").trim().replace(/\s+/gu, " ");
+  let value = claim.value.normalize("NFC").trim().replace(/\s+/gu, " ");
+  if (claim.field === "publisher" || claim.field === "place" || claim.field === "otherPlaces") value = withoutPlaceholder(value);
   if (claim.field === "title") return { ...claim, value: isnadTitle(value) };
   if (claim.field === "place") return { ...claim, value: isnadPlace(value) };
   if (claim.field === "country" && /^(TR|TUR|Türkiye|Turkey|XB-TR|tu)$/i.test(value)) return { ...claim, value: "TR" };

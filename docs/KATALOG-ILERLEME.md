@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 12:00 UTC
+
+- Yapılan: yer tutucu yayınevi ve yer değerleri (“Verlag nicht ermittelbar”, “[s.n.]”, “y.y.” vb.) artık kanıt sayılmıyor. Yıl karşılaştırması tek yıl içeren yazımları aynı yıl sayıyor. Katalog yeniden kuruldu (8 dakika 9 saniye).
+- Durum: 169.641 benzersiz baskı (−144), 158.039 eser. Yazım farkı yüzünden yanlışlıkla ayrı baskı sayılan çift kayıtlar birleşti ya da incelemeye alındı. OCLC ile bağlanan kayıt sayısı 963.
+- İncelemede 19.802 kayıt var: 7632 kapsam kanıtı eksikliği, 6619 kimlik çelişkisi, 3428 olası mükerrer, 1342 kapsam çelişkisi, 1106 birden çok ISBN ve 20 başlık eksikliği.
+- 122 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,2, ISBN %48,2, sayfa sayısı %30,0, dil %8,7, yayınevi %7,9 (yer tutucular çıkarıldı), katkı %4,9, yayın yeri %1,0.
+- Testler: 233 geçti. Typecheck ve build temiz.
+- Sıradaki: kalan olası mükerrerlerde OCLC numarası olmayan ama sayfa sayısı, yer, yıl ve yayınevi birebir uyuşan çiftler. Bunların otomatik birleştirilmesi kimliksiz benzerlik ilkesine aykırıdır, kullanıcıya sorulmalıdır. Alternatif iş: DNB ve LoC dışındaki açık kaynaklar.
+
 ### 2026-11-26 11:00 UTC
 
 - Yapılan: olası mükerrerler incelendi. Çoğu K10plus’ın kendi içindeki ISBN’siz çift kayıtlarıdır. Bunların 913’ü hedefle ortak OCLC numarası taşıyor, 2104’ünde numara farklı, 1239’unda numara yok. MARC adaptörü 035 OCLC numaralarını kanıt olarak okuyor. Künyesi uyuşan tek aday ortak OCLC numarası taşıyorsa kayıt o adaya bağlanıyor ve `oclc-match` ile işaretleniyor. Katalog yeniden kuruldu (7 dakika 53 saniye).

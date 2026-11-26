@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
-import { otherVolume, parseEditionNumber, publicationScope, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
+import { otherVolume, parseEditionNumber, publicationScope, withoutPlaceholder, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { collectCrossref, crossrefParts } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
@@ -92,6 +92,23 @@ describe("bibliyografik katalog", () => {
     const review = db.review(0, 10);
     expect(review).toContainEqual(expect.objectContaining({ external_id: "c", code: "possible-duplicate" }));
     expect(review.filter(r => (r as { external_id: string }).external_id === "b")).toEqual([]);
+  });
+
+  it("yer tutucuları kanıt saymaz, yıl yazım farklarını aynı yıl sayar", () => {
+    const cases: [string, string][] = [["Verlag nicht ermittelbar", ""], ["Erscheinungsort nicht ermittelbar", ""], ["[s.n.]", ""], ["s.n", ""],
+      ["publisher not identified", ""], ["y.y.", ""], ["Adana [s.n.]", "Adana"], ["[s.n.]: Halk Kitabhanesi", "Halk Kitabhanesi"],
+      ["$n[Verlag nicht ermittelbar]", ""], ["Kitabevi", "Kitabevi"], ["Usns. Yayınları", "Usns. Yayınları"]];
+    for (const [value, expected] of cases) expect(withoutPlaceholder(value), value).toBe(expected);
+    const db = catalog();
+    const make = (id: string, extra: Record<string, string>): RecordInput => ({ id, raw: id, url: `https://example.org/${id}`,
+      creators: [{ creator: { creatorType: "author", lastName: "Kaya", firstName: "Ali" }, path: "100" }],
+      fields: Object.entries({ title: "Yıllı Kitap", place: "Ankara", OCLC: "77", ...extra }).map(([field, value]) => ({ field, value, path: field })) });
+    db.job("k10plus", "y", "y");
+    db.batch("k10plus", "y", 0, [make("a", { date: "1976", publisher: "Yayınevi" }), make("b", { date: "(1976)", publisher: "Verlag nicht ermittelbar" }),
+      make("c", { date: "1413/1993", publisher: "Yayınevi" })], true);
+    expect(db.stats().counts.editions).toBe(2);
+    expect(db.item(1)?.fields.publisher).toBe("Yayınevi");
+    expect(db.details(1)?.validation).toContainEqual(expect.objectContaining({ code: "oclc-match" }));
   });
 
   it("tarihî ve çok yerli yayın yeri yazımlarında Türkiye kapsamını tanır", () => {
