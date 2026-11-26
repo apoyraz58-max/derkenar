@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 20:15 UTC
+
+- Yapılan: İSNAD başlık biçimlendirmesinde ISBD ayırıcısı (“ : ”) artık “: ” yazılıyor. Ardından parantez geliyorsa yalnız boşluk kalıyor (“Kendi Hattıyla : (İnceleme)” → “Kendi Hattıyla (İnceleme)”). Boşluksuz iki noktaya dokunulmuyor (“10:30”). Kural Word eklentisiyle ortak. “ : ” artığı taşıyan başlıklar 3666’dan 4’e indi. Katalog yeniden kuruldu (10 dakika 18 saniye).
+- Durum: 177.044 benzersiz baskı, 164.374 eser. OCLC ile bağlanan 1085 kayıt, bağlı bölüm 29.651.
+- İncelemede 20.911 kayıt var: 7593 kapsam kanıtı eksikliği, 6754 kimlik çelişkisi, 3849 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,5, sayfa sayısı %29,4, dil %8,3, yayınevi %8,1, katkı %4,8, yayın yeri %1,0.
+- Testler: 236 geçti. Typecheck ve build temiz.
+- Sıradaki: kongre ve kurum kitaplarında başlığı tekrarlayan kurum yazarı. MARC alan işareti artıkları (“$n”, “@n”).
+
 ### 2026-11-26 19:20 UTC
 
 - Yapılan: İSNAD çıktısı 40 rastgele baskıda denetlendi. En yaygın sorun semtli yayın yeriydi (“Cağaloğlu, İstanbul”: 13.095 baskı). İSNAD yer biçimlendirmesi artık semti atıp şehri yazıyor. Kural Word eklentisiyle ortak. Katalog yeniden kuruldu (10 dakika).

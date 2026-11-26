@@ -94,7 +94,9 @@ export function isnadTitle(title: string): string {
   return title
     .split(/(\s*:\s*)/)
     // In an Arabic title the part after ":" stays small too ("…: el-fıkh ve usûluhû").
-    .map((part, i) => (i % 2 ? part : isArabicTitle(part) ? (i === 0 ? arabicPart(part, allCaps) : allCaps ? lower(part) : part) : titleCasePart(part, allCaps)))
+    // A cataloguer's ISBD separator (" : ") becomes ": ", or a space before a parenthesis ("Hattıyla : (İnceleme)").
+    .map((part, i, all) => (i % 2 ? (/^\s+:/.test(part) && i < all.length - 1 ? (/^\(/.test(all[i + 1]!) ? " " : ": ") : part)
+      : isArabicTitle(part) ? (i === 0 ? arabicPart(part, allCaps) : allCaps ? lower(part) : part) : titleCasePart(part, allCaps)))
     .join("");
 }
 
