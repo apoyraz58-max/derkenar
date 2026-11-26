@@ -19,6 +19,15 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 12:55 UTC
+
+- Yapılan: K10plus Türkiye e-kitapları toplandı (ülke kodu sorgusuyla 3617, yayın yeri sorgusuyla 1409 kayıt) ve kataloğa ile kurulum betiğine eklendi. DataCite denendi, ancak ülke süzgeci çalışmıyor (`country=TR` tüm yayıncıları döndürüyor). Bu yüzden bırakıldı.
+- Durum: 173.973 benzersiz baskı (+4332), 161.640 eser. 29.651 bölüm bağlı.
+- İncelemede 20.228 kayıt var: 7674 kapsam kanıtı eksikliği, 6732 kimlik çelişkisi, 3466 olası mükerrer, 1559 kapsam çelişkisi, 1123 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,7, ISBN %49,1, sayfa sayısı %29,8, dil %8,5, yayınevi %8,3, katkı %4,9, yayın yeri %1,0.
+- Testler: 233 geçti. Typecheck ve build temiz. Bu çalıştırmada kod değişmedi, yalnız kurulum betiği ve veriler değişti.
+
 ### 2026-11-26 12:00 UTC
 
 - Yapılan: yer tutucu yayınevi ve yer değerleri (“Verlag nicht ermittelbar”, “[s.n.]”, “y.y.” vb.) artık kanıt sayılmıyor. Yıl karşılaştırması tek yıl içeren yazımları aynı yıl sayıyor. Katalog yeniden kuruldu (8 dakika 9 saniye).
