@@ -51,6 +51,9 @@ export interface CatalogEntry {
   university?: string | null;
   thesisType?: string | null;
   /** An article in a journal issue (the card's edition line is "السنة ٣٤ - العدد ١١٥"): the journal, its volume (السنة) and issue (العدد). */
+  /** An entry taken from another source than the catalog's own (OpenITI), and its identifier there ("0255Jahiz.Bayan"). */
+  catalog?: string | null;
+  ref?: string | null;
   journal?: string | null;
   volume?: string | null;
   issue?: string | null;
@@ -83,6 +86,7 @@ function creatorOf(a: CatalogAuthor): Creator | null {
 
 /** A catalog entry as an İSNAD record: transcribed title (the plain form goes with it), DİA names, its source. */
 export function catalogItem(e: CatalogEntry, catalog = SHAMELA): Item {
+  catalog = e.catalog || catalog;
   const item = emptyItem(e.journal ? "journalArticle" : e.university ? "thesis" : "book", "samile");
   item.fields.title = e.title;
   const short = shortTitleOf(e.title);
@@ -107,7 +111,7 @@ export function catalogItem(e: CatalogEntry, catalog = SHAMELA): Item {
   if (e.edition && e.edition > 1) item.fields.edition = String(e.edition);
   if (e.volumes && e.volumes > 1) item.fields.numberOfVolumes = String(e.volumes);
   item.fields.libraryCatalog = catalog;
-  item.fields.extra = [`Kaynak: ${catalog}, kitap no. ${e.id}`, `Kaynak adı: ${e.ar}`, `Transkripsiyonsuz başlık: ${e.plain}`, ...(e.review?.length ? [`Kontrol: ${e.review.join("; ")}`] : [])].join("\n");
+  item.fields.extra = [`Kaynak: ${catalog}, kitap no. ${e.ref || e.id}`, `Kaynak adı: ${e.ar}`, `Transkripsiyonsuz başlık: ${e.plain}`, ...(e.review?.length ? [`Kontrol: ${e.review.join("; ")}`] : [])].join("\n");
   return item;
 }
 
