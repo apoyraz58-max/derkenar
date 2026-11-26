@@ -15,7 +15,7 @@ import { collectCrossref, crossrefParts } from "./sources/crossref.js";
 
 const HELP = `Derkenar bibliyografik katalog • Node.js 22.13+
   npm run catalog -- pilot     --db DB [--vefeyat CSV]
-  npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|crossref|ozgur|ozgur-kbart|ozgur-kunye|exchange --file DOSYA [--vefeyat CSV] [--limit N]
+  npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|crossref|ozgur|ozgur-kbart|ozgur-kunye|exchange --file DOSYA [--vefeyat CSV] [--limit N] [--only-tr]
   npm run catalog -- collect   --source doab|crossref|k10plus|ozgur|ozgur-kbart --file DOSYA [--isbn ISBN | --query CQL [--limit N]]
   npm run catalog -- parts     --db DB --file CROSSREF-BOLUM.jsonl   (kitap bölümleri; collect --source crossref --parts ile)
   npm run catalog -- recheck  --db DB --source KAYNAK [--limit N] [--after N]
@@ -34,7 +34,7 @@ async function main() {
       db: { type: "string" }, source: { type: "string" }, file: { type: "string" }, vefeyat: { type: "string" },
       limit: { type: "string" }, after: { type: "string" }, format: { type: "string" }, id: { type: "string" },
       "raw-id": { type: "string" }, reason: { type: "string" }, isbn: { type: "string" }, query: { type: "string" }, first: { type: "string" }, later: { type: "string" }, volume: { type: "string" },
-      port: { type: "string" }, help: { type: "boolean" }, parts: { type: "boolean" },
+      port: { type: "string" }, help: { type: "boolean" }, parts: { type: "boolean" }, "only-tr": { type: "boolean" },
     },
   });
   if (o.help || !command) { console.log(HELP); return; }
@@ -91,7 +91,7 @@ async function main() {
       case "ingest": {
         const authority = o.vefeyat ? loadAuthority(o.vefeyat) : undefined;
         const result = await ingestFile(db, sourceArg(), required("file"), {
-          limit: o.limit ? integer(o.limit) : undefined, authority,
+          limit: o.limit ? integer(o.limit) : undefined, authority, onlyTurkey: o["only-tr"],
         });
         output(result);
         break;

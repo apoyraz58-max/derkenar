@@ -19,6 +19,17 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 09:55 UTC
+
+- Yapılan: geniş kaynaklar için `ingest --only-tr` Türkiye ön süzgeci eklendi. Süzülen kayıtlar saklanmaz ama iş konumunu ilerletir. DOAB bu süzgeçle birleşik kataloğa alındı ve kurulum betiğine eklendi.
+- DOAB’ın 115.634 kaydından 209’u saklandı: 152 yeni baskı, 2 eşleşme ve 55 inceleme kaydı. Bölüm bağlantıları 29.654’e çıktı (+1526).
+- Durum: 169.787 benzersiz baskı (+152), 158.083 eser.
+- İncelemede 20.675 kayıt var: 7632 kapsam kanıtı eksikliği, 6671 kimlik çelişkisi, 4257 olası mükerrer, 1342 kapsam çelişkisi, 1106 birden çok ISBN ve 20 başlık eksikliği.
+- 122 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,3, ISBN %48,3, sayfa sayısı %30,1, dil %8,8, yayınevi %7,6, katkı %4,9, yayın yeri %0,9.
+- Testler: 231 geçti. Typecheck ve build temiz.
+- Sıradaki: olası mükerrerler (4257) için kanıtlı birleştirme kuralları incelenmeli. Crossref’in yersiz kitapları için kullanıcı kararı bekleniyor.
+
 ### 2026-11-26 09:05 UTC
 
 - Yapılan: aynı ISBN’i paylaşan çok ciltli takımlarda farklı ciltler artık ayrı baskı sayılıyor. Koşul: başlık cilt eki dışında aynı, yazar ve yayınevi aynı, cilt numarası farklı olmalı. Örnek: “Masonluk Tarihimizde 1920-1924. Cilt 1” ve “… Cilt 3”. Crossref yersiz kitapları için K10plus, DNB ve LoC denendi, isabet yok (ayrıntı “Sıradaki adım” bölümünde). Katalog yeniden kuruldu (8 dakika 14 saniye). Başlık kararları ve bölüm bağlantıları (28.128) korundu.

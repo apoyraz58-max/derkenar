@@ -1,14 +1,14 @@
 import { basename } from "node:path";
 import { readFile, stat } from "node:fs/promises";
 import type { Authority } from "./authority.js";
-import { type SourceId, type RecordInput } from "./model.js";
+import { mayBeTurkish, type SourceId, type RecordInput } from "./model.js";
 import { Catalog } from "./store.js";
 import { exchange, fileHash, reviewed } from "./sources/files.js";
 import { crossrefFile } from "./sources/crossref.js";
 import { ozgurKbart } from "./sources/kbart.js";
 import { marcFile } from "./sources/marc.js";
 
-export async function ingestFile(catalog: Catalog, source: SourceId, file: string, options: { limit?: number; authority?: Authority } = {}) {
+export async function ingestFile(catalog: Catalog, source: SourceId, file: string, options: { limit?: number; authority?: Authority; onlyTurkey?: boolean } = {}) {
   const revision = async () => {
     const info = await stat(file, { bigint: true });
     return `${info.ino}:${info.size}:${info.mtimeNs}:${info.ctimeNs}`;
@@ -39,6 +39,7 @@ export async function ingestFile(catalog: Catalog, source: SourceId, file: strin
   } else {
     throw new Error("Bu kaynak için otomatik arşivleme etkin değil.");
   }
+  const keep = options.onlyTurkey ? mayBeTurkish : undefined;
   let cursor = status.cursor;
   let skipped = 0;
   let added = 0;
@@ -47,19 +48,19 @@ export async function ingestFile(catalog: Catalog, source: SourceId, file: strin
     if (skipped < status.cursor) { skipped++; continue; }
     if (added === options.limit) {
       await verify();
-      catalog.batch(source, hash, cursor, pending, false, options.authority);
+      catalog.batch(source, hash, cursor, pending, false, options.authority, keep);
       return { cursor: cursor + pending.length, state: "paused" };
     }
     pending.push(record);
     added++;
     if (pending.length === 200) {
       await verify();
-      catalog.batch(source, hash, cursor, pending, false, options.authority);
+      catalog.batch(source, hash, cursor, pending, false, options.authority, keep);
       cursor += pending.length;
       pending = [];
     }
   }
   await verify();
-  catalog.batch(source, hash, cursor, pending, true, options.authority);
+  catalog.batch(source, hash, cursor, pending, true, options.authority, keep);
   return { cursor: cursor + pending.length, state: "completed" };
 }

@@ -178,6 +178,16 @@ describe("bibliyografik katalog", () => {
     expect(db.review(0, 10)).toContainEqual(expect.objectContaining({ code: "scope-unknown" }));
   });
 
+  it("Türkiye ön süzgeciyle yalnız Türkiye kanıtlı kayıtları saklar ve devamda aynı konumdan sürer", async () => {
+    const db = catalog();
+    expect(await ingestFile(db, "doab", root("test/fixtures/doab-sample.xml"), { onlyTurkey: true, limit: 1 })).toEqual({ cursor: 1, state: "paused" });
+    expect(db.stats().counts).toMatchObject({ raw: 0, editions: 0 });
+    expect(await ingestFile(db, "doab", root("test/fixtures/doab-sample.xml"), { onlyTurkey: true })).toEqual({ cursor: 2, state: "completed" });
+    expect(db.stats().counts).toMatchObject({ raw: 1, editions: 1 });
+    expect(db.item(1)?.fields.title).toBe("Current Issues in Archival Science");
+    expect(db.review(0, 10)).toEqual([]);
+  });
+
   it("yayınevi MARC dosyasını ayrı kaynak olarak toplar ve kaydın bağlantısını saklar", async () => {
     const sample = readFileSync(root("test/fixtures/k10plus-9786054791712.xml"), "utf8");
     const record = sample.match(/<record xmlns=[\s\S]+?<\/record>/)?.[0]!;

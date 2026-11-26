@@ -176,6 +176,23 @@ export function otherVolume(a: string, b: string): boolean {
   return equivalent(x[1]!) === equivalent(y[1]!) && number(x[2]!) !== number(y[2]!);
 }
 
+/**
+ * Pre-filter for wide sources: true when the record's own claims point to
+ * Türkiye (or conflict about it). Records rejected here are not stored at all,
+ * so they neither create editions nor fill the review queue.
+ */
+export function mayBeTurkish(input: RecordInput): boolean {
+  const fields: Record<string, string> = {};
+  let turkishCountry = false;
+  for (const claim of input.fields.map(cleanClaim)) {
+    if (!claim.value) continue;
+    fields[claim.field] ??= claim.value;
+    if (claim.field === "country" && claim.value === "TR") turkishCountry = true;
+  }
+  const scope = publicationScope(fields);
+  return turkishCountry || scope === "TR" || scope === "conflict";
+}
+
 export function publicationScope(fields: Record<string, string>): "TR" | "outside" | "unknown" | "conflict" {
   const turkish = turkeyPlace(fields.place ?? "") || turkeyPlace(fields.otherPlaces ?? "");
   if (fields.country === "TR") return "TR";

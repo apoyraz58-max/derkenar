@@ -190,11 +190,13 @@ export class Catalog {
     return { cursor: job.cursor, state: job.state };
   }
 
-  batch(source: SourceId, snapshot: string, cursor: number, entries: readonly RecordInput[], complete: boolean, authority?: Authority) {
+  batch(source: SourceId, snapshot: string, cursor: number, entries: readonly RecordInput[], complete: boolean, authority?: Authority,
+    keep?: (entry: RecordInput) => boolean) {
     this.transaction(() => {
       const state = this.row<{cursor: number; state: string}>("SELECT cursor,state FROM jobs WHERE source=? AND snapshot=?", source, snapshot);
       if (!state || state.cursor !== cursor || state.state === "completed") throw new Error("Toplama konumu başka bir işlem tarafından değiştirildi.");
-      for (const entry of entries) this.ingest(source, entry, authority);
+      // Filtered entries still advance the cursor so that a resumed job skips them too.
+      for (const entry of entries) if (!keep || keep(entry)) this.ingest(source, entry, authority);
       this.put("UPDATE jobs SET cursor=?,state=?,updated_at=CURRENT_TIMESTAMP WHERE source=? AND snapshot=?",
         cursor + entries.length, complete ? "completed" : "paused", source, snapshot);
     });
