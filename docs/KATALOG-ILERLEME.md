@@ -6,17 +6,26 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 0. Crossref kitap bölümleri için `parts` tablosu ve adaptör (tasarım notu: BIBLIYOGRAFIK-KATALOG.md, Crossref bölümü). Yer bilgisi olmayan 6942 Crossref kaydı için ISBN önek haritası değerlendirilmeli; tek başına kapsam kanıtı sayılmaz.
 1. İnceleme kuyruğunda güvenli otomatik kurallar. Aynı ISBN ve farklı, kanıtlı baskı numarası varsa ayrı baskı oluşturulmalı. ISBN-10/13 eşdeğerliği ve cilt ayrımı ele alınmalı. Kural yalnız kanıtlı alanlara dayanmalı ve testle korunmalı.
-2. MARC adaptörü tüm 264$a ve 260$a yerlerini kapsam kanıtı olarak okumalı. Örnek: “Berlin ; İstanbul” ortak yayınları.
 3. DNB (`services.dnb.de`) ve Library of Congress (`lx2.loc.gov`) ile sayfa sayısı ve ISBN gibi eksik alanlar tamamlanmalı. Önce lisans ve kullanım koşulları doğrulanmalı.
 4. Yeni açık kaynaklar değerlendirilmeli. Millî Kütüphane toplu verisi kurumla yazışma gerektirir. Bu adım kullanıcıya bildirilecek, otomatik yürütülmeyecek.
 
 ## Açık notlar
 
-- Veritabanları konteynerde `work/` altındadır ve konteyner yenilenince silinir. `katalog.sqlite` yeniden kurulurken şu sıra izlenir: Özgür KBART, künye, MARC ve başlık kararları (kılavuzdaki tabloya bakın), ardından `work/k10plus-tr.xml` ve `work/k10plus-yer.xml`, en sonda `recheck --source k10plus`.
+- Veritabanları konteynerde `work/` altındadır ve konteyner yenilenince silinir. Yeniden kurmak için `scripts/catalog-rebuild.sh` kullanılır. Betik eksik anlık görüntüleri indirir ve yaklaşık 6 dakika sürer. Crossref verisi zamanla değiştiğinden yeniden indirilen dosyanın özeti kayıttan farklı olabilir.
 - Özgür 1277 (Yarman/Yaman) incelemede kalır.
 - Ağ izin listesi dışındaki alan adları istenmez, bu dosyaya not edilir.
 
 ## Günlük
+
+### 2026-11-26 06:00 UTC
+
+- Yapılan: MARC adaptörü ortak yayınlardaki sonraki yayın yerlerini `otherPlaces` kanıtı olarak saklıyor ve kapsam denetimi bu kanıta da bakıyor. Kataloğu baştan kuran `scripts/catalog-rebuild.sh` eklendi ve katalog bu betikle yeniden kuruldu (6 dakika). 1515 kayıtta ek yayın yeri var.
+- Durum: 169.376 benzersiz baskı (+69), 157.939 eser. Türkiye dışı sayılan 125 kayıt kapsam çelişkisi olarak incelemeye alındı (dışarıda kalan 645’ten 520’ye indi).
+- İncelemede 20.866 kayıt var: 7632 kapsam kanıtı eksikliği, 6795 kimlik çelişkisi, 4269 olası mükerrer, 1342 kapsam çelişkisi, 1069 birden çok ISBN ve 20 başlık eksikliği.
+- 119 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,3, ISBN %48,4, sayfa sayısı %30,2, dil %8,8, yayınevi %7,6, katkı %4,9, yayın yeri %0,9.
+- Testler: 226 geçti. Typecheck ve build temiz.
+- Sıradaki: inceleme kuyruğu kuralları (aynı ISBN ve kanıtlı farklı baskı numarası, ciltler) veya Crossref bölümleri için `parts` tablosu.
 
 ### 2026-11-26 04:55 UTC
 

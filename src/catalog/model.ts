@@ -123,10 +123,11 @@ function turkeyPlaceText(place: string): boolean {
 }
 
 export function publicationScope(fields: Record<string, string>): "TR" | "outside" | "unknown" | "conflict" {
+  const turkish = turkeyPlace(fields.place ?? "") || turkeyPlace(fields.otherPlaces ?? "");
   if (fields.country === "TR") return "TR";
-  if (fields.country && turkeyPlace(fields.place ?? "")) return "conflict";
+  if (fields.country && turkish) return "conflict";
   if (fields.country) return "outside";
-  if (fields.place && turkeyPlace(fields.place)) return "TR";
+  if (turkish) return "TR";
   return "unknown";
 }
 

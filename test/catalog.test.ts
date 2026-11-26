@@ -51,6 +51,9 @@ describe("bibliyografik katalog", () => {
     expect(publicationScope({ place: "Konstantinopel" })).toBe("TR");
     expect(publicationScope({ place: "Berlin ; İstanbul", country: "gw" })).toBe("conflict");
     expect(publicationScope({ place: "Imak, Istanbul", country: "gw" })).toBe("conflict");
+    expect(publicationScope({ place: "Berlin", otherPlaces: "İstanbul" })).toBe("TR");
+    expect(publicationScope({ place: "Berlin", otherPlaces: "İstanbul", country: "gw" })).toBe("conflict");
+    expect(publicationScope({ place: "Berlin", otherPlaces: "Wien" })).toBe("unknown");
   });
 
   it("pilot anlık görüntüsüne kaldığı satırdan devam eder ve tekrar aktarmaz", async () => {
@@ -101,6 +104,28 @@ describe("bibliyografik katalog", () => {
     expect(entries).toHaveLength(1);
     expect(db.item(1)?.fields).toMatchObject({ place: "İstanbul", ISBN: "9786054791712", edition: "1" });
     expect(db.item(1)?.creators.map(c => c.creatorType)).toEqual(expect.arrayContaining(["author", "translator", "editor"]));
+  });
+
+  it("MARC ortak yayınında sonraki yayın yerlerini kapsam kanıtı olarak saklar", async () => {
+    const xml = `<collection xmlns="http://www.loc.gov/MARC21/slim"><record><leader>00000nam a2200000 i 4500</leader>
+      <controlfield tag="001">ortak-1</controlfield><controlfield tag="008">261124s2026    gw            000 0 ger d</controlfield>
+      <datafield tag="020" ind1=" " ind2=" "><subfield code="a">9789751604439</subfield></datafield>
+      <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Ortak Kitap</subfield></datafield>
+      <datafield tag="264" ind1=" " ind2="1"><subfield code="a">Berlin</subfield><subfield code="a">İstanbul</subfield><subfield code="b">Verlag</subfield><subfield code="c">2026</subfield></datafield>
+    </record><record><leader>00000nam a2200000 i 4500</leader>
+      <controlfield tag="001">ortak-2</controlfield><controlfield tag="008">261124s2026    xx            000 0 tur d</controlfield>
+      <datafield tag="245" ind1="1" ind2="0"><subfield code="a">İkinci Ortak Kitap</subfield></datafield>
+      <datafield tag="264" ind1=" " ind2="1"><subfield code="a">Wien</subfield><subfield code="b">A</subfield><subfield code="c">2025</subfield></datafield>
+      <datafield tag="264" ind1=" " ind2="1"><subfield code="a">Ankara</subfield><subfield code="b">B</subfield></datafield>
+    </record></collection>`;
+    const file = join(temp, "ortak.xml");
+    writeFileSync(file, xml);
+    const db = catalog();
+    await ingestFile(db, "k10plus", file);
+    expect(db.review(0, 10)).toContainEqual(expect.objectContaining({ external_id: "ortak-1", code: "scope-conflict" }));
+    expect(db.stats().counts.editions).toBe(1);
+    expect(db.item(1)?.fields).toMatchObject({ title: "İkinci Ortak Kitap", place: "Wien" });
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "otherPlaces", observed: "Ankara", path: "264$a[1…]" }));
   });
 
   it("DOAB'ın sabit leader ve 008 ülke kodunu kanıt saymadan yayın yerine göre ayırır", async () => {

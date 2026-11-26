@@ -85,6 +85,10 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
   const date = imprint(sub(pub, "c")[0] ?? "").replace(/\.$/, "");
   const fixedYear = /^[st]$/.test(fixed[6] ?? "") && /^\d{4}$/.test(fixed.slice(7, 11)) ? fixed.slice(7, 11) : "";
   add("place", imprint(sub(pub, "a")[0] ?? ""), `${pubTag}$a`);
+  // Co-publications list further places ("Berlin ; İstanbul"); keep them as scope evidence, not as the selected place.
+  const publicationFields = pubTag === "264" ? df("264").filter(e => e.getAttribute("ind2") === "1") : df("260");
+  const places = [...new Set(publicationFields.flatMap(e => sub(e, "a")).map(imprint).filter(Boolean))];
+  add("otherPlaces", places.slice(1).join(" ; "), `${pubTag}$a[1…]`);
   add("publisher", imprint(sub(pub, "b")[0] ?? ""), `${pubTag}$b`);
   add("date", date || fixedYear, date ? `${pubTag}$c` : "008/06–10");
   // DOAB dışa aktarımında 008/15–17 her kayıtta "sp"dir; yayın ülkesi kanıtı sayılmaz.
