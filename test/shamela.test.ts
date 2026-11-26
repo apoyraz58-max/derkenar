@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { gunzipSync, strFromU8 } from "fflate";
 import { describe, expect, it } from "vitest";
 import { emptyState, planRefresh, putCitation } from "../src/core/docstate.js";
 import { Renderer } from "../src/core/engine.js";
@@ -107,5 +108,20 @@ describe("searching the catalog", () => {
     expect(ids("عمدة القاري")).toEqual([5756]);
     expect(ids("musannef")).toEqual([1]);
     expect(ids("xyz")).toEqual([]);
+  });
+});
+
+describe("the catalog that comes with the add-in", () => {
+  const c = JSON.parse(strFromU8(gunzipSync(readFileSync(new URL("../data/catalog/catalog.json.gz", import.meta.url))))) as { name: string; entries: CatalogEntry[] };
+  it("holds the reviewed entries only, each with a number and a title", () => {
+    expect(c.entries.length).toBeGreaterThan(10000);
+    expect(c.entries.every((e) => typeof e.id === "number" && typeof e.title === "string" && !e.review?.length)).toBe(true);
+    expect(new Set(c.entries.map((e) => e.id)).size).toBe(c.entries.length);
+  });
+  it("finds a Şamile book and an OpenITI one, each with its own source", () => {
+    const fut = searchCatalog("fütuhatül mekkiyye", c)[0]!;
+    expect(catalogItem(fut, c.name).fields.libraryCatalog).toBe("OpenITI");
+    const umde = searchCatalog("umdetul kari", c)[0]!;
+    expect(catalogItem(umde, c.name).fields.libraryCatalog).toBe("el-Mektebetü’ş-Şâmile");
   });
 });

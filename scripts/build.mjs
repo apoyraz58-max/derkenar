@@ -63,6 +63,9 @@ for (const f of ["pdf.min.mjs", "pdf.worker.min.mjs"]) await cp(nm(`pdfjs-dist/l
 // CSL styles and locales (CC BY-SA 3.0), loaded by the pane on demand.
 await cp(new URL("data/styles/", root), new URL("styles/", out), { recursive: true });
 
+// The book catalog (Şamile + OpenITI, reviewed entries), read by the pane on first need.
+await cp(new URL("data/catalog/", root), new URL("catalog/", out), { recursive: true });
+
 const template = await readFile(new URL("manifest/manifest.template.xml", root), "utf8");
 await writeFile(new URL("manifest.xml", out), template.replaceAll("{{BASE_URL}}", baseUrl).replaceAll("{{VERSION}}", manifestVersion));
 console.log(`Built Derkenar ${version} (manifest ${manifestVersion}) for ${baseUrl}`);
