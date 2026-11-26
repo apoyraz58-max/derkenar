@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 19:20 UTC
+
+- Yapılan: İSNAD çıktısı 40 rastgele baskıda denetlendi. En yaygın sorun semtli yayın yeriydi (“Cağaloğlu, İstanbul”: 13.095 baskı). İSNAD yer biçimlendirmesi artık semti atıp şehri yazıyor. Kural Word eklentisiyle ortak. Katalog yeniden kuruldu (10 dakika).
+- Denetimde görülen diğer sorunlar sıradaki işe kaldı: başlıkta “ : (” noktalama artığı, kongre kitaplarında başlığı tekrarlayan kurum yazarı, kaynaktan gelen “$n”/“@n” alan işareti artıkları.
+- Durum: 177.044 benzersiz baskı, 164.374 eser. OCLC ile bağlanan 1085 kayıt, bağlı bölüm 29.651.
+- İncelemede 20.911 kayıt var: 7593 kapsam kanıtı eksikliği, 6754 kimlik çelişkisi (önceki 7204), 3849 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,5, sayfa sayısı %29,4, dil %8,3, yayınevi %8,1, katkı %4,8, yayın yeri %1,0.
+- Testler: 236 geçti. Typecheck ve build temiz.
+
 ### 2026-11-26 18:30 UTC
 
 - Yapılan: baskı ifadesine “bası” kısaltması eklendi (“10. bası” / “11. bası”). Yayınevi karşılaştırmasında “Türkiye” ve “T.C.” önekleri yok sayılıyor (“İş Bankası” / “Türkiye İş Bankası”). Katalog yeniden kuruldu (8 dakika 36 saniye).

@@ -278,6 +278,14 @@ const TR_CITIES = [
 ];
 
 /** Arabic-world and Persian cities are written in Turkish; Western ones keep their own name (London, Leiden). */
+/** Frequent districts and quarters written before the city without Turkish letters. */
+const DISTRICTS = new Set(["maltepe", "yenimahalle", "yeni mahalle", "balgat", "ulus", "cebeci", "meram", "seyhan", "demirtepe", "dikmen",
+  "kocatepe", "oran", "taksim", "ikitelli", "sur", "galatasaray", "bilkent", "fatih", "osmangazi", "beytepe", "emek", "orhangazi", "bebek",
+  "bornova", "levent", "mezitli", "ostim", "teknikokullar", "tuzla", "atakum", "beylerbeyi", "karatay", "kazan", "maslak", "zeytinburnu",
+  "beykoz", "demetevler", "galata", "gimat", "kolej", "tesvikiye", "akyurt", "alsancak", "altunizade", "balcova", "besiktas", "beysukent",
+  "canik", "cankaya", "cihangir", "dikimevi", "ergazi", "sirkeci", "topkapi", "aksaray", "sultanahmet", "cagaloglu", "beyoglu", "kadikoy",
+  "sisli", "uskudar", "beyazit", "cemberlitas", "kizilay", "yenisehir", "sariyer", "bagcilar", "bakirkoy", "esenler", "gungoren", "eminonu"]);
+
 const PLACES: Record<string, string> = {
   ...Object.fromEntries(TR_CITIES.map((c) => [foldText(c), c])),
   afyon: "Afyonkarahisar",
@@ -311,7 +319,19 @@ export function isnadPlace(place: string): string {
     .replace(/\s*[,/-]\s*(Türkiye|Turkiye|Turkey|TR|Türkiye Cumhuriyeti)\.?$/i, "")
     .replace(/\s*:$/, "")
     .trim();
-  return PLACES[foldText(p)] ?? p;
+  const mapped = PLACES[foldText(p)];
+  if (mapped) return mapped;
+  // "Cağaloğlu, İstanbul", "Sarıyer/Istanbul", "Kızılay - Ankara": İSNAD writes the city, not the district.
+  const parts = p.split(/\s*[,/]\s*|\s+-\s+/).filter(Boolean);
+  if (parts.length === 2) {
+    const city = PLACES[foldText(parts[1]!)];
+    const district = foldText(parts[0]!);
+    const cityItself = TR_CITIES.some((c) => foldText(c) === district);
+    // Only a recognisable district: Turkish letters or a known name ("Paris, Istanbul" stays as written).
+    const looksDistrict = /[çğıöşüÇĞİÖŞÜ]/.test(parts[0]!) || DISTRICTS.has(district);
+    if (city && TR_CITIES.includes(city) && looksDistrict && (!cityItself || (district === "aksaray" && city === "İstanbul"))) return city;
+  }
+  return p;
 }
 
 export function isTurkishPlace(place: string): boolean {
