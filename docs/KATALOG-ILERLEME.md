@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-26 18:30 UTC
+
+- Yapılan: baskı ifadesine “bası” kısaltması eklendi (“10. bası” / “11. bası”). Yayınevi karşılaştırmasında “Türkiye” ve “T.C.” önekleri yok sayılıyor (“İş Bankası” / “Türkiye İş Bankası”). Katalog yeniden kuruldu (8 dakika 36 saniye).
+- Durum: 177.044 benzersiz baskı (+94 kanıtlı yeniden basım), 164.374 eser. OCLC ile bağlanan 1085 kayıt, bağlı bölüm 29.651.
+- İncelemede 21.337 kayıt var: 7593 kapsam kanıtı eksikliği, 7204 kimlik çelişkisi, 3849 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,5, sayfa sayısı %29,5, dil %8,3, yayınevi %8,1, katkı %4,8, yayın yeri %1,0.
+- Testler: 236 geçti. Typecheck ve build temiz.
+- Kalan kimlik çelişkilerinin çoğu gerçek inceleme gerektiriyor: transkripsiyon farkları, farklı başlıklar, baskı numarası olmadan farklı yıl.
+
 ### 2026-11-26 17:55 UTC
 
 - Yapılan: K10plus’ta Türkiye ISBN grubu taraması yapıldı. Önceki sorgulara girmeyen yalnız 647 kayıt kaldı. Bunlar `--only-tr` ile alındı (+33 baskı) ve kurulum betiğine eklendi. Kapsam ölçümü yapıldı: yayın yılı dağılımı kılavuza eklendi. K10plus’taki Türkiye kapsamı büyük ölçüde tükendi. Güncel ticari kitaplar katalogda zayıftır, örneğin 2010’lar için yalnız 37.954 baskı vardır.

@@ -46,7 +46,7 @@ describe("bibliyografik katalog", () => {
       ["II. basım", "2"], ["IV. Baskı", "4"], ["ikinci baskı", "2"], ["Üçüncü Basım", "3"], ["3. Aufl.", "3"], ["2nd ed.", undefined],
       ["2. ed.", "2"], ["1. tab'ı", undefined], ["Çapa ewil", undefined], ["Genişletilmiş baskı", undefined], ["2 Editör", undefined],
       ["1. basımevi", undefined], ["", undefined], ["7. bas", "7"], ["1. bas.", "1"], ["1. Auf", "1"], ["1. Auflage", "1"],
-      ["4. Basim", "4"], ["2 bastı", undefined]];
+      ["4. Basim", "4"], ["2 bastı", undefined], ["10. bası", "10"], ["11. Bası", "11"]];
     for (const [value, expected] of cases) expect(parseEditionNumber(value), value).toBe(expected);
   });
 
@@ -114,10 +114,11 @@ describe("bibliyografik katalog", () => {
 
   it("yayınevi adlarını genel ekler, harf farkları ve baş harf kısaltmalarından bağımsız karşılaştırır", () => {
     const same: [string, string][] = [["İletişim", "İletişim Yayınları"], ["Ayrıntı", "Ayrinti"], ["İletişim yay.", "İletişim Yayınları"],
-      ["YKY", "Yapı Kredi Yayınları"], ["Yetkin Hukuk Yayınları", "Yetkin Hukuk"], ["Kolektif Kitap", "Kolektif"], ["Timaş", "Timas"], ["Yayınevi", "Yayınevi"]];
+      ["YKY", "Yapı Kredi Yayınları"], ["Yetkin Hukuk Yayınları", "Yetkin Hukuk"], ["Kolektif Kitap", "Kolektif"], ["Timaş", "Timas"], ["Yayınevi", "Yayınevi"], ["İş Bankası Kültür Yayınları", "Türkiye İş Bankası Kültür Yayınları"],
+      ["T.C. Kültür Bakanlığı", "Kültür Bakanlığı"]];
     for (const [a, b] of same) expect(samePublisher(a, b), `${a} / ${b}`).toBe(true);
     const differentPublishers: [string, string][] = [["İletişim", "Ayrıntı"], ["Nobel Akademik", "Nobel Tıp"], ["YKY", "İletişim Yayınları"],
-      ["Türk Tarih Kurumu", "Türk Dil Kurumu"], ["Yayınevi", "Kitabevi"]];
+      ["Türk Tarih Kurumu", "Türk Dil Kurumu"], ["Yayınevi", "Kitabevi"], ["Türkiye Yayınevi", "Kültür Yayınevi"]];
     for (const [a, b] of differentPublishers) expect(samePublisher(a, b), `${a} / ${b}`).toBe(false);
     const db = catalog();
     const make = (id: string, publisher: string, edition: string, date: string): RecordInput => ({ id, raw: id, url: `https://example.org/${id}`, creators: [],
