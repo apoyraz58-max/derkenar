@@ -1,43 +1,44 @@
 # Durum raporu
 
-Zaman: 2026-11-26T04:12:06Z
+Zaman: 2026-11-26T05:11:11Z
 
-- Toplam tekil makale: **1,266,414** / hedef 1,000,000 (%126.64)
-- Hazır İSNAD 2 künyesi: **1,199,602** (eksik alanı olan: 66,812)
+- Toplam tekil makale: **1,332,527** / hedef 1,000,000 (%133.25)
+- Hazır İSNAD 2 künyesi: **1,258,506** (eksik alanı olan: 74,021)
 
 ## DOI durumu
 
-- Doğrulandı: 343,185
-  - yayın kaydı (DergiPark): 299,477
-  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 28,168
-  - kayıt ajansı (Crossref): 15,419
-  - kayıt ajansı (DataCite): 122
-- Doğrulama bekliyor: 170,502
-- Bulunamadı: 752,727
-- Kayıt ajansında denetim bekleyen tekil DOI: 467,982
-- Ajans denetimi sonuçları: var 43,843, yok 657
+- Doğrulandı: 405,103
+  - yayın kaydı (DergiPark): 354,295
+  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 36,978
+  - kayıt ajansı (Crossref): 13,682
+  - kayıt ajansı (DataCite): 144
+  - kayıt ajansı (DataCite) + yayın kaydı (DergiPark): 4
+- Doğrulama bekliyor: 142,328
+- Bulunamadı: 785,096
+- Kayıt ajansında denetim bekleyen tekil DOI: 494,605
+- Ajans denetimi sonuçları: var 50,981, yok 761
 
 ## Kaynağa göre kapsam
 
 | Kaynak | Aktarılan kayıt | Kapsamda | Bağlı makale | DOI'li kayıt | Sayfa | Kaynak listesi |
 |---|---:|---:|---:|---:|---:|---:|
-| DergiPark | 601,600 | 601,600 | 601,088 | 328,534 | 6,017 | — |
+| DergiPark | 711,100 | 711,100 | 710,507 | 392,287 | 7,112 | — |
 | TR Dizin | 715,042 | 712,678 | 712,200 | 352,171 | 7,169 | 715043 |
 | İSAM | 351,468 | 242,709 | 218,945 | 14 | 3,515 | 351468 |
 
 ## Birleştirme ve bekleyen eşleşmeler
 
-- Kaynak sayısına göre makale: 1 kaynak: 1,007,249, 2 kaynak: 252,458, 3 kaynak: 6,756
-- Birden fazla kaynak bağlantısı olan makale: 272,982
-- Eşleşme yöntemi: doi: 166,546, doi-baslik-uyusmazligi: 1,926, kunye: 124,309, yeni: 1,264,606
-- Denetim bekleyen belirsiz eşleşme: 112,818
-- Kaynaklar arası farkı işaretli makale: 127,513
+- Kaynak sayısına göre makale: 1 kaynak: 1,031,355, 2 kaynak: 293,919, 3 kaynak: 7,553
+- Birden fazla kaynak bağlantısı olan makale: 315,236
+- Eşleşme yöntemi: doi: 196,239, doi-baslik-uyusmazligi: 2,026, kunye: 137,721, yeni: 1,330,801
+- Denetim bekleyen belirsiz eşleşme: 120,925
+- Kaynaklar arası farkı işaretli makale: 148,531
 - Tarihsel bağlantılar: kayıt yok
-- Eksik alanlar: ISSN 550,396, sayfa/makale no 35,276, yazar 25,039, yıl 5,050, cilt/sayı 2,825, başlık 291
+- Eksik alanlar: ISSN 615,311, sayfa/makale no 35,724, yazar 25,341, yıl 11,413, cilt/sayı 2,960, başlık 305
 
 ## Erişim hataları
 
 - api.crossref.org HTTP None: 1 kez (son: deneme 1: <urlopen error [Errno 111] Connection refused>)
-- api.crossref.org HTTP 429: 375 kez (son: deneme 2: b'')
-- dergipark.org.tr HTTP None: 5 kez (son: sayfa alınamadı: not well-formed (invalid token): line 8112, column 172)
+- api.crossref.org HTTP 429: 397 kez (son: deneme 2: b'')
+- dergipark.org.tr HTTP None: 6 kez (son: sayfa alınamadı: not well-formed (invalid token): line 8112, column 172)
 
