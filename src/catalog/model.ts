@@ -37,6 +37,7 @@ export const SOURCES = {
   ozgur: { name: "Özgür Yayınları", license: "Yayınevinin katalog aktarım izni", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 78 },
   "ozgur-kunye": { name: "Özgür Yayınları (kitap künyeleri)", license: "Elle doğrulanmış bibliyografik alanlar", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 82 },
   "ozgur-kbart": { name: "Özgür Yayınları (KBART)", license: "Yayınevinin katalog aktarım izni", policy: "https://www.ozguryayinlari.com/site/tr/libraries", priority: 60 },
+  crossref: { name: "Crossref (Türkiye konumlu üyeler)", license: "Crossref üstverisi, yeniden kullanıma açık", policy: "https://www.crossref.org/documentation/retrieve-metadata/rest-api/", priority: 68 },
   doab: { name: "Directory of Open Access Books", license: "CC0 1.0 (üstveri)", policy: "https://www.doabooks.org/en/librarians/doab-metadata", priority: 70 },
   openlibrary: { name: "Open Library", license: "Internet Archive yeni hak ileri sürmez, mevcut katkı hakları saklıdır", policy: "https://openlibrary.org/developers/licensing", priority: 45 },
   exchange: { name: "Kullanıcı dosyası", license: "Kullanıcının sağladığı dosya", policy: "https://www.zotero.org/support/dev/data_formats", priority: 35 },

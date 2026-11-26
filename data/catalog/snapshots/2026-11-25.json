@@ -67,6 +67,20 @@
       "sha256": "6d86cd8d909ca0517f87122296f86439f85c755c7a239450f847c7582dd8987e",
       "records": 61415,
       "collected_at": "2026-11-25T23:15:00Z"
+    },
+    {
+      "source": "crossref",
+      "file": "work/crossref-tr.jsonl",
+      "url": "https://api.crossref.org/members/{id}/works",
+      "query": "members with location ~ Türkiye; filter=type:book,type:monograph,type:edited-book,type:reference-book",
+      "policy": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+      "format": "JSONL (künye alanları süzülmüş)",
+      "bytes": 20266280,
+      "sha256": "cf425d16dbe52c3978ad1b352648f5185fb27b5257e87a0bca903a7269d14ffd",
+      "records": 12275,
+      "members": 86,
+      "collected_at": "2026-11-26T04:49:00Z",
+      "note": "Crossref verisi zamanla değişir; aynı sonucu yeniden üretmek için dosyanın kendisi gerekir."
     }
   ]
 }

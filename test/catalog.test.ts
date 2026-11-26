@@ -8,6 +8,7 @@ import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
 import { publicationScope, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
+import { collectCrossref } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
 import { ozgurKbart } from "../src/catalog/sources/kbart.js";
 import { marcFile } from "../src/catalog/sources/marc.js";
@@ -156,6 +157,52 @@ describe("bibliyografik katalog", () => {
     expect(entries).toEqual(["TEST1-0", "TEST1-1", "TEST3-0"]);
   }, 20_000);
 
+  it("Crossref Türkiye üyelerinin kitaplarını toplar, taşıyıcılara ayırır ve konumu kapsam kanıtı saymaz", async () => {
+    const works = [
+      { DOI: "10.1234/Kitap.1", type: "monograph", title: ["Bir Kitap"], subtitle: ["Alt Başlık"], publisher: "Örnek Yayınları",
+        "publisher-location": "Ankara", "isbn-type": [{ value: "9789751604439", type: "print" }, { value: "9786054791712", type: "electronic" }],
+        "published-print": { "date-parts": [[2020]] }, issued: { "date-parts": [[2020, 5]] }, "edition-number": "2",
+        author: [{ given: "Ayşe", family: "YILMAZ", sequence: "additional" }, { given: "Ali", family: "Kaya", sequence: "first" }],
+        editor: [{ name: "Örnek Enstitüsü", sequence: "first" }], translator: [{ given: "Deniz", family: "Ak", sequence: "first" }],
+        reference: [{ key: "atılmalı" }] },
+      { DOI: "10.1234/kitap.2", type: "book", title: ["Yersiz Kitap"], publisher: "Örnek Yayınları", ISBN: ["9789753381086"],
+        issued: { "date-parts": [[2019]] }, author: [{ given: "Can", family: "Demir", sequence: "first" }] },
+      { DOI: "10.1234/bolum", type: "book-chapter", title: ["Bölüm"] },
+    ];
+    const urls: string[] = [];
+    const mock: typeof fetch = async url => {
+      urls.push(String(url));
+      const u = new URL(String(url));
+      if (u.pathname === "/members") {
+        const cursor = u.searchParams.get("cursor");
+        const items = cursor === "*" ? [
+          { id: 7, "primary-name": "Örnek", location: "Ankara, Turkey", "counts-type": { all: { monograph: 1, book: 1 } } },
+          { id: 8, "primary-name": "Başka", location: "Berlin, Germany", "counts-type": { all: { book: 9 } } },
+          { id: 9, "primary-name": "Dergi", location: "Türkiye", "counts-type": { all: { "journal-article": 9 } } },
+        ] : [];
+        return Response.json({ message: { items, "next-cursor": "c2" } });
+      }
+      expect(u.pathname).toBe("/members/7/works");
+      expect(u.searchParams.get("filter")).toContain("type:edited-book");
+      return Response.json({ message: { items: u.searchParams.get("cursor") === "*" ? works : [], "next-cursor": "n2" } });
+    };
+    const file = join(temp, "crossref.jsonl");
+    expect(await collectCrossref(file, {}, mock)).toEqual({ members: 1, written: 3 });
+    const db = catalog();
+    await ingestFile(db, "crossref", file);
+    expect(db.stats().counts).toMatchObject({ raw: 3, editions: 2 });
+    const print = db.item(1)!;
+    expect(print.fields).toMatchObject({ title: "Bir Kitap: Alt Başlık", ISBN: "9789751604439", date: "2020", edition: "2", place: "Ankara" });
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "format", source: "crossref", observed: "Basılı", selected: 1 }));
+    expect(print.fields.DOI).toBeUndefined();
+    expect(print.creators.map(c => [c.creatorType, c.lastName ?? c.name])).toEqual([["author", "Kaya"], ["author", "YILMAZ"], ["editor", "Örnek Enstitüsü"], ["translator", "Ak"]]);
+    expect(readFileSync(file, "utf8")).not.toContain("atılmalı");
+    expect(db.item(2)?.fields).toMatchObject({ ISBN: "9786054791712" });
+    expect(db.details(2)?.evidence).toContainEqual(expect.objectContaining({ field: "format", observed: "Elektronik", selected: 1 }));
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "place", source: "crossref", path: "publisher-location" }));
+    expect(db.review(0, 10)).toContainEqual(expect.objectContaining({ external_id: "10.1234/kitap.2", code: "scope-unknown" }));
+  });
+
   it("KBART satırını taşıyıcılarına ayırır ve yayın yeri kanıtı yoksa incelemeye alır", async () => {
     const columns = ["publication_type", "publication_title", "publisher_name", "title_url", "title_id",
       "print_identifier", "online_identifier", "date_monograph_published_print", "date_monograph_published_online",
@@ -203,6 +250,10 @@ describe("bibliyografik katalog", () => {
     expect(db.stats().counts).toMatchObject({ raw: 4, editions: 1 });
     expect(db.item(1)?.fields).toMatchObject({ ISBN: isbn, place: "Gaziantep", publisher: "Özgür Yayınları" });
     expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "publisher", source: "ozgur-kbart", selected: 1 }));
+    db.job("ttk", "page", "page");
+    db.batch("ttk", "page", 0, ["https://example.org/sayfa-a", "https://example.org/sayfa-b"].map((url, i) =>
+      record(`page-${i}`, { DOI: doi, ISBN: isbn, place: "Gaziantep", url })), true);
+    expect(db.details(1)?.validation).not.toContainEqual(expect.objectContaining({ code: "field-conflict", detail: "url" }));
     const review = db.review(0, 25);
     expect(review).toContainEqual(expect.objectContaining({ external_id: "different-isbn", code: "identifier-conflict" }));
     expect(review.filter(r => (r as { code: string }).code === "invalid-isbn")).toHaveLength(1);

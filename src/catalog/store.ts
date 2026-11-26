@@ -385,7 +385,8 @@ export class Catalog {
       const current = this.row<ClaimRow>(`SELECT c.id,c.value,s.priority FROM edition_fields f
         JOIN claims c ON c.id=f.claim_id JOIN raw_records r ON r.id=c.raw_id JOIN sources s ON s.id=r.source
         WHERE f.edition_id=? AND f.field=?`, edition, field);
-      if (current && different(fresh.value, current.value) &&
+      // Different landing pages (publisher page, DOI link) for one edition are evidence, not a conflict.
+      if (current && field !== "url" && different(fresh.value, current.value) &&
         (field !== "format" || diffFormat(fresh.value, current.value))) this.issue(raw, edition, "field-conflict", field);
       if (!current || (!keepSelected &&
         ((field === "format" && ["Basılı", "Elektronik"].includes(current.value) && !diffFormat(fresh.value, current.value)) ||

@@ -4,6 +4,7 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Sıradaki adım
 
+0. Crossref kitap bölümleri için `parts` tablosu ve adaptör (tasarım notu: BIBLIYOGRAFIK-KATALOG.md, Crossref bölümü). Yer bilgisi olmayan 6942 Crossref kaydı için ISBN önek haritası değerlendirilmeli; tek başına kapsam kanıtı sayılmaz.
 1. İnceleme kuyruğunda güvenli otomatik kurallar. Aynı ISBN ve farklı, kanıtlı baskı numarası varsa ayrı baskı oluşturulmalı. ISBN-10/13 eşdeğerliği ve cilt ayrımı ele alınmalı. Kural yalnız kanıtlı alanlara dayanmalı ve testle korunmalı.
 2. MARC adaptörü tüm 264$a ve 260$a yerlerini kapsam kanıtı olarak okumalı. Örnek: “Berlin ; İstanbul” ortak yayınları.
 3. DNB (`services.dnb.de`) ve Library of Congress (`lx2.loc.gov`) ile sayfa sayısı ve ISBN gibi eksik alanlar tamamlanmalı. Önce lisans ve kullanım koşulları doğrulanmalı.
@@ -16,6 +17,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 - Ağ izin listesi dışındaki alan adları istenmez, bu dosyaya not edilir.
 
 ## Günlük
+
+### 2026-11-26 04:55 UTC
+
+- Saatlik çalıştırmalar (00:41–04:41) işçi süreci yeniden başlatıldığı için gecikti ve tek bir çalıştırmada birleştirildi.
+- Yapılan: `crossref` kaynak adaptörü ve toplayıcı yazıldı. Türkiye konumlu 86 Crossref üyesinden 12.275 kitap kaydı toplandı. Basılı ve elektronik taşıyıcılar ayrıldı. Yazar, editör ve mütercim rolleri sıralarıyla alındı. URL farkları alan çelişkisi sayılmıyor, 1109 gürültü uyarısı temizlendi.
+- Durum: 169.307 benzersiz baskı (+4532), 157.872 eser. 1136 Crossref kaydı mevcut baskılara bağlandı.
+- İncelemede 20.810 kayıt var: 7706 kapsam kanıtı eksikliği, 6793 kimlik çelişkisi, 4266 olası mükerrer, 1217 kapsam çelişkisi, 1069 birden çok ISBN ve 20 başlık eksikliği.
+- 119 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,3, ISBN %48,4, sayfa sayısı %30,2, dil %8,8, yayınevi %7,6, katkı %4,9, yayın yeri %0,9.
+- Testler: 225 geçti. Typecheck ve build temiz.
 
 ### 2026-11-25 23:45 UTC
 

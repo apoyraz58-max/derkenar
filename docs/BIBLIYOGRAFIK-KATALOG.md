@@ -153,4 +153,20 @@ Kapsam denetimi için katalog, Word eklentisinin yer adı biçimlendirmesinden a
 
 Birleşik katalogda (`work/katalog.sqlite`, 1,48 GB) 164.775 benzersiz baskı ve 153.353 eser bulunur. 13.868 ham kayıt incelemededir: 6533 kimlik çelişkisi, 4265 olası mükerrer, 1217 kapsam çelişkisi, 1069 birden çok ISBN, 1024 kapsam kanıtı eksikliği ve 20 başlık eksikliği. Eksik alan oranları şöyledir: baskı numarası %62,4, ISBN %49,6, sayfa sayısı %28,2, dil %9,0, yayınevi %7,8, katkı %5,0 ve yayın yeri %1,0. 119 geçersiz ISBN kaydedildi.
 
+### Crossref Türkiye üyeleri
+
+Crossref üye kayıtlarında konumu Türkiye olan ve kitap düzeyinde DOI kaydettiren 86 yayınevi bulundu. Toplayıcı bu üyelerin `book`, `monograph`, `edited-book` ve `reference-book` türündeki kayıtlarını cursor sayfalamasıyla alır. Kayıtlardaki referans, özet ve lisans alanları atılır, yalnız künye alanları saklanır. Crossref’in eser listesi uç noktası `isbn-type`, `language` ve `edition-number` alanlarının seçilmesine izin vermez. Bu nedenle kayıtlar tam alınıp yerelde süzülür.
+
+```sh
+NODE_USE_ENV_PROXY=1 npm run catalog -- collect --source crossref --file work/crossref-tr.jsonl
+npm run catalog -- ingest --db work/katalog.sqlite --source crossref --file work/crossref-tr.jsonl
+npm run catalog -- recheck --db work/katalog.sqlite --source crossref --limit 10000
+```
+
+Üye konumu yalnız aday seçer, kapsam kanıtı sayılmaz. Kayıt `publisher-location` taşıyorsa bu alan yayın yeri kanıtıdır. 12.275 kaydın 4668’inde bu alan vardır, çoğunda değer “Ankara, Türkiye”dir. Basılı ve elektronik ISBN, KBART’ta olduğu gibi ayrı taşıyıcılara ayrılır. Ortak DOI eser düzeyi kanıt olarak tutulur. Yazar, editör ve mütercim rolleri `sequence` alanındaki sıraya göre saklanır.
+
+25–26 Kasım 2026 anlık görüntüsü birleşik kataloğa 4532 yeni baskı ekledi. 1136 kayıt mevcut baskılara bağlandı. Crossref katkı kaydı 4612 baskıda kullanılır. 6942 kayıt incelemede kaldı. Bunların çoğu yayın yeri taşımaz ve mevcut bir baskıyla ISBN eşleşmesi yoktur. Aynı baskının farklı açılış sayfaları (yayınevi sayfası, DOI bağlantısı) artık alan çelişkisi sayılmaz.
+
+Kitap bölümleri (yaklaşık 53.600 kayıt) henüz toplanmadı. Tasarım önerisi şöyledir. Bölümler `editions` tablosuna yazılmaz. Ayrı bir `parts` tablosunda bölüm başlığı, bölüm yazarları, sayfa aralığı, bölüm DOI’si ve bağlı baskı (ISBN veya kitap DOI’si) tutulur. Böylece İSNAD’ın kitap içinde bölüm atıfı için künye sağlanır ve baskı sayımı şişmez.
+
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.
