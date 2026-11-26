@@ -122,6 +122,34 @@ function turkeyPlaceText(place: string): boolean {
   return parts.some(p => turkishPart(p) || p.split(/\s*[/,]\s*|\s+-\s+|(?<=\p{L})-(?=\p{Lu})/u).some(turkishPart));
 }
 
+const ROMAN: Record<string, number> = { I: 1, V: 5, X: 10, L: 50, C: 100 };
+const ORDINAL_WORDS: Record<string, number> = { birinci: 1, ilk: 1, ikinci: 2, ucuncu: 3, dorduncu: 4, besinci: 5, altinci: 6,
+  yedinci: 7, sekizinci: 8, dokuzuncu: 9, onuncu: 10, first: 1, second: 2, third: 3, fourth: 4, fifth: 5 };
+const EDITION_WORD = "(?:bas[ıi]m|bask[ıi]|tab[ıi]|aufl(?:age)?|aufl\\.|ed(?:ition|ition\\.|\\.)?|[çc]ap)(?![\\p{L}])";
+
+/**
+ * Edition number stated in a source's edition statement: "2", "2. baskı",
+ * "Gözden geçirilmiş 2. baskı", "II. basım", "ikinci baskı", "3. Aufl.".
+ * Anything else ("Çapa ewil", "Genişletilmiş baskı") stays unknown.
+ */
+export function parseEditionNumber(value: string): string | undefined {
+  const text = value.trim();
+  if (/^\d+$/.test(text)) return String(Number(text));
+  const digits = new RegExp(`(?:^|\\s)(\\d+)\\s*\\.?\\s*${EDITION_WORD}`, "iu").exec(text);
+  if (digits) return String(Number(digits[1]));
+  const roman = new RegExp(`(?:^|\\s)([IVXLC]+)\\s*\\.\\s*${EDITION_WORD}`, "iu").exec(text);
+  if (roman && roman[1] === roman[1]!.toUpperCase()) {
+    const n = [...roman[1]!].reduce((sum, ch, i, all) => {
+      const v = ROMAN[ch]!, next = ROMAN[all[i + 1] ?? ""] ?? 0;
+      return sum + (v < next ? -v : v);
+    }, 0);
+    if (n > 0 && n < 200) return String(n);
+  }
+  const word = new RegExp(`(?:^|\\s)(\\p{L}+)\\s+${EDITION_WORD}`, "iu").exec(text);
+  const ordinal = word ? ORDINAL_WORDS[foldText(word[1]!)] : undefined;
+  return ordinal ? String(ordinal) : undefined;
+}
+
 export function publicationScope(fields: Record<string, string>): "TR" | "outside" | "unknown" | "conflict" {
   const turkish = turkeyPlace(fields.place ?? "") || turkeyPlace(fields.otherPlaces ?? "");
   if (fields.country === "TR") return "TR";

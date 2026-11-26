@@ -5,7 +5,7 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 ## Sıradaki adım
 
 0. Crossref kitap bölümleri için `parts` tablosu ve adaptör (tasarım notu: BIBLIYOGRAFIK-KATALOG.md, Crossref bölümü). Yer bilgisi olmayan 6942 Crossref kaydı için ISBN önek haritası değerlendirilmeli; tek başına kapsam kanıtı sayılmaz.
-1. İnceleme kuyruğunda güvenli otomatik kurallar. Aynı ISBN ve farklı, kanıtlı baskı numarası varsa ayrı baskı oluşturulmalı. ISBN-10/13 eşdeğerliği ve cilt ayrımı ele alınmalı. Kural yalnız kanıtlı alanlara dayanmalı ve testle korunmalı.
+1. İnceleme kuyruğu. Baskı numarası ayrıştırması tamamlandı. Kalan kimlik çelişkilerinin büyük bölümünde yayınevi adı farklı yazılmıştır (“İş Bankası Kültür Yayınları” ile “Türkiye İş Bankası Kültür Yayınları”, “Timaş” ile “Timas”). Kanıtlı bir yayınevi adı eşdeğerliği gerekir. Bunun için ISBN yayıncı öneki iyi bir dayanaktır, ancak önek tablosu izin listesi dışındadır. Ayrıca cilt ayrımı (“. 01” ve “. 02” gibi ekler) ele alınmalıdır.
 3. DNB (`services.dnb.de`) ve Library of Congress (`lx2.loc.gov`) ile sayfa sayısı ve ISBN gibi eksik alanlar tamamlanmalı. Önce lisans ve kullanım koşulları doğrulanmalı.
 4. Yeni açık kaynaklar değerlendirilmeli. Millî Kütüphane toplu verisi kurumla yazışma gerektirir. Bu adım kullanıcıya bildirilecek, otomatik yürütülmeyecek.
 
@@ -16,6 +16,15 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 - Ağ izin listesi dışındaki alan adları istenmez, bu dosyaya not edilir.
 
 ## Günlük
+
+### 2026-11-26 07:00 UTC
+
+- Yapılan: baskı numarası artık baskı ifadesinden okunuyor (“2. baskı”, “Gözden geçirilmiş 2. baskı”, “II. basım”, “ikinci baskı”, “3. Aufl.”). Aynı ISBN’li yeniden basımlar bu sayede kanıtlı olarak ayrı baskı oluyor. Katalog `scripts/catalog-rebuild.sh` ile yeniden kuruldu (6 dakika 40 saniye). Başlık kararları korundu.
+- Durum: 169.546 benzersiz baskı (+170), 157.939 eser.
+- İncelemede 20.709 kayıt var: 7632 kapsam kanıtı eksikliği, 6690 kimlik çelişkisi (önceki 6795), 4252 olası mükerrer, 1342 kapsam çelişkisi, 1069 birden çok ISBN ve 20 başlık eksikliği.
+- 119 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,2, ISBN %48,3, sayfa sayısı %30,1, dil %8,8, yayınevi %7,6, katkı %4,9, yayın yeri %0,9.
+- Testler: 228 geçti. Typecheck ve build temiz.
 
 ### 2026-11-26 06:00 UTC
 

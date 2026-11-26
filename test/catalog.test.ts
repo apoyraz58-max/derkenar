@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
-import { publicationScope, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
+import { parseEditionNumber, publicationScope, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { collectCrossref } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
@@ -39,6 +39,28 @@ describe("bibliyografik katalog", () => {
     expect(validIsbn("9789751604438")).toBeNull();
     expect(validIsbn("8111111111111")).toBeNull();
     expect(validIsbn("0/8044/2957/X")).toBeNull();
+  });
+
+  it("baskı numarasını baskı ifadesinden okur", () => {
+    const cases: [string, string | undefined][] = [["2", "2"], ["02", "2"], ["2. baskı", "2"], ["Gözden geçirilmiş 2. baskı", "2"],
+      ["II. basım", "2"], ["IV. Baskı", "4"], ["ikinci baskı", "2"], ["Üçüncü Basım", "3"], ["3. Aufl.", "3"], ["2nd ed.", undefined],
+      ["2. ed.", "2"], ["1. tab'ı", undefined], ["Çapa ewil", undefined], ["Genişletilmiş baskı", undefined], ["2 Editör", undefined],
+      ["1. basımevi", undefined], ["", undefined]];
+    for (const [value, expected] of cases) expect(parseEditionNumber(value), value).toBe(expected);
+  });
+
+  it("aynı ISBN'li ve baskı ifadesi farklı kaydı ayrı baskı olarak tutar", () => {
+    const db = catalog();
+    const make = (id: string, edition: string, date: string): RecordInput => ({
+      id, raw: id, url: `https://example.org/${id}`, creators: [],
+      fields: Object.entries({ title: "Ok, Tüfek ve At", ISBN: "9789751604439", place: "Ankara", publisher: "Türk Tarih Kurumu", edition, date })
+        .map(([field, value]) => ({ field, value, path: field })),
+    });
+    db.job("k10plus", "e", "e");
+    db.batch("k10plus", "e", 0, [make("a", "1", "2023"), make("b", "Gözden geçirilmiş 2. baskı", "2026"), make("c", "2. baskı", "2026")], true);
+    expect(db.stats().counts.editions).toBe(2);
+    expect(db.review(0, 10)).not.toContainEqual(expect.objectContaining({ code: "identifier-conflict" }));
+    expect(db.details(2)?.validation).toContainEqual(expect.objectContaining({ code: "shared-identifier" }));
   });
 
   it("tarihî ve çok yerli yayın yeri yazımlarında Türkiye kapsamını tanır", () => {

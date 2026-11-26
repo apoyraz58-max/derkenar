@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import type { DatabaseSync as SqliteDatabase, StatementSync, SupportedValueType } from "node:sqlite";
 import type { Authority } from "./authority.js";
-import { authorKey, cleanClaim, digest, equivalent, publicationScope, SOURCES, validIsbn, type RecordInput, type SourceId } from "./model.js";
+import { authorKey, cleanClaim, digest, equivalent, parseEditionNumber, publicationScope, SOURCES, validIsbn, type RecordInput, type SourceId } from "./model.js";
 import { checkItem } from "../core/isnad.js";
 import { emptyItem, type Creator, type Item } from "../core/zotero.js";
 
@@ -74,7 +74,7 @@ const CHOICES = ["title", "publisher", "place", "country", "date", "edition", "f
 const REQUIRED = ["title", "publisher", "place", "date", "language", "edition", "format", "numPages"];
 const localFields = new Set(["country", "format"]);
 const rank = (a: string) => (/^\d{4}(?:[-/]\d{2}(?:[-/]\d{2})?)?$/.test(a) ? a.slice(0, 4) : a);
-const editionNumber = (value?: string) => /^\d+$/.test(value ?? "") ? value : undefined;
+const editionNumber = (value?: string) => parseEditionNumber(value ?? "");
 const print = new Set(["Basılı", "Paperback", "Hardcover"]);
 const creatorKey = (value: string) => {
   const parsed = JSON.parse(value) as Record<string, unknown>;
