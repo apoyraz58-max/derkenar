@@ -10,13 +10,14 @@ import { Catalog } from "./store.js";
 import { serve } from "./panel.js";
 import { ingestFile } from "./ingest.js";
 import { collectDoab, collectK10plus, collectK10plusQuery, collectOzgur, collectOzgurKbart } from "./sources/collect.js";
-import { SOURCES, type SourceId } from "./model.js";
-import { collectCrossref } from "./sources/crossref.js";
+import { SOURCES, type PartInput, type SourceId } from "./model.js";
+import { collectCrossref, crossrefParts } from "./sources/crossref.js";
 
 const HELP = `Derkenar bibliyografik katalog • Node.js 22.13+
   npm run catalog -- pilot     --db DB [--vefeyat CSV]
   npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|doab|crossref|ozgur|ozgur-kbart|ozgur-kunye|exchange --file DOSYA [--vefeyat CSV] [--limit N]
   npm run catalog -- collect   --source doab|crossref|k10plus|ozgur|ozgur-kbart --file DOSYA [--isbn ISBN | --query CQL [--limit N]]
+  npm run catalog -- parts     --db DB --file CROSSREF-BOLUM.jsonl   (kitap bölümleri; collect --source crossref --parts ile)
   npm run catalog -- recheck  --db DB --source KAYNAK [--limit N] [--after N]
   npm run catalog -- approve-title --db DB --raw-id N --id BASKI --reason GEREKÇE
   npm run catalog -- stats     --db DB
@@ -33,7 +34,7 @@ async function main() {
       db: { type: "string" }, source: { type: "string" }, file: { type: "string" }, vefeyat: { type: "string" },
       limit: { type: "string" }, after: { type: "string" }, format: { type: "string" }, id: { type: "string" },
       "raw-id": { type: "string" }, reason: { type: "string" }, isbn: { type: "string" }, query: { type: "string" }, first: { type: "string" }, later: { type: "string" }, volume: { type: "string" },
-      port: { type: "string" }, help: { type: "boolean" },
+      port: { type: "string" }, help: { type: "boolean" }, parts: { type: "boolean" },
     },
   });
   if (o.help || !command) { console.log(HELP); return; }
@@ -51,7 +52,7 @@ async function main() {
     if (o.source === "doab") await collectDoab(required("file"));
     else if (o.source === "ozgur") await collectOzgur(required("file"));
     else if (o.source === "ozgur-kbart") await collectOzgurKbart(required("file"));
-    else if (o.source === "crossref") output(await collectCrossref(required("file"), { limit: o.limit ? integer(o.limit) : undefined, delayMs: 500 }));
+    else if (o.source === "crossref") output(await collectCrossref(required("file"), { limit: o.limit ? integer(o.limit) : undefined, delayMs: 500, parts: o.parts }));
     else if (o.source === "k10plus" && o.query) {
       output(await collectK10plusQuery(o.query, required("file"), { limit: o.limit ? integer(o.limit) : undefined, delayMs: 1000 }));
     }
@@ -70,7 +71,7 @@ async function main() {
     }
     return o.source as SourceId;
   };
-  const db = new Catalog(required("db"), !["ingest", "pilot", "recheck", "approve-title"].includes(command));
+  const db = new Catalog(required("db"), !["ingest", "pilot", "recheck", "approve-title", "parts"].includes(command));
   try {
     switch (command) {
       case "pilot": {
@@ -93,6 +94,15 @@ async function main() {
           limit: o.limit ? integer(o.limit) : undefined, authority,
         });
         output(result);
+        break;
+      }
+      case "parts": {
+        let total = 0, linked = 0, batch: PartInput[] = [];
+        const flush = () => { const r = db.addParts("crossref", batch); total += r.parts; linked += r.linked; batch = []; };
+        for await (const part of crossrefParts(required("file"))) { batch.push(part); if (batch.length === 500) flush(); }
+        flush();
+        const relinked = db.relinkParts().linked;
+        output({ parts: total, linked, relinked });
         break;
       }
       case "recheck":

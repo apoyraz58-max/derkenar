@@ -169,6 +169,13 @@ npm run catalog -- recheck --db work/katalog.sqlite --source crossref --limit 10
 
 25–26 Kasım 2026 anlık görüntüsü birleşik kataloğa 4532 yeni baskı ekledi. 1136 kayıt mevcut baskılara bağlandı. Crossref katkı kaydı 4612 baskıda kullanılır. 6942 kayıt incelemede kaldı. Bunların çoğu yayın yeri taşımaz ve mevcut bir baskıyla ISBN eşleşmesi yoktur. Aynı baskının farklı açılış sayfaları (yayınevi sayfası, DOI bağlantısı) artık alan çelişkisi sayılmaz.
 
-Kitap bölümleri (yaklaşık 53.600 kayıt) henüz toplanmadı. Tasarım önerisi şöyledir. Bölümler `editions` tablosuna yazılmaz. Ayrı bir `parts` tablosunda bölüm başlığı, bölüm yazarları, sayfa aralığı, bölüm DOI’si ve bağlı baskı (ISBN veya kitap DOI’si) tutulur. Böylece İSNAD’ın kitap içinde bölüm atıfı için künye sağlanır ve baskı sayımı şişmez.
+Kitap bölümleri `parts` tablosunda tutulur ve baskı sayılmaz. Her bölüm için başlık, yazar, editör ve mütercim adları, sayfa aralığı, kitap başlığı, kitap ISBN’leri, bölüm DOI’si, ham kayıt ve SHA-256 özeti saklanır. Kitabın ISBN’leri tek bir baskıya ulaşıyorsa bölüm o baskıya bağlanır. Birden çok baskıya ulaşıyorsa bölüm bağlanmaz. Yeni baskılar eklendikten sonra `parts` komutu bağlanmamış bölümleri yeniden dener. Bölümler panelde baskı ayrıntısının altında sayfa sırasıyla görünür.
+
+```sh
+NODE_USE_ENV_PROXY=1 npm run catalog -- collect --source crossref --parts --file work/crossref-bolum.jsonl
+npm run catalog -- parts --db work/katalog.sqlite --file work/crossref-bolum.jsonl
+```
+
+26 Kasım 2026 anlık görüntüsünde 50 yayınevinden 53.621 bölüm vardır. Bunların 28.128’i katalogdaki 1952 baskıya bağlandı. 434 bölüm kitap ISBN’i taşımaz.
 
 Bir milyon benzersiz baskı için kapsama ve çakışma oranları kaynak bazında ölçülmeli. Pilotun temsil alanı dar olduğundan, toplu içe alımda ISBN’siz eserler, aynı ISBN’li yeniden basımlar, farklı taşıyıcılar ve çok ciltli takımlardan bağımsız doğrulama örneği çıkarılmalı. Büyük aktarım için tek yazma süreci ve anahtar tabanlı sayfalama kullanılır. Bir milyon baskı için süre ve depolama kapasitesi ölçümü ayrı bir yük testi gerektirir.

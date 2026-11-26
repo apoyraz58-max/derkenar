@@ -2,14 +2,16 @@ import { createWriteStream } from "node:fs";
 import { link, unlink } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { setTimeout } from "node:timers/promises";
-import { type Attribution, type Claim, type RecordInput } from "../model.js";
+import { type Attribution, type Claim, type PartInput, type RecordInput } from "../model.js";
 import { lines } from "./files.js";
 
 const API = "https://api.crossref.org";
 const BOOK_TYPES = ["book", "monograph", "edited-book", "reference-book"];
+const PART_TYPES = ["book-chapter", "book-section", "book-part"];
 // The works route does not allow selecting isbn-type, language or edition-number, so whole records are kept.
 const KEEP = ["DOI", "type", "title", "subtitle", "publisher", "publisher-location", "language", "ISBN", "isbn-type",
-  "issued", "published-print", "published-online", "author", "editor", "translator", "edition-number", "URL", "member"] as const;
+  "issued", "published-print", "published-online", "author", "editor", "translator", "edition-number", "URL", "member",
+  "page", "container-title"] as const;
 type Fetch = typeof fetch;
 
 interface CrossrefName { given?: string; family?: string; name?: string; sequence?: string }
@@ -19,6 +21,7 @@ interface CrossrefWork {
   issued?: { "date-parts"?: (number | null)[][] }; "published-print"?: { "date-parts"?: (number | null)[][] };
   "published-online"?: { "date-parts"?: (number | null)[][] };
   author?: CrossrefName[]; editor?: CrossrefName[]; translator?: CrossrefName[]; "edition-number"?: string;
+  page?: string; "container-title"?: string[];
 }
 
 async function getJson(url: string, fetchFn: Fetch) {
@@ -37,7 +40,8 @@ async function getJson(url: string, fetchFn: Fetch) {
  * is Türkiye into a JSONL snapshot. Member location only selects candidates;
  * it is not treated as evidence of the place of publication.
  */
-export async function collectCrossref(file: string, options: { limit?: number; delayMs?: number; members?: string[] } = {}, fetchFn: Fetch = fetch) {
+export async function collectCrossref(file: string, options: { limit?: number; delayMs?: number; members?: string[]; parts?: boolean } = {}, fetchFn: Fetch = fetch) {
+  const types = options.parts ? PART_TYPES : BOOK_TYPES;
   if (!file.endsWith(".jsonl")) throw new Error("Crossref anlık görüntüsü için .jsonl uzantısı kullanın.");
   const members: { id: string; name: string }[] = [];
   if (options.members) members.push(...options.members.map(id => ({ id, name: id })));
@@ -46,8 +50,8 @@ export async function collectCrossref(file: string, options: { limit?: number; d
       const page = await getJson(`${API}/members?rows=1000&cursor=${encodeURIComponent(cursor)}`, fetchFn);
       const items = (page.message.items ?? []) as { id: number; "primary-name": string; location?: string; "counts-type"?: { all?: Record<string, number> } }[];
       for (const m of items) {
-        const books = BOOK_TYPES.reduce((sum, t) => sum + (m["counts-type"]?.all?.[t] ?? 0), 0);
-        if (/t[uü]rk/i.test(m.location ?? "") && books > 0) members.push({ id: String(m.id), name: m["primary-name"] });
+        const count = types.reduce((sum, t) => sum + (m["counts-type"]?.all?.[t] ?? 0), 0);
+        if (/t[uü]rk/i.test(m.location ?? "") && count > 0) members.push({ id: String(m.id), name: m["primary-name"] });
       }
       cursor = items.length ? String(page.message["next-cursor"] ?? "") : "";
     }
@@ -58,7 +62,7 @@ export async function collectCrossref(file: string, options: { limit?: number; d
   let written = 0;
   try {
     outer: for (const member of members) {
-      const filter = BOOK_TYPES.map(t => `type:${t}`).join(",");
+      const filter = types.map(t => `type:${t}`).join(",");
       for (let cursor = "*"; cursor;) {
         const page = await getJson(`${API}/members/${member.id}/works?rows=1000&filter=${filter}&cursor=${encodeURIComponent(cursor)}`, fetchFn);
         const items = (page.message.items ?? []) as CrossrefWork[];
@@ -141,5 +145,22 @@ export async function* crossrefFile(file: string): AsyncGenerator<RecordInput> {
         { field: "ISBN", value: c.isbn, path: `isbn-type[${c.key}]` }, { field: "format", value: c.format, path: `isbn-type[${c.key}]` },
         { field: "date", value: c.date, path: c.key === "print" ? "published-print" : "published-online" }] };
     }
+  }
+}
+
+/** Reads a Crossref JSONL snapshot of book chapters into parts linked by the book's ISBNs. */
+export async function* crossrefParts(file: string): AsyncGenerator<PartInput> {
+  let lineNumber = 0;
+  for await (const raw of lines(file)) {
+    lineNumber++;
+    if (!raw.trim()) continue;
+    let work: CrossrefWork;
+    try { work = JSON.parse(raw) as CrossrefWork; } catch { throw new Error(`Crossref ${lineNumber}. satır geçersiz JSON.`); }
+    const title = [work.title?.[0]?.trim(), work.subtitle?.[0]?.trim()].filter(Boolean).join(": ");
+    if (!work.DOI || !PART_TYPES.includes(work.type) || !title) continue;
+    const creators = [...names(work.author, "author", "author"), ...names(work.editor, "editor", "editor"),
+      ...names(work.translator, "translator", "translator")].map(a => a.creator);
+    yield { doi: work.DOI, title, creators, pages: work.page?.trim() ?? "", containerTitle: work["container-title"]?.[0]?.trim() ?? "",
+      containerIsbns: [...(work["isbn-type"] ?? []).map(i => i.value), ...(work.ISBN ?? [])], url: `https://doi.org/${work.DOI}`, raw };
   }
 }

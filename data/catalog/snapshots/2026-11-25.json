@@ -81,6 +81,19 @@
       "members": 86,
       "collected_at": "2026-11-26T04:49:00Z",
       "note": "Crossref verisi zamanla değişir; aynı sonucu yeniden üretmek için dosyanın kendisi gerekir."
+    },
+    {
+      "source": "crossref",
+      "file": "work/crossref-bolum.jsonl",
+      "url": "https://api.crossref.org/members/{id}/works",
+      "query": "members with location ~ Türkiye; filter=type:book-chapter,type:book-section,type:book-part",
+      "policy": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+      "format": "JSONL (künye alanları süzülmüş, kitap bölümleri)",
+      "bytes": 42622916,
+      "sha256": "c1bdcd59d571c3ff0b70c1b893f4b276e8dd598831596fbe26807081b7ddc530",
+      "records": 53621,
+      "members": 50,
+      "collected_at": "2026-11-26T07:47:00Z"
     }
   ]
 }

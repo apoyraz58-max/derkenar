@@ -32,7 +32,7 @@ button{font:inherit;border:1px solid var(--accent);color:var(--accent);backgroun
   <section><h2>Toplama işlemleri</h2><div id="jobs" class="scroll"></div></section>
   <section><h2>İnceleme kuyruğu</h2><div id="review" class="scroll"></div><button type="button" id="review-next">Sonraki kayıtlar</button></section>
   <section><h2>Baskı kayıtları</h2><div id="editions" class="scroll"></div><button type="button" id="edition-next">Sonraki baskılar</button></section>
-  <section hidden id="detail"><h2 id="detail-title"></h2><div id="evidence" class="scroll"></div><h3>Baskı doğrulaması</h3><div id="edition-validation" class="scroll"></div></section>
+  <section hidden id="detail"><h2 id="detail-title"></h2><div id="evidence" class="scroll"></div><h3>Baskı doğrulaması</h3><div id="edition-validation" class="scroll"></div><h3>Bölümler</h3><div id="edition-parts" class="scroll"></div></section>
 </main>
 <script src="/panel.js" defer></script>
 </html>`;
@@ -91,6 +91,9 @@ async function show(id) {
   }));
   table("edition-validation", ["Kod","Düzey","Açıklama","İlgili baskı"], detail.validation.map(r =>
     [r.code,r.level,r.detail,r.target_id && r.target_id !== id ? detailButton(r.target_id,r.target_id) : "—"]));
+  const person = c => c.name || [c.lastName, c.firstName].filter(Boolean).join(", ");
+  table("edition-parts", ["Bölüm","Katkı","Sayfa","Kaynak"], (detail.parts || []).map(p =>
+    [p.title, p.creators.map(c => person(c) + (c.creatorType === "author" ? "" : " (" + c.creatorType + ")")).join("; "), p.pages, link(p.url, p.source + " / " + p.doi)]));
   element("detail").scrollIntoView({block:"start"});
 }
 function detailButton(id, label) {

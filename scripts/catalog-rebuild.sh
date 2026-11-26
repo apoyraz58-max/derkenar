@@ -17,6 +17,7 @@ if [ ! -f work/k10plus-yer.xml ]; then
   cat collect --source k10plus --query "$query" --file work/k10plus-yer.xml
 fi
 [ -f work/crossref-tr.jsonl ] || cat collect --source crossref --file work/crossref-tr.jsonl
+[ -f work/crossref-bolum.jsonl ] || cat collect --source crossref --parts --file work/crossref-bolum.jsonl
 rm -f "$tmp" "$tmp-shm" "$tmp-wal"
 
 # Özgür: KBART ilk 200, PDF künyeleri, MARC ilk 200 ve başlık kararları (docs/BIBLIYOGRAFIK-KATALOG.md tablosu).
@@ -41,6 +42,7 @@ cat ingest --db "$tmp" --source k10plus --file work/k10plus-yer.xml
 cat recheck --db "$tmp" --source k10plus --limit 10000
 cat ingest --db "$tmp" --source crossref --file work/crossref-tr.jsonl
 cat recheck --db "$tmp" --source crossref --limit 10000
+cat parts --db "$tmp" --file work/crossref-bolum.jsonl
 
 mv -f "$tmp" "$target"
 rm -f "$tmp-shm" "$tmp-wal" "$target-shm" "$target-wal"

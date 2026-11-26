@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import type { DatabaseSync as SqliteDatabase, StatementSync, SupportedValueType } from "node:sqlite";
 import type { Authority } from "./authority.js";
-import { authorKey, cleanClaim, digest, equivalent, parseEditionNumber, publicationScope, SOURCES, validIsbn, type RecordInput, type SourceId } from "./model.js";
+import { authorKey, cleanClaim, digest, equivalent, parseEditionNumber, publicationScope, SOURCES, validIsbn, type PartInput, type RecordInput, type SourceId } from "./model.js";
 import { checkItem } from "../core/isnad.js";
 import { emptyItem, type Creator, type Item } from "../core/zotero.js";
 
@@ -62,6 +62,13 @@ CREATE TABLE IF NOT EXISTS validation (
 CREATE INDEX IF NOT EXISTS validation_raw ON validation(raw_id);
 CREATE INDEX IF NOT EXISTS validation_code_raw ON validation(code, raw_id);
 CREATE INDEX IF NOT EXISTS validation_edition ON validation(edition_id, raw_id);
+CREATE TABLE IF NOT EXISTS parts (
+  id INTEGER PRIMARY KEY, source TEXT NOT NULL REFERENCES sources, doi TEXT NOT NULL, title TEXT NOT NULL,
+  creators TEXT NOT NULL, pages TEXT, container_title TEXT, container_isbns TEXT NOT NULL,
+  edition_id INTEGER REFERENCES editions, url TEXT NOT NULL, raw TEXT NOT NULL, sha256 TEXT NOT NULL,
+  observed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(source, doi)
+) STRICT;
+CREATE INDEX IF NOT EXISTS parts_edition ON parts(edition_id);
 `;
 
 type Scalar = Record<string, string>;
@@ -454,6 +461,7 @@ export class Catalog {
         FROM claims c JOIN raw_records r ON r.id=c.raw_id WHERE r.edition_id=? ORDER BY c.field,r.id,c.position`, id),
       validation: this.rows(`SELECT code,level,detail,target_id FROM validation
         WHERE edition_id=? OR target_id=? OR raw_id IN(SELECT id FROM raw_records WHERE edition_id=?) ORDER BY id`, id, id, id),
+      parts: this.parts(id),
     };
   }
 
@@ -463,10 +471,59 @@ export class Catalog {
       FROM validation v JOIN raw_records r ON r.id=v.raw_id WHERE r.state='review' AND v.id>? ORDER BY v.id LIMIT ?`, after, limit);
   }
 
+  /**
+   * Stores book parts (chapters) without creating editions. A part is linked
+   * to an edition only when its container ISBNs point to exactly one edition.
+   */
+  addParts(source: SourceId, parts: readonly PartInput[]) {
+    return this.transaction(() => {
+      let linked = 0;
+      for (const part of parts) {
+        const isbns = [...new Set(part.containerIsbns.map(v => validIsbn(v)).filter((v): v is string => Boolean(v)))];
+        const edition = this.linkPart(isbns);
+        if (edition) linked++;
+        this.put(`INSERT INTO parts(source,doi,title,creators,pages,container_title,container_isbns,edition_id,url,raw,sha256)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(source,doi) DO UPDATE SET title=excluded.title,creators=excluded.creators,
+          pages=excluded.pages,container_title=excluded.container_title,container_isbns=excluded.container_isbns,
+          edition_id=excluded.edition_id,url=excluded.url,raw=excluded.raw,sha256=excluded.sha256`,
+        source, part.doi.toLowerCase(), part.title, JSON.stringify(part.creators), part.pages || null, part.containerTitle || null,
+        JSON.stringify(isbns), edition, part.url, part.raw, digest(part.raw));
+      }
+      return { parts: parts.length, linked };
+    });
+  }
+
+  /** Links parts whose book edition arrived after them. */
+  relinkParts() {
+    return this.transaction(() => {
+      let linked = 0;
+      for (const part of this.rows<{ id: number; container_isbns: string }>("SELECT id,container_isbns FROM parts WHERE edition_id IS NULL")) {
+        const edition = this.linkPart(JSON.parse(part.container_isbns) as string[]);
+        if (edition) { this.put("UPDATE parts SET edition_id=? WHERE id=?", edition, part.id); linked++; }
+      }
+      return { linked };
+    });
+  }
+
+  private linkPart(isbns: readonly string[]) {
+    const editions = new Set<number>();
+    for (const isbn of isbns) {
+      for (const hit of this.rows<{ edition_id: number }>("SELECT edition_id FROM identifiers WHERE scheme='ISBN' AND value=?", isbn)) editions.add(hit.edition_id);
+    }
+    return editions.size === 1 ? [...editions][0]! : null;
+  }
+
+  parts(edition: number) {
+    return this.rows<{ doi: string; title: string; creators: string; pages: string | null; source: string; url: string }>(
+      "SELECT doi,title,creators,pages,source,url FROM parts WHERE edition_id=? ORDER BY CAST(pages AS INTEGER),pages,title", edition)
+      .map(p => ({ ...p, creators: JSON.parse(p.creators) as unknown[] }));
+  }
+
   stats() {
-    const counts = this.row<{works: number; editions: number; raw: number; authority: number}>(`SELECT
+    const counts = this.row<{works: number; editions: number; raw: number; parts: number; linkedParts: number; authority: number}>(`SELECT
       (SELECT count(*) FROM works) AS works, (SELECT count(*) FROM editions) AS editions,
       (SELECT count(*) FROM raw_records) AS raw,
+      (SELECT count(*) FROM parts) AS parts, (SELECT count(*) FROM parts WHERE edition_id IS NOT NULL) AS linkedParts,
       (SELECT count(*) FROM contributions k JOIN claims c ON k.claim_id=c.id WHERE c.authority IS NOT NULL) AS authority`)!;
     const missing = REQUIRED.map(field => ({ field, count: counts.editions - this.row<{n:number}>(
       "SELECT count(*) AS n FROM edition_fields WHERE field=?", field)!.n }));

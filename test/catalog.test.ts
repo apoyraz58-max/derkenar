@@ -8,7 +8,7 @@ import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
 import { parseEditionNumber, publicationScope, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
-import { collectCrossref } from "../src/catalog/sources/crossref.js";
+import { collectCrossref, crossrefParts } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
 import { ozgurKbart } from "../src/catalog/sources/kbart.js";
 import { marcFile } from "../src/catalog/sources/marc.js";
@@ -248,6 +248,40 @@ describe("bibliyografik katalog", () => {
     expect(db.details(2)?.evidence).toContainEqual(expect.objectContaining({ field: "format", observed: "Elektronik", selected: 1 }));
     expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "place", source: "crossref", path: "publisher-location" }));
     expect(db.review(0, 10)).toContainEqual(expect.objectContaining({ external_id: "10.1234/kitap.2", code: "scope-unknown" }));
+  });
+
+  it("Crossref kitap bölümlerini baskı saymadan saklar ve tek baskıya ISBN ile bağlar", async () => {
+    const chapters = [
+      { DOI: "10.1234/Bolum.1", type: "book-chapter", title: ["Birinci Bölüm"], page: "1-20", "container-title": ["Ortak Kitap"],
+        "isbn-type": [{ value: "978-975-160-443-9", type: "print" }], author: [{ given: "Ece", family: "Kılıç", sequence: "first" }] },
+      { DOI: "10.1234/bolum.2", type: "book-chapter", title: ["Sonradan Bağlanan"], ISBN: ["9786054791712"], page: "21-40" },
+      { DOI: "10.1234/bolum.3", type: "book-chapter", title: ["İki Baskılı"], ISBN: ["9789753381086"] },
+      { DOI: "10.1234/kitap", type: "book", title: ["Kitap Atlanır"] },
+    ];
+    const mock: typeof fetch = async url => {
+      const u = new URL(String(url));
+      expect(u.searchParams.get("filter")).toBe("type:book-chapter,type:book-section,type:book-part");
+      return Response.json({ message: { items: u.searchParams.get("cursor") === "*" ? chapters : [], "next-cursor": "x" } });
+    };
+    const file = join(temp, "crossref-bolum.jsonl");
+    expect(await collectCrossref(file, { members: ["7"], parts: true }, mock)).toEqual({ members: 1, written: 4 });
+    const db = catalog();
+    const book = (id: string, isbn: string, extra: Record<string, string> = {}): RecordInput => ({ id, raw: id, url: `https://example.org/${id}`, creators: [],
+      fields: Object.entries({ title: `Kitap ${id}`, ISBN: isbn, place: "Ankara", ...extra }).map(([field, value]) => ({ field, value, path: field })) });
+    db.job("k10plus", "b", "b");
+    db.batch("k10plus", "b", 0, [book("a", "9789751604439"), book("c1", "9789753381086", { edition: "1" }), book("c2", "9789753381086", { title: "Kitap c1", edition: "2" })], true);
+    const parts = [];
+    for await (const part of crossrefParts(file)) parts.push(part);
+    expect(parts).toHaveLength(3);
+    expect(db.addParts("crossref", parts)).toEqual({ parts: 3, linked: 1 });
+    expect(db.addParts("crossref", parts)).toEqual({ parts: 3, linked: 1 });
+    expect(db.stats().counts).toMatchObject({ editions: 3, parts: 3, linkedParts: 1 });
+    expect(db.details(1)?.parts).toEqual([expect.objectContaining({ doi: "10.1234/bolum.1", title: "Birinci Bölüm", pages: "1-20",
+      creators: [expect.objectContaining({ creatorType: "author", lastName: "Kılıç" })] })]);
+    db.job("k10plus", "d", "d");
+    db.batch("k10plus", "d", 0, [book("d", "9786054791712")], true);
+    expect(db.relinkParts()).toEqual({ linked: 1 });
+    expect(db.stats().counts).toMatchObject({ parts: 3, linkedParts: 2 });
   });
 
   it("KBART satırını taşıyıcılarına ayırır ve yayın yeri kanıtı yoksa incelemeye alır", async () => {

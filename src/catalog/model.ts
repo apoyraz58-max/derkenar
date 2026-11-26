@@ -23,6 +23,18 @@ export interface RecordInput {
   creators: Attribution[];
 }
 
+/** A chapter or other part of a book; stored apart from editions. */
+export interface PartInput {
+  doi: string;
+  title: string;
+  creators: Creator[];
+  pages: string;
+  containerTitle: string;
+  containerIsbns: string[];
+  url: string;
+  raw: string;
+}
+
 export interface Source {
   name: string;
   license: string;
