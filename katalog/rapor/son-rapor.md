@@ -1,9 +1,9 @@
 # Durum raporu
 
-Zaman: 2026-11-27T10:34:28Z
+Zaman: 2026-11-27T10:48:46Z
 
 - Toplam tekil makale: **1,425,615** / hedef 1,000,000 (%142.56)
-- Hazır İSNAD 2 künyesi: **1,379,845** (eksik alanı olan: 45,770)
+- Hazır İSNAD 2 künyesi: **1,362,854** (eksik alanı olan: 62,761)
 
 ## DOI durumu
 
@@ -35,7 +35,7 @@ Zaman: 2026-11-27T10:34:28Z
 - Denetim bekleyen belirsiz eşleşme: 131,558
 - Kaynaklar arası farkı işaretli makale: 210,974
 - Tarihsel bağlantılar: kayıt yok
-- Eksik alanlar: ISSN 198,767, sayfa/makale no 33,587, yazar 5,475, yıl 4,669, cilt/sayı 3,429, başlık 317
+- Eksik alanlar: ISSN 198,767, sayfa/makale no 51,507, yazar 5,475, yıl 4,669, cilt/sayı 3,429, başlık 317
 
 ## Erişim hataları
 

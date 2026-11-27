@@ -1199,6 +1199,21 @@ def rebuild_article(conn, aid: int):
         a[k] = squash(a[k]) if isinstance(a[k], str) else a[k]
     if a["issue"] and is_all_caps(a["issue"], 3):
         a["issue"] = title_case(a["issue"])
+    # Sayfa ve cilt/sayı biçimi: "0" sayfa yer tutucusu boş; baştaki sıfırlar atılır ("044" -> "44");
+    # kısaltılmış aralık açılır ("345-54" -> "345-354"); gerçekten ters aralıkta son sayfa düşer.
+    for k in ("volume", "issue"):
+        if isinstance(a[k], str) and re.fullmatch(r"0+\d+", a[k]):
+            a[k] = str(int(a[k]))
+    for k in ("spage", "epage"):
+        if isinstance(a[k], str) and re.fullmatch(r"0+", a[k].strip()):
+            a[k] = None
+    page_note = None
+    sp, ep = a["spage"], a["epage"]
+    if sp and ep and sp.isdigit() and ep.isdigit() and int(ep) < int(sp):
+        if len(ep) < len(sp) and int(sp[:len(sp) - len(ep)] + ep) >= int(sp):
+            a["epage"] = sp[:len(sp) - len(ep)] + ep
+        else:
+            a["epage"], page_note = None, "sayfa-araligi-ters"
     a["iz"], _ = pick("iz")
 
     # Eksik alanlar
@@ -1248,6 +1263,8 @@ def rebuild_article(conn, aid: int):
         review.append("baslik-buyuk-harf")
     if case_note:
         review.append(case_note)
+    if page_note:
+        review.append(page_note)
     if not a["authors"] and (a["contrib"] or unsigned):
         review.append("yazarsiz")
     open_rev = conn.execute("SELECT COUNT(*) FROM match_review WHERE (article_id=? OR candidate_id=?) AND status='açık'",
