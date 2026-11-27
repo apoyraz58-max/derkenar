@@ -90,7 +90,18 @@ const year = (date?: { "date-parts"?: (number | null)[][] }) => {
   return typeof y === "number" && y > 1400 && y < 2100 ? String(y) : "";
 };
 
-function names(list: CrossrefName[] | undefined, role: "author" | "editor" | "translator", path: string): Attribution[] {
+/**
+ * Book-level contributors. A Crossref book with editors and four or more "authors" is an edited volume whose
+ * chapter authors were deposited on the book; İSNAD cites such a book by its editors, so those authors are kept
+ * as contributors ("contributor": evidence, not cited).
+ */
+function bookNames(work: CrossrefWork): Attribution[] {
+  const chapterAuthors = (work.editor?.length ?? 0) > 0 && (work.author?.length ?? 0) >= 4;
+  return [...names(work.author, chapterAuthors ? "contributor" : "author", "author"), ...names(work.editor, "editor", "editor"),
+    ...names(work.translator, "translator", "translator")];
+}
+
+function names(list: CrossrefName[] | undefined, role: "author" | "editor" | "translator" | "contributor", path: string): Attribution[] {
   const sorted = [...(list ?? [])].map((n, i) => ({ n, i }))
     .sort((a, b) => Number(b.n.sequence === "first") - Number(a.n.sequence === "first") || a.i - b.i);
   return sorted.flatMap(({ n, i }): Attribution[] => {
@@ -123,8 +134,7 @@ export async function* crossrefFile(file: string): AsyncGenerator<RecordInput> {
       { field: "edition", value: /^\d+$/.test(work["edition-number"] ?? "") ? work["edition-number"]! : "", path: "edition-number" },
       { field: "url", value: url, path: "DOI" },
     ];
-    const creators = [...names(work.author, "author", "author"), ...names(work.editor, "editor", "editor"),
-      ...names(work.translator, "translator", "translator")];
+    const creators = bookNames(work);
     const typed = (work["isbn-type"] ?? []).filter(i => i.value);
     const print = typed.filter(i => i.type === "print");
     const online = typed.filter(i => i.type === "electronic");

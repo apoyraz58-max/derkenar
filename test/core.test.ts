@@ -501,6 +501,9 @@ describe("İSNAD spelling on the way in", async () => {
     expect(isnadTitle("İslam’da inanç esasları")).toBe("İslam’da İnanç Esasları");
     expect(isnadTitle("Kur’an mesajı: meal-tefsir")).toBe("Kur’an Mesajı: Meal-Tefsir");
     expect(isnadTitle("Kur’ân-ı Kerîm meâli")).toBe("Kur’ân-ı Kerîm Meâli");
+    expect(isnadTitle("Erkek kimliğinin değişe(meye)n hâlleri")).toBe("Erkek Kimliğinin Değişe(meye)n Hâlleri");
+    expect(isnadTitle("İnci̇li̇ şeri̇f")).toBe("İncili Şerif");
+    expect(isnadTitle("Bir Osmanlı aliminin itikadı koruma gayreti. İmam Birgivî ve kitâbu'l-îmân")).toBe("Bir Osmanlı Aliminin İtikadı Koruma Gayreti. İmam Birgivî ve kitâbu'l-îmân");
     expect(isnadTitle("the venture of islam: conscience and history")).toBe("The Venture of Islam: Conscience and History");
     expect(isnadTitle("İLHAD NE BÜYÜK CEHALETTİR!")).toBe("İlhad Ne Büyük Cehalettir!");
     expect(isnadTitle("El-makâsıd: kelâm ilminin maksatları")).toBe("el-Makâsıd: Kelâm İlminin Maksatları");

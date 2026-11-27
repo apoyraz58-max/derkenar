@@ -1,5 +1,6 @@
 import { DOMParser } from "@xmldom/xmldom";
 import type { Creator } from "../../core/zotero.js";
+import { foldText } from "../../core/isnadstyle.js";
 import { type Attribution, type Claim, type RecordInput } from "../model.js";
 import { OZGUR_MARC } from "./collect.js";
 import { inputStream } from "./files.js";
@@ -153,13 +154,15 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
       if (tag.endsWith("11")) { add("meetingName", value, `${tag}[${i}]$a`); continue; }
       const personal = tag.endsWith("00");
       const comma = value.indexOf(",");
+      const lastName = value.slice(0, comma).trim();
+      const firstName = personal && comma > 0 ? statementOrder(lastName, value.slice(comma + 1).trim(), first("245", "c")) : null;
       const name: Omit<Creator, "creatorType"> = personal && comma > 0
-        ? { lastName: value.slice(0, comma).trim(), firstName: value.slice(comma + 1).trim() }
+        ? { lastName, firstName: firstName ?? value.slice(comma + 1).trim() }
         : { name: value };
       for (const role of roles(e)) creators.push({
         creator: { creatorType: role, ...name },
         kind: personal ? "person" : "organization",
-        path: `${tag}[${i}]$a$e$4`,
+        path: `${tag}[${i}]$a$e$4${firstName ? "+245$c" : ""}`,
       });
     }
   }
@@ -208,3 +211,28 @@ export async function* marcFile(file: string, source: MarcSource) {
     stream.destroy();
   }
 }
+
+/**
+ * Given names in the order the title page has them. Cataloguers sometimes swap a woman's own and family given names
+ * ("Tiryaki, Bilgin Kübra" for "Kübra Bilgin Tiryaki"); the statement of responsibility (245$c) transcribes the title
+ * page. When it has the same words with the surname last but the given names in another order, that order is taken.
+ * Returns null when the statement gives no such evidence.
+ */
+export function statementOrder(lastName: string, firstName: string, statement: string): string | null {
+  const fold = (w: string) => foldText(w);
+  const given = firstName.split(/\s+/).filter(Boolean);
+  const last = lastName.split(/\s+/).filter(Boolean);
+  if (given.length < 2 || !last.length || !statement) return null;
+  const words = statement.split(/[^\p{L}\p{M}'’-]+/u).filter(Boolean).map(fold);
+  const g = given.map(fold), l = last.map(fold), n = g.length + l.length;
+  for (let i = 0; i + n <= words.length; i++) {
+    const window = words.slice(i, i + n);
+    if (window.slice(g.length).join(" ") !== l.join(" ")) continue;
+    const order = window.slice(0, g.length);
+    if ([...order].sort().join(" ") !== [...g].sort().join(" ") || order.join(" ") === g.join(" ")) continue;
+    const pool = [...given];
+    return order.map(w => pool.splice(pool.findIndex(p => fold(p) === w), 1)[0]!).join(" ");
+  }
+  return null;
+}
+

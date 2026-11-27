@@ -61,7 +61,8 @@ function titleCasePart(part: string, allCaps: boolean): string {
     (!western && /^\p{Lu}$/u.test(p)) ||
     (/\p{Ll}/u.test(p) && /^.\p{L}*\p{Lu}/u.test(p)) ||
     /^e-\p{L}/u.test(p);
-  return part.replace(/[\p{L}\p{N}ʿʾ‘’'-]+/gu, (word) => {
+  // A word may carry a parenthesised suffix ("değişe(meye)n"): one word, one capital.
+  return part.replace(/[\p{L}\p{M}\p{N}ʿʾ‘’'-]+(?:\([\p{L}\p{M}]+\)[\p{L}\p{M}\p{N}ʿʾ‘’'-]*)*/gu, (word) => {
     const isFirst = first;
     first = false;
     if (keep(word)) return word;
@@ -90,6 +91,8 @@ function arabicPart(part: string, allCaps: boolean): string {
 
 /** A title written the İSNAD way (see the module note). */
 export function isnadTitle(title: string): string {
+  // "i̇" / "İ̇" (a dotted i with a second, combining dot: a lower-casing slip in the source) is plain i / İ.
+  title = title.replace(/([iİ])\u0307/gu, "$1");
   const letters = title.replace(/[^\p{L}]/gu, "");
   const allCaps = letters.length >= 4 && letters === upper(letters);
   return title
@@ -98,8 +101,19 @@ export function isnadTitle(title: string): string {
     // In an Arabic title the part after ":" stays small too ("…: el-fıkh ve usûluhû").
     // A cataloguer's ISBD separator (" : ") becomes ": ", or a space before a parenthesis ("Hattıyla : (İnceleme)").
     .map((part, i, all) => (i % 2 ? (/^\s+:/.test(part) && i < all.length - 1 ? (/^\(/.test(all[i + 1]!) ? " " : ": ") : part)
-      : isArabicTitle(part) ? (i === 0 ? arabicPart(part, allCaps) : allCaps ? lower(part) : part) : titleCasePart(part, allCaps)))
+      : isArabicTitle(part) ? (i === 0 ? arabicSentences(part, allCaps) : allCaps ? lower(part) : part) : titleCasePart(part, allCaps)))
     .join("");
+}
+
+/**
+ * A title part with an Arabic phrase in it. Its sentences (". " between a word and a capital or a number: the
+ * cataloguer's part separator) are judged one by one, so a Turkish title naming an Arabic book keeps its capitals:
+ * "Bir Osmanlı Âliminin … Gayreti. İmam Birgivî ve kitâbu'l-îmân" — only the sentence with the Arabic phrase stays small.
+ */
+function arabicSentences(part: string, allCaps: boolean): string {
+  const pieces = part.split(/(?<=\p{L}{3}|\))(\.\s+)(?=[\p{Lu}\d])/u);
+  if (pieces.length === 1) return arabicPart(part, allCaps);
+  return pieces.map((p, i) => (i % 2 ? p : isArabicTitle(p) ? arabicPart(p, allCaps) : titleCasePart(p, allCaps))).join("");
 }
 
 // ---------------------------------------------------------------- names

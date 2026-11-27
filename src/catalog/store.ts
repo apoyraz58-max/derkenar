@@ -492,7 +492,7 @@ export class Catalog {
       const ident = (scheme: string) => this.row<{ value: string }>("SELECT value FROM identifiers WHERE edition_id=? AND scheme=? ORDER BY value LIMIT 1", id, scheme)?.value ?? "";
       const creators = item.creators.filter(c => role[c.creatorType]).map(c => [c.lastName ?? c.name ?? "", c.firstName ?? "", role[c.creatorType]].join("|")).join(";");
       const f = item.fields;
-      recs.push([key, creators, f.title ?? "", f.publisher ?? "", f.place ?? "", f.date ?? "", f.edition ?? "", f.volume ?? "", f.numPages ?? "",
+      recs.push([key, creators, f.title ?? "", f.publisher ?? "", f.place ?? "", f.date ?? "", editionNumber(f.edition) ?? f.edition ?? "", f.volume ?? "", f.numPages ?? "",
         ident("ISBN"), ident("DOI"), f.language ?? "", how, sources.join(",")]);
     }
     return { recs, after: ids.at(-1)?.id ?? null, skipped };

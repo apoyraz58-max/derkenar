@@ -8,10 +8,10 @@ import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
 import { cleanClaim, otherVolume, parseEditionNumber, publicationScope, samePublisher, withoutPlaceholder, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectDnbQuery, collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
-import { collectCrossref, crossrefParts } from "../src/catalog/sources/crossref.js";
+import { collectCrossref, crossrefFile, crossrefParts } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
 import { ozgurKbart } from "../src/catalog/sources/kbart.js";
-import { marcFile } from "../src/catalog/sources/marc.js";
+import { marcFile, statementOrder } from "../src/catalog/sources/marc.js";
 import { Catalog } from "../src/catalog/store.js";
 import { cslJson, formatAs } from "../src/core/exporters.js";
 import { parseFile } from "../src/core/importers.js";
@@ -447,6 +447,27 @@ describe("bibliyografik katalog", () => {
     expect(db.details(2)?.evidence).toContainEqual(expect.objectContaining({ field: "format", observed: "Elektronik", selected: 1 }));
     expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "place", source: "crossref", path: "publisher-location" }));
     expect(db.review(0, 10)).toContainEqual(expect.objectContaining({ external_id: "10.1234/kitap.2", code: "scope-unknown" }));
+  });
+
+  it("Crossref derleme kitabında bölüm yazarlarını kitap yazarı saymaz; editörle atıf yapılır", async () => {
+    const people = (n: number) => Array.from({ length: n }, (_, i) => ({ given: "Ad", family: `Yazar${i + 1}`, sequence: i ? "additional" : "first" }));
+    const works = [
+      { DOI: "10.1234/derleme", type: "book", title: ["Derleme"], ISBN: ["9789751604439"], author: people(4), editor: [{ given: "Ed", family: "Editör", sequence: "first" }] },
+      { DOI: "10.1234/telif", type: "book", title: ["Telif"], ISBN: ["9786054791712"], author: people(1), editor: [{ given: "Ed", family: "Editör", sequence: "first" }] },
+    ];
+    const file = join(temp, "crossref-derleme.jsonl");
+    writeFileSync(file, works.map(w => JSON.stringify(w)).join("\n"));
+    const roles: string[][] = [];
+    for await (const record of crossrefFile(file)) roles.push(record.creators.map(c => c.creator.creatorType));
+    expect(roles).toEqual([["contributor", "contributor", "contributor", "contributor", "editor"], ["author", "editor"]]);
+  });
+
+  it("MARC adının ön ad sırasını 245$c başlık sayfası aktarımından alır", () => {
+    expect(statementOrder("Tiryaki", "Bilgin Kübra", "editör Ömer Türker & Kübra Bilgin Tiryaki")).toBe("Kübra Bilgin");
+    expect(statementOrder("Yakut İpekoğlu", "Hilal Ayşe", "Ayşe Hilal Yakut İpekoğlu")).toBe("Ayşe Hilal");
+    expect(statementOrder("Türker", "Ömer", "editör Ömer Türker")).toBeNull();
+    expect(statementOrder("Yılmaz", "Ahmet Mehmet", "Ahmet Mehmet Yılmaz")).toBeNull();
+    expect(statementOrder("Yılmaz", "Ahmet Mehmet", "Mehmet Kaya ve Ahmet Yılmaz")).toBeNull();
   });
 
   it("Crossref kitap bölümlerini baskı saymadan saklar ve tek baskıya ISBN ile bağlar", async () => {
