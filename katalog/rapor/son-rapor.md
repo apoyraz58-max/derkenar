@@ -1,21 +1,21 @@
 # Durum raporu
 
-Zaman: 2026-11-27T10:48:46Z
+Zaman: 2026-11-27T21:17:31Z
 
-- Toplam tekil makale: **1,425,615** / hedef 1,000,000 (%142.56)
-- Hazır İSNAD 2 künyesi: **1,362,854** (eksik alanı olan: 62,761)
+- Toplam tekil makale: **1,367,804** / hedef 1,000,000 (%136.78)
+- Hazır İSNAD 2 künyesi: **1,308,040** (eksik alanı olan: 59,764)
 
 ## DOI durumu
 
-- Doğrulandı: 605,489
-  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 422,695
-  - kayıt ajansı (Crossref): 121,412
+- Doğrulandı: 605,514
+  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 422,719
+  - kayıt ajansı (Crossref): 121,413
   - kayıt ajansı (Crossref; DOI künye eşleşmesiyle bulundu): 57,400
   - kayıt ajansı (DataCite) + yayın kaydı (DergiPark): 3,440
   - kayıt ajansı (DataCite): 520
   - kayıt ajansı (Public): 22
-- Doğrulama bekliyor: 3,633
-- Bulunamadı: 816,493
+- Doğrulama bekliyor: 3,597
+- Bulunamadı: 758,693
 - Kayıt ajansında denetim bekleyen tekil DOI: 0
 - Ajans denetimi sonuçları: var 609,379, yok 31,392
 
@@ -23,19 +23,19 @@ Zaman: 2026-11-27T10:48:46Z
 
 | Kaynak | Aktarılan kayıt | Kapsamda | Bağlı makale | DOI'li kayıt | Sayfa | Kaynak listesi |
 |---|---:|---:|---:|---:|---:|---:|
-| DergiPark | 849,032 | 849,032 | 848,228 | 454,663 | 8,493 | — |
-| TR Dizin | 715,042 | 712,678 | 712,200 | 352,171 | 7,169 | 715043 |
-| İSAM | 351,468 | 242,709 | 218,945 | 14 | 3,515 | 351468 |
+| DergiPark | 849,032 | 849,032 | 848,185 | 454,663 | 8,493 | — |
+| TR Dizin | 715,042 | 712,678 | 712,049 | 352,171 | 7,169 | 715043 |
+| İSAM | 351,468 | 242,709 | 216,848 | 14 | 3,515 | 351468 |
 
 ## Birleştirme ve bekleyen eşleşmeler
 
-- Kaynak sayısına göre makale: 1 kaynak: 1,030,439, 2 kaynak: 379,392, 3 kaynak: 15,586, 4 kaynak: 198
-- Birden fazla kaynak bağlantısı olan makale: 408,914
+- Kaynak sayısına göre makale: 1 kaynak: 936,062, 2 kaynak: 397,172, 3 kaynak: 34,204, 4 kaynak: 366
+- Birden fazla kaynak bağlantısı olan makale: 443,869
 - Eşleşme yöntemi: doi: 222,233, doi-baslik-uyusmazligi: 2,105, kunye: 156,571, kunye-crossref: 57,400, yeni: 1,423,510
-- Denetim bekleyen belirsiz eşleşme: 131,558
-- Kaynaklar arası farkı işaretli makale: 210,974
+- Denetim bekleyen belirsiz eşleşme: 61,215
+- Kaynaklar arası farkı işaretli makale: 174,987
 - Tarihsel bağlantılar: kayıt yok
-- Eksik alanlar: ISSN 198,767, sayfa/makale no 51,507, yazar 5,475, yıl 4,669, cilt/sayı 3,429, başlık 317
+- Eksik alanlar: ISSN 154,639, sayfa/makale no 49,287, yazar 4,711, yıl 4,648, cilt/sayı 3,409, başlık 317
 
 ## Erişim hataları
 

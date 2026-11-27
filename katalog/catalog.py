@@ -1250,6 +1250,8 @@ def rebuild_article(conn, aid: int):
     for k in ("spage", "epage"):
         if isinstance(a[k], str) and re.fullmatch(r"0+", a[k].strip()):
             a[k] = None
+        elif isinstance(a[k], str) and re.fullmatch(r"0+\d+", a[k].strip()):
+            a[k] = str(int(a[k]))  # "099" -> "99"
     page_note = None
     sp, ep = a["spage"], a["epage"]
     if sp and ep and sp.isdigit() and ep.isdigit() and int(ep) < int(sp):
