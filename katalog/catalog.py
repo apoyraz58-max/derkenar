@@ -1054,6 +1054,18 @@ def fmt_isnad2(a: dict) -> str:
     return s
 
 
+AFFIL_RE = re.compile(r"\b(univ|universit|üniversite|department|faculty|fakülte|hospital|hastane|institute|"
+                      r"enstitü|school|college|klinik|clinic|center|centre|merkez|laborator|ministry|bakanl)", re.I)
+
+
+def same_person(a: list, b: list) -> bool:
+    """İki kaynaktaki ilk yazar aynı kişi mi: ad ve soyadı sözcüklerinden biri (en az 3 harf) ortaksa evet.
+    ("Bozkurt Uzan" ~ "Uzan", "van Leeuwen" ~ "Leeuwen", ad/soyad yer değiştirmiş Crossref kaydı)."""
+    wa = {w for w in fold_words(" ".join(re.sub(r"[-.]", " ", x or "") for x in a[:2])) if len(w) >= 3}
+    wb = {w for w in fold_words(" ".join(re.sub(r"[-.]", " ", x or "") for x in b[:2])) if len(w) >= 3}
+    return bool(wa & wb) or not wa or not wb
+
+
 def crossref_view(meta: dict) -> dict:
     """doi_check.meta (Crossref) -> ortak alanlar."""
     r = blank_rec("crossref", meta.get("DOI", ""))
@@ -1061,8 +1073,11 @@ def crossref_view(meta: dict) -> dict:
     r["titles"] = [clean(t) for t in (meta.get("title") or []) + (meta.get("original-title") or []) if clean(t)]
     for au in meta.get("author") or []:
         if au.get("family") or au.get("given"):
-            r["authors"].append([clean(au.get("family")) or "", clean(au.get("given")) or ""])
-        elif au.get("name"):
+            fam, giv = clean(au.get("family")) or "", clean(au.get("given")) or ""
+            if AFFIL_RE.search(f"{fam} {giv}"):
+                continue  # yazar yerine girilmiş kurum adı
+            r["authors"].append([fam, giv])
+        elif au.get("name") and not AFFIL_RE.search(au["name"]):
             r["authors"].append([clean(au["name"]), ""])
     r["journal"] = clean((meta.get("container-title") or [None])[0])
     r["journals"] = [r["journal"]] if r["journal"] else []
@@ -1194,7 +1209,10 @@ def rebuild_article(conn, aid: int):
         else:
             a["title"], case_note = title_case(a["title"], a["title_lang"]), "baslik-harf-duzeltildi"
     # Yazarlar: yüksek öncelikli kaynak; büyük harfli adlar düzeltilir
-    auths = [(r["source"], r["authors"]) for r in ordered if r.get("authors")]
+    # Yazar önceliği: derginin kendi yayın kaydı (DergiPark) > Crossref > TR Dizin > İSAM. Crossref'te ad/soyadı
+    # yer değiştirmiş ya da kurum adı girilmiş kayıtlar olduğu için DergiPark önde.
+    auth_rank = {"dergipark": 0, "crossref": 1, "trdizin": 2, "isam": 3}
+    auths = sorted(((r["source"], r["authors"]) for r in ordered if r.get("authors")), key=lambda x: auth_rank[x[0]])
     a["authors"] = [list(fix_name_case(x[0], x[1] if len(x) > 1 else "")) for x in auths[0][1]] if auths else []
     a["contrib"], unsigned = [], False
     if not a["authors"]:
@@ -1279,8 +1297,8 @@ def rebuild_article(conn, aid: int):
     diff("issn")
     if len({len(r["authors"]) for r in allrecs if r.get("authors")}) > 1:
         conflicts["yazar_sayısı"] = {r["source"]: len(r["authors"]) for r in allrecs if r.get("authors")}
-    fam = {fold(r["authors"][0][0]) for r in allrecs if r.get("authors")}
-    if len(fam) > 1:
+    firsts = [r["authors"][0] for r in allrecs if r.get("authors")]
+    if any(not same_person(x, y) for i, x in enumerate(firsts) for y in firsts[i + 1:]):
         conflicts["ilk_yazar"] = {r["source"]: r["authors"][0][0] for r in allrecs if r.get("authors")}
     if "year" in conflicts:
         review.append("yil-farki")
