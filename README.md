@@ -1,4 +1,4 @@
-<p><img src="assets/logo/derkenar-logo.svg" alt="Künye" width="320"></p>
+<p><img src="assets/logo/kunye-logo.svg" alt="Künye" width="320"></p>
 
 # Künye
 

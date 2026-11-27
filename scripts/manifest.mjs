@@ -63,7 +63,7 @@ const contextMenu = [
 ];
 
 const resources = () => {
-  const imgs = [...icons].flatMap((n) => [16, 32, 80].map((s) => `        <bt:Image id="Ic.${n}.${s}" DefaultValue="${B}assets/icons/${n}-${s}.png"/>`));
+  const imgs = [...icons].flatMap((n) => [16, 32, 80].map((s) => `        <bt:Image id="Ic.${n}.${s}" DefaultValue="${B}assets/icons/${n}-${s}.png?v={{VERSION}}"/>`));
   const u = [...urls].map(([k, v]) => `        <bt:Url id="${k}" DefaultValue="${esc(v)}"/>`);
   u.push(`        <bt:Url id="Commands.Url" DefaultValue="${B}commands.html"/>`, `        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>`);
   for (const [k, v] of short) if (v.length > 125) throw new Error(`short string too long: ${k}`);
@@ -104,8 +104,8 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <DefaultLocale>tr-TR</DefaultLocale>
   <DisplayName DefaultValue="Künye"/>
   <Description DefaultValue="Word için atıf ve kaynakça yöneticisi: kaynak kütüphanesi, otomatik dipnot güncelleme, atıf stili ve yazım denetimi."/>
-  <IconUrl DefaultValue="${B}assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="${B}assets/icon-64.png"/>
+  <IconUrl DefaultValue="${B}assets/icon-32.png?v={{VERSION}}"/>
+  <HighResolutionIconUrl DefaultValue="${B}assets/icon-64.png?v={{VERSION}}"/>
   <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
   <AppDomains>
     <AppDomain>https://api.zotero.org</AppDomain>

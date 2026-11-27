@@ -41,7 +41,9 @@ for (const entry of ["taskpane", "commands"]) {
 
 await cp(new URL("src/addin/taskpane.css", root), new URL("taskpane.css", out));
 for (const file of ["taskpane.html", "commands.html"]) {
-  const html = (await readFile(new URL(`src/addin/${file}`, root), "utf8")).replace(/(src|href)="(taskpane|commands)\.(js|css)"/g, `$1="$2.$3?v=${version}"`);
+  const html = (await readFile(new URL(`src/addin/${file}`, root), "utf8")).replace(/(src|href)="(taskpane|commands)\.(js|css)"/g, `$1="$2.$3?v=${version}"`)
+    // Logos and icons too: a new version is a new address, so Word cannot show a cached old picture.
+    .replace(/(src|href|srcset)="(assets\/[^"?]+)"/g, `$1="$2?v=${version}"`);
   await writeFile(new URL(file, out), html);
 }
 await writeFile(new URL("version.json", out), JSON.stringify({ version }));
