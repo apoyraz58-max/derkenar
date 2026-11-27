@@ -1594,7 +1594,12 @@ def check_doi(conn, doi: str) -> tuple[str, str | None, int | None, dict | None]
         return "var", "Crossref", 200, keep
     # Crossref'te yok: Handle sisteminde var mı, hangi ajans?
     hurl = "https://doi.org/api/handles/" + urllib.parse.quote(doi, safe="/:;()<>.-_")
-    hcode, hbody = http_get(conn, hurl, accept="application/json", ok_404=True)
+    try:
+        hcode, hbody = http_get(conn, hurl, accept="application/json", ok_404=True)
+    except AccessError as e:
+        if e.http == 400:  # "That prefix doesn't live here": önek hiçbir kayıt ajansında yok
+            return "yok", None, 400, None
+        raise
     if hcode == 200:
         try:
             ra = json.loads(http_get(conn, "https://doi.org/ra/" + urllib.parse.quote(doi, safe="/"),
