@@ -1,24 +1,24 @@
-# Durum raporu
+# Genel durum raporu
 
-Zaman: 2026-11-27T04:11:32Z
+Zaman: 2026-11-27T05:07:03Z
 
 - Toplam tekil makale: **1,425,615** / hedef 1,000,000 (%142.56)
-- Hazır İSNAD 2 künyesi: **1,376,690** (eksik alanı olan: 48,925)
+- Hazır İSNAD 2 künyesi: **1,379,819** (eksik alanı olan: 45,796)
 
 ## DOI durumu
 
-- Doğrulandı: 625,582
-  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 419,058
-  - kayıt ajansı (Crossref): 118,552
+- Doğrulandı: 626,337
+  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 419,429
+  - kayıt ajansı (Crossref): 120,262
   - kayıt ajansı (Crossref; DOI künye eşleşmesiyle bulundu): 57,400
-  - yayın kaydı (DergiPark): 29,781
-  - kayıt ajansı (DataCite): 470
-  - kayıt ajansı (DataCite) + yayın kaydı (DergiPark): 299
+  - yayın kaydı (DergiPark): 28,337
+  - kayıt ajansı (DataCite): 512
+  - kayıt ajansı (DataCite) + yayın kaydı (DergiPark): 375
   - kayıt ajansı (Public): 22
-- Doğrulama bekliyor: 11,854
-- Bulunamadı: 788,179
-- Kayıt ajansında denetim bekleyen tekil DOI: 36,700
-- Ajans denetimi sonuçları: var 599,582, yok 4,490
+- Doğrulama bekliyor: 6,355
+- Bulunamadı: 792,923
+- Kayıt ajansında denetim bekleyen tekil DOI: 30,232
+- Ajans denetimi sonuçları: hata 5, var 601,812, yok 8,722
 
 ## Kaynağa göre kapsam
 
@@ -34,15 +34,15 @@ Zaman: 2026-11-27T04:11:32Z
 - Birden fazla kaynak bağlantısı olan makale: 408,914
 - Eşleşme yöntemi: doi: 222,233, doi-baslik-uyusmazligi: 2,105, kunye: 156,571, kunye-crossref: 57,400, yeni: 1,423,510
 - Denetim bekleyen belirsiz eşleşme: 131,558
-- Kaynaklar arası farkı işaretli makale: 208,619
+- Kaynaklar arası farkı işaretli makale: 209,388
 - Tarihsel bağlantılar: kayıt yok
-- Eksik alanlar: ISSN 232,801, sayfa/makale no 33,614, yıl 7,837, yazar 5,475, cilt/sayı 3,429, başlık 317
+- Eksik alanlar: ISSN 198,767, sayfa/makale no 33,612, yazar 5,475, yıl 4,670, cilt/sayı 3,429, başlık 317
 
 ## Erişim hataları
 
 - api.crossref.org HTTP None: 3 kez (son: deneme 1: [Errno 104] Connection reset by peer)
-- api.crossref.org HTTP 429: 1437 kez (son: deneme 2: b'')
+- api.crossref.org HTTP 429: 1458 kez (son: deneme 2: b'')
 - dergipark.org.tr HTTP None: 47 kez (son: sayfa alınamadı: not well-formed (invalid token): line 8112, column 172)
 - dergipark.org.tr HTTP 301: 42 kez (son: deneme 1: b'<!DOCTYPE html>\n<html>\n    <head>\n        <meta charset="UTF-8" />\n        <meta http-equiv="refresh" co)
 - dergipark.org.tr HTTP 500: 7 kez (son: sayfa alınamadı: 500 b'<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8" />\n    <meta name="robots" )
-
+- doi.org HTTP 400: 6 kez (son: deneme 1: b'{"responseCode":301,"message":"That prefix doesn\'t live here","handle":"10.2594/auiibbfd.734219"}')
