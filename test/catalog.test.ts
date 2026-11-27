@@ -147,6 +147,7 @@ describe("bibliyografik katalog", () => {
     expect(publicationScope({ place: "Lefkoşa", country: "TR" })).toBe("conflict");
     expect(publicationScope({ place: "Lefkoşa ; İstanbul", country: "TR" })).toBe("TR");
     expect(publicationScope({ place: "Kahire", country: "TR" })).toBe("conflict");
+    expect(publicationScope({ place: "Frankfurt am Main", country: "TR" })).toBe("conflict");
     expect(publicationScope({ place: "Ouagadougou", country: "TR" })).toBe("TR");
     expect(publicationScope({ place: "Paris ; İstanbul", country: "TR" })).toBe("TR");
   });

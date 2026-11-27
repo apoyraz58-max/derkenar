@@ -256,7 +256,7 @@ export function samePublisher(a?: string, b?: string): boolean {
 const FOREIGN_PLACES = new Set(["kahire", "cairo", "misir", "bulak", "paris", "berlin", "london", "leipzig", "tahran", "tihran", "teheran",
   "beyrut", "beirut", "sam", "dimask", "damascus", "bagdat", "baghdad", "halep", "aleppo", "kudus", "jerusalem", "selanik", "thessaloniki",
   "sofya", "sofia", "uskup", "skopje", "atina", "athens", "wien", "vienna", "roma", "rome", "new york", "moskva", "moscow", "baku", "bakü",
-  "tiflis", "tbilisi", "taskent", "bonn", "munchen", "hamburg", "frankfurt", "koln", "stuttgart", "leiden", "oxford", "cambridge",
+  "tiflis", "tbilisi", "taskent", "bonn", "munchen", "hamburg", "frankfurt", "frankfurt am main", "frankfurt a m", "koln", "stuttgart", "leiden", "oxford", "cambridge",
   "budapest", "bukres", "bucuresti", "venezia", "venedik", "mekke", "medine", "kum", "tebriz", "isfahan", "lahor", "delhi", "kabil",
   "kairo", "tunus", "tunis", "wiesbaden", "baki", "en petrupolei", "petersburg", "sankt peterburg", "kudus", "iskenderiye", "alexandria"]);
 /** A place known to lie outside Türkiye (first part of the imprint place). */

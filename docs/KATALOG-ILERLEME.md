@@ -19,6 +19,12 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 07:55 UTC
+
+- Yapılan: yayın yeri bilinen yurt dışı şehir olan kabul edilmiş baskılar denetlendi (57). Bunların 56’sı ortak yayın, yani yayın yerleri arasında bir Türkiye şehri de var, kabul doğru. Tek hata “Frankfurt am Main” idi: çok kelimeli yazım yurt dışı listesindeki “frankfurt” ile eşleşmiyordu, düzeltildi. Tek kaydı etkilediği için katalog yeniden kurulmadı, değişiklik sonraki kurulumda uygulanacak.
+- Durum değişmedi: 176.429 benzersiz baskı, incelemede 21.434 kayıt, 124 geçersiz ISBN.
+- Testler: 240 geçti. Typecheck ve build temiz.
+
 ### 2026-11-27 07:20 UTC
 
 - Yapılan: İSNAD denetimi sürdü. Yayınevi ve yerdeki “[u.a.]” katalogcu eki çıkarıldı (643 yayınevi). “s.a”, “o.J”, “n.d” gibi tarihsiz kısaltmaları tarih sayılmıyor (74 değer). İSNAD bunlarda “ts.” yazar. Parantezli tarih “(1983)” yalınlaştırıldı. Katalog yeniden kuruldu (9 dakika 39 saniye).
