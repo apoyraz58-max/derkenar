@@ -19,6 +19,13 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 23:45 UTC
+
+- Saatlik çalıştırma kısa tutuldu: kullanıcı kotanın dolmak üzere olduğunu bildirdi. Katalog yeniden kurulmadı, kod değişmedi.
+- Bu arada kullanıcı isteğiyle `main`’e alınanlar: yerleşik kitap veritabanının yenilenmesi (`f44df8a`), Atıf sekmesindeki yerleşik ve katalog satırlarına Düzenle düğmesi ve sağ tık (`e34b7e9`), künye düzenleyicisine kaydetme göstergesi (`1e58218`).
+- Durum değişmedi: 176.428 benzersiz baskı, 164.213 eser, 124 geçersiz ISBN. İnceleme kodları: 7527 kapsam kanıtı eksikliği, 6495 kimlik çelişkisi, 4475 olası mükerrer, 2161 kapsam çelişkisi.
+- Sıradaki (küçük, güvenli): `isnad:encoding` hatalı 23 baskı (bozuk Türkçe karakter) ve `isnad:name-split` 14 ad için kaynak kanıtına dayalı düzeltme incelemesi; ardından katalog güncellenince `builtin-export`.
+
 ### 2026-11-27 23:30 UTC
 
 - Saatlik çalıştırma: İbranî takvimli yıllar milâdîye çevriliyor. Kataloğun verdiği karşılık varsa o yazılıyor (“5688 [1928]” → 1928). Yoksa yılın kapsadığı iki milâdî yıl yazılıyor (“5722” → 1961/1962). Matbaa öncesine düşen ya da kataloğun verdiği karşılıkla tutmayan yıllar (“5145”, “5658 [1913]”) incelemede kaldı.
