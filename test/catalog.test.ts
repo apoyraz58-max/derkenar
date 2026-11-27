@@ -301,6 +301,14 @@ describe("bibliyografik katalog", () => {
     expect(cleanClaim({ field: "date", value: "1343 [h", path: "264$c" }).value).toBe("1343 [h]");
     expect(cleanClaim({ field: "date", value: "1341 ([māl.]", path: "264$c" }).value).toBe("1341 [māl.]");
     expect(cleanClaim({ field: "date", value: "1293 [1876]", path: "264$c" }).value).toBe("1293 [1876]");
+    // Hebrew calendar (Jewish prints of Istanbul, Salonika, İzmir): the cataloguer's Gregorian year, or the two it spans.
+    expect(cleanClaim({ field: "date", value: "5688 [1928]", path: "264$c" }).value).toBe("1928");
+    expect(cleanClaim({ field: "date", value: "5420 [1659 oder 1660]", path: "264$c" }).value).toBe("1659/1660");
+    expect(cleanClaim({ field: "date", value: "5297 [1536-37]", path: "264$c" }).value).toBe("1536/1537");
+    expect(cleanClaim({ field: "date", value: "5615 = 1855", path: "264$c" }).value).toBe("1855");
+    expect(cleanClaim({ field: "date", value: "5722", path: "264$c" }).value).toBe("1961/1962");
+    expect(cleanClaim({ field: "date", value: "5658 [1913]", path: "264$c" }).value).toBe("5658 [1913]");
+    expect(cleanClaim({ field: "date", value: "5145", path: "264$c" }).value).toBe("5145");
     for (const unknown of ["19XX-", "20XX", "18XX-", "197X"]) expect(cleanClaim({ field: "date", value: unknown, path: "264$c" }).value).toBe("");
     for (const known of ["1997-", "ca. 1970", "2003"]) expect(cleanClaim({ field: "date", value: known, path: "264$c" }).value).toBe(known);
     for (const unknown of ["s.a", "o.J", "o. J.", "n.d.", "[s.a.]"]) expect(cleanClaim({ field: "date", value: unknown, path: "264$c" }).value, unknown).toBe("");

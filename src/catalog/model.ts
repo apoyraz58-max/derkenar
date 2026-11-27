@@ -84,6 +84,25 @@ export function withoutPlaceholder(value: string): string {
   return value.replace(PLACEHOLDER, " ").replace(/^[\s:;,/\[\]]+|[\s:;,/\[]+$/gu, "").replace(/\s+/gu, " ").trim();
 }
 
+// Hebrew calendar years (Anno Mundi 5253– = 1493–): Jewish prints of Istanbul, Salonika and İzmir.
+// The cataloguer's Gregorian year ("5688 [1928]", "5435 (1675)", "5615 = 1855", "5420 [1659 oder 1660]") is used;
+// a bare year becomes the two Gregorian years it spans ("5722" → "1961/1962"), as İSNAD does for hijri years.
+// Years that would fall before printing in the Ottoman lands ("5145") and disagreeing pairs stay as written, for review.
+export function hebrewYear(value: string): string | null {
+  const m = /^\[?(5\d{3})\]?\s*(?:(?:\[|\(|=|\/)\s*(\d{4})(?:\s*(?:\/|-|oder|or|veya)\s*(\d{2,4}))?\s*[\])]?)?\s*(-?)$/u.exec(value.trim());
+  if (!m) return null;
+  const am = Number(m[1]), dash = m[4] ?? "";
+  if (m[2]) {
+    const first = m[2];
+    if (Math.abs(Number(first) - (am - 3761)) > 1) return null; // "5658 [1913]": the two years disagree.
+    if (!m[3]) return first + dash;
+    const second = m[3].length === 4 ? m[3] : first.slice(0, 4 - m[3].length) + m[3];
+    return Number(second) === Number(first) + 1 ? `${first}/${second}${dash}` : null;
+  }
+  if (am < 5253 || am - 3761 > new Date().getFullYear()) return null;
+  return `${am - 3761}/${am - 3760}${dash}`;
+}
+
 export function cleanClaim(claim: Claim): Claim {
   let value = claim.value.normalize("NFC").trim().replace(/\s+/gu, " ");
   if (claim.field === "publisher" || claim.field === "place" || claim.field === "otherPlaces") value = withoutPlaceholder(value);
@@ -93,6 +112,7 @@ export function cleanClaim(claim: Claim): Claim {
     value = value.replace(/\s*\[?(?<![\p{L}])(?:u\.\s?a\.|usw\.|etc\.)\]?(?![\p{L}])/giu, "").replace(/[\s,;:]+$/u, "").trim();
   }
   if (claim.field === "date") value = value.replace(/^\((.*)\)$/u, "$1").trim();
+  if (claim.field === "date") value = hebrewYear(value) ?? value;
   // "19XX-", "20XX", "18XX-", "s.a.", "o.J.", "n.d.": no known year (İSNAD writes "ts.").
   if (claim.field === "date" && (/^\[?\d{2}(?:XX|\d[X])\]?-?$/i.test(value) || /^\[?(?:s\.\s?a|o\.\s?j|n\.\s?d|t\.\s?y|b\.\s?t)\.?\]?$/i.test(value))) value = "";
   if (claim.field === "date") value = value.replace(/\(\s*\[/g, "[").replace(/\[([^\]]*)$/, (_, note: string) => `[${note.replace(/[\s.(]+$/, "")}]`);
