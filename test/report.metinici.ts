@@ -1,4 +1,4 @@
-// Not a test: compares Derkenar's İSNAD metin içi output with the guide (s. 141-).
+// Not a test: compares Künye's İSNAD metin içi output with the guide (s. 141-).
 //   REPORT=path npx vitest run --config vitest.report.config.ts test/report.metinici.ts
 import { readFileSync, writeFileSync } from "node:fs";
 import { it } from "vitest";

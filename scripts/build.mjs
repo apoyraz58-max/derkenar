@@ -63,7 +63,7 @@ for (const f of ["pdf.min.mjs", "pdf.worker.min.mjs"]) await cp(nm(`pdfjs-dist/l
 // CSL styles and locales (CC BY-SA 3.0), loaded by the pane on demand.
 await cp(new URL("data/styles/", root), new URL("styles/", out), { recursive: true });
 
-// Yerleşik veritabanı (DİA maddeleri, Derkenar makale kataloğu): data/builtin/ kaynaklarından parçalar.
+// Yerleşik veritabanı (DİA maddeleri, Künye makale kataloğu): data/builtin/ kaynaklarından parçalar.
 {
   const tmp = new URL("dist/builtin-gen.mjs", root);
   await build({ entryPoints: [new URL("scripts/builtin.ts", root).pathname], outfile: tmp.pathname, bundle: true, platform: "node", format: "esm", logLevel: "warning" });
@@ -77,4 +77,4 @@ await cp(new URL("data/catalog/", root), new URL("catalog/", out), { recursive: 
 
 const template = await readFile(new URL("manifest/manifest.template.xml", root), "utf8");
 await writeFile(new URL("manifest.xml", out), template.replaceAll("{{BASE_URL}}", baseUrl).replaceAll("{{VERSION}}", manifestVersion));
-console.log(`Built Derkenar ${version} (manifest ${manifestVersion}) for ${baseUrl}`);
+console.log(`Built Künye ${version} (manifest ${manifestVersion}) for ${baseUrl}`);

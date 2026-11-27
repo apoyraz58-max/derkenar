@@ -72,7 +72,7 @@ export interface DocState {
   v: 1;
   style: string;
   locale: string;
-  /** Cited works (Derkenar/Zotero item data), so the document renders without the library. */
+  /** Cited works (Künye/Zotero item data), so the document renders without the library. */
   items: Record<string, import("./zotero.js").Item>;
   citations: Record<string, StoredCitation>;
   /** Last rendered HTML per citation; only changed citations are rewritten. */

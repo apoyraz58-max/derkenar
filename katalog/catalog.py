@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Derkenar makale kataloğu: DergiPark, TR Dizin ve İSAM'dan İSNAD 2 künyeli katalog.
+"""Künye makale kataloğu: DergiPark, TR Dizin ve İSAM'dan İSNAD 2 künyeli katalog.
 
 Kullanım (katalog/ klasöründen ya da herhangi bir yerden):
     python3 catalog.py init                         # veritabanını oluştur / şemayı güncelle
@@ -2004,7 +2004,7 @@ def export_csv(conn, path=CSV_PATH):
 
 
 # ---------------------------------------------------------------------------
-# Derkenar eklentisinin yerleşik veritabanı: yalnız kesin makaleler
+# Künye eklentisinin yerleşik veritabanı: yalnız kesin makaleler
 # ---------------------------------------------------------------------------
 BUILTIN_PATH = os.path.join(HERE, "..", "data", "builtin", "makale.jsonl.gz")  # klasörü kullanılır; parçalar makale-N.jsonl.gz
 BUILTIN_BAD_REVIEW = {"olasi-tekrar", "yil-farki", "doi-baslik-uyusmazligi", "birden-fazla-doi", "baslik-buyuk-harf"}

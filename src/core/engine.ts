@@ -11,7 +11,7 @@ export interface StyleMeta {
   readonly note: boolean;
   readonly defaultLocale?: string;
   readonly hasBibliography: boolean;
-  /** An İSNAD style: Derkenar's İSNAD rules (a.mlf., b.y./y.y., output tidying) apply only to these. */
+  /** An İSNAD style: Künye's İSNAD rules (a.mlf., b.y./y.y., output tidying) apply only to these. */
   readonly isnad: boolean;
 }
 

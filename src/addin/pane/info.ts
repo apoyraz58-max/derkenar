@@ -79,9 +79,9 @@ export async function renderInfo(): Promise<void> {
 
   void renderSnapshots();
   facts("info-components", [
-    ["Derkenar", __VERSION__],
+    ["Künye", __VERSION__],
     ["Biçimlendirici", "citeproc-js (CSL)"],
-    ["Stiller", "İSNAD 2 dipnotlu, İSNAD 2 metin içi (resmî CSL, Derkenar düzeltmeleriyle)"],
+    ["Stiller", "İSNAD 2 dipnotlu, İSNAD 2 metin içi (resmî CSL, Künye düzeltmeleriyle)"],
     ["Kaynak türleri şeması", `sürüm ${SCHEMA_VERSION}`],
     ["Word API", Office.context?.requirements?.isSetSupported?.("WordApi", "1.5") ? "1.5 ve üstü (dipnot, sonnot)" : "1.3 (dipnotlar sınırlı)"],
   ]);

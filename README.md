@@ -1,9 +1,9 @@
-<p><img src="assets/logo/derkenar-logo.svg" alt="Derkenar" width="320"></p>
+<p><img src="assets/logo/derkenar-logo.svg" alt="Künye" width="320"></p>
 
-# Derkenar
+# Künye
 
 Word için atıf ve kaynakça yöneticisi. Masaüstü programı değildir: Word'ün içinde bir
-**Derkenar sekmesi** ve sağda bir **pencere** olarak çalışır. Kaynak kütüphanesiyle ilgili bütün
+**Künye sekmesi** ve sağda bir **pencere** olarak çalışır. Kaynak kütüphanesiyle ilgili bütün
 işler (kütüphane, koleksiyonlar, etiketler, notlar, kaynak düzenleme, içe/dışa aktarma) bu
 pencerede yapılır. Windows, Mac ve Word Online'da aynı kod çalışır; VBA yok.
 
@@ -34,7 +34,7 @@ stilleri); başka stiller sonra eklenecek.
 **Zotero'daki Word eklentisinin işleri de var:** Kaynakçayı düzenle (atıfsız eser ekleme,
 eser çıkarma), Word'de elle değiştirilen atıfı koruma, bk./krş. ön ekleri, kaynakçayı türlere
 ayırma, eklerken yineleme denetimi, birleştirilen kayda atıfları bağlama. Zotero'nun Word
-eklentisiyle yazılmış belgelerin atıfları (ADDIN ZOTERO_ITEM alanları) ve kaynakçası Derkenar'a
+eklentisiyle yazılmış belgelerin atıfları (ADDIN ZOTERO_ITEM alanları) ve kaynakçası Künye'ye
 çevrilir (WordApi 1.5).
 
 **Kütüphane belgeyle taşınır:** kütüphanenin sıkıştırılmış bir kopyası çalışılan Word belgesinde
@@ -49,7 +49,7 @@ kütüphanede olmayan kayıtlar listede çıkar, tek tıkla İSNAD kaydı olarak
 | Kaynak | Dosya | İçerik |
 | --- | --- | --- |
 | TDV İslâm Ansiklopedisi | `data/builtin/dia.rdf.gz` (Zotero RDF, sabit) | 17.601 madde: basılı künye (cilt, yıl, yer, sayfa, baskı), yazarlar, basılı nüsha PDF'i ve web sayfası bağlantı eki olarak, "bk." göndermeleri arama eşanlamlısı olarak. Basılı nüshada başlığı farklı olan maddeler basılı başlıkla; tarihi cildin basım yılından farklı ya da basılı künyesi eksik maddeler "Kontrol" notuyla. |
-| Derkenar makale kataloğu | `data/builtin/makale-N.jsonl.gz` (`katalog/catalog.py builtin-export`, 250.000 kayıtlık parçalar) | DergiPark, TR Dizin ve İSAM'dan birleştirilen makaleler: künyesi tam, olası tekrar/yıl farkı/çelişki işareti yok. Doğrulama yolu kayda yazılır: DOI'si kayıt ajansında, en az iki kaynakta tutuyor, derginin sayı arşiviyle ya da yalnız tek kaynakta ("tek kaynak" notuyla). |
+| Künye makale kataloğu | `data/builtin/makale-N.jsonl.gz` (`katalog/catalog.py builtin-export`, 250.000 kayıtlık parçalar) | DergiPark, TR Dizin ve İSAM'dan birleştirilen makaleler: künyesi tam, olası tekrar/yıl farkı/çelişki işareti yok. Doğrulama yolu kayda yazılır: DOI'si kayıt ajansında, en az iki kaynakta tutuyor, derginin sayı arşiviyle ya da yalnız tek kaynakta ("tek kaynak" notuyla). |
 
 `npm run build` bu kaynaklardan `dist/addin/data/` altına parçaları üretir (`scripts/builtin.ts`): DİA tek
 dosya (`dia.json`), makaleler sözcüklerin ilk üç harfine göre dizin parçaları (`makale/t/`) ve 250'şer kayıtlık
@@ -57,7 +57,7 @@ parçalar (`makale/r/`). Pencere yalnız aranan sözcüğün parçalarını indi
 
 ## Kütüphane özellikleri
 
-| Özellik | Derkenar |
+| Özellik | Künye |
 | --- | --- |
 | Kütüphane, koleksiyonlar ve alt koleksiyonlar | Var (oluştur, yeniden adlandır, sil, kaynak ekle/çıkar) |
 | Koleksiyonsuz, Çöp kutusu, Yinelenenler | Var (geri yükle, kalıcı sil, çöpü boşalt, birleştir) |
@@ -69,9 +69,9 @@ parçalar (`makale/r/`). Pencere yalnız aranan sözcüğün parçalarını indi
 | İlgili kaynaklar | Var (iki yönlü) |
 | Bul (Locate) | URL, DOI, WorldCat, Google Akademik |
 | Tanımlayıcıyla ekleme (Yeni Kaynak) | DOI, ISBN (K10plus, Alman Millî Kütüphanesi, Crossref, Google Books, Open Library), PMID, arXiv |
-| İçe aktarma | RDF, CSL JSON, BibTeX/BibLaTeX, RIS, Derkenar yedeği |
+| İçe aktarma | RDF, CSL JSON, BibTeX/BibLaTeX, RIS, Künye yedeği |
 | Çevrimiçi kütüphane eşitleme | Al (web API ya da bilgisayardaki programın yerel API'si) ve gönder (değişen ve yeni kaynaklar; çakışmada üzerine yazmaz) |
-| Dışa aktarma | RDF (koleksiyon ve notlarla), CSL JSON, CSV, RIS, BibTeX, Derkenar yedeği, HTML rapor; kaynakçayı panoya kopyalama |
+| Dışa aktarma | RDF (koleksiyon ve notlarla), CSL JSON, CSV, RIS, BibTeX, Künye yedeği, HTML rapor; kaynakçayı panoya kopyalama |
 | Word eklentisi: Atıf ekle/düzenle (hızlı biçim), Kaynakça, Belge tercihleri, Güncelle, Bağlantıyı kaldır | Var; "gazzali 1/45" yazınca cilt/sayfa ayrılır; dipnot ya da sonnot |
 | PDF okuyucu ve işaretleme, tarayıcı eklentisi, RSS beslemeleri, tam metin dizini | Yok (Word penceresinde yapılamaz) |
 

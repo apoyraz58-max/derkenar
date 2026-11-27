@@ -1,4 +1,4 @@
-# Derkenar'ı Word'de deneme
+# Künye'yi Word'de deneme
 
 Önce bir tez **kopyasında** deneyin.
 
@@ -16,7 +16,7 @@ Karşıya Yükle** → `manifest.xml`.
 **Windows masaüstü:** Manifesti paylaşılan bir klasöre koyun. Word → **Dosya → Seçenekler →
 Güven Merkezi → Güven Merkezi Ayarları → Güvenilen Eklenti Katalogları** → `\\BILGISAYAR\klasor`
 yolunu ekleyin, "Menüde göster"i işaretleyin, Word'ü yeniden başlatın → **Ekle → Eklentilerim →
-Paylaşılan Klasör → Derkenar**.
+Paylaşılan Klasör → Künye**.
 
 **Mac:** Manifesti `~/Library/Containers/com.microsoft.Word/Data/Documents/wef` klasörüne
 kopyalayın, Word'ü yeniden başlatın → **Ekle → Eklentilerim**.
@@ -32,10 +32,10 @@ Vefeyât ile aynı anda kurulu olabilir; ikisinin sekmeleri ayrıdır.
 | İSNAD | **Belgeyi Denetle**, **Kütüphaneyi Denetle** |
 | Veri ve yardım | **Veri bilgisi** (kaynak sayıları, saklama, belgedeki kopya, eşitleme, sürüm), **Kullanım kılavuzu** (kısa kılavuz ve Hakkında) |
 
-Sağ tık → **Derkenar → Atıf ekle**.
+Sağ tık → **Künye → Atıf ekle**.
 
 1. **Kütüphanenizi alın:** atıf programınızda Dosya → Kütüphaneyi Dışa Aktar → **RDF**
-   → Derkenar → **İçe Aktar** → dosyayı seçin. Koleksiyonlar, notlar ve etiketler gelir.
+   → Künye → **İçe Aktar** → dosyayı seçin. Koleksiyonlar, notlar ve etiketler gelir.
    Ya da çevrimiçi kütüphane numaranız ve API anahtarınızla eşitleyin.
 2. **Yeni kaynak:** **Yeni Kaynak** düğmesi ekleme yollarını gösterir: DOI/ISBN/PMID/arXiv;
    künye yapıştırma (İSNAD, APA, eski usul, liste hâlinde; RIS, BibTeX, DİA Atıf metni);
@@ -46,7 +46,7 @@ Sağ tık → **Derkenar → Atıf ekle**.
 3. **Atıf:** arayın (şapka ve Türkçe harf gerekmez), Enter ile sepete ekleyin, **Cilt** ve
    **Sayfa** yazın (1/45 olur), Ctrl+Enter. Atıf yeni dipnota girer.
 4. **Otomatik güncelleme:** başka bir şey yapmanız gerekmez. Araya atıf ekleyin, bir dipnotu
-   silin ya da taşıyın; atıflar bir iki saniye içinde tam ya da kısa biçime döner. Derkenar
+   silin ya da taşıyın; atıflar bir iki saniye içinde tam ya da kısa biçime döner. Künye
    penceresi açık olmalıdır; ilk atıftan sonra Word belgeyle birlikte pencereyi de açar.
 5. **Düzenleme:** imleci atıfın içine koyun; pencere atıfı açar.
 6. **Kaynakça:** imleci tezin sonuna koyup **Kaynakça Ekle/Düzenle**.
@@ -57,7 +57,7 @@ Sağ tık → **Derkenar → Atıf ekle**.
 ## 4. Eski bir çalışmayı taşımak
 
 - **Başka atıf programıyla yazılmış belge:** Belge sekmesinde "Başka programla eklenmiş atıflar"
-  → **Derkenar atıflarına çevir**.
+  → **Künye atıflarına çevir**.
 - **Atıf programı olmadan yazılmış tez:** Belge → **Dipnotları tara** (önce liste gösterilir,
   sonra **… dipnotu atıfa çevir**); kaynakçayı seçip **Seçili kaynakçayı oku**; metin içi
   stillerde **Metin içi atıfları tara**.
@@ -70,8 +70,8 @@ sonucu bildirirseniz çok işe yarar:
 
 1. **Dipnotları tara:** el yazısı dipnotlu bir bölüm (tam künye, kısa künye, a.g.e., "Bk.",
    a.mlf., yazma eser 77b, sözlük maddesi, âyet). Dipnot numaraları yerinde kalmalı, metin
-   Derkenar atıfı olmalı, açıklamalı dipnotlar değişmemeli.
-2. **Seçili kaynakçayı oku:** el yazısı kaynakçayı seçin; hepsi okunursa yerine Derkenar
+   Künye atıfı olmalı, açıklamalı dipnotlar değişmemeli.
+2. **Seçili kaynakçayı oku:** el yazısı kaynakçayı seçin; hepsi okunursa yerine Künye
    kaynakçası gelmeli.
 3. **Metin içi atıfları tara:** APA ya da İSNAD metin içi bir belgede "(Kara, 2005: 45)".
 4. **Fotoğraftan ya da PDF'ten ekle:** iç kapak + künye sayfası fotoğrafı; bir makale PDF'i.
@@ -91,6 +91,6 @@ sonucu bildirirseniz çok işe yarar:
 - Dipnotlu stilden metin içi stile geçişte yalnız atıf içeren dipnotlar metne taşınır (bir dipnotta
   birden çok atıf varsa metinde tek atıf olur: "(Kara, 2005: 45; Aydın, 2010: 12)"); içinde açıklama
   da olan dipnotlar açıklama dipnotu olarak kalır, içlerindeki atıflar metin içi biçimiyle yazılır.
-- Atıf metnini Word'de elle değiştirirseniz Derkenar onun üzerine yazmaz; Denetim'de "Elle
-  yazılanı koru" ya da "Derkenar'ın metnine dön" seçilir.
-- Vefat tarihleri Derkenar'ın işi değildir (Vefeyât eklentisi).
+- Atıf metnini Word'de elle değiştirirseniz Künye onun üzerine yazmaz; Denetim'de "Elle
+  yazılanı koru" ya da "Künye'nin metnine dön" seçilir.
+- Vefat tarihleri Künye'nin işi değildir (Vefeyât eklentisi).

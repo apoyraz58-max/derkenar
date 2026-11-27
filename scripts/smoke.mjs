@@ -338,7 +338,7 @@ try {
   await page.evaluate(() => (window.__doc.cursor = 0));
   await cite("gazzali", "3", "7");
   await waitNotes(() => window.__notes().length === 5 && window.__notes()[1] === "Gazzâlî, el-Müstasfâ min ʿilmi’l-uṣûl, 1/45.", "insert before");
-  // The user deletes the first footnote in Word (not through Derkenar): the next one becomes full by itself.
+  // The user deletes the first footnote in Word (not through Künye): the next one becomes full by itself.
   await page.evaluate(() => {
     const d = window.__doc;
     d.flow.splice(d.flow.findIndex((x) => x.fn), 1);
@@ -571,7 +571,7 @@ try {
   await page.click("#hand-intext-scan");
   await page.waitForSelector("#hand-intext-result:has-text('1 metin içi atıf kütüphanedeki eserlerle eşleşti')", { timeout: 5000 }).catch(async () => fail(`in-text scan for ${typed}: ${await page.textContent("#hand-intext-result")} / ${await page.textContent("#message")}`));
   await page.locator("#hand-intext-result button").click();
-  await page.waitForSelector("#message:has-text('1 metin içi atıf Derkenar atıfına çevrildi')");
+  await page.waitForSelector("#message:has-text('1 metin içi atıf Künye atıfına çevrildi')");
   const after = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).length);
   if (after !== apa.length + 1) fail(`in-text conversion: ${after} citations, expected ${apa.length + 1}`);
   await page.selectOption("#style", "isnad-dipnotlu");
@@ -729,7 +729,7 @@ try {
   await page.click('[data-bulk="merge"]');
   await page.waitForSelector("#message:has-text('birleştirilen kayda bağlandı')");
 
-  // 9d. A document of another citation program: its fields become Derkenar citations.
+  // 9d. A document of another citation program: its fields become Künye citations.
   await page.evaluate(() => {
     const field = (loc) => ({ code: 'ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":"z' + loc + '","properties":{"plainCitation":"Eski metin ' + loc + '","noteIndex":1},"citationItems":[{"id":1,"uris":["http://zotero.org/users/1/items/ZOTKEY01"],"itemData":{"id":1,"type":"book","title":"Zoteroda Eklenmiş Kitap","author":[{"family":"Ekinci","given":"Selim"}],"issued":{"date-parts":[["2011"]]},"publisher":"Dergâh Yayınları","publisher-place":"İstanbul"},"locator":"' + loc + '","label":"page"}]}', text: "Eski metin " + loc });
     const at = window.__doc.flow.findIndex((x) => x.cc && x.cc.kind === "block");
@@ -739,7 +739,7 @@ try {
   await page.click("#tab-belge");
   await page.waitForSelector("#foreign-box:not([hidden])");
   await page.click("#foreign-convert");
-  await page.locator("#message", { hasText: "alan Derkenar" }).waitFor();
+  await page.locator("#message", { hasText: "alan Künye" }).waitFor();
   const converted = (await notes()).filter((n) => n.includes("Zoteroda Eklenmiş Kitap"));
   if (converted.length !== 2 || !converted[0].startsWith("Selim Ekinci, Zoteroda Eklenmiş Kitap (İstanbul: Dergâh Yayınları, 2011), 10.") || converted[1] !== "Ekinci, Zoteroda Eklenmiş Kitap, 11.") fail(`converted fields: ${JSON.stringify(converted)}`);
 
@@ -834,7 +834,7 @@ try {
   await page.waitForSelector("#hand-result:has-text('3 tanesi atıfa çevrilebilir')");
   if (!(await page.textContent("#hand-result")).includes("kalır: künye olarak okunamadı")) fail("hand note with prose should stay");
   await page.locator("#hand-result button", { hasText: "3 dipnotu atıfa çevir" }).click();
-  await page.waitForSelector("#message:has-text('3 dipnot Derkenar atıfına çevrildi')");
+  await page.waitForSelector("#message:has-text('3 dipnot Künye atıfına çevrildi')");
   const hand = await page.evaluate(() => window.__doc.flow.filter((x) => x.fn).slice(-4).map((x) => ({ cc: x.fn.controls.map((c) => c.text).join(""), text: x.fn.text })));
   if (!hand[0].cc.includes("Anahatlarıyla Tasavvuf ve Tarikatlar") || !hand[0].cc.includes("45")) fail(`hand note 1: ${JSON.stringify(hand[0])}`);
   if (!hand[1].cc || hand[1].text || /a\.g\.e|a\.e\./i.test(hand[1].cc) || !hand[1].cc.startsWith("Yılmaz, Anahatlarıyla")) fail(`hand note 2 should be a short reference, not a.g.e.: ${JSON.stringify(hand[1])}`);

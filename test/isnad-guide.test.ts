@@ -1,5 +1,5 @@
 /**
- * Derkenar against the İSNAD 2 guide (v1.6, dipnotlu): the guide's own example
+ * Künye against the İSNAD 2 guide (v1.6, dipnotlu): the guide's own example
  * works (the İSNAD team's Zotero library, test/fixtures/isnad) must come out
  * exactly as the guide prints them — first note, later note, bibliography.
  * Page numbers refer to the guide.

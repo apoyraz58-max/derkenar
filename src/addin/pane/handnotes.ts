@@ -1,5 +1,5 @@
 /**
- * Belge → Elle yazılmış dipnotlar: footnotes typed by hand become Derkenar
+ * Belge → Elle yazılmış dipnotlar: footnotes typed by hand become Künye
  * citations in place (the note, its number and its place stay). First a
  * look at what would change; then the change, which Word's Undo takes back.
  */
@@ -26,7 +26,7 @@ async function scan(): Promise<void> {
   if (!word.footnotesSupported()) throw new Error("Bu Word sürümü dipnotları okumaya izin vermiyor (WordApi 1.5 gerekir).");
   const notes = await serial(() => word.handNotes());
   if (!notes.length) {
-    $("hand-result").replaceChildren(h("p", { class: "muted small" }, "Elle yazılmış dipnot yok; bütün dipnotlar zaten Derkenar atıfı ya da belge dipnotsuz."));
+    $("hand-result").replaceChildren(h("p", { class: "muted small" }, "Elle yazılmış dipnot yok; bütün dipnotlar zaten Künye atıfı ya da belge dipnotsuz."));
     return;
   }
   // The notes are read in order, so "a.g.e." and short forms find the work cited before them.
@@ -77,7 +77,7 @@ async function convert(): Promise<void> {
   plan = [];
   $("hand-result").replaceChildren();
   const others = ok.flatMap((p) => p.refs!.filter((r) => r.unsure?.length)).length;
-  setMessage(`${done} dipnot Derkenar atıfına çevrildi; ilk geçişler tam, sonrakiler kısa künye oldu (İSNAD gereği a.g.e. kullanılmaz).${fresh.length ? ` ${fresh.length} eser kütüphaneye eklendi.` : ""}${fixedNote} ${others ? ` ${others} eser "vd." ile anılmıştı: diğer yazarlarını kütüphanede ekleyin, yoksa atıfta "vd." çıkmaz.` : ""} Eski elle yazılmış kaynakçayı silip Kaynakça ekle ile Derkenar'ınkini koyabilirsiniz.`, others ? "warning" : "success");
+  setMessage(`${done} dipnot Künye atıfına çevrildi; ilk geçişler tam, sonrakiler kısa künye oldu (İSNAD gereği a.g.e. kullanılmaz).${fresh.length ? ` ${fresh.length} eser kütüphaneye eklendi.` : ""}${fixedNote} ${others ? ` ${others} eser "vd." ile anılmıştı: diğer yazarlarını kütüphanede ekleyin, yoksa atıfta "vd." çıkmaz.` : ""} Eski elle yazılmış kaynakçayı silip Kaynakça ekle ile Künye'ninkini koyabilirsiniz.`, others ? "warning" : "success");
 }
 
 // ---------------------------------------------------------------- a bibliography typed by hand
@@ -122,14 +122,14 @@ async function scanBibliography(): Promise<void> {
   const unread = lines.filter((l) => !l.item || l.lost);
   const fresh = read.filter((l) => l.isNew).length;
   $("hand-bib-result").replaceChildren(
-    h("p", { class: "small" }, `${lines.length} künyeden ${read.length} tanesi okundu${fresh ? ` (${fresh} eser kütüphanede yok, eklenecek)` : ""}.${unread.length ? ` ${unread.length} satır okunamadı ya da kaydına tam sığmıyor; seçili metin bu yüzden yerinde bırakılacak, okunan eserler yine de kütüphaneye ve kaynakçaya girer.` : " Seçili metnin yerine Derkenar kaynakçası gelecek."}`),
+    h("p", { class: "small" }, `${lines.length} künyeden ${read.length} tanesi okundu${fresh ? ` (${fresh} eser kütüphanede yok, eklenecek)` : ""}.${unread.length ? ` ${unread.length} satır okunamadı ya da kaydına tam sığmıyor; seçili metin bu yüzden yerinde bırakılacak, okunan eserler yine de kütüphaneye ve kaynakçaya girer.` : " Seçili metnin yerine Künye kaynakçası gelecek."}`),
     h(
       "ol",
       { class: "hand-list small" },
       ...lines.slice(0, 300).map((l) => h("li", { class: l.item ? "" : "muted" }, h("div", { class: "hand-src" }, short(l.text, 140)), h("div", { class: l.item ? "hand-to" : "hand-keep" }, l.item ? `→ ${creatorLine(l.item) || "—"}, ${short(titleOf(l.item), 60)}${l.isNew ? " (yeni)" : ""}${l.lost ? ` — kayıtta yeri olmayan: ${l.lost.slice(0, 4).join(", ")}` : ""}` : "okunamadı"))),
     ),
     ...(lines.length > 300 ? [h("p", { class: "muted small" }, `Listede ilk 300 künye gösteriliyor; ${read.length} künyenin hepsi alınır.`)] : []),
-    read.length ? h("button", { type: "button", class: "primary", onclick: () => void run("Kaynakça çevriliyor", convertBibliography) }, unread.length ? `${read.length} eseri kütüphaneye ve kaynakçaya al` : "Derkenar kaynakçasına çevir") : h("p", { class: "muted small" }, "Okunan künye yok."),
+    read.length ? h("button", { type: "button", class: "primary", onclick: () => void run("Kaynakça çevriliyor", convertBibliography) }, unread.length ? `${read.length} eseri kütüphaneye ve kaynakçaya al` : "Künye kaynakçasına çevir") : h("p", { class: "muted small" }, "Okunan künye yok."),
   );
 }
 
@@ -158,7 +158,7 @@ async function convertBibliography(): Promise<void> {
     }
   }
   d.bibUncited = [...uncited];
-  // The typed bibliography was divided ("Kitaplar", "Makaleler" …): so is Derkenar's.
+  // The typed bibliography was divided ("Kitaplar", "Makaleler" …): so is Künye's.
   const sectioned = !d.bibSections && sectionHeadings(bib.text).length >= 2;
   if (sectioned) {
     d.bibSections = true;
@@ -171,7 +171,7 @@ async function convertBibliography(): Promise<void> {
   bib = null;
   $("hand-bib-result").replaceChildren();
   setMessage(
-    `${read.length} eser kaynakçaya alındı${fresh.length ? `, ${fresh.length} tanesi kütüphaneye eklendi` : ""}.${fixedNote}${sectioned ? " Elle yazılmış kaynakça ara başlıklarla bölünmüştü; Derkenar'ınki de türlere ayrıldı (Belge → Kaynakçayı türlere ayır)." : ""} ${replaced ? "Elle yazılmış kaynakçanın yerinde artık Derkenar kaynakçası var." : unread ? `Okunamayan ya da kaydına tam sığmayan ${unread} satır yüzünden elle yazılmış kaynakça yerinde bırakıldı; Kaynakça ekle ile Derkenar'ınkini koyup eskisini, o satırları karşılaştırarak silin.` : "Belgede zaten bir Derkenar kaynakçası var; elle yazılmış olanı silebilirsiniz."}`,
+    `${read.length} eser kaynakçaya alındı${fresh.length ? `, ${fresh.length} tanesi kütüphaneye eklendi` : ""}.${fixedNote}${sectioned ? " Elle yazılmış kaynakça ara başlıklarla bölünmüştü; Künye'ninki de türlere ayrıldı (Belge → Kaynakçayı türlere ayır)." : ""} ${replaced ? "Elle yazılmış kaynakçanın yerinde artık Künye kaynakçası var." : unread ? `Okunamayan ya da kaydına tam sığmayan ${unread} satır yüzünden elle yazılmış kaynakça yerinde bırakıldı; Kaynakça ekle ile Künye'ninkini koyup eskisini, o satırları karşılaştırarak silin.` : "Belgede zaten bir Künye kaynakçası var; elle yazılmış olanı silebilirsiniz."}`,
     unread ? "warning" : "success",
   );
 }
@@ -220,7 +220,7 @@ async function convertInText(): Promise<void> {
   await refresh(false, true);
   inText = null;
   $("hand-intext-result").replaceChildren();
-  setMessage(`${done} metin içi atıf Derkenar atıfına çevrildi.`, "success");
+  setMessage(`${done} metin içi atıf Künye atıfına çevrildi.`, "success");
 }
 
 // ---------------------------------------------------------------- footnotes against the bibliography
@@ -231,7 +231,7 @@ async function checkAgainstBibliography(): Promise<void> {
   if (text.length < 20) throw new Error("Önce Word'de kaynakçanın tamamını seçin, sonra yeniden basın.");
   const notes = await serial(() => word.handNotes());
   const d = doc();
-  // Works already cited with Derkenar count as cited too.
+  // Works already cited with Künye count as cited too.
   const derkenar = [...new Set(Object.values(d.citations).flatMap((c) => c.items.map((r) => r.id)))].map((k) => d.items[k] ?? S.byKey.get(k)).filter((x): x is Item => Boolean(x));
   const lines = bibliographyLines(text);
   // In-text citations typed in the text ("(Kara, 2005: 45)", "Kara (2005)"): checked by author and year.
@@ -247,7 +247,7 @@ async function checkAgainstBibliography(): Promise<void> {
     );
     report(
       [
-        `Metin içi atıflar ile kaynakça (Derkenar): ${t.citedCount} yazar-yıl atfı, ${t.listedCount} künye.`,
+        `Metin içi atıflar ile kaynakça (Künye): ${t.citedCount} yazar-yıl atfı, ${t.listedCount} künye.`,
         section("Metinde anılıp kaynakçada bulunmayan", t.missing.map((m) => `(${m})`)),
         section("Kaynakçada olup metinde anılmayan", t.uncited),
       ].join("\n"),
@@ -266,13 +266,13 @@ async function checkAgainstBibliography(): Promise<void> {
     ...(r.shortFirst.length ? [h("p", { class: "small" }, h("strong", {}, `İlk geçişi kısa künye ya da a.g.e. ile yapılan (${r.shortFirst.length}):`), " İSNAD ilk atıfta tam künye ister."), h("ul", { class: "hand-list small" }, ...r.shortFirst.slice(0, 100).map((x) => h("li", {}, `dn. ${noteNo(x.note)}: ${creatorLine(x.item) || "—"}, ${short(titleOf(x.item), 70)}`)))] : []),
     ...(r.fullAgain.length ? [h("p", { class: "small" }, h("strong", {}, `İlk atıftan sonra yeniden tam künyeyle verilen (${r.fullAgain.length}):`), " İSNAD sonraki atıflarda kısa künye yazar."), h("ul", { class: "hand-list small" }, ...r.fullAgain.slice(0, 100).map((x) => h("li", {}, `${creatorLine(x.item) || "—"}, ${short(titleOf(x.item), 60)} — dn. ${x.notes.map(noteNo).slice(0, 6).join(", ")}${x.notes.length > 6 ? " …" : ""}`)))] : []),
     ...(r.shortVariants.length ? [h("p", { class: "small" }, h("strong", {}, `Kısa künyesi farklı yazılan (${r.shortVariants.length}):`), " Bir eser her yerde aynı kısa başlıkla anılır."), h("ul", { class: "hand-list small" }, ...r.shortVariants.slice(0, 100).map((x) => h("li", {}, x.forms.slice(0, 4).join(" · "))))] : []),
-    ...(r.age.length ? [h("p", { class: "small" }, h("strong", {}, `a.g.e. / a.e. / Ibid. kullanılan dipnotlar (${r.age.length}):`), ` dn. ${r.age.map(noteNo).slice(0, 15).join(", ")}${r.age.length > 15 ? " …" : ""}. İSNAD bunların yerine kısa künye ister; "Dipnotları tara" ile Derkenar atıfına çevrilince kendiliğinden düzelir.`)] : []),
+    ...(r.age.length ? [h("p", { class: "small" }, h("strong", {}, `a.g.e. / a.e. / Ibid. kullanılan dipnotlar (${r.age.length}):`), ` dn. ${r.age.map(noteNo).slice(0, 15).join(", ")}${r.age.length > 15 ? " …" : ""}. İSNAD bunların yerine kısa künye ister; "Dipnotları tara" ile Künye atıfına çevrilince kendiliğinden düzelir.`)] : []),
     h("p", { class: "muted small" }, "Yalnız okunabilen dipnotlar sayılır; açıklama dipnotları ve okunamayan künyeler dışarıda kalır. Kaynakçada yararlanılan ama anılmayan eserler bulunabilir; bu bir hata olmayabilir."),
   );
   const name = (it: Item) => `${creatorLine(it) || "—"}, ${titleOf(it)}`;
   report(
     [
-      `Dipnotlar ile kaynakça (Derkenar): dipnotlarda ${r.citedCount} eser, kaynakçada ${r.listedCount} künye.`,
+      `Dipnotlar ile kaynakça (Künye): dipnotlarda ${r.citedCount} eser, kaynakçada ${r.listedCount} künye.`,
       section("Dipnotta anılıp kaynakçada olmayan", r.missing.map((m) => `${name(m.item)}${m.notes.length ? ` — dn. ${m.notes.map(noteNo).join(", ")}` : ""}`)),
       section("Kaynakçada olup hiçbir dipnotta anılmayan", r.uncited),
       section("İlk geçişi kısa künye ya da a.g.e. ile yapılan", r.shortFirst.map((x) => `dn. ${noteNo(x.note)}: ${name(x.item)}`)),

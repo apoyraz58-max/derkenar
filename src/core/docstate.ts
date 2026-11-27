@@ -103,7 +103,7 @@ export function planRefresh(state: DocState, found: readonly FoundCitation[], re
     const c = state.citations[id] as StoredCitation;
     const out = c.override ?? h;
     const inWord = texts.get(id) ?? "";
-    // Text changed by hand in Word since Derkenar wrote it: kept (Zotero asks the same).
+    // Text changed by hand in Word since Künye wrote it: kept (Zotero asks the same).
     const before = state.rendered[id];
     if (before && !c.override && inWord.trim() && sameText(htmlToText(before)) !== sameText(inWord)) {
       edited.set(id, inWord);
@@ -365,7 +365,7 @@ export function keepEdited(state: DocState, id: string): void {
   delete state.edited![id];
 }
 
-/** "Derkenar'ın metnine dön": the next refresh writes the generated text again. */
+/** "Künye'nin metnine dön": the next refresh writes the generated text again. */
 export function revertEdited(state: DocState, id: string): void {
   const c = state.citations[id];
   if (c) delete c.override;

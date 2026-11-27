@@ -23,7 +23,7 @@
   </info>
   <style-options punctuation-in-quote="false"/>
   <date form="text">
-    <!-- Derkenar: İSNAD writes "9 Eylül 2019", not "09 Eylül 2019" -->
+    <!-- Künye: İSNAD writes "9 Eylül 2019", not "09 Eylül 2019" -->
     <date-part name="day" form="numeric" suffix=" "/>
     <date-part name="month" suffix=" "/>
     <date-part name="year"/>

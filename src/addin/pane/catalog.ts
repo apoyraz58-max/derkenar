@@ -34,7 +34,7 @@ export async function loadCatalog(): Promise<void> {
   render();
   // The built-in catalog (about 1 MB) is read in the background; a search before it is ready shows the library only.
   void loadBuiltin().catch(() => {
-    if (!catalog) $("catalog-status").textContent = "Derkenar'ın kataloğu okunamadı.";
+    if (!catalog) $("catalog-status").textContent = "Künye'nin kataloğu okunamadı.";
   });
 }
 
@@ -64,7 +64,7 @@ export function wireCatalog(): void {
       catalog = null;
       await setMeta("catalog", null);
       render();
-      setMessage("Yüklenen katalog kaldırıldı; Derkenar'ın kendi kataloğu kullanılıyor. Kütüphaneye eklenmiş eserler yerinde.", "info");
+      setMessage("Yüklenen katalog kaldırıldı; Künye'nin kendi kataloğu kullanılıyor. Kütüphaneye eklenmiş eserler yerinde.", "info");
     });
 }
 

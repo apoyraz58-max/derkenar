@@ -1,5 +1,5 @@
 /**
- * Derkenar pane entry: wiring and what the ribbon buttons ask for (?action=…).
+ * Künye pane entry: wiring and what the ribbon buttons ask for (?action=…).
  */
 import { BUILTIN_STYLES } from "../core/styles.js";
 import * as word from "./word.js";
@@ -96,7 +96,7 @@ async function launch(action: string): Promise<void> {
 }
 
 Office.onReady(async () => {
-  $("version").textContent = `Derkenar ${__VERSION__}`;
+  $("version").textContent = `Künye ${__VERSION__}`;
   void checkForUpdate();
   for (const b of document.querySelectorAll<HTMLButtonElement>(".tabs button")) b.onclick = () => showView(b.dataset.view!);
   $("go-new").onclick = () => showView("yeni");

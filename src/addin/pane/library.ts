@@ -272,7 +272,7 @@ function renderDuplicates(): void {
 
 async function merge(master: Item, others: Item[]): Promise<void> {
   const merged = mergeItems(master, others);
-  await putItems([merged, ...others.map((o) => ({ ...o, deleted: true, dateModified: now(), fields: { ...o.fields, extra: [o.fields.extra, `Derkenar: ${master.key} ile birleştirildi`].filter(Boolean).join("\n") } }))], [], true);
+  await putItems([merged, ...others.map((o) => ({ ...o, deleted: true, dateModified: now(), fields: { ...o.fields, extra: [o.fields.extra, `Künye: ${master.key} ile birleştirildi`].filter(Boolean).join("\n") } }))], [], true);
   // Citations in this document that cited a merged-away record now cite the merged one:
   // one work, one first citation, one bibliography line.
   const d = doc();

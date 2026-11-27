@@ -197,7 +197,7 @@ async function syncFromZotero(): Promise<void> {
     throw e;
   });
   const source = `zotero:${cfg.library}`;
-  // Edits made in Derkenar and not yet sent are kept unless Zotero changed the item too.
+  // Edits made in Künye and not yet sent are kept unless Zotero changed the item too.
   const conflicts: string[] = [];
   const items = page.items.map((i) => {
     const old = S.byKey.get(i.key);
@@ -216,11 +216,11 @@ async function syncFromZotero(): Promise<void> {
   await setMeta("zotero", { mode: local ? "local" : "web", kind: $<HTMLSelectElement>("z-kind").value, id, apiKey });
   status.textContent = `Son eşitleme: ${new Date().toLocaleString("tr-TR")}`;
   const msg = since ? `${page.items.length} değişen, ${page.deletedKeys.length} silinen kaynak işlendi.` : `${page.items.length} kaynak ve ${page.collections.length} koleksiyon çevrimiçi kütüphaneden alındı.`;
-  setMessage(conflicts.length ? `${msg} ${conflicts.length} kaynak hem Derkenar'da hem çevrimiçi kütüphanede değişmişti; çevrimiçi hâli alındı: ${conflicts.slice(0, 3).join("; ")}${conflicts.length > 3 ? "…" : ""}` : msg, conflicts.length ? "warning" : "success");
+  setMessage(conflicts.length ? `${msg} ${conflicts.length} kaynak hem Künye'de hem çevrimiçi kütüphanede değişmişti; çevrimiçi hâli alındı: ${conflicts.slice(0, 3).join("; ")}${conflicts.length > 3 ? "…" : ""}` : msg, conflicts.length ? "warning" : "success");
   renderPushCount();
 }
 
-/** Sends Derkenar's changes (and, if asked, items entered here) to the Zotero library. */
+/** Sends Künye's changes (and, if asked, items entered here) to the Zotero library. */
 async function pushChanges(): Promise<void> {
   const cfg = zoteroConfig();
   if (!cfg.base && !cfg.apiKey) throw new Error("Göndermek için yazma izni olan bir API anahtarı gerekir.");

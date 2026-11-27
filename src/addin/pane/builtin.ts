@@ -1,5 +1,5 @@
 /**
- * Yerleşik veritabanı (DİA maddeleri ve Derkenar makale kataloğunun kesin kayıtları): eklentiyle aynı
+ * Yerleşik veritabanı (DİA maddeleri ve Künye makale kataloğunun kesin kayıtları): eklentiyle aynı
  * adresten, gerektiği kadar indirilir; kullanıcı hiçbir dosya yüklemez. Atıf sekmesinde aranan sözcüklerle
  * eşleşen maddeler ve makaleler kütüphanede yoksa tek tıkla eklenip atıfa konur.
  */

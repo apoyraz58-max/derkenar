@@ -87,7 +87,7 @@ function catalogRows(): HTMLElement[] {
     });
 }
 
-/** Yerleşik veritabanının (DİA, Derkenar makale kataloğu) kütüphanede olmayan kayıtları: tek tıkla eklenir ve atıfa konur. */
+/** Yerleşik veritabanının (DİA, Künye makale kataloğu) kütüphanede olmayan kayıtları: tek tıkla eklenir ve atıfa konur. */
 function builtinRows(): HTMLElement[] {
   const q = $<HTMLInputElement>("q").value;
   const hits = builtinHits(q);
@@ -454,7 +454,7 @@ export async function insert(): Promise<void> {
   });
 }
 
-/** Cursor moved: inside a Derkenar citation → edit it. */
+/** Cursor moved: inside a Künye citation → edit it. */
 /**
  * Follows the Word cursor: inside a citation, the Atıf tab edits it. Only
  * while the Atıf tab is showing (or `open`: the ribbon's Atıf Ekle/Düzenle) —

@@ -1,4 +1,4 @@
-# Derkenar makale kataloğu
+# Künye makale kataloğu
 
 DergiPark, TR Dizin ve İSAM Makaleler Veritabanı'ndaki makaleleri tek kayıtta birleştirip
 İSNAD 2 (kaynakça) künyesiyle kataloglar. Hedef: 1.000.000 tekil makale, DOI'li ve DOI'siz.

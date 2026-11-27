@@ -44,7 +44,7 @@ it("handnotes report", () => {
       }
     });
     const read = readHandNotes(notes, []);
-    // Rendered back by Derkenar: the same footnote as the guide's, when the fields were read right.
+    // Rendered back by Künye: the same footnote as the guide's, when the fields were read right.
     const st = emptyState();
     const order = read.flatMap((n, i) => {
       if (!n.refs) return [];
@@ -69,7 +69,7 @@ it("handnotes report", () => {
       if (!fa.refs || !same) out.push(`✗ ${e.no} ${e.title}\n   ilk:     ${fa.text}${fa.refs ? "" : `  [${fa.reason}]`}\n   sonraki: ${fb.text}${fb.refs ? (same ? "" : `  [başka esere gitti: ${fb.refs[0]!.item.fields.title}]`) : `  [${fb.reason}]`}`);
     }
   }
-  const head = `Kılavuz dipnotları elle yazılmış gibi okundu: ${firsts} ilk atıftan ${firstOk} tanesi okundu; ${laters} sonraki atıftan ${laterOk} tanesi ilk atıftaki esere bağlandı. Okunan ilk atıflardan ${same} tanesi Derkenar'da basılınca kılavuzdakinin aynısı.\n\n`;
+  const head = `Kılavuz dipnotları elle yazılmış gibi okundu: ${firsts} ilk atıftan ${firstOk} tanesi okundu; ${laters} sonraki atıftan ${laterOk} tanesi ilk atıftaki esere bağlandı. Okunan ilk atıflardan ${same} tanesi Künye'de basılınca kılavuzdakinin aynısı.\n\n`;
   writeFileSync(process.env.REPORT ?? "isnad-handnotes.txt", head + out.join("\n") + "\n\n— Geri basınca farklı çıkanlar —\n" + back.join("\n"));
   console.log(head);
 });

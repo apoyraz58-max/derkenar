@@ -2,7 +2,7 @@
   "name": "derkenar",
   "version": "0.3.0-dev",
   "private": true,
-  "description": "Derkenar: Word için hızlı atıf ve kaynakça eklentisi (Office.js, citeproc-js, CSL)",
+  "description": "Künye: Word için hızlı atıf ve kaynakça eklentisi (Office.js, citeproc-js, CSL)",
   "type": "module",
   "license": "AGPL-3.0-or-later",
   "engines": {

@@ -1,5 +1,5 @@
 /**
- * Derkenar's item model is Zotero's (item types, fields, creators, tags,
+ * Künye's item model is Zotero's (item types, fields, creators, tags,
  * notes, collections, relations), driven by Zotero's own data schema, plus
  * the roles İSNAD needs and Zotero lacks: muhakkik, nâşir, hazırlayan,
  * sadeleştiren. Conversion to CSL-JSON follows Zotero's schema mappings.
@@ -56,7 +56,7 @@ export interface Item {
   /** "zotero:users/1", "file:kutuphane.rdf", "doi", "isbn", "manual", "belge". */
   source: string;
   version?: number;
-  /** Changed in Derkenar since the last Zotero sync (sent by "Zotero'ya gönder"). */
+  /** Changed in Künye since the last Zotero sync (sent by "Zotero'ya gönder"). */
   dirty?: boolean;
   attachments?: Attachment[];
   /** İSNAD citation system chosen in the editor (hadis-bab, hadis-no, hadis-cilt, sozluk); empty: recognised. */
@@ -89,7 +89,7 @@ export interface Collection {
 
 // ---------------------------------------------------------------- İSNAD roles
 
-/** Derkenar creator types → the CSL variables the İSNAD style prints as thk., nşr., haz., sad. */
+/** Künye creator types → the CSL variables the İSNAD style prints as thk., nşr., haz., sad. */
 export const ISNAD_ROLES: Record<string, { label: string; csl: string; extra: string[] }> = {
   muhakkik: { label: "Muhakkik (thk.)", csl: "collection-editor", extra: ["muhakkik", "thk", "tahkik"] },
   nasir: { label: "Nâşir (nşr.)", csl: "editorial-director", extra: ["nasir", "nâşir", "naşir", "nşr", "neşir"] },
@@ -249,7 +249,7 @@ export function yearOf(item: Item): string {
 /**
  * Zotero's Extra field may carry CSL variables, one per line:
  * "editorial-director: Last || First", "original-date: 1323".
- * Derkenar also reads Turkish role names ("thk: Hâfız || Hamza").
+ * Künye also reads Turkish role names ("thk: Hâfız || Hamza").
  */
 export interface ExtraParts {
   creators: Creator[];
@@ -452,7 +452,7 @@ export function toCsl(item: Item): CslItem {
 const zoteroTypeOf = new Map(Object.entries(schema.csl.types).map(([csl, types]) => [csl, types[0]!]));
 const zoteroFieldsOfCsl = schema.csl.fields.text;
 
-/** CSL-JSON (from a file, DOI lookup, another program) → Derkenar item. */
+/** CSL-JSON (from a file, DOI lookup, another program) → Künye item. */
 export function fromCsl(csl: CslItem, source: string, key?: string): Item {
   const itemType = zoteroTypeOf.get(csl.type) ?? "document";
   const item = emptyItem(itemType, source);
@@ -499,7 +499,7 @@ export function fromCsl(csl: CslItem, source: string, key?: string): Item {
   return item;
 }
 
-/** Zotero API item data (format=json) → Derkenar item. */
+/** Zotero API item data (format=json) → Künye item. */
 export function fromZoteroData(data: Record<string, unknown>, source: string, version?: number): Item {
   const itemType = String(data.itemType ?? "document");
   const t = now();

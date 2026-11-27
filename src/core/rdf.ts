@@ -212,7 +212,7 @@ export function parseZoteroRdf(xml: string, source: string): RdfResult {
     if (!itemType || itemType === "attachment" || itemType === "note") continue;
     const item = emptyItem(itemType, source);
     item.dateAdded = item.dateModified = now();
-    // Derkenar's own RDF export keeps Zotero keys ("#item_ABCD2345").
+    // Künye's own RDF export keeps Zotero keys ("#item_ABCD2345").
     const ownKey = /^#item_([23456789A-Z]{8})$/.exec(about(n))?.[1];
     if (ownKey) item.key = ownKey;
     const extra: string[] = [];

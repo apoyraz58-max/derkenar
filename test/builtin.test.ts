@@ -123,7 +123,7 @@ describe("yerleşik veritabanı: makale kataloğu", () => {
   it("an article is an İSNAD record with its verified DOI and where it came from", () => {
     const item = articleItem(rec);
     expect(item.fields).toMatchObject({ volume: "1", issue: "2", pages: "52-58", date: "2011-06", DOI: "10.5152/jarem.2011.15" });
-    expect(builtinSource(item)).toBe("Derkenar makale kataloğu#DKR0000007");
+    expect(builtinSource(item)).toBe("Künye makale kataloğu#DKR0000007");
     expect(item.fields.extra).toContain("Doğrulama: DOI kayıt ajansında doğrulandı");
     const r = bib(item);
     expect(r.bib).toContain("Ayraler, Arzu - Yılmaz, Ali. “Diyaliz ünitesinde çalışan sağlık ekibinde tükenmişlik sendromu”. Journal of Academic Research in Medicine 1/2 (Haziran 2011), 52-58. https://doi.org/10.5152/jarem.2011.15");

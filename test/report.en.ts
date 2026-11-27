@@ -1,4 +1,4 @@
-// Not a test: Derkenar in English against the ISNAD Citation Style 2nd Edition (English manual).
+// Not a test: Künye in English against the ISNAD Citation Style 2nd Edition (English manual).
 //   REPORT=path npx vitest run --config vitest.report.config.ts test/report.en.ts
 import { readFileSync, writeFileSync } from "node:fs";
 import { it } from "vitest";

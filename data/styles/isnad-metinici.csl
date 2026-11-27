@@ -94,7 +94,7 @@
     </terms>
   </locale>
   <locale xml:lang="en">
-    <!-- Derkenar: ISNAD Citation Style 2nd Edition: "Title", (comma outside the quotes), pages 175-193, "Access 16 April 2019". -->
+    <!-- Künye: ISNAD Citation Style 2nd Edition: "Title", (comma outside the quotes), pages 175-193, "Access 16 April 2019". -->
     <style-options punctuation-in-quote="false"/>
     <date form="text">
       <date-part name="day" suffix=" "/>
@@ -172,7 +172,7 @@
                   </group>
                 </if>
                 <else>
-                  <!-- Derkenar: "director" was listed twice (haz. printed twice) -->
+                  <!-- Künye: "director" was listed twice (haz. printed twice) -->
                   <names variable="editor collection-editor editorial-director reviewed-author original-author director">
                     <label form="verb-short" text-case="lowercase" suffix=" "/>
                     <name/>

@@ -1,4 +1,4 @@
-/** Styles published with the add-in (data/styles, CC BY-SA 3.0, citation-style-language/styles). İSNAD first; APA and Chicago with their own rules (Derkenar's İSNAD rules apply to İSNAD only). */
+/** Styles published with the add-in (data/styles, CC BY-SA 3.0, citation-style-language/styles). İSNAD first; APA and Chicago with their own rules (Künye's İSNAD rules apply to İSNAD only). */
 export interface BuiltinStyle {
   readonly id: string;
   readonly title: string;

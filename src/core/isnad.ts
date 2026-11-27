@@ -291,12 +291,12 @@ export function checkItem(item: Item): Issue[] {
     }
   });
 
-  // İSNAD abbreviations typed into the record: Derkenar writes them itself.
+  // İSNAD abbreviations typed into the record: Künye writes them itself.
   for (const [base, abbr] of [["place", ["b.y.", "y.y.", "yy.", "b.y", "y.y"]], ["publisher", ["y.y.", "y.y.y.", "yyy.", "y.y", "y.y.y"]], ["date", ["ts.", "ts", "t.y.", "t.y"]]] as const) {
     const field = typeField(item.itemType, base);
     const v = field ? f[field]?.trim().toLocaleLowerCase("tr") : undefined;
     if (field && v && (abbr as readonly string[]).includes(v)) {
-      add({ code: "abbr-in-field", level: "info", message: `${fieldLabel(field)} alanına "${f[field]}" yazılmış. Bu alanı boş bırakın; İSNAD kısaltmasını (${base === "place" ? "b.y." : base === "publisher" ? "y.y." : "ts."}) Derkenar kendisi yazar.`, field, fix: { field, value: "" }, fixLabel: "Alanı boşalt" });
+      add({ code: "abbr-in-field", level: "info", message: `${fieldLabel(field)} alanına "${f[field]}" yazılmış. Bu alanı boş bırakın; İSNAD kısaltmasını (${base === "place" ? "b.y." : base === "publisher" ? "y.y." : "ts."}) Künye kendisi yazar.`, field, fix: { field, value: "" }, fixLabel: "Alanı boşalt" });
     }
   }
 

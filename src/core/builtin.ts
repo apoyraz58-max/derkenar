@@ -4,7 +4,7 @@
  *
  *   - TDV İslâm Ansiklopedisi (DİA) maddeleri: `data/builtin/dia.rdf.gz` (Zotero RDF) derleme
  *     sırasında `dia.json` olur; tek dosya, ilk aramada iner.
- *   - Derkenar makale kataloğu: DergiPark, TR Dizin ve İSAM'dan birleştirilen makalelerin yalnız
+ *   - Künye makale kataloğu: DergiPark, TR Dizin ve İSAM'dan birleştirilen makalelerin yalnız
  *     kesin olanları (DOI'si kayıt ajansında doğrulanmış, iki kaynakta tutan ya da yayın kaydı derginin
  *     arşiviyle doğrulanmış). Çok büyük olduğu için parçalıdır: arama sözcüğünün ilk üç harfine göre
  *     dizin parçası, kayıtlar biner biner parça. Arama yalnız gereken parçaları indirir.
@@ -149,7 +149,7 @@ export function searchDia(q: string, data: DiaData, limit = 6): DiaEntry[] {
 
 // ---------------------------------------------------------------- makale kataloğu
 
-export const ARTICLE_CATALOG = "Derkenar makale kataloğu";
+export const ARTICLE_CATALOG = "Künye makale kataloğu";
 
 /** Makale kaydı (dizi, kısa olsun diye):
  *  [katalog no, yazarlar "Soyadı|Adı;…", başlık, dergi, yıl, ay, cilt, sayı, ilk sayfa, son sayfa,
@@ -262,7 +262,7 @@ export function postingsFor(word: string, shard: Record<string, string>): number
   return [...new Set(lists.flat())].sort((x, y) => x - y);
 }
 
-/** Bir kaydın yerleşik veritabanındaki yeri ("TDV İslâm Ansiklopedisi#2525", "Derkenar makale kataloğu#DKR0000001"). */
+/** Bir kaydın yerleşik veritabanındaki yeri ("TDV İslâm Ansiklopedisi#2525", "Künye makale kataloğu#DKR0000001"). */
 export function builtinSource(item: Item): string | null {
   const m = /^Kaynak: (.+?), (?:madde|kayıt) no\. (\S+)$/m.exec(item.fields.extra ?? "");
   return m ? `${m[1]}#${m[2]}` : null;

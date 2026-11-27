@@ -523,7 +523,7 @@ describe("works that name their kind", () => {
     const tse = readHandNotes(["Türk Standardları Enstitüsü (TSE), Helal Belgelendirmesi Yapan Kuruluşlar İçin Kılavuz (Türkiye: Türk Standardları Enstitüsü, Kabul 05 Haziran 2012, TS OIC/SMIIC 2/T1)."], [])[0]!;
     expect(tse.refs).toBeNull();
     expect(tse.reason).toMatch(/atıfta kalmayacak kelimeler var \(.*kabul/);
-    // Derkenar's own ways of writing are not losses: a.g.e., "s.", "Yay.", "DİA", months, a sûre's name, a short title.
+    // Künye's own ways of writing are not losses: a.g.e., "s.", "Yay.", "DİA", months, a sûre's name, a short title.
     const r = readHandNotes(["Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi, Dergâh Yay., İstanbul 2005, s. 45.", "a.g.e., s. 46.", "Kara, Tasavvuf, 47.", "Ahmet Yaşar Ocak, “Kalenderîler”, DİA, XXIV, 251-253."], []);
     expect(r.map((n) => n.reason ?? "ok")).toEqual(["ok", "ok", "ok", "ok"]);
     const meal = readHandNotes(["Kur’ân-ı Kerîm Meâli, çev. Halil Altuntaş - Muzaffer Şahin (Ankara: Diyanet İşleri Başkanlığı Yayınları, 2009), el-Enfâl 8/2."], [])[0]!;

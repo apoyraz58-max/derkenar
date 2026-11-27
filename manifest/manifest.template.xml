@@ -7,9 +7,9 @@
            xsi:type="TaskPaneApp">
   <Id>8b2e4f17-3a9c-4d65-b0e1-7c54d29a6f38</Id>
   <Version>{{VERSION}}</Version>
-  <ProviderName>Derkenar</ProviderName>
+  <ProviderName>Künye</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
-  <DisplayName DefaultValue="Derkenar"/>
+  <DisplayName DefaultValue="Künye"/>
   <Description DefaultValue="Word için atıf ve kaynakça yöneticisi: kaynak kütüphanesi, otomatik dipnot güncelleme, atıf stili ve yazım denetimi."/>
   <IconUrl DefaultValue="{{BASE_URL}}assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="{{BASE_URL}}assets/icon-64.png"/>
@@ -409,9 +409,9 @@
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Derkenar hazır"/>
-        <bt:String id="Tab" DefaultValue="Derkenar"/>
-        <bt:String id="Ctx" DefaultValue="Derkenar"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Künye hazır"/>
+        <bt:String id="Tab" DefaultValue="Künye"/>
+        <bt:String id="Ctx" DefaultValue="Künye"/>
         <bt:String id="Insert" DefaultValue="Atıf Ekle/Düzenle"/>
         <bt:String id="Bib" DefaultValue="Kaynakça Ekle/Düzenle"/>
         <bt:String id="Abbr" DefaultValue="Kısaltmalar Listesi"/>
@@ -433,7 +433,7 @@
         <bt:String id="Ctx.Insert" DefaultValue="Atıf ekle"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Künye sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
         <bt:String id="Insert.Tip" DefaultValue="İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır."/>
         <bt:String id="Bib.Tip" DefaultValue="İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir."/>
         <bt:String id="Abbr.Tip" DefaultValue="Atıflarda ve metinde geçen İSNAD kısaltmalarının (a.mlf., b.y., thk., Hz., s.a.v. …) listesini imlecin olduğu yere koyar; atıflar değiştikçe güncellenir."/>
@@ -443,12 +443,12 @@
         <bt:String id="Library.Tip" DefaultValue="Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede."/>
         <bt:String id="New.Tip" DefaultValue="Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar)."/>
         <bt:String id="Import.Tip" DefaultValue="Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler."/>
-        <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>
+        <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Künye yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>
         <bt:String id="CheckDoc.Tip" DefaultValue="Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir."/>
         <bt:String id="CheckLib.Tip" DefaultValue="Bütün kütüphaneyi İSNAD 2 yazım kurallarına göre denetler."/>
         <bt:String id="Info.Tip" DefaultValue="Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, eşitleme, sürüm."/>
-        <bt:String id="Help.Tip" DefaultValue="Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında."/>
-        <bt:String id="Ctx.Insert.Tip" DefaultValue="Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
+        <bt:String id="Help.Tip" DefaultValue="Künye komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında."/>
+        <bt:String id="Ctx.Insert.Tip" DefaultValue="Künye penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

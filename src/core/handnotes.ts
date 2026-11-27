@@ -286,7 +286,7 @@ const isQuran = (it: Item) => /kur[’'ʾ]?[aâ]n|meal|meâl|tefsir/i.test(title
 export const SHORT_UNKNOWN = "kısa künye; eser daha önce tam künyeyle anılmamış, kütüphanede de yok";
 
 /** Reads the notes in order; `library` is searched for each work before a new record is made. */
-/** Words a reference may drop: abbreviations Derkenar writes its own way, roles, months (dates are stored as numbers). */
+/** Words a reference may drop: abbreviations Künye writes its own way, roles, months (dates are stored as numbers). */
 const DROPPABLE = new Set("s ss sh p pp c cilt sy sayi vol vols no nr bk bkz krs kars age agm ay ae ayni eser yer makale ibid ibidem op cit amlf id idem yay yayinlari yayinevi ts ty yy by nd thk nsr cev haz sad mlf turkceye ed eds trans vd et al dia tdv bs basim baski erisim yayin tarih tarihi md madde vr kanun alici yayimlanmamis yayinlanmamis basilmamis unpublished ve and ile de da bu el".split(" "));
 const MONTH = /^(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik|january|february|march|april|may|june|july|august|september|october|november|december)$/;
 
@@ -641,7 +641,7 @@ export function checkBibliography(notes: readonly string[], bibliography: readon
   for (const n of read) for (const r of n.refs ?? []) cited.set(r.item, [...(cited.get(r.item) ?? []), n.index + 1]);
   const missing = [...cited].filter(([it]) => !listed.some((l) => sameWork(it, l.item))).map(([item, ns]) => ({ item, notes: [...new Set(ns)] }));
   const uncited = listed.filter((l) => ![...cited.keys()].some((it) => sameWork(it, l.item))).map((l) => l.line);
-  // A work already cited with Derkenar may have had its full reference there.
+  // A work already cited with Künye may have had its full reference there.
   const fm = firstMentions(read);
   const viaDerkenar = new Set(alsoCited);
   return { missing, uncited, unreadLines, citedCount: cited.size, listedCount: listed.length, ...fm, shortFirst: fm.shortFirst.filter((x) => !viaDerkenar.has(x.item)) };
