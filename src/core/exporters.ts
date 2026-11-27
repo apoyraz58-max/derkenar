@@ -1,5 +1,5 @@
 /**
- * Getting works out: a lossless Derkenar backup, CSL JSON (Zotero imports it),
+ * Getting works out: a lossless Künye backup, CSL JSON (Zotero imports it),
  * RIS and BibTeX. Roles Zotero has no field for travel in Extra / note lines
  * ("editorial-director: Nâşir || Ali"), the convention Zotero itself reads.
  */
@@ -24,7 +24,7 @@ export function isBackup(text: string): boolean {
 
 export function parseBackup(text: string): Backup {
   const b = JSON.parse(text) as Backup;
-  if (b.derkenar !== 1 || !Array.isArray(b.items)) throw new Error("Derkenar yedeği okunamadı.");
+  if (b.derkenar !== 1 || !Array.isArray(b.items)) throw new Error("Künye yedeği okunamadı.");
   return b;
 }
 

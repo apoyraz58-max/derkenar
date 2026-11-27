@@ -1,4 +1,4 @@
-// Not a test: compares Derkenar with every example of the İSNAD 2 guide (dipnotlu, s. 68-137).
+// Not a test: compares Künye with every example of the İSNAD 2 guide (dipnotlu, s. 68-137).
 //   npm run report:isnad   (REPORT=path for the detailed list)
 import { readFileSync, writeFileSync } from "node:fs";
 import { it } from "vitest";

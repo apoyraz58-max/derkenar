@@ -338,7 +338,7 @@ try {
   await page.evaluate(() => (window.__doc.cursor = 0));
   await cite("gazzali", "3", "7");
   await waitNotes(() => window.__notes().length === 5 && window.__notes()[1] === "Gazzâlî, el-Müstasfâ min ʿilmi’l-uṣûl, 1/45.", "insert before");
-  // The user deletes the first footnote in Word (not through Derkenar): the next one becomes full by itself.
+  // The user deletes the first footnote in Word (not through Künye): the next one becomes full by itself.
   await page.evaluate(() => {
     const d = window.__doc;
     d.flow.splice(d.flow.findIndex((x) => x.fn), 1);
@@ -571,7 +571,7 @@ try {
   await page.click("#hand-intext-scan");
   await page.waitForSelector("#hand-intext-result:has-text('1 metin içi atıf kütüphanedeki eserlerle eşleşti')", { timeout: 5000 }).catch(async () => fail(`in-text scan for ${typed}: ${await page.textContent("#hand-intext-result")} / ${await page.textContent("#message")}`));
   await page.locator("#hand-intext-result button").click();
-  await page.waitForSelector("#message:has-text('1 metin içi atıf Derkenar atıfına çevrildi')");
+  await page.waitForSelector("#message:has-text('1 metin içi atıf Künye atıfına çevrildi')");
   const after = await page.evaluate(() => window.__doc.flow.filter((x) => x.cc && x.cc.tag.startsWith("DERKENAR:C:")).length);
   if (after !== apa.length + 1) fail(`in-text conversion: ${after} citations, expected ${apa.length + 1}`);
   await page.selectOption("#style", "isnad-dipnotlu");
@@ -595,6 +595,35 @@ try {
   await page.waitForSelector("#message:has-text('dipnota taşındı')");
   if ((await notes()).length !== before9c) fail(`9c back to notes: ${(await notes()).length} vs ${before9c}`);
   if (!(await notes()).some((n) => /1\/45; .*2\/99|1\/45, 2\/99/.test(n))) fail(`joined citation in a note: ${JSON.stringify(await notes())}`);
+
+  // 9e. Şamile kataloğu: imported in Aktar; a search in Atıf offers its books; one click adds the İSNAD record.
+  const catalogJson = JSON.stringify({ name: "el-Mektebetü’ş-Şâmile", source: "smoke", entries: [
+    { id: 5756, ar: "عمدة القاري شرح صحيح البخاري", title: "ʿUmdetü’l-ḳārî şerḥu Ṣaḥîḥi’l-Buḫârî", plain: "Umdetü’l-kârî şerhu Sahîhi’l-Buhârî", authors: [{ dia: "Aynî, Bedreddin", diaFull: "Ebû Muhammed Bedrüddîn Mahmûd b. Ahmed el-Aynî", group: "Arap", shamela: "بدر الدين العيني", death: 855, match: "kesin" }] },
+  ] });
+  await page.click("#tab-aktar");
+  await page.setInputFiles("#catalog-file", { name: "samile.json", mimeType: "application/json", buffer: Buffer.from(catalogJson) });
+  await page.waitForSelector("#message:has-text('kataloğu yüklendi')");
+  await page.click("#tab-atif");
+  await page.fill("#q", "umdetul kari");
+  // The built-in database (DİA, makale kataloğu) may offer works with the same words: the catalog book is the one with its number.
+  await page.locator("#outside-offer button", { hasText: "Şâmile, no. 5756" }).first().click();
+  await page.waitForSelector("#message:has-text('kataloğundan eklendi')");
+  await page.fill("#q", "umdetul kari");
+  await page.waitForTimeout(300);
+  if (await page.locator("#outside-offer button", { hasText: "Şâmile, no. 5756" }).count()) fail("catalog book offered again after it was added");
+  if (!(await page.textContent("#basket"))?.includes("Umdetü’l-ḳārî")) fail("catalog book not in the citation");
+  await page.fill("#q", "");
+  await page.click("#clear-basket");
+  // Yerleşik veritabanı: DİA maddesi hiçbir dosya yüklenmeden aranır, tek tıkla eklenir ve atıfa girer.
+  await page.fill("#q", "gazzali");
+  await page.locator("#outside-offer button", { hasText: "DİA 13/489-505" }).first().click();
+  await page.waitForSelector("#message:has-text('Yerleşik veritabanından eklendi')");
+  if (!(await page.textContent("#basket"))?.includes("Gazzâlî")) fail("built-in DİA madde not in the citation");
+  await page.fill("#q", "gazzali");
+  await page.waitForTimeout(300);
+  if (await page.locator("#outside-offer button", { hasText: "DİA 13/489-505" }).count()) fail("built-in DİA madde offered again after it was added");
+  await page.fill("#q", "");
+  await page.click("#clear-basket");
 
   // 9a. Yeni kaynak: ekleme yolları; RIS metni yapıştırarak ekleme.
   await page.click("#tab-kutuphane");
@@ -700,7 +729,7 @@ try {
   await page.click('[data-bulk="merge"]');
   await page.waitForSelector("#message:has-text('birleştirilen kayda bağlandı')");
 
-  // 9d. A document of another citation program: its fields become Derkenar citations.
+  // 9d. A document of another citation program: its fields become Künye citations.
   await page.evaluate(() => {
     const field = (loc) => ({ code: 'ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":"z' + loc + '","properties":{"plainCitation":"Eski metin ' + loc + '","noteIndex":1},"citationItems":[{"id":1,"uris":["http://zotero.org/users/1/items/ZOTKEY01"],"itemData":{"id":1,"type":"book","title":"Zoteroda Eklenmiş Kitap","author":[{"family":"Ekinci","given":"Selim"}],"issued":{"date-parts":[["2011"]]},"publisher":"Dergâh Yayınları","publisher-place":"İstanbul"},"locator":"' + loc + '","label":"page"}]}', text: "Eski metin " + loc });
     const at = window.__doc.flow.findIndex((x) => x.cc && x.cc.kind === "block");
@@ -710,7 +739,7 @@ try {
   await page.click("#tab-belge");
   await page.waitForSelector("#foreign-box:not([hidden])");
   await page.click("#foreign-convert");
-  await page.locator("#message", { hasText: "alan Derkenar" }).waitFor();
+  await page.locator("#message", { hasText: "alan Künye" }).waitFor();
   const converted = (await notes()).filter((n) => n.includes("Zoteroda Eklenmiş Kitap"));
   if (converted.length !== 2 || !converted[0].startsWith("Selim Ekinci, Zoteroda Eklenmiş Kitap (İstanbul: Dergâh Yayınları, 2011), 10.") || converted[1] !== "Ekinci, Zoteroda Eklenmiş Kitap, 11.") fail(`converted fields: ${JSON.stringify(converted)}`);
 
@@ -805,7 +834,7 @@ try {
   await page.waitForSelector("#hand-result:has-text('3 tanesi atıfa çevrilebilir')");
   if (!(await page.textContent("#hand-result")).includes("kalır: künye olarak okunamadı")) fail("hand note with prose should stay");
   await page.locator("#hand-result button", { hasText: "3 dipnotu atıfa çevir" }).click();
-  await page.waitForSelector("#message:has-text('3 dipnot Derkenar atıfına çevrildi')");
+  await page.waitForSelector("#message:has-text('3 dipnot Künye atıfına çevrildi')");
   const hand = await page.evaluate(() => window.__doc.flow.filter((x) => x.fn).slice(-4).map((x) => ({ cc: x.fn.controls.map((c) => c.text).join(""), text: x.fn.text })));
   if (!hand[0].cc.includes("Anahatlarıyla Tasavvuf ve Tarikatlar") || !hand[0].cc.includes("45")) fail(`hand note 1: ${JSON.stringify(hand[0])}`);
   if (!hand[1].cc || hand[1].text || /a\.g\.e|a\.e\./i.test(hand[1].cc) || !hand[1].cc.startsWith("Yılmaz, Anahatlarıyla")) fail(`hand note 2 should be a short reference, not a.g.e.: ${JSON.stringify(hand[1])}`);

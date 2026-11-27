@@ -41,7 +41,9 @@ for (const entry of ["taskpane", "commands"]) {
 
 await cp(new URL("src/addin/taskpane.css", root), new URL("taskpane.css", out));
 for (const file of ["taskpane.html", "commands.html"]) {
-  const html = (await readFile(new URL(`src/addin/${file}`, root), "utf8")).replace(/(src|href)="(taskpane|commands)\.(js|css)"/g, `$1="$2.$3?v=${version}"`);
+  const html = (await readFile(new URL(`src/addin/${file}`, root), "utf8")).replace(/(src|href)="(taskpane|commands)\.(js|css)"/g, `$1="$2.$3?v=${version}"`)
+    // Logos and icons too: a new version is a new address, so Word cannot show a cached old picture.
+    .replace(/(src|href|srcset)="(assets\/[^"?]+)"/g, `$1="$2?v=${version}"`);
   await writeFile(new URL(file, out), html);
 }
 await writeFile(new URL("version.json", out), JSON.stringify({ version }));
@@ -63,6 +65,18 @@ for (const f of ["pdf.min.mjs", "pdf.worker.min.mjs"]) await cp(nm(`pdfjs-dist/l
 // CSL styles and locales (CC BY-SA 3.0), loaded by the pane on demand.
 await cp(new URL("data/styles/", root), new URL("styles/", out), { recursive: true });
 
+// Yerleşik veritabanı (DİA maddeleri, Künye makale kataloğu): data/builtin/ kaynaklarından parçalar.
+{
+  const tmp = new URL("dist/builtin-gen.mjs", root);
+  await build({ entryPoints: [new URL("scripts/builtin.ts", root).pathname], outfile: tmp.pathname, bundle: true, platform: "node", format: "esm", logLevel: "warning" });
+  const { writeBuiltin } = await import(tmp.href);
+  for (const note of writeBuiltin(root, new URL("data/", out))) console.log(`Yerleşik veritabanı: ${note}`);
+  await rm(tmp, { force: true });
+}
+
+// The book catalog (Şamile + OpenITI, reviewed entries), read by the pane on first need.
+await cp(new URL("data/catalog/", root), new URL("catalog/", out), { recursive: true });
+
 const template = await readFile(new URL("manifest/manifest.template.xml", root), "utf8");
 await writeFile(new URL("manifest.xml", out), template.replaceAll("{{BASE_URL}}", baseUrl).replaceAll("{{VERSION}}", manifestVersion));
-console.log(`Built Derkenar ${version} (manifest ${manifestVersion}) for ${baseUrl}`);
+console.log(`Built Künye ${version} (manifest ${manifestVersion}) for ${baseUrl}`);

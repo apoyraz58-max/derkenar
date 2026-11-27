@@ -94,7 +94,7 @@
     </terms>
   </locale>
   <locale xml:lang="en">
-    <!-- Derkenar: ISNAD Citation Style 2nd Edition: "Title", (comma outside the quotes), pages 175-193, "Access 16 April 2019". -->
+    <!-- Künye: ISNAD Citation Style 2nd Edition: "Title", (comma outside the quotes), pages 175-193, "Access 16 April 2019". -->
     <style-options punctuation-in-quote="false"/>
     <date form="text">
       <date-part name="day" suffix=" "/>
@@ -230,7 +230,7 @@
                 </name>
               </names>
             </if>
-            <!-- Derkenar: the inventor of a patent is printed (guide s. 127: "Adem Kaya, …") -->
+            <!-- Künye: the inventor of a patent is printed (guide s. 127: "Adem Kaya, …") -->
             <else>
               <names variable="author">
                 <name/>
@@ -907,7 +907,7 @@
               </group>
             </if>
             <else-if variable="authority" match="any">
-              <!-- Derkenar: Mevzuat-Diğer in notes, "Yükseköğretim Kurulu (2016)" (guide s. 122). -->
+              <!-- Künye: Mevzuat-Diğer in notes, "Yükseköğretim Kurulu (2016)" (guide s. 122). -->
               <group delimiter=" ">
                 <text variable="authority"/>
                 <date variable="issued" form="numeric" date-parts="year" prefix="(" suffix=")"/>
@@ -1745,7 +1745,7 @@
       </else-if>
     </choose>
   </macro>
-  <!-- Derkenar: in the bibliography e-mail and text message details are not in parentheses (guide s. 136-137) -->
+  <!-- Künye: in the bibliography e-mail and text message details are not in parentheses (guide s. 136-137) -->
   <macro name="locators-multimedia-with-space-bib">
     <choose>
       <if type="motion_picture" variable="genre">

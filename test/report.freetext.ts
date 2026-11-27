@@ -1,5 +1,5 @@
 // Not a test: how well "Serbest künye" reads İSNAD text back.
-// The guide's records are rendered by Derkenar (dipnot and kaynakça), parsed back, and compared field by field.
+// The guide's records are rendered by Künye (dipnot and kaynakça), parsed back, and compared field by field.
 //   REPORT=path npx vitest run --config vitest.report.config.ts test/report.freetext.ts
 import { readFileSync, writeFileSync } from "node:fs";
 import { it } from "vitest";

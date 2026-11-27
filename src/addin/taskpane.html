@@ -3,15 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Derkenar</title>
+    <title>Künye</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="taskpane.css" />
-    <link rel="icon" href="assets/logo/derkenar-mark.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/logo/kunye-mark.svg" type="image/svg+xml" />
   </head>
   <body>
     <header class="top">
       <div>
-        <h1 class="brand-row"><img src="assets/logo/derkenar-mark.svg" alt="" class="brand" width="22" height="22">Derkenar</h1>
+        <h1 class="brand-row"><img src="assets/logo/kunye-mark.svg" alt="" class="brand" width="22" height="22">Künye</h1>
         <p id="summary" class="summary"></p>
       </div>
       <button id="translit-toggle" type="button" class="icon-btn" title="Transkripsiyon harfleri (ʿ ʾ â ḥ ṣ …)" aria-pressed="false">ʿâ</button>
@@ -245,7 +245,7 @@
       <section>
         <h2>Dosyadan ekle</h2>
         <input id="new-file" type="file" accept=".rdf,.json,.bib,.bibtex,.ris,.txt" multiple />
-        <p class="muted small">RIS, BibTeX, RDF, CSL JSON ya da Derkenar yedeği.</p>
+        <p class="muted small">RIS, BibTeX, RDF, CSL JSON ya da Künye yedeği.</p>
       </section>
       <section>
         <h2>Elle gir</h2>
@@ -270,6 +270,9 @@
           <select id="notes-kind"><option value="footnote">Dipnot</option><option value="endnote">Sonnot</option></select>
         </label>
         <label>Kaynakça başlığı <input id="bib-title" placeholder="Boş: başlık eklenmez" /></label>
+        <label>Kitap adları
+          <select id="title-form"><option value="transcribed">Transkripsiyonlu (Câmiʿu’ṣ-ṣaḥîḥ)</option><option value="plain">Transkripsiyonsuz (Câmiu’s-sahîh)</option></select>
+        </label>
         <label class="inline"><input type="checkbox" id="bib-sections" /> Kaynakçayı türlere ayır (Arşiv Belgeleri, Yazma Eserler, Kitaplar, Makaleler, Tezler …)</label>
         <label class="inline"><input type="checkbox" id="keep-library" checked /> Kütüphanenin bir kopyasını bu belgede sakla (önbellek silinse de kaybolmaz)</label>
         <label class="inline"><input type="checkbox" id="auto" checked /> Otomatik güncelle (dipnot eklenince, silinince, taşınınca)</label>
@@ -295,15 +298,15 @@
       <section id="foreign-box" hidden>
         <h2>Başka programla eklenmiş atıflar</h2>
         <p class="muted small" id="foreign-info"></p>
-        <button id="foreign-convert" type="button">Derkenar atıflarına çevir</button>
-        <p class="muted small">Atıflar yerinde (dipnotta ya da metinde) Derkenar atıfına döner; eserler kütüphanede aranır, olmayanlar alandaki künyeyle eklenir. Önce belgenin bir kopyasını alın; Word'de Geri Al ile geri dönülür.</p>
+        <button id="foreign-convert" type="button">Künye atıflarına çevir</button>
+        <p class="muted small">Atıflar yerinde (dipnotta ya da metinde) Künye atıfına döner; eserler kütüphanede aranır, olmayanlar alandaki künyeyle eklenir. Önce belgenin bir kopyasını alın; Word'de Geri Al ile geri dönülür.</p>
       </section>
       <details id="hand-box" class="section-like">
-        <summary>Eski bir çalışmayı Derkenar'a taşı (elle yazılmış dipnot, kaynakça, metin içi atıf)</summary>
-        <p class="muted small">Atıf programı kullanılmadan yazılmış bir tezin dipnotlarındaki künyeler okunur ("Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45.", kısa künyeler, "Bk." …) ve yerinde Derkenar atıfına çevrilir; İSNAD'ın kullanmadığı a.g.e., a.e., Ibid. tanınır ve kısa künyeye dönüşür; eserler kütüphanede aranır, olmayanlar eklenir. Açıklama içeren dipnotlar olduğu gibi kalır. Önce ne olacağı gösterilir.</p>
+        <summary>Eski bir çalışmayı Künye'ye taşı (elle yazılmış dipnot, kaynakça, metin içi atıf)</summary>
+        <p class="muted small">Atıf programı kullanılmadan yazılmış bir tezin dipnotlarındaki künyeler okunur ("Mustafa Kara, Tasavvuf ve Tarikatlar Tarihi (İstanbul: Dergâh Yayınları, 2005), 45.", kısa künyeler, "Bk." …) ve yerinde Künye atıfına çevrilir; İSNAD'ın kullanmadığı a.g.e., a.e., Ibid. tanınır ve kısa künyeye dönüşür; eserler kütüphanede aranır, olmayanlar eklenir. Açıklama içeren dipnotlar olduğu gibi kalır. Önce ne olacağı gösterilir.</p>
         <button id="hand-scan" type="button">Dipnotları tara</button>
         <div id="hand-result"></div>
-        <p class="muted small">Elle yazılmış kaynakça için: Word'de kaynakça listesini seçin ve <b>Seçili kaynakçayı oku</b>'ya basın. Eserler kütüphaneye ve belgenin kaynakçasına girer (atıf yapılmamış olanlar da); hepsi okunursa seçili metnin yerine Derkenar kaynakçası gelir.</p>
+        <p class="muted small">Elle yazılmış kaynakça için: Word'de kaynakça listesini seçin ve <b>Seçili kaynakçayı oku</b>'ya basın. Eserler kütüphaneye ve belgenin kaynakçasına girer (atıf yapılmamış olanlar da); hepsi okunursa seçili metnin yerine Künye kaynakçası gelir.</p>
         <button id="hand-bib-scan" type="button">Seçili kaynakçayı oku</button>
         <div id="hand-bib-result"></div>
         <p class="muted small">Metin içi atıflar için ("(Kara, 2005: 45)", "(Kara vd., 2012; Ocak, 1996)"): önce kaynakçayı okutun, sonra <b>Metin içi atıfları tara</b>; yazar ve yıl kütüphanedeki eserle eşleşen atıflar çevrilir.</p>
@@ -315,7 +318,7 @@
       </details>
       <section>
         <h2>Teslim</h2>
-        <p class="muted">Atıfları ve kaynakçayı düz metne çevirir; Derkenar onları artık güncellemez. Önce belgenin bir kopyasını alın.</p>
+        <p class="muted">Atıfları ve kaynakçayı düz metne çevirir; Künye onları artık güncellemez. Önce belgenin bir kopyasını alın.</p>
         <button id="unlink" type="button" class="danger">Düz metne çevir</button>
       </section>
     </div>
@@ -347,7 +350,7 @@
     <div id="view-aktar" class="view" role="tabpanel" hidden>
       <section>
         <h2>Dışa aktarılmış kütüphane dosyası</h2>
-        <p class="muted">Atıf programınızda Dosya → Kütüphaneyi dışa aktar. En eksiksizi <b>RDF</b> (koleksiyonlar, notlar, etiketler dahil); CSL JSON, BibTeX ve RIS de olur. Derkenar yedeği de buradan geri yüklenir.</p>
+        <p class="muted">Atıf programınızda Dosya → Kütüphaneyi dışa aktar. En eksiksizi <b>RDF</b> (koleksiyonlar, notlar, etiketler dahil); CSL JSON, BibTeX ve RIS de olur. Künye yedeği de buradan geri yüklenir.</p>
         <input id="file" type="file" accept=".rdf,.json,.bib,.bibtex,.ris,.txt" multiple />
       </section>
       <section>
@@ -367,7 +370,7 @@
           <p class="muted web-only">Numara ve anahtar: çevrimiçi hesabınızda Settings → Security → Applications. Anahtar yalnız bu bilgisayarda saklanır.</p>
           <p class="muted local-only" hidden>Programın Ayarlar → Gelişmiş bölümünde "Bu bilgisayardaki diğer uygulamaların iletişim kurmasına izin ver" açık olmalı.</p>
           <div class="actions"><button id="z-sync" type="submit" class="primary">Kütüphaneden al</button><button id="z-push" type="button">Kütüphaneye gönder</button></div>
-          <label class="inline small"><input type="checkbox" id="z-push-new" /> Derkenar'da girdiğim ve dosyadan aldığım kaynakları da çevrimiçi kütüphaneye ekle</label>
+          <label class="inline small"><input type="checkbox" id="z-push-new" /> Künye'de girdiğim ve dosyadan aldığım kaynakları da çevrimiçi kütüphaneye ekle</label>
           <p class="muted small">Göndermek için anahtara yazma izni verin. Çevrimiçi kütüphanede de değişmiş bir kaynağın üzerine yazılmaz; önce "Kütüphaneden al". Notlar ve dosyalar gönderilmez.</p>
           <p class="small"><span id="z-status" class="muted"></span> <span id="z-push-count"></span></p>
         </form>
@@ -385,7 +388,7 @@
           </label>
           <label>Biçim
             <select id="ex-format">
-              <option value="backup">Derkenar yedeği (kayıpsız)</option>
+              <option value="backup">Künye yedeği (kayıpsız)</option>
               <option value="rdf">RDF (koleksiyon ve notlarla, atıf programlarına geri alınır)</option>
               <option value="csl">CSL JSON</option>
               <option value="csv">CSV</option>
@@ -401,11 +404,22 @@
         </div>
       </section>
       <section>
+        <h2>Yerleşik veritabanı</h2>
+        <p class="muted small">Künye'yle birlikte gelir; dosya yüklemeniz gerekmez. Atıf sekmesinde aradığınızda kütüphanenizde olmayan kayıtlar da çıkar, tek tıkla eklenir ve atıfa girer. <strong>TDV İslâm Ansiklopedisi</strong>: maddeler basılı künyesiyle (cilt, yıl, yer, sayfa), basılı nüsha ve web bağlantısıyla; "bk." göndermeleriyle de bulunur. <strong>Künye makale kataloğu</strong>: DergiPark, TR Dizin ve İSAM'dan birleştirilen makaleler; DOI'si kayıt ajansında doğrulanmış, iki kaynakta tutan ya da derginin sayı arşiviyle doğrulanmış olanlar ile tek kaynakta bulunan ("tek kaynak" notuyla) künyesi tam makaleler. Aranan sözcüğe göre yalnız gereken parçalar indirilir.</p>
+      </section>
+      <section>
         <h2>Şahıslar tablosu (DİA – EI3)</h2>
         <p class="muted small">Kişilerin DİA adını ve Encyclopaedia of Islam THREE transliterasyonunu içeren tablo (.xlsx ya da .csv; sütun başlıkları "Kısa Ad (DİA)", "Tam Ad (DİA)", "Vefat Tarihi" (isteğe bağlı; yalnız adaşları ayırt etmek için uyarıda gösterilir), "EI3 Transliterasyonu (Kısa Ad)", "EI3 Transliterasyonu (Tam Ad)", "Grup"). Yüklenince İngilizce İSNAD'da bu kişilerin adları EI3'e göre yazılır (kayıtlar Türkçe kalır) ve Türkçe kayıtlardaki adlar DİA yazımına göre denetlenir. Tablo yalnız bu bilgisayarda saklanır.</p>
         <label class="file-btn">Tablo seç <input id="persons-file" type="file" accept=".xlsx,.csv,.tsv,.txt" hidden /></label>
         <p id="persons-status" class="muted small"></p>
         <button id="persons-remove" type="button" class="link danger-text" hidden>Tabloyu kaldır</button>
+      </section>
+      <section>
+        <h2>Kitap kataloğu</h2>
+        <p class="muted small">el-Mektebetü’ş-Şâmile'nin kitapları ve Şamile'de olmayan OpenITI eserleri İSNAD künyesiyle Künye'yle birlikte gelir; yüklemeniz gerekmez. Kitap adları DİA'nın transkripsiyonuyla (transkripsiyonsuz biçimi de içinde), müellifler DİA adıyla. Atıf sekmesinde aradığınızda bu kitaplar da çıkar; seçtiğiniz kütüphaneye eklenir, kaydında hangi kaynaktan alındığı yazar. Elinizde daha yeni bir katalog dosyası (.json) varsa onu seçebilirsiniz; o zaman o kullanılır.</p>
+        <label class="file-btn">Katalog dosyası seç <input id="catalog-file" type="file" accept=".json" hidden /></label>
+        <p id="catalog-status" class="muted small"></p>
+        <button id="catalog-remove" type="button" class="link danger-text" hidden>Yüklenen kataloğu kaldır</button>
       </section>
       <section>
         <h2>Kaynaklar</h2>
@@ -430,7 +444,7 @@
       <section>
         <h2>Saklama</h2>
         <dl id="info-storage" class="facts"></dl>
-        <p class="muted small">Kütüphane bu bilgisayarda, Word'ün eklenti deposunda (IndexedDB) durur; hiçbir sunucuya gönderilmez. Office önbelleği temizlenirse ya da eklenti yeniden eklenirse, belgedeki kopyadan kendiliğinden geri yüklenir. Asıl güvence için ara ara <b>Dışa Aktar → Derkenar yedeği</b> alın.</p>
+        <p class="muted small">Kütüphane bu bilgisayarda, Word'ün eklenti deposunda (IndexedDB) durur; hiçbir sunucuya gönderilmez. Office önbelleği temizlenirse ya da eklenti yeniden eklenirse, belgedeki kopyadan kendiliğinden geri yüklenir. Asıl güvence için ara ara <b>Dışa Aktar → Künye yedeği</b> alın.</p>
       </section>
       <section>
         <h2>Geri yükleme noktaları</h2>
@@ -440,7 +454,7 @@
       </section>
       <section>
         <h2>Ağ bağlantıları</h2>
-        <p class="muted small">Derkenar yalnız siz istediğinizde dışarıya bağlanır: DOI için Crossref, doi.org ve DataCite; ISBN için K10plus, Alman Millî Kütüphanesi, Crossref, Google Books ve Open Library; PMID için PubMed; arXiv; eşitleme için çevrimiçi kütüphanenin sunucusu ya da bilgisayarınızdaki atıf programı. Belge metni hiçbir yere gönderilmez.</p>
+        <p class="muted small">Künye yalnız siz istediğinizde dışarıya bağlanır: DOI için Crossref, doi.org ve DataCite; ISBN için K10plus, Alman Millî Kütüphanesi, Crossref, Google Books ve Open Library; PMID için PubMed; arXiv; eşitleme için çevrimiçi kütüphanenin sunucusu ya da bilgisayarınızdaki atıf programı. Belge metni hiçbir yere gönderilmez.</p>
       </section>
       <section>
         <h2>Bileşenler</h2>
@@ -453,7 +467,7 @@
       <section>
         <h2>Başlarken</h2>
         <ol class="guide">
-          <li><strong>Kütüphaneyi alın:</strong> Atıf programınızda Dosya → Kütüphaneyi Dışa Aktar → <b>RDF</b>; sonra Derkenar → <strong>İçe Aktar</strong>. Koleksiyonlar, notlar ve etiketler de gelir. Ya da çevrimiçi kütüphane numaranız ve API anahtarınızla eşitleyin.</li>
+          <li><strong>Kütüphaneyi alın:</strong> Atıf programınızda Dosya → Kütüphaneyi Dışa Aktar → <b>RDF</b>; sonra Künye → <strong>İçe Aktar</strong>. Koleksiyonlar, notlar ve etiketler de gelir. Ya da çevrimiçi kütüphane numaranız ve API anahtarınızla eşitleyin.</li>
           <li><strong>Atıf ekleyin:</strong> İmleci yerleştirin, <strong>Atıf Ekle/Düzenle</strong>. Yazar, başlık ya da yıl yazın; sayfayı da aynı kutuya yazabilirsiniz: <code>gazzali 1/45</code>. Enter sepete ekler, Ctrl+Enter atıfı belgeye koyar.</li>
           <li><strong>Kaynakça:</strong> Tezin sonunda <strong>Kaynakça Ekle/Düzenle</strong>. Başlığıyla eklenir, atıflarla birlikte kendiliğinden güncellenir.</li>
           <li><strong>Teslimden önce</strong>, bir kopyada: <strong>Düz Metne Çevir</strong>.</li>
@@ -461,7 +475,7 @@
       </section>
       <section>
         <h2>Otomatik güncelleme</h2>
-        <p>Pencere açıkken Derkenar atıfların sırasını izler. Araya dipnot eklediğinizde, sildiğinizde ya da taşıdığınızda ilk geçiş tam, sonrakiler kısa künyeye kendiliğinden döner; kaynakça da yenilenir. <strong>Güncelle</strong> düğmesi genellikle gerekmez. Kapatmak için: <strong>Belge Tercihleri → Otomatik güncelle</strong>.</p>
+        <p>Pencere açıkken Künye atıfların sırasını izler. Araya dipnot eklediğinizde, sildiğinizde ya da taşıdığınızda ilk geçiş tam, sonrakiler kısa künyeye kendiliğinden döner; kaynakça da yenilenir. <strong>Güncelle</strong> düğmesi genellikle gerekmez. Kapatmak için: <strong>Belge Tercihleri → Otomatik güncelle</strong>.</p>
       </section>
       <section>
         <h2>Atıfı düzenleme ve silme</h2>
@@ -470,7 +484,7 @@
           <li>Var olan atıfın yanına başka kaynak eklemek için imleç atıfın hemen arkasındayken yeni atıf ekleyin; <code>;</code> ile aynı dipnota bağlanır.</li>
           <li>Atıfı tamamen kaldırmak için düzenlerken <strong>Atıfı sil</strong>. Dipnotta yalnız o atıf varsa dipnot da silinir.</li>
           <li><strong>bk.</strong>, <strong>krş.</strong> gibi ön ekler sepette her eserin altındaki düğmelerle; dipnot başında "Bk." diye büyük harfle yazılır.</li>
-          <li>Atıf metnini Word'de elle değiştirirseniz Derkenar onun üzerine yazmaz. <strong>Denetim → Bu belgede atıf yapılan kaynaklar</strong>'da "Elle yazılanı koru" ya da "Derkenar'ın metnine dön" seçin. Denetim sayfası belirtilmemiş atıfları da gösterir.</li>
+          <li>Atıf metnini Word'de elle değiştirirseniz Künye onun üzerine yazmaz. <strong>Denetim → Bu belgede atıf yapılan kaynaklar</strong>'da "Elle yazılanı koru" ya da "Künye'nin metnine dön" seçin. Denetim sayfası belirtilmemiş atıfları da gösterir.</li>
         </ul>
       </section>
       <section>
@@ -478,7 +492,7 @@
         <ul class="guide">
           <li><strong>Roller:</strong> Kişiler'de Muhakkik (thk.), Nâşir (nşr.), Hazırlayan (haz.), Sadeleştiren (sad.), Müellif (mlf.) ve Türkçeye çeviren de var.</li>
           <li><strong>a.mlf.:</strong> Aynı dipnotta aynı müellifin farklı eseri geçince kendiliğinden yazılır. Ad farklı yazılmış olsa da (Gazzâlî / Huccetü'l-İslâm … el-Gazzâlî) aynı kişi sayılır.</li>
-          <li><strong>Atıf sistemleri:</strong> Hadis (kitap-bab, numara, cilt/sayfa), sözlük (madde adı), Kur'ân (sure/âyet) ve Kitâb-ı Mukaddes. Derkenar kaynaktan tahmin eder; düzenleyicide <b>İSNAD atıf biçimi</b> kutusundan değiştirebilirsiniz.</li>
+          <li><strong>Atıf sistemleri:</strong> Hadis (kitap-bab, numara, cilt/sayfa), sözlük (madde adı), Kur'ân (sure/âyet) ve Kitâb-ı Mukaddes. Künye kaynaktan tahmin eder; düzenleyicide <b>İSNAD atıf biçimi</b> kutusundan değiştirebilirsiniz.</li>
           <li><strong>Cilt:</strong> Cildi atıfta yazın (<code>1/45</code>). Kaydın Cilt alanı çok ciltli eserlerde cilt sayısı içindir; kaynakçada "6 Cilt" olarak görünür.</li>
           <li><strong>Mevzuat:</strong> Madde için atıf yerinde <b>Madde (md.)</b> ya da aramada <code>fsek md. 35/4</code>.</li>
           <li><strong>Eklerken düzeltme:</strong> DOI, ISBN ya da yapıştırılan künye eklenirken kitap adının büyük-küçük harfi, kişi adları, yayınevinin tam adı, şehir, yıl, eksik Türkçe harfler ve kısa başlık İSNAD'a göre düzeltilir; Arapça baskıda yalnız hicrî yıl varsa milâdî karşılığı, klasik müellifte eksik harf-i tarif (el-, et-, es-…) önerilir.</li>
@@ -496,10 +510,10 @@
           <li>Elle girerken düzenleyicinin üstünde eserin dipnot ve kaynakça hâli canlı görünür; yayınevi, şehir, dergi ve kişi adları kütüphaneden önerilir; aynı dergiden ya da kitaptan yeni kayıt için ⋯ → <strong>Aynı yayından yeni kayıt</strong>.</li>
           <li>Eklenen kayıt kütüphanedeki yazımla birleşir ("Gazzâli" → "Gazzâlî", "Dergah Yay." → "Dergâh Yayınları"); kütüphanede zaten olan eser ikinci kez eklenmez.</li>
         </ul>
-        <h2>Eski bir çalışmayı Derkenar'a taşımak</h2>
+        <h2>Eski bir çalışmayı Künye'ye taşımak</h2>
         <ul class="guide">
-          <li><strong>Başka bir atıf programıyla yazılmış belge:</strong> Belge sekmesinde "Başka programla eklenmiş atıflar" bölümü çıkar; <strong>Derkenar atıflarına çevir</strong> ile atıflar ve kaynakça Derkenar'a geçer.</li>
-          <li><strong>Atıf programı olmadan yazılmış tez:</strong> <strong>Belge → Eski bir çalışmayı Derkenar'a taşı → Dipnotları tara</strong>. Tam ve kısa künyeler, "Bk." gibi önekler, a.mlf., yazma eserler (77b), sözlük maddeleri ve âyetler okunur; İSNAD a.g.e. kullanmadığından a.g.e./a.e./Ibid. kısa künyeye çevrilir. Ne olacağı listelenir; onaylayınca yerinde Derkenar atıfı olurlar. Açıklama içeren dipnotlar dokunulmadan kalır.</li>
+          <li><strong>Başka bir atıf programıyla yazılmış belge:</strong> Belge sekmesinde "Başka programla eklenmiş atıflar" bölümü çıkar; <strong>Künye atıflarına çevir</strong> ile atıflar ve kaynakça Künye'ye geçer.</li>
+          <li><strong>Atıf programı olmadan yazılmış tez:</strong> <strong>Belge → Eski bir çalışmayı Künye'ye taşı → Dipnotları tara</strong>. Tam ve kısa künyeler, "Bk." gibi önekler, a.mlf., yazma eserler (77b), sözlük maddeleri ve âyetler okunur; İSNAD a.g.e. kullanmadığından a.g.e./a.e./Ibid. kısa künyeye çevrilir. Ne olacağı listelenir; onaylayınca yerinde Künye atıfı olurlar. Açıklama içeren dipnotlar dokunulmadan kalır.</li>
           <li>Elle yazılmış kaynakçayı seçip <strong>Seçili kaynakçayı oku</strong>: eserler kütüphaneye ve belgenin kaynakçasına girer (atıf yapılmamış olanlar da). Metin içi stillerde "(Kara, 2005: 45)" gibi atıflar <strong>Metin içi atıfları tara</strong> ile çevrilir.</li>
           <li><strong>Dipnot – kaynakça uyumu:</strong> elle yazılmış bir tezde kaynakçayı seçip <strong>Dipnot – kaynakça uyumunu denetle</strong>: dipnotta anılıp kaynakçada olmayan ve kaynakçada olup hiç anılmayan eserler, dipnot numaralarıyla listelenir; ilk geçişi kısa künyeyle yapılan, sonradan yeniden tam künyeyle verilen, kısa künyesi farklı yazılan eserler ve a.g.e. kullanılan dipnotlar da gösterilir. Belgede hiçbir şey değişmez.</li>
           <li>Başka bir belgeden kopyalanan atıfın verisi yoksa: <strong>Belge → Belgedeki kaynakları kütüphaneye al</strong>.</li>
@@ -517,7 +531,7 @@
           <li><strong>Aktar → Şahıslar tablosu</strong>'ndan tabloyu bir kez yükleyin. Belge İngilizce olunca tablodaki kişilerin adları atıf ve kaynakçada EI3'e göre yazılır ("al-Ghazālī, Abū Ḥāmid Muḥammad"); kayıtlarınız Türkçe kalır.</li>
           <li>Türkçede kişi adları DİA'ya göre denetlenir: eklerken yalnız işaret farkı olanlar ("Gazzali" → "Gazzâlî", sonuna "el-") kendiliğinden düzelir; harfi farklı yazılanlar ("Gazali") düzenleyicide ve Denetim'de <strong>DİA yazımını uygula</strong> ile önerilir. Soyadı kutusu yazdıkça DİA adlarını önerir.</li>
           <li>İngilizce özet için metni seçip <strong>Atıf → Kişi adları → Seçili metindeki adları EI3 yazımına çevir</strong>.</li>
-          <li>Vefat tarihleri Derkenar'ın değil, Vefeyât eklentisinin işidir.</li>
+          <li>Vefat tarihleri Künye'nin değil, Vefeyât eklentisinin işidir.</li>
         </ul>
         <h2>Diğer</h2>
         <ul class="guide">
@@ -532,8 +546,8 @@
       <section id="about">
         <h2>Hakkında</h2>
         <picture>
-          <source srcset="assets/logo/derkenar-logo-dark.svg" media="(prefers-color-scheme: dark)">
-          <img src="assets/logo/derkenar-logo.svg" alt="Derkenar — Atıf ve kaynakça yöneticisi" class="about-logo">
+          <source srcset="assets/logo/kunye-logo-dark.svg" media="(prefers-color-scheme: dark)">
+          <img src="assets/logo/kunye-logo.svg" alt="Künye — Atıf ve kaynakça yöneticisi" class="about-logo">
         </picture>
         <p>Sürüm <span id="about-version"></span></p>
         <p>Geliştiren: <strong>Abdurrahman Poyraz</strong><br>

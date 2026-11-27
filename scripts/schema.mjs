@@ -1,5 +1,5 @@
 // Trims Zotero's data schema (https://github.com/zotero/zotero-schema, served at
-// https://api.zotero.org/schema) to what Derkenar needs: item types, fields,
+// https://api.zotero.org/schema) to what Künye needs: item types, fields,
 // creator types, CSL mappings, Turkish and English labels.
 // Update:  curl -o data/zotero/schema.json https://api.zotero.org/schema && node scripts/schema.mjs
 import { readFile, writeFile } from "node:fs/promises";

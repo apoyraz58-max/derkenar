@@ -1,5 +1,5 @@
 // Not a test: how well "Seçili kaynakçayı oku" reads the guide's own bibliography entries.
-// Each entry is read as a typed bibliography line would be, rendered back by Derkenar and compared with the guide.
+// Each entry is read as a typed bibliography line would be, rendered back by Künye and compared with the guide.
 //   REPORT=path npx vitest run --config vitest.report.config.ts test/report.bibliography.ts
 import { readFileSync, writeFileSync } from "node:fs";
 import { it } from "vitest";
@@ -41,5 +41,5 @@ it("bibliography report", () => {
       else out.push(`≠ ${e.no} ${e.title} (${r.item.itemType})\n   kılavuz:  ${line}\n   derkenar: ${back}`);
     }
   }
-  writeFileSync(process.env.REPORT!, `Kılavuz kaynakçası okundu: ${total} satırdan ${read} tanesi okundu; ${same} tanesi Derkenar'da basılınca kılavuzdakinin aynısı.\n\n${out.join("\n")}\n`);
+  writeFileSync(process.env.REPORT!, `Kılavuz kaynakçası okundu: ${total} satırdan ${read} tanesi okundu; ${same} tanesi Künye'de basılınca kılavuzdakinin aynısı.\n\n${out.join("\n")}\n`);
 });

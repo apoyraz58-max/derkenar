@@ -7,12 +7,12 @@
            xsi:type="TaskPaneApp">
   <Id>8b2e4f17-3a9c-4d65-b0e1-7c54d29a6f38</Id>
   <Version>{{VERSION}}</Version>
-  <ProviderName>Derkenar</ProviderName>
+  <ProviderName>Künye</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
-  <DisplayName DefaultValue="Derkenar"/>
+  <DisplayName DefaultValue="Künye"/>
   <Description DefaultValue="Word için atıf ve kaynakça yöneticisi: kaynak kütüphanesi, otomatik dipnot güncelleme, atıf stili ve yazım denetimi."/>
-  <IconUrl DefaultValue="{{BASE_URL}}assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="{{BASE_URL}}assets/icon-64.png"/>
+  <IconUrl DefaultValue="{{BASE_URL}}assets/icon-32.png?v={{VERSION}}"/>
+  <HighResolutionIconUrl DefaultValue="{{BASE_URL}}assets/icon-64.png?v={{VERSION}}"/>
   <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
   <AppDomains>
     <AppDomain>https://api.zotero.org</AppDomain>
@@ -343,51 +343,51 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Ic.brand-add.16" DefaultValue="{{BASE_URL}}assets/icons/brand-add-16.png"/>
-        <bt:Image id="Ic.brand-add.32" DefaultValue="{{BASE_URL}}assets/icons/brand-add-32.png"/>
-        <bt:Image id="Ic.brand-add.80" DefaultValue="{{BASE_URL}}assets/icons/brand-add-80.png"/>
-        <bt:Image id="Ic.index.16" DefaultValue="{{BASE_URL}}assets/icons/index-16.png"/>
-        <bt:Image id="Ic.index.32" DefaultValue="{{BASE_URL}}assets/icons/index-32.png"/>
-        <bt:Image id="Ic.index.80" DefaultValue="{{BASE_URL}}assets/icons/index-80.png"/>
-        <bt:Image id="Ic.abbr.16" DefaultValue="{{BASE_URL}}assets/icons/abbr-16.png"/>
-        <bt:Image id="Ic.abbr.32" DefaultValue="{{BASE_URL}}assets/icons/abbr-32.png"/>
-        <bt:Image id="Ic.abbr.80" DefaultValue="{{BASE_URL}}assets/icons/abbr-80.png"/>
-        <bt:Image id="Ic.settings.16" DefaultValue="{{BASE_URL}}assets/icons/settings-16.png"/>
-        <bt:Image id="Ic.settings.32" DefaultValue="{{BASE_URL}}assets/icons/settings-32.png"/>
-        <bt:Image id="Ic.settings.80" DefaultValue="{{BASE_URL}}assets/icons/settings-80.png"/>
-        <bt:Image id="Ic.consistency.16" DefaultValue="{{BASE_URL}}assets/icons/consistency-16.png"/>
-        <bt:Image id="Ic.consistency.32" DefaultValue="{{BASE_URL}}assets/icons/consistency-32.png"/>
-        <bt:Image id="Ic.consistency.80" DefaultValue="{{BASE_URL}}assets/icons/consistency-80.png"/>
-        <bt:Image id="Ic.finalize.16" DefaultValue="{{BASE_URL}}assets/icons/finalize-16.png"/>
-        <bt:Image id="Ic.finalize.32" DefaultValue="{{BASE_URL}}assets/icons/finalize-32.png"/>
-        <bt:Image id="Ic.finalize.80" DefaultValue="{{BASE_URL}}assets/icons/finalize-80.png"/>
-        <bt:Image id="Ic.insert.16" DefaultValue="{{BASE_URL}}assets/icons/insert-16.png"/>
-        <bt:Image id="Ic.insert.32" DefaultValue="{{BASE_URL}}assets/icons/insert-32.png"/>
-        <bt:Image id="Ic.insert.80" DefaultValue="{{BASE_URL}}assets/icons/insert-80.png"/>
-        <bt:Image id="Ic.library.16" DefaultValue="{{BASE_URL}}assets/icons/library-16.png"/>
-        <bt:Image id="Ic.library.32" DefaultValue="{{BASE_URL}}assets/icons/library-32.png"/>
-        <bt:Image id="Ic.library.80" DefaultValue="{{BASE_URL}}assets/icons/library-80.png"/>
-        <bt:Image id="Ic.bulk.16" DefaultValue="{{BASE_URL}}assets/icons/bulk-16.png"/>
-        <bt:Image id="Ic.bulk.32" DefaultValue="{{BASE_URL}}assets/icons/bulk-32.png"/>
-        <bt:Image id="Ic.bulk.80" DefaultValue="{{BASE_URL}}assets/icons/bulk-80.png"/>
-        <bt:Image id="Ic.import.16" DefaultValue="{{BASE_URL}}assets/icons/import-16.png"/>
-        <bt:Image id="Ic.import.32" DefaultValue="{{BASE_URL}}assets/icons/import-32.png"/>
-        <bt:Image id="Ic.import.80" DefaultValue="{{BASE_URL}}assets/icons/import-80.png"/>
-        <bt:Image id="Ic.export.16" DefaultValue="{{BASE_URL}}assets/icons/export-16.png"/>
-        <bt:Image id="Ic.export.32" DefaultValue="{{BASE_URL}}assets/icons/export-32.png"/>
-        <bt:Image id="Ic.export.80" DefaultValue="{{BASE_URL}}assets/icons/export-80.png"/>
-        <bt:Image id="Ic.audit.16" DefaultValue="{{BASE_URL}}assets/icons/audit-16.png"/>
-        <bt:Image id="Ic.audit.32" DefaultValue="{{BASE_URL}}assets/icons/audit-32.png"/>
-        <bt:Image id="Ic.audit.80" DefaultValue="{{BASE_URL}}assets/icons/audit-80.png"/>
-        <bt:Image id="Ic.health.16" DefaultValue="{{BASE_URL}}assets/icons/health-16.png"/>
-        <bt:Image id="Ic.health.32" DefaultValue="{{BASE_URL}}assets/icons/health-32.png"/>
-        <bt:Image id="Ic.health.80" DefaultValue="{{BASE_URL}}assets/icons/health-80.png"/>
-        <bt:Image id="Ic.info.16" DefaultValue="{{BASE_URL}}assets/icons/info-16.png"/>
-        <bt:Image id="Ic.info.32" DefaultValue="{{BASE_URL}}assets/icons/info-32.png"/>
-        <bt:Image id="Ic.info.80" DefaultValue="{{BASE_URL}}assets/icons/info-80.png"/>
-        <bt:Image id="Ic.brand.16" DefaultValue="{{BASE_URL}}assets/icons/brand-16.png"/>
-        <bt:Image id="Ic.brand.32" DefaultValue="{{BASE_URL}}assets/icons/brand-32.png"/>
-        <bt:Image id="Ic.brand.80" DefaultValue="{{BASE_URL}}assets/icons/brand-80.png"/>
+        <bt:Image id="Ic.brand-add.16" DefaultValue="{{BASE_URL}}assets/icons/brand-add-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.brand-add.32" DefaultValue="{{BASE_URL}}assets/icons/brand-add-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.brand-add.80" DefaultValue="{{BASE_URL}}assets/icons/brand-add-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.index.16" DefaultValue="{{BASE_URL}}assets/icons/index-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.index.32" DefaultValue="{{BASE_URL}}assets/icons/index-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.index.80" DefaultValue="{{BASE_URL}}assets/icons/index-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.abbr.16" DefaultValue="{{BASE_URL}}assets/icons/abbr-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.abbr.32" DefaultValue="{{BASE_URL}}assets/icons/abbr-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.abbr.80" DefaultValue="{{BASE_URL}}assets/icons/abbr-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.settings.16" DefaultValue="{{BASE_URL}}assets/icons/settings-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.settings.32" DefaultValue="{{BASE_URL}}assets/icons/settings-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.settings.80" DefaultValue="{{BASE_URL}}assets/icons/settings-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.consistency.16" DefaultValue="{{BASE_URL}}assets/icons/consistency-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.consistency.32" DefaultValue="{{BASE_URL}}assets/icons/consistency-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.consistency.80" DefaultValue="{{BASE_URL}}assets/icons/consistency-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.finalize.16" DefaultValue="{{BASE_URL}}assets/icons/finalize-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.finalize.32" DefaultValue="{{BASE_URL}}assets/icons/finalize-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.finalize.80" DefaultValue="{{BASE_URL}}assets/icons/finalize-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.insert.16" DefaultValue="{{BASE_URL}}assets/icons/insert-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.insert.32" DefaultValue="{{BASE_URL}}assets/icons/insert-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.insert.80" DefaultValue="{{BASE_URL}}assets/icons/insert-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.library.16" DefaultValue="{{BASE_URL}}assets/icons/library-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.library.32" DefaultValue="{{BASE_URL}}assets/icons/library-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.library.80" DefaultValue="{{BASE_URL}}assets/icons/library-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.bulk.16" DefaultValue="{{BASE_URL}}assets/icons/bulk-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.bulk.32" DefaultValue="{{BASE_URL}}assets/icons/bulk-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.bulk.80" DefaultValue="{{BASE_URL}}assets/icons/bulk-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.import.16" DefaultValue="{{BASE_URL}}assets/icons/import-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.import.32" DefaultValue="{{BASE_URL}}assets/icons/import-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.import.80" DefaultValue="{{BASE_URL}}assets/icons/import-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.export.16" DefaultValue="{{BASE_URL}}assets/icons/export-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.export.32" DefaultValue="{{BASE_URL}}assets/icons/export-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.export.80" DefaultValue="{{BASE_URL}}assets/icons/export-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.audit.16" DefaultValue="{{BASE_URL}}assets/icons/audit-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.audit.32" DefaultValue="{{BASE_URL}}assets/icons/audit-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.audit.80" DefaultValue="{{BASE_URL}}assets/icons/audit-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.health.16" DefaultValue="{{BASE_URL}}assets/icons/health-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.health.32" DefaultValue="{{BASE_URL}}assets/icons/health-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.health.80" DefaultValue="{{BASE_URL}}assets/icons/health-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.info.16" DefaultValue="{{BASE_URL}}assets/icons/info-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.info.32" DefaultValue="{{BASE_URL}}assets/icons/info-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.info.80" DefaultValue="{{BASE_URL}}assets/icons/info-80.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.brand.16" DefaultValue="{{BASE_URL}}assets/icons/brand-16.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.brand.32" DefaultValue="{{BASE_URL}}assets/icons/brand-32.png?v={{VERSION}}"/>
+        <bt:Image id="Ic.brand.80" DefaultValue="{{BASE_URL}}assets/icons/brand-80.png?v={{VERSION}}"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="U.Insert" DefaultValue="{{BASE_URL}}taskpane.html?action=insert"/>
@@ -409,9 +409,9 @@
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Derkenar hazır"/>
-        <bt:String id="Tab" DefaultValue="Derkenar"/>
-        <bt:String id="Ctx" DefaultValue="Derkenar"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Künye hazır"/>
+        <bt:String id="Tab" DefaultValue="Künye"/>
+        <bt:String id="Ctx" DefaultValue="Künye"/>
         <bt:String id="Insert" DefaultValue="Atıf Ekle/Düzenle"/>
         <bt:String id="Bib" DefaultValue="Kaynakça Ekle/Düzenle"/>
         <bt:String id="Abbr" DefaultValue="Kısaltmalar Listesi"/>
@@ -433,7 +433,7 @@
         <bt:String id="Ctx.Insert" DefaultValue="Atıf ekle"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Künye sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
         <bt:String id="Insert.Tip" DefaultValue="İmlecin olduğu yere atıf ekler; imleç bir atıfın içindeyse onu düzenler. Dipnotlu İSNAD'da atıf yeni dipnota girer, ilk atıf tam, sonrakiler kısa yazılır."/>
         <bt:String id="Bib.Tip" DefaultValue="İmlecin olduğu yere kaynakça ekler; varsa günceller. Kaynakça atıflarla birlikte kendiliğinden güncellenir."/>
         <bt:String id="Abbr.Tip" DefaultValue="Atıflarda ve metinde geçen İSNAD kısaltmalarının (a.mlf., b.y., thk., Hz., s.a.v. …) listesini imlecin olduğu yere koyar; atıflar değiştikçe güncellenir."/>
@@ -443,12 +443,12 @@
         <bt:String id="Library.Tip" DefaultValue="Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede."/>
         <bt:String id="New.Tip" DefaultValue="Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar)."/>
         <bt:String id="Import.Tip" DefaultValue="Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler."/>
-        <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>
+        <bt:String id="Export.Tip" DefaultValue="Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Künye yedeği, CSL JSON, RIS veya BibTeX olarak verir."/>
         <bt:String id="CheckDoc.Tip" DefaultValue="Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir."/>
         <bt:String id="CheckLib.Tip" DefaultValue="Bütün kütüphaneyi İSNAD 2 yazım kurallarına göre denetler."/>
         <bt:String id="Info.Tip" DefaultValue="Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, eşitleme, sürüm."/>
-        <bt:String id="Help.Tip" DefaultValue="Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında."/>
-        <bt:String id="Ctx.Insert.Tip" DefaultValue="Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
+        <bt:String id="Help.Tip" DefaultValue="Künye komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında."/>
+        <bt:String id="Ctx.Insert.Tip" DefaultValue="Künye penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

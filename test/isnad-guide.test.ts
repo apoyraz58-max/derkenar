@@ -1,5 +1,5 @@
 /**
- * Derkenar against the İSNAD 2 guide (v1.6, dipnotlu): the guide's own example
+ * Künye against the İSNAD 2 guide (v1.6, dipnotlu): the guide's own example
  * works (the İSNAD team's Zotero library, test/fixtures/isnad) must come out
  * exactly as the guide prints them — first note, later note, bibliography.
  * Page numbers refer to the guide.
@@ -526,5 +526,19 @@ describe("eklerken kendiliğinden düzeltmeler doğru kaydı bozmaz", () => {
     // Kısa başlık önerisi, elle yazılmış "y.y."/"ts.", "Beirut" → "Beyrut", "Istanbul" → "İstanbul", bir başlık sonu noktası.
     expect([...fired.keys()].sort()).toEqual(["abbr-in-field", "place", "short-title", "title-period", "turkish-letters"]);
     expect((fired.get("short-title") ?? 0) + (fired.get("title-period") ?? 0)).toBeLessThanOrEqual(10);
+  });
+});
+
+describe("transcribed Arabic titles", () => {
+  it("keep the article small whatever its letter, and ayn is not a mixed quote mark", async () => {
+    const { isnadTitle } = await import("../src/core/isnadstyle.js");
+    const { checkItem } = await import("../src/core/isnad.js");
+    const { emptyItem } = await import("../src/core/zotero.js");
+    for (const t of ["eṭ-Ṭabaḳātü’l-kübrâ", "eṣ-Ṣavâʿiḳu’l-mürsele ʿale’l-Cehmiyye ve’l-Muʿaṭṭıla", "eż-Żuʿafâʾ", "eẕ-Ẕeyl", "es̱-S̱iḳāt"]) expect(isnadTitle(t)).toBe(t);
+    const it = emptyItem("book", "x");
+    it.fields.title = "Mecmaʿu’z-zevâʾid ve menbaʿu’l-fevâʾid";
+    expect(checkItem(it).some((i) => i.code === "apostrophes" || i.code === "title-case")).toBe(false);
+    it.fields.title = "Mecma‘u’z-zevâʾid ve menbaʿu'l-fevâʾid";
+    expect(checkItem(it).some((i) => i.code === "apostrophes")).toBe(true);
   });
 });

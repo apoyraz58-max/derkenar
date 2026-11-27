@@ -2,7 +2,7 @@
  * The document side: refreshing citations and the bibliography, the
  * automatic-update watcher, document preferences, unlinking.
  *
- * Automatic updates: while the pane is open (Derkenar asks Word to open it
+ * Automatic updates: while the pane is open (Künye asks Word to open it
  * with the document), the order of citations is read every 1.5 s and after
  * every cursor move. Reading the order costs two round trips and no text.
  * When a footnote with a citation is added before another, deleted, cut and
@@ -180,7 +180,7 @@ export async function checkForeign(): Promise<void> {
     const cites = codes.filter((f) => /ZOTERO_ITEM/.test(f.code)).length;
     $("foreign-box").hidden = !codes.length;
     if (!codes.length) return;
-    $("foreign-info").textContent = `Bu belgede başka bir atıf programıyla eklenmiş ${cites} atıf${codes.length > cites ? " ve bir kaynakça" : ""} var. Derkenar onları güncelleyemez.`;
+    $("foreign-info").textContent = `Bu belgede başka bir atıf programıyla eklenmiş ${cites} atıf${codes.length > cites ? " ve bir kaynakça" : ""} var. Künye onları güncelleyemez.`;
   } catch {
     /* fields cannot be read here */
   }
@@ -224,7 +224,7 @@ async function convertForeign(): Promise<void> {
   $("foreign-box").hidden = true;
   const r = await getRenderer();
   const styleNote = r.meta.note && inText && !inNotes ? " Atıflar metin içindeydi; stili metin içi bir stile (İSNAD metin içi ya da APA) çevirmek isteyebilirsiniz." : !r.meta.note && inNotes ? " Atıflar dipnottaydı; dipnotlu bir stil seçmek isteyebilirsiniz." : "";
-  setMessage(`${result.converted} alan Derkenar'a çevrildi${result.bibliography ? " (kaynakça dahil)" : ""}; ${fresh.size} eser kütüphaneye eklendi.${result.failed ? ` ${result.failed} alan çevrilemedi, yerinde bırakıldı.` : ""}${styleNote}`, result.failed ? "warning" : "success");
+  setMessage(`${result.converted} alan Künye'ye çevrildi${result.bibliography ? " (kaynakça dahil)" : ""}; ${fresh.size} eser kütüphaneye eklendi.${result.failed ? ` ${result.failed} alan çevrilemedi, yerinde bırakıldı.` : ""}${styleNote}`, result.failed ? "warning" : "success");
 }
 
 // ---------------------------------------------------------------- Kaynakçayı düzenle
@@ -316,6 +316,7 @@ function renderPrefs(): void {
   $<HTMLInputElement>("keep-library").checked = d.keepLibrary !== false;
   $<HTMLInputElement>("bib-title").value = d.bibTitle ?? "Kaynakça";
   $<HTMLInputElement>("bib-sections").checked = d.bibSections === true;
+  $<HTMLSelectElement>("title-form").value = d.plainTitles ? "plain" : "transcribed";
 }
 
 let customListed: CustomStyle[] = [];
@@ -332,7 +333,7 @@ async function loadCsl(file: File): Promise<void> {
   const meta = styleMeta(xml);
   const slug = (/<id>([^<]+)<\/id>/.exec(xml)?.[1] ?? meta.title).replace(/^.*\//, "").replace(/[^A-Za-z0-9-]+/g, "-").toLowerCase();
   const style: CustomStyle = { id: `custom:${slug}`, title: `${meta.title}${meta.note ? " (dipnotlu)" : ""}`, xml };
-  // A style Derkenar's own build cannot read is caught before it is chosen.
+  // A style Künye's own build cannot read is caught before it is chosen.
   try {
     const loc = await (await fetch("styles/locales-tr-TR.xml")).text();
     new (await import("../../core/engine.js")).Renderer(xml, () => loc, "tr-TR");
@@ -483,6 +484,14 @@ export function wireDocument(): void {
       doc().bibSections = $<HTMLInputElement>("bib-sections").checked;
       await refresh(false, true);
       setMessage(doc().bibSections ? "Kaynakça türlere ayrıldı (Yazma Eserler, Kitaplar, Makaleler …)." : "Kaynakça tek liste oldu.", "success");
+    });
+  $<HTMLSelectElement>("title-form").onchange = () =>
+    void run("Atıflar yenileniyor", async () => {
+      const d = doc();
+      d.plainTitles = $<HTMLSelectElement>("title-form").value === "plain";
+      d.rendered = {};
+      await refresh(false, true);
+      setMessage(d.plainTitles ? "Kitap adları transkripsiyonsuz yazılıyor (Câmiu’s-sahîh); kayıtlar transkripsiyonlu kaldı, istediğiniz zaman geri dönebilirsiniz." : "Kitap adları transkripsiyonlu yazılıyor (Câmiʿu’ṣ-ṣaḥîḥ).", "success");
     });
   $("refresh").onclick = () => void run("Belge güncelleniyor", () => refresh(true));
   $<HTMLInputElement>("bib-add-q").oninput = searchUncited;

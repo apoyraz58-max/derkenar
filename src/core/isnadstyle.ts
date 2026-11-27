@@ -26,7 +26,7 @@ export function foldText(s: string): string {
     .trim();
 }
 
-const ARABIC = /(^|[\s(])(el|er|ez|es|eş|en|et|ed|eẓ|eṣ|eḍ|eṭ|al)-\p{L}|\p{L}[’'ʾ](l|d|t|s|ş|r|z|n|ṭ|ḍ|ṣ|ẓ|ẕ|ẖ)-\p{L}|(^|\s)(fî|fi|li|bi)[’'\s]|[ḥṣṭẓḳḫġżḍāīūʿ]/iu;
+const ARABIC = /(^|[\s(])(el|er|ez|es|eş|en|et|ed|eẓ|eṣ|eḍ|eṭ|eż|eẕ|es\u0331|al)-\p{L}|\p{L}[’'ʾ](l|d|t|s|ş|r|z|n|ṭ|ḍ|ṣ|ẓ|ẕ|ẖ)-\p{L}|(^|\s)(fî|fi|li|bi)[’'\s]|[ḥṣṭẓḳḫġżḍẕāīūʿ\u0331]/iu;
 
 /** A transliterated Arabic (or Persian) title part. */
 export function isArabicTitle(s: string): boolean {
@@ -81,7 +81,8 @@ function titleCasePart(part: string, allCaps: boolean): string {
 function arabicPart(part: string, allCaps: boolean): string {
   let s = allCaps ? lower(part) : part;
   // "El-makâsıd" → "el-Makâsıd": the article small, the word after it capital.
-  const m = /^(\s*)(el|er|ez|es|eş|en|et|ed|al)-(\p{L})/iu.exec(s);
+  // (Also the articles of transcribed titles: "eṭ-Ṭabaḳāt", "eṣ-Ṣalât", "eż-Żuʿafâʾ", "eẕ-Ẕeyl", "es̱-S̱iḳāt".)
+  const m = /^(\s*)(el|er|ez|es|eş|en|et|ed|eṭ|eṣ|eż|eḍ|eẓ|eẕ|es\u0331|al)-(\p{L}\u0331?)/iu.exec(s);
   if (m) s = m[1] + lower(m[2]!) + "-" + upper(m[3]!) + s.slice(m[0].length);
   else s = s.replace(/^(\s*)(\p{L})/u, (_, sp: string, c: string) => sp + upper(c));
   return s;

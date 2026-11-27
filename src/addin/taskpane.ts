@@ -1,5 +1,5 @@
 /**
- * Derkenar pane entry: wiring and what the ribbon buttons ask for (?action=…).
+ * Künye pane entry: wiring and what the ribbon buttons ask for (?action=…).
  */
 import { BUILTIN_STYLES } from "../core/styles.js";
 import * as word from "./word.js";
@@ -12,6 +12,7 @@ import { renderPushCount, renderSources, restoreZoteroForm, wireIo } from "./pan
 import { wireScan } from "./pane/scan.js";
 import { wireHandNotes } from "./pane/handnotes.js";
 import { loadPersons, wirePersons } from "./pane/persons.js";
+import { loadCatalog, wireCatalog } from "./pane/catalog.js";
 import { renderInfo, wireInfo } from "./pane/info.js";
 import { refreshLibraryView, wireLibrary } from "./pane/library.js";
 import { wireTranslit } from "./pane/translit.js";
@@ -95,7 +96,7 @@ async function launch(action: string): Promise<void> {
 }
 
 Office.onReady(async () => {
-  $("version").textContent = `Derkenar ${__VERSION__}`;
+  $("version").textContent = `Künye ${__VERSION__}`;
   void checkForUpdate();
   for (const b of document.querySelectorAll<HTMLButtonElement>(".tabs button")) b.onclick = () => showView(b.dataset.view!);
   $("go-new").onclick = () => showView("yeni");
@@ -112,6 +113,7 @@ Office.onReady(async () => {
   wireScan();
   wireHandNotes();
   wirePersons();
+  wireCatalog();
   wireTranslit();
   wireInfo();
   onShow("atif", () => ($<HTMLInputElement>("q").focus({ preventScroll: true }), void onSelection()));
@@ -139,6 +141,7 @@ Office.onReady(async () => {
   await loadLibrary();
   // Before the first refresh: an English document writes the table's persons the EI3 way.
   await loadPersons().catch(() => undefined);
+  await loadCatalog().catch(() => undefined);
   void restoreZoteroForm();
   word.onSelectionChanged(() => {
     window.clearTimeout(selTimer);

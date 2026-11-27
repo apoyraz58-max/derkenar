@@ -30,7 +30,7 @@ await browser.close();
 {
   const browser2 = await chromium.launch();
   const p = await browser2.newPage();
-  const svg = await readFile(new URL("../assets/logo/derkenar-mark.svg", import.meta.url), "utf8");
+  const svg = await readFile(new URL("../assets/logo/kunye-mark.svg", import.meta.url), "utf8");
   for (const size of [16, 32, 64, 80, 128]) {
     await p.setViewportSize({ width: size, height: size });
     await p.setContent(`<html><body style="margin:0;background:transparent">${svg.replace("<svg", `<svg width="${size}" height="${size}"`)}</body></html>`);
@@ -43,7 +43,7 @@ await browser.close();
     await p.locator("svg").screenshot({ path: new URL(`../assets/icons/brand-${size}.png`, import.meta.url).pathname, omitBackground: true });
   }
   // Atıf Ekle/Düzenle: the logo with a plus badge.
-  const add = await readFile(new URL("../assets/logo/derkenar-ekle.svg", import.meta.url), "utf8");
+  const add = await readFile(new URL("../assets/logo/kunye-ekle.svg", import.meta.url), "utf8");
   for (const size of [16, 32, 80]) {
     await p.setViewportSize({ width: size, height: size });
     await p.setContent(`<html><body style="margin:0;background:transparent">${add.replace("<svg", `<svg width="${size}" height="${size}"`)}</body></html>`);

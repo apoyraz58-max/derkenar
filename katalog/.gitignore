@@ -1,0 +1,10 @@
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.tmp
+log/
+__pycache__/
+derkenar-uc-kaynak.csv
+*.zip
+# Otomatik grup raporları diskte kalır; git yalnız son-rapor.md ve adlandırılmış raporları izler
+rapor/aktarim-*-2026*T*.md

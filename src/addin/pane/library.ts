@@ -272,7 +272,7 @@ function renderDuplicates(): void {
 
 async function merge(master: Item, others: Item[]): Promise<void> {
   const merged = mergeItems(master, others);
-  await putItems([merged, ...others.map((o) => ({ ...o, deleted: true, dateModified: now(), fields: { ...o.fields, extra: [o.fields.extra, `Derkenar: ${master.key} ile birleştirildi`].filter(Boolean).join("\n") } }))], [], true);
+  await putItems([merged, ...others.map((o) => ({ ...o, deleted: true, dateModified: now(), fields: { ...o.fields, extra: [o.fields.extra, `Künye: ${master.key} ile birleştirildi`].filter(Boolean).join("\n") } }))], [], true);
   // Citations in this document that cited a merged-away record now cite the merged one:
   // one work, one first citation, one bibliography line.
   const d = doc();
@@ -383,7 +383,7 @@ async function bulk(action: string, value?: string): Promise<void> {
 /** Bibliography of arbitrary items (copy to clipboard), with the document's style. */
 async function bibliographyOf(r: Renderer, items: Item[]): Promise<{ text: string; html: string }> {
   const { cslMap } = await import("../../core/docstate.js");
-  const map = cslMap(Object.fromEntries(items.map((i) => [i.key, i])), new Set(), r.meta.isnad, r.language);
+  const map = cslMap(Object.fromEntries(items.map((i) => [i.key, i])), new Set(), r.meta.isnad, r.language, doc().plainTitles === true);
   r.setItems(map);
   r.renderCitations(items.map((i, n) => ({ id: `__bib${n}`, items: [{ id: i.key }], noteIndex: n + 1 })));
   const bib = r.bibliography();

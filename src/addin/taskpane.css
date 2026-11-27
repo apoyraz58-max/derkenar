@@ -123,7 +123,7 @@ input[type="search"]:focus, input:focus, select:focus, textarea:focus { outline:
 .sources li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px solid var(--border); }
 .local-only[hidden], .web-only[hidden] { display: none; }
 
-/* ---------- Derkenar 0.2: library, editor, check ---------- */
+/* ---------- Künye 0.2: library, editor, check ---------- */
 .grow { flex: 1; }
 .small { font-size: 12px; }
 .row { align-items: center; margin-bottom: 6px; }

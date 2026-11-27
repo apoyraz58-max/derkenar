@@ -196,10 +196,10 @@ function render(): void {
                     " · ",
                     h("button", { type: "button", class: "link", onclick: () => void run("Kaydediliyor", () => editedChoice(c.citationId, true)) }, "Elle yazılanı koru"),
                     " · ",
-                    h("button", { type: "button", class: "link", onclick: () => void run("Yenileniyor", () => editedChoice(c.citationId, false)) }, "Derkenar'ın metnine dön"),
+                    h("button", { type: "button", class: "link", onclick: () => void run("Yenileniyor", () => editedChoice(c.citationId, false)) }, "Künye'nin metnine dön"),
                   ]
                 : c.code === "hand-edited"
-                  ? [" · ", h("button", { type: "button", class: "link", onclick: () => void run("Yenileniyor", () => editedChoice(c.citationId, false)) }, "Derkenar'ın metnine dön")]
+                  ? [" · ", h("button", { type: "button", class: "link", onclick: () => void run("Yenileniyor", () => editedChoice(c.citationId, false)) }, "Künye'nin metnine dön")]
                   : []),
             ),
           ),
@@ -211,14 +211,14 @@ function render(): void {
   if (!byItem.size && !list.children.length) list.append(h("li", { class: "muted" }, lastItems.length ? "İSNAD açısından sorun bulunmadı." : "Denetlenecek kaynak yok."));
 }
 
-/** A citation changed by hand in Word: keep that text, or let Derkenar write its own again. */
+/** A citation changed by hand in Word: keep that text, or let Künye write its own again. */
 async function editedChoice(id: string, keep: boolean): Promise<void> {
   const d = doc();
   if (keep) keepEdited(d, id);
   else revertEdited(d, id);
   await word.saveState(d);
   await refresh(false, true);
-  setMessage(keep ? "Elle yazılan metin korunacak; bu atıf artık güncellenmez." : "Atıf Derkenar'ın metnine döndü; bundan sonra kendiliğinden güncellenir.", "success");
+  setMessage(keep ? "Elle yazılan metin korunacak; bu atıf artık güncellenmez." : "Atıf Künye'nin metnine döndü; bundan sonra kendiliğinden güncellenir.", "success");
   runCheck();
 }
 

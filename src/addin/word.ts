@@ -92,7 +92,7 @@ async function insertCitationAt(id: string, segments: readonly Segment[], want: 
   });
 }
 
-/** Opens the Derkenar pane whenever this document opens, so automatic updates keep running. */
+/** Opens the Künye pane whenever this document opens, so automatic updates keep running. */
 export function enableAutoOpen(): void {
   try {
     const s = Office.context.document.settings;
@@ -161,7 +161,7 @@ interface Located {
 }
 
 /**
- * Every Derkenar control: footnote citations (in note order), endnote
+ * Every Künye control: footnote citations (in note order), endnote
  * citations, then those in the text. Without `withText` only tags are read,
  * which is what the automatic-update watcher needs.
  */
@@ -331,7 +331,7 @@ export async function fieldCodes(): Promise<{ code: string; inNote: boolean }[]>
 }
 
 /**
- * Replaces each field `turn` recognises with a Derkenar citation (or the
+ * Replaces each field `turn` recognises with a Künye citation (or the
  * bibliography) where it stands: in its footnote or in the text. Last field
  * first, so positions do not move. A field Word refuses to replace is left.
  */
@@ -611,7 +611,7 @@ export function writeLibraryCopy(xml: string): Promise<void> {
 
 // ---------------------------------------------------------------- footnotes typed by hand
 
-/** Footnotes with no Derkenar citation in them (index: the note's place among all footnotes). */
+/** Footnotes with no Künye citation in them (index: the note's place among all footnotes). */
 export async function handNotes(): Promise<{ index: number; text: string }[]> {
   if (!footnotesSupported()) return [];
   return Word.run(async (context) => {
@@ -660,7 +660,7 @@ export async function selectionText(): Promise<string> {
   });
 }
 
-/** Puts the Derkenar bibliography in place of the selection (a bibliography typed by hand); not when there is one already. */
+/** Puts the Künye bibliography in place of the selection (a bibliography typed by hand); not when there is one already. */
 export async function selectionToBibliography(): Promise<boolean> {
   return Word.run(async (context) => {
     const existing = context.document.body.contentControls.getByTag(TAG_BIBLIOGRAPHY);
@@ -679,7 +679,7 @@ export async function selectionToBibliography(): Promise<boolean> {
   });
 }
 
-/** Where the texts stand in the document's body, outside Derkenar's own citations (how many times each). */
+/** Where the texts stand in the document's body, outside Künye's own citations (how many times each). */
 async function findInBody(context: Word.RequestContext, texts: readonly string[]): Promise<Map<string, Word.Range[]>> {
   const found = texts.map((t) => {
     const r = context.document.body.search(t, { matchCase: true });

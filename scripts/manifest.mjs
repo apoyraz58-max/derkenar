@@ -1,4 +1,4 @@
-// Generates manifest/manifest.template.xml (the Derkenar ribbon tab and context menu).
+// Generates manifest/manifest.template.xml (the Künye ribbon tab and context menu).
 // Run after changing the ribbon:  node scripts/manifest.mjs
 // build.mjs fills in {{BASE_URL}} and {{VERSION}}.
 import { writeFile } from "node:fs/promises";
@@ -46,7 +46,7 @@ const tab = [
     button("Library", "Kütüphane", "Kaynaklar, koleksiyonlar, etiketler, notlar, çöp kutusu ve yinelenenler: hepsi bu pencerede.", "library", "library"),
     button("New", "Yeni Kaynak", "Kaynak ekleme yolları: DOI, ISBN, PMID, arXiv ile; RIS, BibTeX metni yapıştırarak; dosyadan; ya da elle (muhakkik, nâşir, hazırlayan dahil bütün alanlar).", "bulk", "new"),
     button("Import", "İçe Aktar", "Dışa aktarılmış kütüphaneyi alır: RDF, CSL JSON, BibTeX, RIS. Ya da çevrimiçi kütüphaneyle eşitler.", "import", "import"),
-    button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Derkenar yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "export", "export"),
+    button("Export", "Dışa Aktar", "Kütüphaneyi, bir koleksiyonu ya da belgedeki kaynakları Künye yedeği, CSL JSON, RIS veya BibTeX olarak verir.", "export", "export"),
   ]),
   group("Isnad", "İSNAD", "audit", [
     button("CheckDoc", "Belgeyi Denetle", "Bu belgede atıf yapılan kaynakları İSNAD 2 yazım kurallarına göre denetler; düzeltilebilenleri tek tıkla düzeltir.", "audit", "check-doc"),
@@ -54,16 +54,16 @@ const tab = [
   ]),
   group("Data", "Veri ve yardım", "info", [
     button("Info", "Veri bilgisi", "Kütüphanenin ve bu belgenin verilerini gösterir: kaynak sayıları, nerede saklandığı, belgedeki kopya, eşitleme, sürüm.", "info", "info"),
-    button("Help", "Kullanım kılavuzu", "Derkenar komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında.", "brand", "help"),
+    button("Help", "Kullanım kılavuzu", "Künye komutlarının kısa kılavuzu, İSNAD'a özgü ayrıntılar ve Hakkında.", "brand", "help"),
   ]),
 ];
 
 const contextMenu = [
-  button("Ctx.Insert", "Atıf ekle", "Derkenar penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler.", "brand-add", "insert", " ".repeat(16), "Control"),
+  button("Ctx.Insert", "Atıf ekle", "Künye penceresinde kaynak arayıp imlecin bulunduğu yere atıf ekler.", "brand-add", "insert", " ".repeat(16), "Control"),
 ];
 
 const resources = () => {
-  const imgs = [...icons].flatMap((n) => [16, 32, 80].map((s) => `        <bt:Image id="Ic.${n}.${s}" DefaultValue="${B}assets/icons/${n}-${s}.png"/>`));
+  const imgs = [...icons].flatMap((n) => [16, 32, 80].map((s) => `        <bt:Image id="Ic.${n}.${s}" DefaultValue="${B}assets/icons/${n}-${s}.png?v={{VERSION}}"/>`));
   const u = [...urls].map(([k, v]) => `        <bt:Url id="${k}" DefaultValue="${esc(v)}"/>`);
   u.push(`        <bt:Url id="Commands.Url" DefaultValue="${B}commands.html"/>`, `        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/apoyraz58-max/derkenar"/>`);
   for (const [k, v] of short) if (v.length > 125) throw new Error(`short string too long: ${k}`);
@@ -76,13 +76,13 @@ ${imgs.join("\n")}
 ${u.join("\n")}
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Derkenar hazır"/>
-        <bt:String id="Tab" DefaultValue="Derkenar"/>
-        <bt:String id="Ctx" DefaultValue="Derkenar"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Künye hazır"/>
+        <bt:String id="Tab" DefaultValue="Künye"/>
+        <bt:String id="Ctx" DefaultValue="Künye"/>
 ${[...short].map(([k, v]) => `        <bt:String id="${k}" DefaultValue="${esc(v)}"/>`).join("\n")}
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Derkenar sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Üstteki Künye sekmesinde önce İçe Aktar ile kütüphanenizi alın ya da Yeni Kaynak ile girin; sonra Atıf Ekle/Düzenle."/>
 ${[...long].map(([k, v]) => `        <bt:String id="${k}" DefaultValue="${esc(v)}"/>`).join("\n")}
       </bt:LongStrings>
     </Resources>
@@ -100,12 +100,12 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
            xsi:type="TaskPaneApp">
   <Id>8b2e4f17-3a9c-4d65-b0e1-7c54d29a6f38</Id>
   <Version>{{VERSION}}</Version>
-  <ProviderName>Derkenar</ProviderName>
+  <ProviderName>Künye</ProviderName>
   <DefaultLocale>tr-TR</DefaultLocale>
-  <DisplayName DefaultValue="Derkenar"/>
+  <DisplayName DefaultValue="Künye"/>
   <Description DefaultValue="Word için atıf ve kaynakça yöneticisi: kaynak kütüphanesi, otomatik dipnot güncelleme, atıf stili ve yazım denetimi."/>
-  <IconUrl DefaultValue="${B}assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="${B}assets/icon-64.png"/>
+  <IconUrl DefaultValue="${B}assets/icon-32.png?v={{VERSION}}"/>
+  <HighResolutionIconUrl DefaultValue="${B}assets/icon-64.png?v={{VERSION}}"/>
   <SupportUrl DefaultValue="https://github.com/apoyraz58-max/derkenar"/>
   <AppDomains>
     <AppDomain>https://api.zotero.org</AppDomain>

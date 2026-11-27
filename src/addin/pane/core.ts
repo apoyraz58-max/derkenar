@@ -387,7 +387,7 @@ export async function restoreSnapshot(saved: string): Promise<{ trashed: number;
   return { trashed: plan.trashed, count: copy.items.filter((i) => !i.deleted).length };
 }
 
-/** A restore point as a Derkenar backup file (İçe Aktar reads it back). */
+/** A restore point as a Künye backup file (İçe Aktar reads it back). */
 export async function snapshotBackup(saved: string): Promise<string> {
   const snap = (await snapshots()).find((s) => s.saved === saved);
   const { unpackLibrary } = await import("../../core/librarycopy.js");

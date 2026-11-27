@@ -191,7 +191,8 @@ export function checkItem(item: Item): Issue[] {
         add({ code: "title-case", level: "warning", message: `${label} İSNAD'a göre büyük-küçük harf: "${v}". (Türkçe ve Batı dillerindeki adlarda kelime başları büyük; Arapça adlarda yalnız ilk kelime.)`, field, fix: { field, value: v }, fixLabel: "Düzelt" });
       }
       if (/[^.]\.$/.test(value.trim()) && !/(^|\s)(\p{L}|vb|vd|vs|haz|thk|çev|nşr|ed|eds|bs|yy|ts|nr|no|c|s|ss|st|dr|prof|doç|mlf|hk|krş|bk|bkz|vr|md|ö|h|m|vol|pp|etc)\.$/iu.test(value.trim())) add({ code: "title-period", level: "warning", message: `${label} nokta ile bitiyor; noktayı stil koyar.`, field, fix: { field, value: value.trim().replace(/\.$/, "") }, fixLabel: "Noktayı sil" });
-      if (/['’ʿ‘`]/.test(value) && new Set(value.match(/['’ʿ‘`]/g)).size > 1) add({ code: "apostrophes", level: "info", message: `${label}: farklı kesme / ayın işaretleri karışık kullanılmış (' ’ ʿ ‘).`, field });
+      // ʿ is the letter ayn in a transcription ("Câmiʿu’ṣ-ṣaḥîḥ"), not a quote mark: only two kinds of apostrophe, or ayn written both ʿ and ‘, are mixed.
+      if ((new Set(value.match(/['’‘`]/g) ?? []).size > 1 || (/ʿ/.test(value) && /‘/.test(value))) && /['’ʿ‘`]/.test(value)) add({ code: "apostrophes", level: "info", message: `${label}: farklı kesme / ayın işaretleri karışık kullanılmış (' ’ ʿ ‘).`, field });
     }
     if (base === "pages") {
       const p = value.replace(/^\s*(s|ss|sf|pp?)\.\s*/i, "").replace(/\s*[–—‒−]\s*/g, "-").replace(/\s*-\s*/g, "-");
@@ -290,12 +291,12 @@ export function checkItem(item: Item): Issue[] {
     }
   });
 
-  // İSNAD abbreviations typed into the record: Derkenar writes them itself.
+  // İSNAD abbreviations typed into the record: Künye writes them itself.
   for (const [base, abbr] of [["place", ["b.y.", "y.y.", "yy.", "b.y", "y.y"]], ["publisher", ["y.y.", "y.y.y.", "yyy.", "y.y", "y.y.y"]], ["date", ["ts.", "ts", "t.y.", "t.y"]]] as const) {
     const field = typeField(item.itemType, base);
     const v = field ? f[field]?.trim().toLocaleLowerCase("tr") : undefined;
     if (field && v && (abbr as readonly string[]).includes(v)) {
-      add({ code: "abbr-in-field", level: "info", message: `${fieldLabel(field)} alanına "${f[field]}" yazılmış. Bu alanı boş bırakın; İSNAD kısaltmasını (${base === "place" ? "b.y." : base === "publisher" ? "y.y." : "ts."}) Derkenar kendisi yazar.`, field, fix: { field, value: "" }, fixLabel: "Alanı boşalt" });
+      add({ code: "abbr-in-field", level: "info", message: `${fieldLabel(field)} alanına "${f[field]}" yazılmış. Bu alanı boş bırakın; İSNAD kısaltmasını (${base === "place" ? "b.y." : base === "publisher" ? "y.y." : "ts."}) Künye kendisi yazar.`, field, fix: { field, value: "" }, fixLabel: "Alanı boşalt" });
     }
   }
 

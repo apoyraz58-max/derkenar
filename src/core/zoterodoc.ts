@@ -2,7 +2,7 @@
  * Documents written with Zotero's Word plugin: each citation is a Word field
  *   ADDIN ZOTERO_ITEM CSL_CITATION {"citationID":…,"citationItems":[{"uris":[…/items/ABCD1234],"itemData":{…CSL…},"locator":"45","label":"page","prefix":"bk.",…}],"properties":{"plainCitation":…,"noteIndex":1}}
  * and the bibliography a field "ADDIN ZOTERO_BIBL {…} CSL_BIBLIOGRAPHY".
- * Everything a Derkenar citation needs is in the field: the works (with their
+ * Everything a Künye citation needs is in the field: the works (with their
  * Zotero keys and full CSL data), pages, prefixes.
  */
 import type { CiteRef, CslItem } from "./types.js";
