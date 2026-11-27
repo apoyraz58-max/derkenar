@@ -92,6 +92,7 @@ export function isnadTitle(title: string): string {
   const letters = title.replace(/[^\p{L}]/gu, "");
   const allCaps = letters.length >= 4 && letters === upper(letters);
   return title
+    .replace(/:\s*:/g, ":")
     .split(/(\s*:\s*)/)
     // In an Arabic title the part after ":" stays small too ("…: el-fıkh ve usûluhû").
     // A cataloguer's ISBD separator (" : ") becomes ": ", or a space before a parenthesis ("Hattıyla : (İnceleme)").

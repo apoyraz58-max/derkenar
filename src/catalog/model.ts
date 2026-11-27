@@ -87,6 +87,8 @@ export function withoutPlaceholder(value: string): string {
 export function cleanClaim(claim: Claim): Claim {
   let value = claim.value.normalize("NFC").trim().replace(/\s+/gu, " ");
   if (claim.field === "publisher" || claim.field === "place" || claim.field === "otherPlaces") value = withoutPlaceholder(value);
+  // Ottoman calendar notes cut short in the source ("1343 [h", "1341 ([māl.]"): close the bracket, keep the note.
+  if (claim.field === "date") value = value.replace(/\(\s*\[/g, "[").replace(/\[([^\]]*)$/, (_, note: string) => `[${note.replace(/[\s.(]+$/, "")}]`);
   if (claim.field === "title") return { ...claim, value: isnadTitle(value) };
   if (claim.field === "place") return { ...claim, value: isnadPlace(value) };
   if (claim.field === "country" && /^(TR|TUR|Türkiye|Turkey|XB-TR|tu)$/i.test(value)) return { ...claim, value: "TR" };

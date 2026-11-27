@@ -514,6 +514,7 @@ describe("İSNAD spelling on the way in", async () => {
     expect(isnadTitle("Muhibbî Dîvânı: Kendi Hattıyla : (İnceleme - Metin - Tıpkıbasım)")).toBe("Muhibbî Dîvânı: Kendi Hattıyla (İnceleme - Metin - Tıpkıbasım)");
     expect(isnadTitle("Unutmak ve Hatırlamak : Yuvarlak Masa Toplantısı")).toBe("Unutmak ve Hatırlamak: Yuvarlak Masa Toplantısı");
     expect(isnadTitle("Saat 10:30")).toBe("Saat 10:30");
+    expect(isnadTitle("Orta Türkçe Döneminin İlk Evresi: : Sorunları")).toBe("Orta Türkçe Döneminin İlk Evresi: Sorunları");
     expect(isnadPlace("Istanbul")).toBe("İstanbul");
     expect(isnadPlace("İstanbul, Türkiye")).toBe("İstanbul");
     expect(isnadPlace("Istanbul, Turkiye")).toBe("İstanbul");

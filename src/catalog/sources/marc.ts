@@ -97,7 +97,10 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
   const fixed = control("008");
   const date = imprint(sub(pub, "c")[0] ?? "").replace(/\.$/, "");
   const fixedYear = /^[st]$/.test(fixed[6] ?? "") && /^\d{4}$/.test(fixed.slice(7, 11)) ? fixed.slice(7, 11) : "";
-  add("place", imprint(sub(pub, "a")[0] ?? ""), `${pubTag}$a`);
+  const firstPlace = imprint(sub(pub, "a")[0] ?? "");
+  // "Turkey" alone names a country, not a place: keep it as country evidence; İSNAD then writes "y.y.".
+  if (/^(turkey|türkiye|turkiye|türkei|turquie)$/i.test(firstPlace)) add("country", "TR", `${pubTag}$a`);
+  else add("place", firstPlace, `${pubTag}$a`);
   // Co-publications list further places ("Berlin ; İstanbul"); keep them as scope evidence, not as the selected place.
   const publicationFields = pubTag === "264" ? df("264").filter(e => e.getAttribute("ind2") === "1") : df("260");
   const places = [...new Set(publicationFields.flatMap(e => sub(e, "a")).map(imprint).filter(Boolean))];

@@ -19,6 +19,15 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 03:15 UTC
+
+- Yapılan: İSNAD denetimi sürdü. Kaynakta kesik gelen Osmanlı takvim notları onarıldı (“1343 [h” → “1343 [h]”, “1341 ([māl.]” → “1341 [māl.]”, 1377 baskı). Milâdî karşılık hesaplanmadı, çünkü kanıtsız veri olurdu. Yayın yeri yalnız “Turkey/Türkiye” olan kayıtlarda değer ülke kanıtı olarak saklanıyor, yer boş kalıyor (İSNAD “y.y.” yazar, 154 baskı). Başlıktaki “: :” tek iki noktaya indirildi. Katalog yeniden kuruldu (9 dakika 51 saniye).
+- Durum: 176.968 benzersiz baskı, 164.354 eser. Kesik tarih kalmadı.
+- İncelemede 21.163 kayıt var: 7526 kapsam kanıtı eksikliği, 6760 kimlik çelişkisi, 3867 olası mükerrer, 2160 kapsam çelişkisi, 1232 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,4, sayfa sayısı %29,4, dil %8,3, yayınevi %8,1, katkı %5,2, yayın yeri %1,1.
+- Testler: 239 geçti. Typecheck ve build temiz.
+
 ### 2026-11-27 02:20 UTC
 
 - Yapılan: İSNAD denetiminde bir kapsam hatası görüldü. Ülke kodu Türkiye olan kayıtlarda yayın yerine hiç bakılmıyordu, örneğin Burkina Faso’da basılmış bir kitap kabul edilmişti. Ülke kodu Türkiye ve yer tanınmayan 2993 baskı incelendi. Bunların çoğu İstanbul ve Ankara’nın başka dillerdeki yazımları ya da ilçe adlarıydı. Tanıma listesi genişletildi ve bilinen yurt dışı yerler kapsam çelişkisi sayıldı. Katalog yeniden kuruldu (10 dakika 16 saniye).

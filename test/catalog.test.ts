@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { loadAuthority } from "../src/catalog/authority.js";
 import { renderEdition } from "../src/catalog/citation.js";
 import { ingestFile } from "../src/catalog/ingest.js";
-import { otherVolume, parseEditionNumber, publicationScope, samePublisher, withoutPlaceholder, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
+import { cleanClaim, otherVolume, parseEditionNumber, publicationScope, samePublisher, withoutPlaceholder, type RecordInput, turkeyPlace, validIsbn } from "../src/catalog/model.js";
 import { collectDnbQuery, collectK10plusQuery, collectOzgur, collectOzgurKbart } from "../src/catalog/sources/collect.js";
 import { collectCrossref, crossrefParts } from "../src/catalog/sources/crossref.js";
 import { itemRecord } from "../src/catalog/sources/files.js";
@@ -266,6 +266,22 @@ describe("bibliyografik katalog", () => {
     const field = (name: string) => entries[0]!.fields.find(f => f.field === name)?.value;
     expect(field("title")).toBe("Izmir Vilayetinde Yunan Vahşeti: Mayıs 1919'dan Temmuz 1919'a Kadar");
     expect(field("publisher")).toBe("Barış Kitap");
+  });
+
+  it("kesik takvim notunu onarır, yalnız ülke adı olan yeri ülke kanıtı sayar", async () => {
+    expect(cleanClaim({ field: "date", value: "1343 [h", path: "264$c" }).value).toBe("1343 [h]");
+    expect(cleanClaim({ field: "date", value: "1341 ([māl.]", path: "264$c" }).value).toBe("1341 [māl.]");
+    expect(cleanClaim({ field: "date", value: "1293 [1876]", path: "264$c" }).value).toBe("1293 [1876]");
+    const file = join(temp, "ulke.xml");
+    writeFileSync(file, `<collection xmlns="http://www.loc.gov/MARC21/slim"><record><leader>00000nam a2200000 i 4500</leader>
+      <controlfield tag="001">u1</controlfield><controlfield tag="008">261124s1959    xx            000 0 tur d</controlfield>
+      <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Hatıralar</subfield></datafield>
+      <datafield tag="264" ind1=" " ind2="1"><subfield code="a">Turkey</subfield><subfield code="b">Selek</subfield><subfield code="c">1959</subfield></datafield>
+    </record></collection>`);
+    const db = catalog();
+    await ingestFile(db, "k10plus", file);
+    expect(db.item(1)?.fields.place).toBeUndefined();
+    expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "country", value: "TR", path: "264$a" }));
   });
 
   it("DOAB'ın sabit leader ve 008 ülke kodunu kanıt saymadan yayın yerine göre ayırır", async () => {
