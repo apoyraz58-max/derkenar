@@ -85,7 +85,11 @@ export function marcRecord(raw: string, source: MarcSource): RecordInput | null 
   const title = [strip(first("245", "a")), strip(subtitle ?? "")].filter(Boolean).join(": ");
   add("parallelTitle", strip(parallel.join(" = ")), "245$b");
   const part = [strip(first("245", "n")), strip(first("245", "p"))].filter(Boolean).join(" ");
-  add("title", [title, part].filter(Boolean).join(". "), "245$a$b$n$p");
+  // German cataloguer notes on the volume type ("[Schülerbd.]", "[Hauptbd.]", "[Text]") are not part of the title.
+  // A statement of responsibility after " / " stays: for many textbooks it is the only record of the author.
+  const fullTitle = [title, part].filter(Boolean).join(". ")
+    .replace(/\s*[,.;:]?\s*\[(?:\p{L}+bd\.|Text|Book|Bildband|Hauptw\.)\]/gu, "").trim();
+  add("title", fullTitle, "245$a$b$n$p");
   for (const tag of ["130", "240"]) {
     const uniform = strip(first(tag, "a"));
     if (!uniform) continue;

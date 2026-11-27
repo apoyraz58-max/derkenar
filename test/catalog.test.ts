@@ -272,6 +272,8 @@ describe("bibliyografik katalog", () => {
     expect(cleanClaim({ field: "date", value: "1343 [h", path: "264$c" }).value).toBe("1343 [h]");
     expect(cleanClaim({ field: "date", value: "1341 ([māl.]", path: "264$c" }).value).toBe("1341 [māl.]");
     expect(cleanClaim({ field: "date", value: "1293 [1876]", path: "264$c" }).value).toBe("1293 [1876]");
+    for (const unknown of ["19XX-", "20XX", "18XX-", "197X"]) expect(cleanClaim({ field: "date", value: unknown, path: "264$c" }).value).toBe("");
+    for (const known of ["1997-", "ca. 1970", "2003"]) expect(cleanClaim({ field: "date", value: known, path: "264$c" }).value).toBe(known);
     const file = join(temp, "ulke.xml");
     writeFileSync(file, `<collection xmlns="http://www.loc.gov/MARC21/slim"><record><leader>00000nam a2200000 i 4500</leader>
       <controlfield tag="001">u1</controlfield><controlfield tag="008">261124s1959    xx            000 0 tur d</controlfield>
@@ -282,6 +284,18 @@ describe("bibliyografik katalog", () => {
     await ingestFile(db, "k10plus", file);
     expect(db.item(1)?.fields.place).toBeUndefined();
     expect(db.details(1)?.evidence).toContainEqual(expect.objectContaining({ field: "country", value: "TR", path: "264$a" }));
+  });
+
+  it("başlıktan katalogcu cilt notunu çıkarır, sorumluluk bildirimini korur", async () => {
+    const file = join(temp, "not.xml");
+    writeFileSync(file, `<collection xmlns="http://www.loc.gov/MARC21/slim"><record><leader>00000nam a2200000 i 4500</leader>
+      <controlfield tag="001">n1</controlfield><controlfield tag="008">261124s1998    tu            000 0 tur d</controlfield>
+      <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Din Kültürü ve Ahlâk Bilgisi</subfield><subfield code="n">2, [Schülerbd.] / Yazan: Ali Kaya</subfield></datafield>
+      <datafield tag="264" ind1=" " ind2="1"><subfield code="a">İstanbul</subfield><subfield code="b">Salan</subfield><subfield code="c">1998</subfield></datafield>
+    </record></collection>`);
+    const entries = [];
+    for await (const entry of marcFile(file, "k10plus")) entries.push(entry);
+    expect(entries[0]!.fields.find(f => f.field === "title")?.value).toBe("Din Kültürü ve Ahlâk Bilgisi. 2 / Yazan: Ali Kaya");
   });
 
   it("DOAB'ın sabit leader ve 008 ülke kodunu kanıt saymadan yayın yerine göre ayırır", async () => {

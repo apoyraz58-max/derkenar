@@ -19,6 +19,17 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 06:25 UTC
+
+- Yapılan: “19XX-”, “20XX”, “18XX-” gibi belirsiz yıl yer tutucuları artık tarih sayılmıyor. İSNAD bu durumda “ts.” yazar, özgün değer ham kayıtta kalır (yaklaşık 2500 baskı). Başlıklardaki Almanca katalogcu cilt notları çıkarıldı (“[Schülerbd.]”, “[Hauptbd.]”, “[Text]”, 531 başlık).
+- Geri alınan deneme: başlıkta “ / ” sonrasındaki sorumluluk bildirimini kesmek denendi. Bazı ders kitaplarında yazar yalnız bu bildirimde geçtiği için onlarca farklı kitap aynı başlığa düştü (“çok fazla aday”). Değişiklik geri alındı, sorumluluk bildirimi başlıkta kalıyor.
+- Etki: tarihi yer tutucu olan ve aynı başlık-yazarla tarihli bir baskısı bulunan 523 kayıt artık ayrı baskı sayılmıyor, olası mükerrer olarak incelemede. Daha önce yalnız sahte tarih farkı yüzünden ayrı sayılıyorlardı.
+- Durum: 176.445 benzersiz baskı (−523), 164.215 eser. OCLC ile bağlanan 1102 kayıt.
+- İncelemede 21.430 kayıt var: 7526 kapsam kanıtı eksikliği, 6507 kimlik çelişkisi, 4458 olası mükerrer, 2160 kapsam çelişkisi, 1232 birden çok ISBN ve 23 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %62,9, ISBN %48,3, sayfa sayısı %29,2, dil %8,4, yayınevi %8,1, katkı %5,2, tarih %1,5 (yer tutucular çıkarıldı), yayın yeri %1,1.
+- Testler: 240 geçti. Typecheck ve build temiz.
+
 ### 2026-11-27 05:05 UTC
 
 - Yapılan: İSNAD denetimi sürdü. Semt listesi kalan bileşik yerlerden genişletildi (Yenibosna, Harbiye, Vezneciler, Etiler, Vefa, Osmanbey, Konak vb. ve yazım varyantları). Bileşik yer yazımı kalan baskı 1888’den 1286’ya indi. Katalog yeniden kuruldu (8 dakika 53 saniye).
