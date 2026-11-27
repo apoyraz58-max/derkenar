@@ -160,6 +160,7 @@ export const VERIFIED_HOW: Record<string, string> = {
   ajans: "DOI kayıt ajansında doğrulandı",
   iki: "en az iki kaynakta tutuyor",
   arsiv: "yayın kaydı derginin sayı arşiviyle doğrulandı",
+  tek: "tek kaynakta (ikinci bir kaynakla doğrulanmadı)",
 };
 
 export function articleAuthors(r: ArticleRec): [string, string][] {

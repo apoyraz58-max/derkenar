@@ -119,8 +119,11 @@ function builtinRows(): HTMLElement[] {
     const au = articleAuthors(r);
     const who = au.length ? `${au[0]![0]}${au.length > 2 ? " vd." : au.length === 2 ? ` – ${au[1]![0]}` : ""}` : "—";
     const vi = [r[6], r[7]].filter(Boolean).join("/");
-    out.push(row(r[2], `${who} · ${r[3]}${vi ? ` ${vi}` : ""}${r[4] ? ` (${r[4]})` : ""}${r[11] ? " · DOI" : ""}`, () => articleItem(r)));
+    const tek = r[14] === "tek";
+    out.push(row(r[2], `${who} · ${r[3]}${vi ? ` ${vi}` : ""}${r[4] ? ` (${r[4]})` : ""}${r[11] ? " · DOI" : ""}${tek ? " · tek kaynak" : ""}`, () => articleItem(r), tek ? "tek kaynakta, künyeyi gözden geçirin" : undefined));
   }
+  if (hits.total > hits.articles.length)
+    out.push(h("div", { class: "r-more muted small" }, `Yerleşik veritabanında ${hits.total.toLocaleString("tr-TR")} makale eşleşti; ilk ${hits.articles.length} gösteriliyor. Daraltmak için başlıktan bir sözcük ekleyin.`));
   return out;
 }
 

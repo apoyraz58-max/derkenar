@@ -2023,12 +2023,13 @@ def builtin_how(conn, aid, st, meth, ns, year) -> str | None:
         y, _, _, _ = dp_issue_info(conn, dp_slug(url), vol if _nv(vol) else None, iss if _nv(iss) else None)
         if y and y == year:
             return "arsiv"
-    return None
+    # Tek kaynakta, künyesi tam ve işaretsiz: ikinci doğrulama yok ama yerleşik veritabanına "tek kaynak" diye girer.
+    return "tek"
 
 
 def builtin_export(conn, path=BUILTIN_PATH, log=print) -> dict:
     import gzip
-    counts = {"ajans": 0, "iki": 0, "arsiv": 0, "işaretli": 0, "çelişkili": 0, "doğrulanamadı": 0}
+    counts = {"ajans": 0, "iki": 0, "arsiv": 0, "tek": 0, "işaretli": 0, "çelişkili": 0, "doğrulanamadı": 0}
     clean = lambda x: re.sub(r"[|;]", " ", x or "").strip()
     rows = []
     for (aid, cid, st, meth, ns, rev, conf, authors, title, journal, year, month, vol, iss, sp, ep, ano, doi, issn,
@@ -2067,8 +2068,8 @@ def builtin_export(conn, path=BUILTIN_PATH, log=print) -> dict:
             for _, _, rec in rows[k:k + per]:
                 fh.write(json.dumps(rec, ensure_ascii=False, separators=(",", ":")) + "\n")
         os.replace(part + ".tmp", part)
-    log(f"yerleşik veritabanı: {len(rows):,} kesin makale -> {os.path.relpath(d, HERE)}/makale-*.jsonl.gz "
-        f"(ajans {counts['ajans']:,}, iki kaynak {counts['iki']:,}, arşiv {counts['arsiv']:,}; dışarıda: işaretli "
+    log(f"yerleşik veritabanı: {len(rows):,} makale -> {os.path.relpath(d, HERE)}/makale-*.jsonl.gz "
+        f"(ajans {counts['ajans']:,}, iki kaynak {counts['iki']:,}, arşiv {counts['arsiv']:,}, tek kaynak {counts['tek']:,}; dışarıda: işaretli "
         f"{counts['işaretli']:,}, çelişkili {counts['çelişkili']:,}, doğrulanamadı {counts['doğrulanamadı']:,})")
     return counts
 
