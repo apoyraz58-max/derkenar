@@ -1,24 +1,24 @@
 # Durum raporu
 
-Zaman: 2026-11-27T00:13:17Z
+Zaman: 2026-11-27T01:11:16Z
 
 - Toplam tekil makale: **1,425,615** / hedef 1,000,000 (%142.56)
-- Hazır İSNAD 2 künyesi: **1,342,461** (eksik alanı olan: 83,154)
+- Hazır İSNAD 2 künyesi: **1,358,333** (eksik alanı olan: 67,282)
 
 ## DOI durumu
 
 - Doğrulandı: 608,194
-  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 337,018
-  - yayın kaydı (DergiPark): 112,852
+  - kayıt ajansı (Crossref) + yayın kaydı (DergiPark): 337,019
+  - yayın kaydı (DergiPark): 112,850
   - kayıt ajansı (Crossref): 109,075
   - kayıt ajansı (Crossref; DOI künye eşleşmesiyle bulundu): 48,668
   - kayıt ajansı (DataCite): 363
-  - kayıt ajansı (DataCite) + yayın kaydı (DergiPark): 196
+  - kayıt ajansı (DataCite) + yayın kaydı (DergiPark): 197
   - kayıt ajansı (Public): 22
 - Doğrulama bekliyor: 21,346
 - Bulunamadı: 796,075
-- Kayıt ajansında denetim bekleyen tekil DOI: 130,079
-- Ajans denetimi sonuçları: var 498,170, yok 3,665
+- Kayıt ajansında denetim bekleyen tekil DOI: 130,077
+- Ajans denetimi sonuçları: var 498,172, yok 3,665
 
 ## Kaynağa göre kapsam
 
@@ -34,9 +34,9 @@ Zaman: 2026-11-27T00:13:17Z
 - Birden fazla kaynak bağlantısı olan makale: 401,483
 - Eşleşme yöntemi: doi: 222,233, doi-baslik-uyusmazligi: 2,105, kunye: 156,571, kunye-crossref: 48,668, yeni: 1,423,510
 - Denetim bekleyen belirsiz eşleşme: 131,558
-- Kaynaklar arası farkı işaretli makale: 244,103
+- Kaynaklar arası farkı işaretli makale: 213,005
 - Tarihsel bağlantılar: kayıt yok
-- Eksik alanlar: ISSN 592,670, sayfa/makale no 33,766, yazar 24,673, yıl 23,554, cilt/sayı 3,104, başlık 317
+- Eksik alanlar: ISSN 540,320, sayfa/makale no 33,766, yıl 22,360, yazar 9,827, cilt/sayı 3,202, başlık 317
 
 ## Erişim hataları
 
