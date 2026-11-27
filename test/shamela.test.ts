@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { gunzipSync, strFromU8 } from "fflate";
 import { describe, expect, it } from "vitest";
 import { emptyState, planRefresh, putCitation } from "../src/core/docstate.js";
 import { Renderer } from "../src/core/engine.js";
@@ -24,6 +25,8 @@ describe("transkripsiyonsuz yazım", () => {
     expect(plainTranscription("Aḥkâmü’l-Ḳurʾân")).toBe("Ahkâmü’l-Kur’ân");
     expect(plainTranscription("eṭ-Ṭabaḳātü’l-kübrâ")).toBe("et-Tabakâtü’l-kübrâ");
     expect(plainTranscription("el-ʿİlel")).toBe("el-İlel");
+    expect(plainTranscription("Merâtibü’l-icmâʿ")).toBe("Merâtibü’l-icmâ‘");
+    expect(plainTranscription("Esmâʾü’r-ricâl ve’l-esmâʾ")).toBe("Esmâü’r-ricâl ve’l-esmâ");
     // Only a capital marked letter in it.
     expect(plainTranscription("el-Ḳader")).toBe("el-Kader");
     expect(plainTranscription("Tefsîrü’l-Ḥaddâd")).toBe("Tefsîrü’l-Haddâd");
@@ -67,6 +70,34 @@ describe("Şamile kataloğu", () => {
   });
 });
 
+describe("the book card", () => {
+  it("brings the print's place, publisher, year, edition and the muhakkiks; the first edition is not written", () => {
+    const it = catalogItem({ ...entry, thk: "Muḥammed Fuâd ʿAbdülbâḳī; Muḥibbüddîn el-Ḫaṭîb", ed: "Dârü’l-maʿrife", place: "Beyrut", date: "1379/1959", edition: 1, volumes: 25 });
+    expect(it.fields).toMatchObject({ publisher: "Dârü’l-maʿrife", place: "Beyrut", date: "1379/1959", numberOfVolumes: "25" });
+    expect(it.fields.edition).toBeUndefined();
+    expect(it.creators.filter((c) => c.creatorType === "muhakkik").map((c) => c.name)).toEqual(["Muḥammed Fuâd ʿAbdülbâḳī", "Muḥibbüddîn el-Ḫaṭîb"]);
+    expect(catalogItem({ ...entry, edition: 3 }).fields.edition).toBe("3");
+  });
+  it("a thesis on the card becomes a thesis: university and degree, no publisher", () => {
+    const it = catalogItem({ ...entry, university: "Câmiʿatü’l-İmâm Muḥammed b. Suʿûd el-İslâmiyye", thesisType: "Yüksek Lisans Tezi", place: "Riyad", date: "1438/2017", ed: "x" });
+    expect(it.itemType).toBe("thesis");
+    expect(it.fields).toMatchObject({ university: "Câmiʿatü’l-İmâm Muḥammed b. Suʿûd el-İslâmiyye", thesisType: "Yüksek Lisans Tezi", place: "Riyad" });
+    expect(it.fields.publisher).toBeUndefined();
+  });
+  it("an entry from another source keeps its own source and identifier", () => {
+    const it = catalogItem({ ...entry, id: 900001, catalog: "OpenITI", ref: "0255Jahiz.Bayan" });
+    expect(it.fields.libraryCatalog).toBe("OpenITI");
+    expect(catalogSource(it)).toEqual({ catalog: "OpenITI", id: "0255Jahiz.Bayan" });
+  });
+  it("an article in a journal issue becomes an article: the journal, its volume and issue, no publisher or place", () => {
+    const it = catalogItem({ ...entry, journal: "Mecelletü’l-Câmiati’l-İslâmiyye", volume: "34", issue: "115", place: "Medine", date: "1422/2002", ed: "x" });
+    expect(it.itemType).toBe("journalArticle");
+    expect(it.fields).toMatchObject({ publicationTitle: "Mecelletü’l-Câmiati’l-İslâmiyye", volume: "34", issue: "115", date: "1422/2002" });
+    expect(it.fields.publisher).toBeUndefined();
+    expect(it.fields.place).toBeUndefined();
+  });
+});
+
 describe("searching the catalog", () => {
   const catalog = { name: "el-Mektebetü’ş-Şâmile", source: "test", entries: [entry, { ...entry, id: 1, ar: "المصنف", title: "el-Muṣannef", plain: "el-Musannef", authors: [{ dia: "Abdürrezzâk es-San‘ânî", shamela: "عبد الرزاق الصنعاني", death: 211 }] }] };
   it("finds a book by its title with or without marks, by its author, or in Arabic", () => {
@@ -77,5 +108,20 @@ describe("searching the catalog", () => {
     expect(ids("عمدة القاري")).toEqual([5756]);
     expect(ids("musannef")).toEqual([1]);
     expect(ids("xyz")).toEqual([]);
+  });
+});
+
+describe("the catalog that comes with the add-in", () => {
+  const c = JSON.parse(strFromU8(gunzipSync(readFileSync(new URL("../data/catalog/catalog.json.gz", import.meta.url))))) as { name: string; entries: CatalogEntry[] };
+  it("holds the reviewed entries only, each with a number and a title", () => {
+    expect(c.entries.length).toBeGreaterThan(10000);
+    expect(c.entries.every((e) => typeof e.id === "number" && typeof e.title === "string" && !e.review?.length)).toBe(true);
+    expect(new Set(c.entries.map((e) => e.id)).size).toBe(c.entries.length);
+  });
+  it("finds a Şamile book and an OpenITI one, each with its own source", () => {
+    const fut = searchCatalog("fütuhatül mekkiyye", c)[0]!;
+    expect(catalogItem(fut, c.name).fields.libraryCatalog).toBe("OpenITI");
+    const umde = searchCatalog("umdetul kari", c)[0]!;
+    expect(catalogItem(umde, c.name).fields.libraryCatalog).toBe("el-Mektebetü’ş-Şâmile");
   });
 });
