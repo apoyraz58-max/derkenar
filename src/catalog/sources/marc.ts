@@ -13,7 +13,16 @@ const relators: Record<string, string> = {
   aui: "introduction", aqt: "quotationAuthor", ann: "annotator", ctb: "contributor",
   com: "compiler", bkd: "bookDesigner", prf: "proofreader",
 };
-const strip = (value: string) => value.trim().replace(/\s+[/:;,=]+\s*$/, "").trim();
+// Some source records carry subfield codes inside the text ("Roman$dSelim Erdoğan", "$nBarış Kitap", "Vahşeti$bMayıs 1919").
+// "$b" starts a subtitle; any other code starts a statement that does not belong to this value.
+const unmark = (value: string) => {
+  const text = value.replace(/\$b/g, ": ");
+  const at = text.search(/[$@][a-z0-9]/);
+  if (at < 0) return text;
+  const before = text.slice(0, at).trim();
+  return before || text.slice(at + 2).split(/[$@][a-z0-9]/)[0]!;
+};
+const strip = (value: string) => unmark(value).trim().replace(/\s+[/:;,=]+\s*$/, "").trim();
 const imprint = (value: string) => strip(value).replace(/^\[([^\]]+)\](?:[.,])?$/, "$1").replace(/[,:;]+$/, "").trim();
 const elements = (node: Node, name: string) => Array.from(node.childNodes)
   .filter((child): child is Element => child.nodeType === 1 && (child as Element).localName === name);

@@ -19,6 +19,17 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 00:55 UTC
+
+- Saatlik çalıştırmalar (21:42–00:41) işçi süreci yeniden başlatıldığı için birikti ve tek bir çalıştırmada birleştirildi.
+- Yapılan: kaynak metne gömülü MARC alt alan işaretleri temizlendi (yaklaşık 230 değer, örnek “Roman$dSelim Erdoğan”, “$nBarış Kitap”). `$b` alt başlık işareti olarak “: ” yazılıyor, diğer işaretlerden sonrası atılıyor. Katalog yeniden kuruldu (9 dakika 50 saniye). Artık artık kalmadı.
+- Durum: 177.030 benzersiz baskı, 164.422 eser. OCLC ile bağlanan 1089 kayıt, bağlı bölüm 29.651.
+- İncelemede 20.921 kayıt var: 7593 kapsam kanıtı eksikliği, 6753 kimlik çelişkisi, 3864 olası mükerrer, 1859 kapsam çelişkisi, 1234 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,4, sayfa sayısı %29,4, dil %8,3, yayınevi %8,1, katkı %5,2, yayın yeri %1,0.
+- Testler: 238 geçti. Typecheck ve build temiz.
+- Değerlendirme: izinli kaynaklarda ve otomatik kurallarda kazanç küçülüyor. Saatlik çalıştırma her seferinde yaklaşık 10 dakikalık yeniden kurulum harcıyor. Kullanıcı kararları (yayınevi alan adları, Crossref kuralı, kimliksiz çiftler, KKTC) gelene kadar sıklığın azaltılması önerilir.
+
 ### 2026-11-26 21:10 UTC
 
 - Yapılan: MARC 111/711 toplantı adları artık yazar sayılmıyor, `meetingName` kanıtı olarak saklanıyor (4473 kayıt). Bildiri kitaplarındaki “Sempozyum Adı, Sempozyum Adı…” tekrarı kalktı. Katalog yeniden kuruldu (10 dakika 19 saniye).

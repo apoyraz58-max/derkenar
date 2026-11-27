@@ -250,6 +250,20 @@ describe("bibliyografik katalog", () => {
     expect(entries[0]!.fields).toContainEqual(expect.objectContaining({ field: "meetingName", value: "Sorumluluk Hukuku Sempozyumu", path: "111[0]$a" }));
   });
 
+  it("kaynak metne gömülü alt alan işaretlerini temizler", async () => {
+    const file = join(temp, "isaret.xml");
+    writeFileSync(file, `<collection xmlns="http://www.loc.gov/MARC21/slim"><record><leader>00000nam a2200000 i 4500</leader>
+      <controlfield tag="001">i1</controlfield><controlfield tag="008">261124s1919    tu            000 0 tur d</controlfield>
+      <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Izmir Vilayetinde Yunan Vahşeti$bMayıs 1919'dan Temmuz 1919'a Kadar$dSelim Erdoğan</subfield></datafield>
+      <datafield tag="264" ind1=" " ind2="1"><subfield code="a">İstanbul</subfield><subfield code="b">$nBarış Kitap</subfield><subfield code="c">1919</subfield></datafield>
+    </record></collection>`);
+    const entries = [];
+    for await (const entry of marcFile(file, "k10plus")) entries.push(entry);
+    const field = (name: string) => entries[0]!.fields.find(f => f.field === name)?.value;
+    expect(field("title")).toBe("Izmir Vilayetinde Yunan Vahşeti: Mayıs 1919'dan Temmuz 1919'a Kadar");
+    expect(field("publisher")).toBe("Barış Kitap");
+  });
+
   it("DOAB'ın sabit leader ve 008 ülke kodunu kanıt saymadan yayın yerine göre ayırır", async () => {
     const db = catalog();
     await ingestFile(db, "doab", root("test/fixtures/doab-sample.xml"));
