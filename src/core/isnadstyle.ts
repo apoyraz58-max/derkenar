@@ -289,7 +289,12 @@ const DISTRICTS = new Set(["maltepe", "yenimahalle", "yeni mahalle", "balgat", "
   "bornova", "levent", "mezitli", "ostim", "teknikokullar", "tuzla", "atakum", "beylerbeyi", "karatay", "kazan", "maslak", "zeytinburnu",
   "beykoz", "demetevler", "galata", "gimat", "kolej", "tesvikiye", "akyurt", "alsancak", "altunizade", "balcova", "besiktas", "beysukent",
   "canik", "cankaya", "cihangir", "dikimevi", "ergazi", "sirkeci", "topkapi", "aksaray", "sultanahmet", "cagaloglu", "beyoglu", "kadikoy",
-  "sisli", "uskudar", "beyazit", "cemberlitas", "kizilay", "yenisehir", "sariyer", "bagcilar", "bakirkoy", "esenler", "gungoren", "eminonu"]);
+  "sisli", "uskudar", "beyazit", "cemberlitas", "kizilay", "yenisehir", "sariyer", "bagcilar", "bakirkoy", "esenler", "gungoren", "eminonu",
+  "yenibosna", "yenisbosna", "harbiye", "harbiya", "vezneciler", "etiler", "vefa", "osmanbey", "konak", "merter", "divanyolu", "gayrettepe",
+  "esenyurt", "laleli", "mahmutbey", "seyrantepe", "bayezid", "bayezit", "beyazid", "bayazit", "kartal", "moda", "ortahisar", "suadiye",
+  "sultanbeyli", "fulya", "pendik", "sirkesi", "sirceci", "tophane", "akatlar", "bornava", "buca", "esentepe", "sancaktepe", "sultangazi",
+  "balat", "basmane", "cibali", "emirgan", "eryaman", "esenlar", "galtasaray", "gorukle", "nuruosmaniye", "yenilevent", "adalar", "batikent",
+  "bahcelievler", "balmumcu", "bomonti", "bayrampasa", "besevler"]);
 
 const PLACES: Record<string, string> = {
   ...Object.fromEntries(TR_CITIES.map((c) => [foldText(c), c])),

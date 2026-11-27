@@ -529,6 +529,9 @@ describe("İSNAD spelling on the way in", async () => {
     expect(isnadPlace("Üsküdar, İstanbul")).toBe("İstanbul");
     expect(isnadPlace("Üsküdar, [Istanbul]")).toBe("İstanbul");
     expect(isnadPlace("Cağaloğlu-İstanbul")).toBe("İstanbul");
+    expect(isnadPlace("Yenibosna, İstanbul")).toBe("İstanbul");
+    expect(isnadPlace("Harbiye, İstanbul")).toBe("İstanbul");
+    expect(isnadPlace("Dresden, İstanbul")).toBe("Dresden, İstanbul");
     expect(isnadPlace("Üsküdar")).toBe("Üsküdar");
     expect(isnadPlace("Beirut")).toBe("Beyrut");
     expect(isnadPlace("London")).toBe("London");

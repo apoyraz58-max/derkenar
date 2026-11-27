@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 05:05 UTC
+
+- Yapılan: İSNAD denetimi sürdü. Semt listesi kalan bileşik yerlerden genişletildi (Yenibosna, Harbiye, Vezneciler, Etiler, Vefa, Osmanbey, Konak vb. ve yazım varyantları). Bileşik yer yazımı kalan baskı 1888’den 1286’ya indi. Katalog yeniden kuruldu (8 dakika 53 saniye).
+- Örneklemde görülen ama düzeltilmeyen tekil sorunlar: başlıkta K10plus katalogcu notu (“[Schülerbd.]”), “19XX-” biçiminde belirsiz tarih, Türkçe harfleri kaynakta kaybolmuş başlıklar (“Anlatmazsam Catlarim”). Sonuncusu kanıtsız düzeltme gerektirdiği için dokunulmadı.
+- Durum: 176.968 benzersiz baskı, 164.354 eser.
+- İncelemede 20.995 kayıt var: 7526 kapsam kanıtı eksikliği, 6585 kimlik çelişkisi, 3867 olası mükerrer, 2160 kapsam çelişkisi, 1232 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,4, sayfa sayısı %29,4, dil %8,3, yayınevi %8,1, katkı %5,2, yayın yeri %1,1.
+- Testler: 239 geçti. Typecheck ve build temiz.
+
 ### 2026-11-27 04:10 UTC
 
 - Yapılan: İSNAD denetiminde semt düzeltmesinin bazı yazımları kaçırdığı görüldü. İSNAD şehir listesinde Üsküdar, Kadıköy, Fatih ve Beyoğlu da bulunduğu için “Üsküdar, İstanbul” il sanılıyordu. Ayrıca boşluksuz tire (“Cağaloğlu-İstanbul”) ve köşeli parantez (“Üsküdar, [Istanbul]”) tanınmıyordu. İl denetimi artık yalnız 81 ile bakıyor. Katalog yeniden kuruldu (8 dakika 34 saniye).
