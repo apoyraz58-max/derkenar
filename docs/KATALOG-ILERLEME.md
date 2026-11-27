@@ -19,6 +19,19 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 23:30 UTC
+
+- Saatlik çalıştırma: İbranî takvimli yıllar milâdîye çevriliyor. Kataloğun verdiği karşılık varsa o yazılıyor (“5688 [1928]” → 1928). Yoksa yılın kapsadığı iki milâdî yıl yazılıyor (“5722” → 1961/1962). Matbaa öncesine düşen ya da kataloğun verdiği karşılıkla tutmayan yıllar (“5145”, “5658 [1913]”) incelemede kaldı.
+- Kullanıcı bildirimiyle İSNAD düzeltmeleri:
+  - MARC ön ad sırası. 700$a “Tiryaki, Bilgin Kübra” ile 245$c “Kübra Bilgin Tiryaki” ayrışınca başlık sayfası sırası alınıyor (kanıt yolu `+245$c`, 87 kayıt).
+  - Crossref’te editör ve 4 ya da daha fazla yazar birlikte olan kitaplarda yazarlar bölüm yazarıdır. Bunlar katkıcı (`contributor`) olarak saklanıyor; atıf editörle yapılıyor.
+  - Başlıkta parantezli ek (“Değişe(meye)n”) ve fazla birleşik nokta (“İnci̇li̇”) düzeltildi. Başlıktaki Arapça kitap adı artık bütün başlığı küçük harfte bırakmıyor.
+  - Yerleşik kitap dışa aktarımında baskı alanı numaraya indirgeniyor (“Gözden geçirilmiş … 2. basım” → 2). İSNAD dipnotta baskıyı yazmaz, kaynakçada “2. Basım” yazar.
+- Katalog yeniden kuruldu: 176.428 benzersiz baskı, 164.213 eser. `data/builtin/kitap-*.jsonl.gz` yeniden üretildi: 174.880 baskı, 11.565 satır değişti.
+- Eksik alan oranları: baskı numarası %62,9, ISBN %48,3, sayfa sayısı %29,2, dil %8,4, yayınevi %8,1, tarih %1,5, yayın yeri %1,1.
+- Testler: 265 geçti. Typecheck ve build temiz.
+- Not: yerleşik veritabanı güncellemesi şimdilik yalnız çalışma dalında. Eklentiye yansıması için `main`’e alınması gerekiyor (kullanıcı onayı).
+
 ### 2026-11-27 22:30 UTC
 
 - Kullanıcı isteğiyle: denetimi tamamlanan kitaplar, DİA ve makalelerle aynı düzende eklentinin yerleşik veritabanına eklendi. Bunun için `main` dalı çalışma dalına birleştirildi (çakışma yok).
