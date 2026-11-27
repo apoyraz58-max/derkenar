@@ -189,9 +189,25 @@ export function articleItem(r: ArticleRec): Item {
   return item;
 }
 
-/** Bir makalenin dizin sözcükleri: başlık ve yazar soyadları. */
+/** Bir makalenin dizin sözcükleri: başlık ve yazarların adı ve soyadı ("abdurrahman poyraz" da bulur). */
 export function articleWords(r: ArticleRec): string[] {
-  return indexWords(`${r[2]} ${articleAuthors(r).map((a) => a[0]).join(" ")}`);
+  return indexWords(`${r[2]} ${articleAuthors(r).map((a) => `${a[1]} ${a[0]}`).join(" ")}`);
+}
+
+/**
+ * Aday makalelerin sıralaması: sorgu sözcüğünü tam (önek değil) içeren ilk yazar en önde, sonra herhangi bir
+ * yazarın adı/soyadı, sonra başlık sözcüğü; eşitse dizindeki sıra (yeni yıl önce) korunur.
+ */
+export function rankArticles(q: string, recs: readonly ArticleRec[]): ArticleRec[] {
+  const words = queryWords(q).filter((w) => w.length >= 3);
+  const score = (r: ArticleRec) => {
+    const au = articleAuthors(r);
+    const first = new Set(foldKey(au[0] ? `${au[0][1]} ${au[0][0]}` : "").split(" "));
+    const all = new Set(foldKey(au.map((a) => `${a[1]} ${a[0]}`).join(" ")).split(" "));
+    const title = new Set(foldKey(r[2]).split(" "));
+    return words.reduce((s, w) => s + (first.has(w) ? 4 : all.has(w) ? 2 : title.has(w) ? 1 : 0), 0);
+  };
+  return recs.map((r, i) => ({ r, i, s: score(r) })).sort((a, b) => b.s - a.s || a.i - b.i).map((x) => x.r);
 }
 
 /** Makale kataloğunun parçalama bilgisi (`makale/meta.json`). */

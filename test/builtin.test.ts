@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   type ArticleRec,
   articleItem,
+  articleWords,
+  rankArticles,
   builtinSource,
   decodePostings,
   diaItem,
@@ -137,6 +139,20 @@ describe("yerleşik veritabanı: makale kataloğu", () => {
     expect(postingsFor("tuke", shards.get("tuk")!)).toEqual([0]);
     expect(postingsFor("kay", shards.get("kay")!)).toEqual([1]);
     expect(intersect(postingsFor("diy", shards.get("diy")!), postingsFor("ayr", shards.get("ayr")!))).toEqual([0]);
+  });
+  it("an author is found by given name and surname; exact matches come before prefix matches", () => {
+    const a: ArticleRec = [...rec];
+    a[1] = "Poyrazoğlu|Şükran";
+    a[2] = "Incidence of Type 1 Diabetes";
+    const b: ArticleRec = [...rec];
+    b[1] = "Kaya|Veli;Poyraz|Ufuk";
+    b[2] = "Kentsel Yönetişim";
+    const c: ArticleRec = [...rec];
+    c[1] = "Poyraz|Abdurrahman";
+    c[2] = "Bir Kâidenin Serencamı";
+    expect(articleWords(c)).toEqual(expect.arrayContaining(["abdurrahman", "poyraz", "kaidenin"]));
+    expect(rankArticles("poyraz", [a, b, c]).map((r) => r[1])).toEqual(["Poyraz|Abdurrahman", "Kaya|Veli;Poyraz|Ufuk", "Poyrazoğlu|Şükran"]);
+    expect(rankArticles("Abdurrahman Poyraz", [a, b, c])[0]![1]).toBe("Poyraz|Abdurrahman");
   });
   it("postings round-trip, folding ignores marks and dotted/dotless i", () => {
     expect(decodePostings(encodePostings([3, 10, 47, 1000]))).toEqual([3, 10, 47, 1000]);

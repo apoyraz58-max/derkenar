@@ -8,9 +8,11 @@ import {
   type ArticleRec,
   type DiaData,
   type DiaEntry,
+  decodePostings,
   intersect,
   postingsFor,
   queryWords,
+  rankArticles,
   searchDia,
   shardOf,
 } from "../../core/builtin.js";
@@ -74,12 +76,20 @@ async function articleSearch(q: string, limit: number): Promise<ArticleRec[]> {
   if (!m) return [];
   const have = new Set(m.shards);
   if (words.some((w) => !have.has(shardOf(w)))) return [];
-  const lists = await Promise.all(words.map(async (w) => postingsFor(w, await term(shardOf(w)))));
-  lists.sort((a, b) => a.length - b.length);
-  let ids = lists[0] ?? [];
-  for (const l of lists.slice(1)) ids = intersect(ids, l);
-  const top = ids.slice(0, limit);
-  return Promise.all(top.map(async (id) => (await chunk(Math.floor(id / m.per)))[id % m.per]!)).then((r) => r.filter(Boolean));
+  const shards = await Promise.all(words.map((w) => term(shardOf(w))));
+  const inter = (lists: number[][]) => {
+    const l = [...lists].sort((a, b) => a.length - b.length);
+    return l.slice(1).reduce((acc, x) => intersect(acc, x), l[0] ?? []);
+  };
+  // Önek eşleşmesi ("poy" -> Poyraz, Poyrazoğlu) ve tam eşleşme ("poyraz"): tam tutanlar önce.
+  const ids = inter(words.map((w, i) => postingsFor(w, shards[i]!)));
+  const exact = inter(words.map((w, i) => (shards[i]![w] ? decodePostings(shards[i]![w]!) : postingsFor(w, shards[i]!))));
+  const ex = new Set(exact);
+  const ordered = [...exact, ...ids.filter((id) => !ex.has(id))];
+  // Sıralama için ilk 30 aday indirilir, tam tutan yazar/başlık öne alınır.
+  const top = ordered.slice(0, 30);
+  const recs = (await Promise.all(top.map(async (id) => (await chunk(Math.floor(id / m.per)))[id % m.per]!))).filter(Boolean);
+  return rankArticles(q, recs).slice(0, limit);
 }
 
 async function searchAll(q: string): Promise<void> {

@@ -141,7 +141,7 @@ export function diaFromRdf(xml: string): DiaData {
 }
 
 /** Makale kataloğu parçaları: kayıtlar biner biner, dizin sözcüklerin ilk üç harfine göre. */
-export function articleShards(lines: string[], per = 250, maxDf = 40_000) {
+export function articleShards(lines: string[], per = 250, maxDf = Infinity) {
   const recs = lines.filter((l) => l.trim()).map((l) => JSON.parse(l) as ArticleRec);
   const post = new Map<string, number[]>();
   recs.forEach((r, i) => {
@@ -153,7 +153,7 @@ export function articleShards(lines: string[], per = 250, maxDf = 40_000) {
   });
   const shards = new Map<string, Record<string, string>>();
   for (const [w, ids] of post) {
-    if (ids.length > maxDf) continue; // çok sık sözcük: tek başına ayırt etmez
+    if (ids.length > maxDf) continue; // (sınır yok: sık ad ve sözcükler de aranabilsin)
     const s = shardOf(w);
     const sh = shards.get(s) ?? {};
     sh[w] = encodePostings(ids);
