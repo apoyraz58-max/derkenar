@@ -843,8 +843,25 @@ def load_article_view(conn, aid: int) -> dict:
     return v
 
 
+_ROMAN_VAL = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
+
+
+def roman_to_int(s: str) -> int | None:
+    s = s.upper()
+    if not s or not ROMAN_RE.match(s):
+        return None
+    total = 0
+    for i, ch in enumerate(s):
+        v = _ROMAN_VAL[ch]
+        total += -v if i + 1 < len(s) and _ROMAN_VAL[s[i + 1]] > v else v
+    return total
+
+
 def norm_num(x) -> str:
-    return re.sub(r"\s+", "", str(x)).lstrip("0").lower()
+    """Cilt/sayı karşılaştırması: boşluksuz, baştaki sıfırsız, Romen rakamı sayıya çevrilmiş ("XXI" = "21")."""
+    s = re.sub(r"\s+", "", str(x)).lstrip("0").lower()
+    r = roman_to_int(s)
+    return str(r) if r else s
 
 
 def score_candidate(rec: dict, v: dict) -> tuple[float, dict]:
@@ -873,8 +890,9 @@ def score_candidate(rec: dict, v: dict) -> tuple[float, dict]:
     if rec["authors"] and not v["surnames"] or v["surnames"] and not rec["authors"]:
         veto.append("yazar-bir-tarafta-yok")
     same_source = rec["source"] in v["sources"]
+    no_authors = not rec["authors"] and not v["surnames"]
     return t, dict(title=round(t, 3), dy=dy, author=author, venue=venue, pages=pages, endp=endp,
-                   veto=veto, same_source=same_source)
+                   veto=veto, same_source=same_source, no_authors=no_authors)
 
 
 def decide(t: float, f: dict) -> str:
@@ -885,6 +903,9 @@ def decide(t: float, f: dict) -> str:
     if f["same_source"]:
         # Aynı kaynakta farklı kimlikli iki kayıt: yalnız her şey tutuyorsa gerçek tekrar sayılır
         if t >= 0.97 and dy == 0 and f["author"] and f["venue"] and f["pages"] and not f["veto"]:
+            return "merge"
+        # İki tarafta da yazarsız (imzasız) kayıt: başlık, yıl, dergi, ilk ve son sayfa birebir
+        if f.get("no_authors") and t >= 0.99 and dy == 0 and f["venue"] and f["pages"] and f["endp"] and not f["veto"]:
             return "merge"
         return "review" if t >= 0.90 and not hard_veto else "new"
     if hard_veto:
@@ -1246,8 +1267,8 @@ def rebuild_article(conn, aid: int):
         if len(vals) > 1:
             conflicts[field] = {str(k): v for k, v in vals.items()}
     diff("year")
-    diff("volume", lambda x: str(x).lstrip("0"))
-    diff("issue", lambda x: str(x).lstrip("0"))
+    diff("volume", norm_num)
+    diff("issue", norm_num)
     diff("spage", norm_page)
     diff("epage", norm_page)
     diff("doi")
@@ -1749,6 +1770,85 @@ def crossref_store_page(conn, items) -> tuple[int, int]:
         conn.execute("ROLLBACK")
         raise
     return ms, found
+
+
+def load_rec(conn, source: str, sid: str) -> dict | None:
+    cur = conn.execute("SELECT * FROM source_record WHERE source=? AND source_id=?", (source, sid))
+    row = cur.fetchone()
+    if not row:
+        return None
+    d = dict(zip([c[0] for c in cur.description], row))
+    for k in ("titles", "authors", "journals", "extra"):
+        d[k] = json.loads(d[k] or ("{}" if k == "extra" else "[]"))
+    return d
+
+
+def merge_articles(conn, keep: int, drop: int):
+    """İki makaleyi birleştir: drop'un kaynak kayıtları, anahtarları ve denetim kayıtları keep'e geçer."""
+    conn.execute("UPDATE source_record SET article_id=? WHERE article_id=?", (keep, drop))
+    conn.execute("INSERT OR IGNORE INTO match_key(kind,key,article_id) SELECT kind,key,? FROM match_key WHERE article_id=?",
+                 (keep, drop))
+    conn.execute("DELETE FROM match_key WHERE article_id=?", (drop,))
+    conn.execute("UPDATE OR IGNORE match_review SET article_id=? WHERE article_id=?", (keep, drop))
+    conn.execute("UPDATE OR IGNORE match_review SET candidate_id=? WHERE candidate_id=?", (keep, drop))
+    conn.execute("UPDATE match_review SET status='birleşti' WHERE status='açık' AND (article_id=candidate_id "
+                 "OR article_id=? AND candidate_id=? OR article_id=? AND candidate_id=?)", (keep, drop, drop, keep))
+    conn.execute("UPDATE historical_link SET article_id=? WHERE article_id=?", (keep, drop))
+    rebuild_article(conn, drop)
+    rebuild_article(conn, keep)
+
+
+def resolve_reviews(conn, log=print, batch: int = 200) -> dict:
+    """Açık belirsiz eşleşmeleri güncel kurallarla yeniden değerlendirir: 'merge' -> makaleler birleşir,
+    'new' -> 'ayrı' kapanır, 'review' -> açık kalır. Kaldığı yerden sürer (yalnız açık olanlara bakar)."""
+    n = {"birleşti": 0, "ayrı": 0, "açık": 0}
+    last = 0
+    while True:
+        rows = conn.execute("SELECT id, source, source_id, article_id, candidate_id FROM match_review "
+                            "WHERE status='açık' AND id>? ORDER BY id LIMIT ?", (last, batch)).fetchall()
+        if not rows:
+            break
+        conn.execute("BEGIN IMMEDIATE")
+        for rid, src, sid, _, cand in rows:
+            last = rid
+            rec = load_rec(conn, src, sid)
+            cur = rec and rec.get("article_id")
+            if not rec or not cur or not cand or cur == cand:
+                conn.execute("UPDATE match_review SET status='birleşti' WHERE id=?", (rid,))
+                n["birleşti"] += 1
+                continue
+            v = load_article_view(conn, cand)
+            if not v["sources"]:
+                conn.execute("UPDATE match_review SET status='ayrı' WHERE id=?", (rid,))
+                n["ayrı"] += 1
+                continue
+            # Farklı doğrulanmış DOI'ler asla birleşmez
+            mine = load_article_view(conn, cur)
+            if mine["dois"] and v["dois"] and not (mine["dois"] & v["dois"]):
+                d = "new"
+            else:
+                t, f = score_candidate(rec, v)
+                d = decide(t, f)
+                # Aynı kaynaktan iki ayrı kayıt adayı tek makalede toplanırsa kaynak kendi içinde tekrar etmiş olur;
+                # yalnız aday makalede o kaynaktan kayıt yoksa ya da kurala göre gerçek tekrarsa birleşir.
+            if d == "merge":
+                keep, drop = sorted((cur, cand))
+                merge_articles(conn, keep, drop)
+                conn.execute("UPDATE match_review SET status='birleşti' WHERE id=?", (rid,))
+                n["birleşti"] += 1
+            elif d == "new":
+                conn.execute("UPDATE match_review SET status='ayrı' WHERE id=?", (rid,))
+                rebuild_article(conn, cur)
+                rebuild_article(conn, cand)
+                n["ayrı"] += 1
+            else:
+                n["açık"] += 1
+        conn.execute("COMMIT")
+        time.sleep(0.05)
+        if sum(n.values()) % 10000 < batch:
+            log(f"{now()} eşleşme denetimi: birleşen {n['birleşti']:,}, ayrı {n['ayrı']:,}, açık kalan {n['açık']:,}")
+    log(f"eşleşme denetimi bitti: birleşen {n['birleşti']:,}, ayrı {n['ayrı']:,}, açık kalan {n['açık']:,}")
+    return n
 
 
 def rebuild_all(conn, name: str = "isnad-denetim-1", batch: int = 200, log=print):
