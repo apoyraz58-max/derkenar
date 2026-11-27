@@ -7,7 +7,7 @@
  * dia.rdf: TDV İslâm Ansiklopedisi maddelerinin Zotero RDF'i (sabit veritabanı, kullanıcıdan istenmez).
  * makale.jsonl.gz: `katalog/catalog.py builtin-export` çıktısı, satır başına bir ArticleRec.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import {
   ARTICLE_CATALOG,
@@ -174,9 +174,14 @@ export function writeBuiltin(root: URL, out: URL): string[] {
     writeFileSync(new URL("dia.json", out), JSON.stringify(dia));
     notes.push(`DİA: ${dia.entries.length} madde (${dia.entries.filter((e) => e.r).length} işaretli)`);
   }
-  const artPath = new URL("data/builtin/makale.jsonl.gz", root);
-  if (existsSync(artPath)) {
-    const { meta, shards, chunks } = articleShards(gunzipSync(readFileSync(artPath)).toString("utf8").split("\n"));
+  // makale-1.jsonl.gz, makale-2.jsonl.gz, ... (ya da eski tek dosya makale.jsonl.gz), sırayla.
+  const dir0 = new URL("data/builtin/", root);
+  const parts = existsSync(dir0)
+    ? readdirSync(dir0).filter((f) => /^makale(-\d+)?\.jsonl\.gz$/.test(f)).sort((a, b) => (+(/\d+/.exec(a)?.[0] ?? 0)) - (+(/\d+/.exec(b)?.[0] ?? 0)))
+    : [];
+  if (parts.length) {
+    const lines = parts.flatMap((f) => gunzipSync(readFileSync(new URL(f, dir0))).toString("utf8").split("\n"));
+    const { meta, shards, chunks } = articleShards(lines);
     const dir = new URL("makale/", out);
     mkdirSync(new URL("t/", dir), { recursive: true });
     mkdirSync(new URL("r/", dir), { recursive: true });

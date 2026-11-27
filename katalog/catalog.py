@@ -1860,7 +1860,7 @@ def export_csv(conn, path=CSV_PATH):
 # ---------------------------------------------------------------------------
 # Derkenar eklentisinin yerleşik veritabanı: yalnız kesin makaleler
 # ---------------------------------------------------------------------------
-BUILTIN_PATH = os.path.join(HERE, "..", "data", "builtin", "makale.jsonl.gz")
+BUILTIN_PATH = os.path.join(HERE, "..", "data", "builtin", "makale.jsonl.gz")  # klasörü kullanılır; parçalar makale-N.jsonl.gz
 BUILTIN_BAD_REVIEW = {"olasi-tekrar", "yil-farki", "doi-baslik-uyusmazligi", "birden-fazla-doi", "baslik-buyuk-harf"}
 BUILTIN_BAD_CONFLICT = {"year", "volume", "issue", "spage", "epage", "ilk_yazar", "doi"}
 
@@ -1907,13 +1907,21 @@ def builtin_export(conn, path=BUILTIN_PATH, log=print) -> dict:
                                          ep or "", ano or "", doi if st == DOI_OK else "", issn or eissn or "",
                                          (lang or "")[:2], how]))
     rows.sort(key=lambda r: (r[0], r[1]))
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
-    with gzip.open(tmp, "wt", encoding="utf-8", compresslevel=9) as fh:
-        for _, _, rec in rows:
-            fh.write(json.dumps(rec, ensure_ascii=False, separators=(",", ":")) + "\n")
-    os.replace(tmp, path)
-    log(f"yerleşik veritabanı: {len(rows):,} kesin makale -> {os.path.relpath(path, HERE)} "
+    d = os.path.dirname(path)
+    os.makedirs(d, exist_ok=True)
+    # GitHub'ın önerdiği dosya boyutunun (50 MB) altında kalmak için 250.000 kayıtlık parçalar:
+    # makale-1.jsonl.gz, makale-2.jsonl.gz, ... (derleme hepsini sırayla okur).
+    per = 250_000
+    import glob
+    for old in glob.glob(os.path.join(d, "makale*.jsonl.gz")):
+        os.remove(old)
+    for k in range(0, len(rows), per):
+        part = os.path.join(d, f"makale-{k // per + 1}.jsonl.gz")
+        with gzip.open(part + ".tmp", "wt", encoding="utf-8", compresslevel=9) as fh:
+            for _, _, rec in rows[k:k + per]:
+                fh.write(json.dumps(rec, ensure_ascii=False, separators=(",", ":")) + "\n")
+        os.replace(part + ".tmp", part)
+    log(f"yerleşik veritabanı: {len(rows):,} kesin makale -> {os.path.relpath(d, HERE)}/makale-*.jsonl.gz "
         f"(ajans {counts['ajans']:,}, iki kaynak {counts['iki']:,}, arşiv {counts['arsiv']:,}; dışarıda: işaretli "
         f"{counts['işaretli']:,}, çelişkili {counts['çelişkili']:,}, doğrulanamadı {counts['doğrulanamadı']:,})")
     return counts
