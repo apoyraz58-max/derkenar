@@ -63,13 +63,21 @@ export function openEditor(key: string, focusTitle = false): void {
   const item = S.byKey.get(key);
   if (!item) return;
   current = item;
+  savedState("Değişiklikler kendiliğinden kaydedilir");
   showView("kaynak");
   render();
   if (focusTitle) ($("ed-fields").querySelector("textarea,input") as HTMLElement | null)?.focus();
 }
 
+/** "Kaydediliyor…" while an edit waits, "✓ Kaydedildi" once it is in the library (edits save themselves). */
+function savedState(text: string): void {
+  const el = document.getElementById("ed-saved");
+  if (el) el.textContent = text;
+}
+
 function scheduleSave(): void {
   window.clearTimeout(saveTimer);
+  savedState("Kaydediliyor…");
   saveTimer = window.setTimeout(() => void save(), 350);
 }
 
@@ -79,7 +87,13 @@ async function save(): Promise<void> {
   // Keep the version a sync or "Zotero'ya gönder" gave the stored copy meanwhile.
   const stored = S.byKey.get(current.key);
   current = { ...current, dateModified: now(), ...(stored?.version !== undefined ? { version: stored.version } : {}) };
-  await putItems([current], [], true);
+  try {
+    await putItems([current], [], true);
+  } catch (e) {
+    savedState("Kaydedilemedi");
+    throw e;
+  }
+  savedState(`✓ Kaydedildi ${new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}`);
   renderIssues();
   renderMeta();
   // Cited in this document: citations and bibliography follow the edit.
