@@ -121,6 +121,19 @@ const HISTORICAL_TR_PLACES = new Set([
   "turkiye", "turkey", "turkei", "turquie", "turchia", "turkiya", "turkiyä",
   "kostantiniye", "qostantiniye", "qustantiniye", "kustantiniye", "qostandina", "qonstantinopla", "konstantinupolis",
   "en smyrne", "en konstantinoupolei", "konstantinoupolis", "kostandiniye",
+  // Armenian, Greek, Arabic and Western spellings of İstanbul and Ankara, and common misspellings.
+  "istanpowl", "istanpol", "stanpowl", "istanpoul", "k polis", "kpolis", "en konstantinupolei", "konstantinupolis", "kostandnowpolis",
+  "kostandnowpolis", "qustantiniyah", "qustantiniya", "al qustantiniyah", "al qustantiniya", "konstantinoplah", "konstantinopla",
+  "stenbol", "stamboul", "constantinopoli", "istambul", "estambul", "jstanbul", "instanbul", "istanbul", "ist", "der i seadet",
+  "anakara", "anqara", "ankyra", "engürü", "engurü", "enguru",
+  // Towns that are not province names.
+  "gebze", "adapazari", "antakya", "iskenderun", "bodrum", "tarsus", "alanya", "lalahan", "eregli", "bandirma", "polatli", "inegol",
+  "akhisar", "nazilli", "fethiye", "odemis", "izmit", "golcuk", "corlu", "luleburgaz", "kusadasi", "marmaris", "didim", "silivri",
+  "buyukada", "heybeliada", "kartal", "pendik", "bakirkoy", "eyup", "uskudar", "kadikoy", "beyoglu", "cagaloglu", "fatih", "sisli",
+  "besiktas", "kizilay", "cankaya", "bornova", "karsiyaka", "mudanya", "gemlik", "safranbolu", "nusaybin", "midyat", "cizre", "silopi",
+  "elbistan", "kozan", "ceyhan", "manavgat", "side", "iznik", "bergama", "tire", "urla", "cesme", "seferihisar",
+  "carigrad", "konstantinupolei", "stanbol", "istanbu", "brusa", "antioche", "konja", "konija", "kunie", "eskiehir", "anakra", "ancara",
+  "amed", "diyar bakr", "diyarbekir", "zmiwrnia", "izmirne", "dinar", "camdibi", "akcaabat", "tavsanli", "payas", "peyas",
 ]);
 const placeKey = (value: string) => foldText(value).replace(/-/g, " ").replace(/\s+/g, " ").trim();
 // Northern Cyprus (KKTC) uses Turkish ISBNs and appears in the İSNAD place list, but it is not Türkiye.
@@ -143,8 +156,9 @@ export function turkeyPlace(place: string): boolean {
 function turkeyPlaceText(place: string): boolean {
   const parts = place.replace(/\[?\b(?:u\.\s?a\.|usw\.|etc\.|vd\.|et al\.)\]?/gi, "")
     .split(/\s*[;|]\s*|\s+(?:und|and|ve|et)\s+/i).map(p => p.replace(/^\[|\]$/g, "").replace(/\s*:.*$/, "").trim()).filter(Boolean);
-  // "Sarıyer/Istanbul", "Kadıköy-Istanbul", "Imak, Istanbul": district or publisher before the city.
-  return parts.some(p => turkishPart(p) || p.split(/\s*[/,]\s*|\s+-\s+|(?<=\p{L})-(?=\p{Lu})/u).some(turkishPart));
+  // "Sarıyer/Istanbul", "Kadıköy-Istanbul", "Imak, Istanbul", "Beyoğlu İstanbul": district or publisher before the city.
+  return parts.some(p => turkishPart(p) || p.split(/\s*[/,]\s*|\s+-\s+|(?<=\p{L})-(?=\p{Lu})/u).some(turkishPart) ||
+    /\s/.test(p) && turkishPart(p.split(/\s+/).at(-1)!) && isTurkishPlace(p.split(/\s+/).at(-1)!));
 }
 
 const ROMAN: Record<string, number> = { I: 1, V: 5, X: 10, L: 50, C: 100 };
@@ -230,9 +244,23 @@ export function samePublisher(a?: string, b?: string): boolean {
   return acronym(wa, wb) || acronym(wb, wa);
 }
 
+const FOREIGN_PLACES = new Set(["kahire", "cairo", "misir", "bulak", "paris", "berlin", "london", "leipzig", "tahran", "tihran", "teheran",
+  "beyrut", "beirut", "sam", "dimask", "damascus", "bagdat", "baghdad", "halep", "aleppo", "kudus", "jerusalem", "selanik", "thessaloniki",
+  "sofya", "sofia", "uskup", "skopje", "atina", "athens", "wien", "vienna", "roma", "rome", "new york", "moskva", "moscow", "baku", "bakü",
+  "tiflis", "tbilisi", "taskent", "bonn", "munchen", "hamburg", "frankfurt", "koln", "stuttgart", "leiden", "oxford", "cambridge",
+  "budapest", "bukres", "bucuresti", "venezia", "venedik", "mekke", "medine", "kum", "tebriz", "isfahan", "lahor", "delhi", "kabil",
+  "kairo", "tunus", "tunis", "wiesbaden", "baki", "en petrupolei", "petersburg", "sankt peterburg", "kudus", "iskenderiye", "alexandria"]);
+/** A place known to lie outside Türkiye (first part of the imprint place). */
+function foreignPlace(place: string): boolean {
+  const first = place.split(/\s*[;,/[(]\s*/)[0] ?? "";
+  return FOREIGN_PLACES.has(placeKey(isnadPlace(first)));
+}
+
 export function publicationScope(fields: Record<string, string>): "TR" | "outside" | "unknown" | "conflict" {
   const turkish = turkeyPlace(fields.place ?? "") || turkeyPlace(fields.otherPlaces ?? "");
   if (fields.country === "TR" && !turkish && kktcPlace(fields.place ?? "")) return "conflict";
+  // A country code of Türkiye with a place that is known to be elsewhere ("Kahire", "Paris", "Leipzig") needs review.
+  if (fields.country === "TR" && !turkish && foreignPlace(fields.place ?? "")) return "conflict";
   if (fields.country === "TR") return "TR";
   if (fields.country && turkish) return "conflict";
   if (fields.country) return "outside";

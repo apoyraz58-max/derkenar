@@ -19,6 +19,15 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 02:20 UTC
+
+- Yapılan: İSNAD denetiminde bir kapsam hatası görüldü. Ülke kodu Türkiye olan kayıtlarda yayın yerine hiç bakılmıyordu, örneğin Burkina Faso’da basılmış bir kitap kabul edilmişti. Ülke kodu Türkiye ve yer tanınmayan 2993 baskı incelendi. Bunların çoğu İstanbul ve Ankara’nın başka dillerdeki yazımları ya da ilçe adlarıydı. Tanıma listesi genişletildi ve bilinen yurt dışı yerler kapsam çelişkisi sayıldı. Katalog yeniden kuruldu (10 dakika 16 saniye).
+- Durum: 176.968 benzersiz baskı (net −62; 301 yurt dışı baskı incelemeye alındı), 164.354 eser. Ülke kodu Türkiye olup yeri tanınmayan baskı sayısı 2993’ten 1191’e indi.
+- İncelemede 21.170 kayıt var: 7526 kapsam kanıtı eksikliği, 6767 kimlik çelişkisi, 3867 olası mükerrer, 2160 kapsam çelişkisi, 1232 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,4, sayfa sayısı %29,4, dil %8,3, yayınevi %8,1, katkı %5,2, yayın yeri %1,0.
+- Testler: 238 geçti. Typecheck ve build temiz.
+
 ### 2026-11-27 00:55 UTC
 
 - Saatlik çalıştırmalar (21:42–00:41) işçi süreci yeniden başlatıldığı için birikti ve tek bir çalıştırmada birleştirildi.

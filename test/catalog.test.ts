@@ -133,7 +133,8 @@ describe("bibliyografik katalog", () => {
     for (const place of ["Konstantinopel", "Constantinople", "Dersaadet", "Der-i Saadet", "Smyrna", "Angora", "İstanbul [u.a.]",
       "Ankara ; Berlin", "Istanbul : Selbstverl.", "Eskişehir", "Istanbul, Turkiye", "Sarıyer/Istanbul", "Kadıköy-Istanbul",
       "Kızılay, Ankara", "Istanbul - Türkiyä", "Imak, Istanbul", "İst[anbul]", "Dersaʿādet (=Der-i Saʿādet) [=İstanbul]",
-      "Dersaadet [d.i. İstanbul]", "(Ankara [usw.]", "[Ḳosṭanṭinīye", "Qusṭanṭinīye", "Qośṭandina [Konstantinopel]", "En Smyrnē", "Derseadet"]) expect(turkeyPlace(place), place).toBe(true);
+      "Dersaadet [d.i. İstanbul]", "(Ankara [usw.]", "[Ḳosṭanṭinīye", "Qusṭanṭinīye", "Qośṭandina [Konstantinopel]", "En Smyrnē", "Derseadet",
+      "Ist'anpowl", "En Kōnstantinupolei", "K. Polis", "Qusṭanṭīnīyah", "Stenbol", "Gebze", "Beyoğlu İstanbul", "Anakara", "Cağaloğlu, İst."]) expect(turkeyPlace(place), place).toBe(true);
     for (const place of ["Berlin", "Wien [u.a.]", "London ; New York", "Kahire", "Paris", "Frankfurt am Main", "Barcelona, Spain", "Garmisch-Partenkirchen", "Van Nuys, Calif.",
       "Nea Smyrnē", "[Chicago:] Field Mus. of Natural History", "Los Angeles", "Lefkoşa", "Gazimağusa", "Üsküp"]) expect(turkeyPlace(place), place).toBe(false);
     expect(publicationScope({ place: "Konstantinopel" })).toBe("TR");
@@ -145,6 +146,9 @@ describe("bibliyografik katalog", () => {
     expect(publicationScope({ place: "Lefkoşa" })).toBe("unknown");
     expect(publicationScope({ place: "Lefkoşa", country: "TR" })).toBe("conflict");
     expect(publicationScope({ place: "Lefkoşa ; İstanbul", country: "TR" })).toBe("TR");
+    expect(publicationScope({ place: "Kahire", country: "TR" })).toBe("conflict");
+    expect(publicationScope({ place: "Ouagadougou", country: "TR" })).toBe("TR");
+    expect(publicationScope({ place: "Paris ; İstanbul", country: "TR" })).toBe("TR");
   });
 
   it("pilot anlık görüntüsüne kaldığı satırdan devam eder ve tekrar aktarmaz", async () => {

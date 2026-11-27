@@ -161,6 +161,8 @@ Birleşik katalog `scripts/catalog-rebuild.sh` ile anlık görüntülerden başt
 
 KKTC şehirleri (Lefkoşa, Gazimağusa, Girne vb.) İSNAD yer listesinde bulunur ve KKTC yayınevleri Türkiye ISBN ajansını kullanır. Ancak bu şehirler katalogun Türkiye kapsamına girmez. Ülke kodu Türkiye, yayın yeri KKTC olan kayıtlar kapsam çelişkisi olarak incelemeye alınır. Türkçe kitaplar için ayrıca `pica.spr=tur` sorgusu çalıştırıldı (önceki sorgulara girmeyen 28.052 kayıt). Bu kayıtlar `--only-tr` süzgeciyle alındı ve yalnız Türkiye kanıtı taşıyanlar saklandı.
 
+Ülke kodu Türkiye olduğunda yayın yeri de denetlenir. Yer bilinen bir yurt dışı şehirse (Kahire, Bulak, Paris, Leipzig, Tahran, Selanik vb.) kayıt kapsam çelişkisi olarak incelemeye alınır. Tanınmayan diğer yerlerde ülke kodu esas kalır. Tanıma listesinde şunlar da vardır: İstanbul ve Ankara’nın Ermenice, Rumca, Arapça ve Batı dillerindeki yazımları (“Ist'anpowl”, “En Kōnstantinupolei”, “K. Polis”, “Qusṭanṭīnīyah”, “Carigrad”, “Stamboul”), yaygın yazım hataları ve il merkezi olmayan şehirler (Gebze, Antakya, Bodrum, Tarsus vb.). 27 Kasım 2026 kurulumunda bu değişiklikle 301 yurt dışı baskı incelemeye alındı, 67 kayıt kabul edildi.
+
 Birleşik katalogda (`work/katalog.sqlite`, 1,48 GB) 164.775 benzersiz baskı ve 153.353 eser bulunur. 13.868 ham kayıt incelemededir: 6533 kimlik çelişkisi, 4265 olası mükerrer, 1217 kapsam çelişkisi, 1069 birden çok ISBN, 1024 kapsam kanıtı eksikliği ve 20 başlık eksikliği. Eksik alan oranları şöyledir: baskı numarası %62,4, ISBN %49,6, sayfa sayısı %28,2, dil %9,0, yayınevi %7,8, katkı %5,0 ve yayın yeri %1,0. 119 geçersiz ISBN kaydedildi.
 
 ### Crossref Türkiye üyeleri
