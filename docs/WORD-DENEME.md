@@ -23,6 +23,8 @@ kopyalayın, Word'ü yeniden başlatın → **Ekle → Eklentilerim**.
 
 Vefeyât ile aynı anda kurulu olabilir; ikisinin sekmeleri ayrıdır.
 
+**Ad, şerit ya da logo değişince:** Word, sekmenin adını, düğmeleri ve simgeleri kurarken aldığı manifest dosyasından okur; yayımlanan sürüm değişse de eski dosyayı kullanmaya devam eder. Yeni `manifest.xml`'i yukarıdaki adresten yeniden indirip aynı yolla yükleyin (paylaşılan klasördeki ya da `wef` klasöründeki eski dosyanın yerine koyun). Hâlâ eski görünüyorsa Word'ün eklenti önbelleğini temizleyin: Windows'ta Word kapalıyken `%LOCALAPPDATA%\Microsoft\Office\16.0\Wef\` klasörünün içini, Mac'te `~/Library/Containers/com.microsoft.Word/Data/Library/Application Support/Microsoft/Office/16.0/Wef/` klasörünün içini silin; Word Online'da eklentiyi kaldırıp yeniden yükleyin ve sayfayı Ctrl+F5 ile yenileyin. Kütüphaneniz ve belgelerinizdeki atıflar bundan etkilenmez.
+
 ## 3. Kullanım
 
 | Grup | Komutlar |
