@@ -274,6 +274,10 @@ describe("bibliyografik katalog", () => {
     expect(cleanClaim({ field: "date", value: "1293 [1876]", path: "264$c" }).value).toBe("1293 [1876]");
     for (const unknown of ["19XX-", "20XX", "18XX-", "197X"]) expect(cleanClaim({ field: "date", value: unknown, path: "264$c" }).value).toBe("");
     for (const known of ["1997-", "ca. 1970", "2003"]) expect(cleanClaim({ field: "date", value: known, path: "264$c" }).value).toBe(known);
+    for (const unknown of ["s.a", "o.J", "o. J.", "n.d.", "[s.a.]"]) expect(cleanClaim({ field: "date", value: unknown, path: "264$c" }).value, unknown).toBe("");
+    expect(cleanClaim({ field: "date", value: "(1983)", path: "264$c" }).value).toBe("1983");
+    expect(cleanClaim({ field: "publisher", value: "Dost Kitabevi [u.a.]", path: "264$b" }).value).toBe("Dost Kitabevi");
+    expect(cleanClaim({ field: "publisher", value: "Usas Yayınları", path: "264$b" }).value).toBe("Usas Yayınları");
     const file = join(temp, "ulke.xml");
     writeFileSync(file, `<collection xmlns="http://www.loc.gov/MARC21/slim"><record><leader>00000nam a2200000 i 4500</leader>
       <controlfield tag="001">u1</controlfield><controlfield tag="008">261124s1959    xx            000 0 tur d</controlfield>

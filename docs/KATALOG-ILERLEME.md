@@ -19,6 +19,15 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 07:20 UTC
+
+- Yapılan: İSNAD denetimi sürdü. Yayınevi ve yerdeki “[u.a.]” katalogcu eki çıkarıldı (643 yayınevi). “s.a”, “o.J”, “n.d” gibi tarihsiz kısaltmaları tarih sayılmıyor (74 değer). İSNAD bunlarda “ts.” yazar. Parantezli tarih “(1983)” yalınlaştırıldı. Katalog yeniden kuruldu (9 dakika 39 saniye).
+- Durum: 176.429 benzersiz baskı, 164.211 eser. OCLC ile bağlanan 1105 kayıt, bağlı bölüm 29.651.
+- İncelemede 21.434 kayıt var: 7526 kapsam kanıtı eksikliği, 6496 kimlik çelişkisi, 4475 olası mükerrer, 2160 kapsam çelişkisi, 1232 birden çok ISBN ve 23 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %62,9, ISBN %48,3, sayfa sayısı %29,2, dil %8,4, yayınevi %8,1, katkı %5,2, tarih %1,5, yayın yeri %1,1.
+- Testler: 240 geçti. Typecheck ve build temiz.
+
 ### 2026-11-27 06:25 UTC
 
 - Yapılan: “19XX-”, “20XX”, “18XX-” gibi belirsiz yıl yer tutucuları artık tarih sayılmıyor. İSNAD bu durumda “ts.” yazar, özgün değer ham kayıtta kalır (yaklaşık 2500 baskı). Başlıklardaki Almanca katalogcu cilt notları çıkarıldı (“[Schülerbd.]”, “[Hauptbd.]”, “[Text]”, 531 başlık).

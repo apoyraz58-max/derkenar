@@ -88,8 +88,13 @@ export function cleanClaim(claim: Claim): Claim {
   let value = claim.value.normalize("NFC").trim().replace(/\s+/gu, " ");
   if (claim.field === "publisher" || claim.field === "place" || claim.field === "otherPlaces") value = withoutPlaceholder(value);
   // Ottoman calendar notes cut short in the source ("1343 [h", "1341 ([māl.]"): close the bracket, keep the note.
-  // "19XX-", "20XX", "18XX-": a placeholder for an unknown year, not a date (İSNAD writes "ts.").
-  if (claim.field === "date" && /^\[?\d{2}(?:XX|\d[X])\]?-?$/i.test(value)) value = "";
+  // "[u.a.]" (and others) after a publisher or place is a cataloguer's note, not part of the name.
+  if (claim.field === "publisher" || claim.field === "place") {
+    value = value.replace(/\s*\[?(?<![\p{L}])(?:u\.\s?a\.|usw\.|etc\.)\]?(?![\p{L}])/giu, "").replace(/[\s,;:]+$/u, "").trim();
+  }
+  if (claim.field === "date") value = value.replace(/^\((.*)\)$/u, "$1").trim();
+  // "19XX-", "20XX", "18XX-", "s.a.", "o.J.", "n.d.": no known year (İSNAD writes "ts.").
+  if (claim.field === "date" && (/^\[?\d{2}(?:XX|\d[X])\]?-?$/i.test(value) || /^\[?(?:s\.\s?a|o\.\s?j|n\.\s?d|t\.\s?y|b\.\s?t)\.?\]?$/i.test(value))) value = "";
   if (claim.field === "date") value = value.replace(/\(\s*\[/g, "[").replace(/\[([^\]]*)$/, (_, note: string) => `[${note.replace(/[\s.(]+$/, "")}]`);
   if (claim.field === "title") return { ...claim, value: isnadTitle(value) };
   if (claim.field === "place") return { ...claim, value: isnadPlace(value) };
