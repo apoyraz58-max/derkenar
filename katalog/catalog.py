@@ -196,8 +196,8 @@ def now() -> str:
 
 
 def connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH, timeout=120, isolation_level=None)
-    conn.execute("PRAGMA busy_timeout=120000")
+    conn = sqlite3.connect(DB_PATH, timeout=600, isolation_level=None)
+    conn.execute("PRAGMA busy_timeout=600000")
     conn.executescript(SCHEMA)
     return conn
 
@@ -1729,7 +1729,7 @@ def crossref_store_page(conn, items) -> tuple[int, int]:
     return ms, found
 
 
-def rebuild_all(conn, name: str = "isnad-denetim-1", batch: int = 500, log=print):
+def rebuild_all(conn, name: str = "isnad-denetim-1", batch: int = 200, log=print):
     st = conn.execute("SELECT last_id, done FROM rebuild_state WHERE name=?", (name,)).fetchone()
     if st and st[1]:
         log(f"yeniden üretim '{name}' zaten tamam")
@@ -1752,6 +1752,7 @@ def rebuild_all(conn, name: str = "isnad-denetim-1", batch: int = 500, log=print
         last = ids[-1]
         conn.execute("UPDATE rebuild_state SET last_id=?, updated_at=? WHERE name=?", (last, now(), name))
         conn.execute("COMMIT")
+        time.sleep(0.15)  # yazma kilidini bırak: Crossref ve DOI doğrulama süreçleri de yazabilsin
         if (last // batch) % 100 == 0:
             rate = (last - n0) / max(time.monotonic() - t0, 1)
             log(f"{now()} yeniden üretim: {last:,}/{top:,} ({rate:,.0f}/sn)")
