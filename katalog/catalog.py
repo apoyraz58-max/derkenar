@@ -128,6 +128,9 @@ CREATE TABLE IF NOT EXISTS match_review (
     UNIQUE (source, source_id, candidate_id)
 );
 
+CREATE INDEX IF NOT EXISTS mr_article ON match_review(article_id);
+CREATE INDEX IF NOT EXISTS mr_candidate ON match_review(candidate_id);
+CREATE INDEX IF NOT EXISTS mk_article ON match_key(article_id);
 CREATE TABLE IF NOT EXISTS doi_check (
     doi TEXT PRIMARY KEY,
     status TEXT,                    -- var / yok / hata
@@ -163,6 +166,7 @@ CREATE TABLE IF NOT EXISTS historical_link (
     article_id INTEGER, note TEXT, added_at TEXT, updated_at TEXT
 );
 CREATE INDEX IF NOT EXISTS hl_art ON historical_link(dergipark_article);
+CREATE INDEX IF NOT EXISTS hl_article ON historical_link(article_id);
 
 CREATE TABLE IF NOT EXISTS run (
     run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT,
@@ -2202,6 +2206,7 @@ def main(argv=None):
     r.add_argument("--verify", type=int, default=500, help="her grup sonunda denetlenecek DOI sayısı")
     r.add_argument("--no-export", action="store_true", help="CSV'yi bu süreç yazmasın (verify-loop yazar)")
     sub.add_parser("dp-archive", help="DergiPark dergi arşivleri: sayı tarihleri ve ISSN")
+    sub.add_parser("resolve-reviews", help="açık belirsiz eşleşmeleri güncel kurallarla yeniden değerlendir")
     sub.add_parser("builtin-export", help="eklentinin yerleşik veritabanı için kesin makaleler (data/builtin/makale.jsonl.gz)")
     cb = sub.add_parser("crossref-bulk", help="Crossref önek bazında toplu DOI doğrulama ve DOI bulma")
     cb.add_argument("--max-total", type=int, default=150_000)
@@ -2234,6 +2239,9 @@ def main(argv=None):
         return
     if a.cmd == "rebuild-all":
         rebuild_all(conn, a.name, log=lambda m: print(m, flush=True))
+        return
+    if a.cmd == "resolve-reviews":
+        resolve_reviews(conn, log=lambda m: print(m, flush=True))
         return
     if a.cmd == "builtin-export":
         builtin_export(conn)
