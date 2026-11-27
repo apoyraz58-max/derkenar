@@ -62,6 +62,29 @@ type Freetext = typeof import("../../core/freetext.js");
 let freetext: Freetext | null = null;
 let freetextLoading = false;
 
+/**
+ * A catalog row with a "Düzenle" button; right-click does the same. The record goes into the library
+ * (not into the basket) and opens in the editor, so the user can correct it before citing.
+ */
+function editableRow(b: HTMLElement, make: () => Item, label: string): HTMLElement {
+  const edit = () =>
+    void run("Ekleniyor", async () => {
+      const io = await import("./io.js");
+      const [item] = await io.addParsed([make()]);
+      if (!item) return;
+      search();
+      setMessage(`${label} kütüphaneye eklendi; künyeyi düzenleyip atıfa koyabilirsiniz.`, "success");
+      openEditor(item.key);
+    });
+  b.oncontextmenu = (e) => {
+    e.preventDefault();
+    edit();
+  };
+  const button = h("button", { type: "button", class: "link outside-edit", title: "Kütüphaneye ekle ve künyeyi düzenle (sağ tık da olur)" }, "Düzenle");
+  button.onclick = edit;
+  return h("div", { class: "outside-row" }, b, button);
+}
+
 /** A DOI, an ISBN or a whole reference typed or pasted into the search box: it can be added and cited in one go. */
 /** Books of the loaded catalog (Şamile) the library does not have yet: one click adds the İSNAD record and cites it. */
 function catalogRows(): HTMLElement[] {
@@ -83,7 +106,7 @@ function catalogRows(): HTMLElement[] {
           search();
           setMessage(`${hit.catalog} kataloğundan eklendi: ${creatorLine(item) || "—"}, ${titleOf(item)}.${e.review?.length ? ` Kontrol edilecek: ${e.review.join("; ")}.` : ""} Basım bilgisini (yer, yayınevi, yıl) künye kartından tamamlayın.`, e.review?.length ? "warning" : "success");
         });
-      return b;
+      return editableRow(b, () => hit.item(), `${hit.catalog} kaydı`);
     });
 }
 
@@ -105,7 +128,7 @@ function builtinRows(): HTMLElement[] {
         search();
         setMessage(`Yerleşik veritabanından eklendi: ${creatorLine(item) || "—"}, ${titleOf(item)}.${warn ? ` Kontrol edilecek: ${warn}.` : ""} Sayfayı yazıp Ekle'ye basın.`, warn ? "warning" : "success");
       });
-    return b;
+    return editableRow(b, make, "Yerleşik veritabanı kaydı");
   };
   const out: HTMLElement[] = [];
   for (const e of hits.dia) {
