@@ -49,11 +49,12 @@ kütüphanede olmayan kayıtlar listede çıkar, tek tıkla İSNAD kaydı olarak
 | Kaynak | Dosya | İçerik |
 | --- | --- | --- |
 | TDV İslâm Ansiklopedisi | `data/builtin/dia.rdf.gz` (Zotero RDF, sabit) | 17.601 madde: basılı künye (cilt, yıl, yer, sayfa, baskı), yazarlar, basılı nüsha PDF'i ve web sayfası bağlantı eki olarak, "bk." göndermeleri arama eşanlamlısı olarak. Basılı nüshada başlığı farklı olan maddeler basılı başlıkla; tarihi cildin basım yılından farklı ya da basılı künyesi eksik maddeler "Kontrol" notuyla. |
+| Künye kitap kataloğu | `data/builtin/kitap-N.jsonl.gz` (`npm run catalog -- builtin-export`, 100.000 kayıtlık parçalar) | Türkiye’de yayımlandığı kanıtlanmış 174.880 kitap baskısı (K10plus, DNB, Crossref, DOAB, Özgür Yayınları). Kaynaklar arasında künye ya da katkı çelişkisi açık kalanlar alınmaz. Yazar, editör ve mütercim rolleri, yayınevi, yer, yıl, baskı, cilt, sayfa, ISBN ve DOI. Doğrulama yolu kayda yazılır: en az iki bağımsız kaynakta, ortak WorldCat numarasıyla, kütüphane kataloğu kaydı (K10plus ya da DNB) ya da yalnız yayınevi bildirimi (“tek kaynak” notuyla). Kayıt numarası kaynak kimliğinden türetilir ve katalog yeniden kurulsa da değişmez. |
 | Künye makale kataloğu | `data/builtin/makale-N.jsonl.gz` (`katalog/catalog.py builtin-export`, 250.000 kayıtlık parçalar) | DergiPark, TR Dizin ve İSAM'dan birleştirilen makaleler: künyesi tam, olası tekrar/yıl farkı/çelişki işareti yok. Doğrulama yolu kayda yazılır: DOI'si kayıt ajansında, en az iki kaynakta tutuyor, derginin sayı arşiviyle ya da yalnız tek kaynakta ("tek kaynak" notuyla). |
 
 `npm run build` bu kaynaklardan `dist/addin/data/` altına parçaları üretir (`scripts/builtin.ts`): DİA tek
-dosya (`dia.json`), makaleler sözcüklerin ilk üç harfine göre dizin parçaları (`makale/t/`) ve 250'şer kayıtlık
-parçalar (`makale/r/`). Pencere yalnız aranan sözcüğün parçalarını indirir (`src/addin/pane/builtin.ts`).
+dosya (`dia.json`), makaleler ve kitaplar sözcüklerin ilk üç harfine göre dizin parçaları (`makale/t/`, `kitap/t/`) ve 250'şer kayıtlık
+parçalar (`makale/r/`, `kitap/r/`). Pencere yalnız aranan sözcüğün parçalarını indirir (`src/addin/pane/builtin.ts`).
 
 ## Kütüphane özellikleri
 

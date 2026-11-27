@@ -267,3 +267,70 @@ export function builtinSource(item: Item): string | null {
   const m = /^Kaynak: (.+?), (?:madde|kayıt) no\. (\S+)$/m.exec(item.fields.extra ?? "");
   return m ? `${m[1]}#${m[2]}` : null;
 }
+
+// ---------------------------------------------------------------- kitap kataloğu
+
+export const BOOK_CATALOG = "Künye kitap kataloğu";
+
+/** Kitap kaydı (dizi): [katalog no, katkılar "Soyadı|Adı|rol;…" (rol: a yazar, e editör, t mütercim),
+ *  başlık, yayınevi, yer, yıl, baskı, cilt, sayfa sayısı, ISBN, DOI, dil, doğrulama yolu, kaynaklar ("k10plus,dnb")] */
+export type BookRec = [string, string, string, string, string, string, string, string, string, string, string, string, string, string];
+
+export const BOOK_VERIFIED_HOW: Record<string, string> = {
+  iki: "en az iki bağımsız kaynakta tutuyor",
+  oclc: "çift kayıt ortak WorldCat numarasıyla doğrulandı",
+  kutuphane: "kütüphane kataloğu kaydı (K10plus ya da DNB)",
+  tek: "tek kaynakta, yalnız yayınevi bildirimi (ikinci bir kaynakla doğrulanmadı)",
+};
+
+const BOOK_ROLE: Record<string, Creator["creatorType"]> = { a: "author", e: "editor", t: "translator" };
+
+export function bookCreators(r: BookRec): Creator[] {
+  return r[1] ? r[1].split(";").map((p) => {
+    const [l = "", f = "", role = "a"] = p.split("|");
+    const creatorType = BOOK_ROLE[role] ?? "author";
+    return f ? { creatorType, lastName: l, firstName: f } : { creatorType, lastName: l };
+  }) : [];
+}
+
+export function bookItem(r: BookRec): Item {
+  const [id, , title, publisher, place, date, edition, volume, pages, isbn, doi, lang, how, sources] = r;
+  const item = emptyItem("book", "yerlesik:kitap");
+  const f = item.fields;
+  f.title = title;
+  if (publisher) f.publisher = publisher;
+  if (place) f.place = place;
+  if (date) f.date = date;
+  if (edition) f.edition = edition;
+  if (volume) f.volume = volume;
+  if (pages) f.numPages = pages;
+  if (isbn) f.ISBN = isbn;
+  if (doi) f.DOI = doi;
+  if (lang) f.language = lang;
+  f.libraryCatalog = BOOK_CATALOG;
+  f.extra = [
+    `Kaynak: ${BOOK_CATALOG}, kayıt no. ${id}`,
+    ...(BOOK_VERIFIED_HOW[how] ? [`Doğrulama: ${BOOK_VERIFIED_HOW[how]}`] : []),
+    ...(sources ? [`Künye kaynakları: ${sources}`] : []),
+  ].join("\n");
+  item.creators = bookCreators(r);
+  return item;
+}
+
+/** Bir kitabın dizin sözcükleri: başlık ve katkıda bulunanların adı ve soyadı. */
+export function bookWords(r: BookRec): string[] {
+  return indexWords(`${r[2]} ${bookCreators(r).map((c) => `${c.firstName ?? ""} ${c.lastName ?? ""}`).join(" ")}`);
+}
+
+/** Aday kitapların sıralaması: makalelerdeki gibi yazar önde, sonra başlık; eşitse dizin sırası. */
+export function rankBooks(q: string, recs: readonly BookRec[]): BookRec[] {
+  const words = queryWords(q).filter((w) => w.length >= 3);
+  const score = (r: BookRec) => {
+    const cr = bookCreators(r);
+    const first = new Set(foldKey(cr[0] ? `${cr[0].firstName ?? ""} ${cr[0].lastName ?? ""}` : "").split(" "));
+    const all = new Set(foldKey(cr.map((c) => `${c.firstName ?? ""} ${c.lastName ?? ""}`).join(" ")).split(" "));
+    const title = new Set(foldKey(r[2]).split(" "));
+    return words.reduce((s, w) => s + (first.has(w) ? 4 : all.has(w) ? 2 : title.has(w) ? 1 : 0), 0);
+  };
+  return recs.map((r, i) => ({ r, i, s: score(r) })).sort((a, b) => b.s - a.s || a.i - b.i).map((x) => x.r);
+}

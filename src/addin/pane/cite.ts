@@ -4,7 +4,7 @@
  */
 import { catalogHits } from "./catalog.js";
 import { builtinHits, onBuiltinReady } from "./builtin.js";
-import { ARTICLE_CATALOG, DIA_CATALOG, articleAuthors, articleItem, builtinSource, diaItem } from "../../core/builtin.js";
+import { ARTICLE_CATALOG, BOOK_CATALOG, DIA_CATALOG, articleAuthors, articleItem, bookCreators, bookItem, builtinSource, diaItem } from "../../core/builtin.js";
 import { catalogSource } from "../../core/shamela.js";
 import { newCitationId, putCitation } from "../../core/docstate.js";
 import { LOCATOR_LABELS } from "../../core/engine.js";
@@ -87,11 +87,11 @@ function catalogRows(): HTMLElement[] {
     });
 }
 
-/** Yerleşik veritabanının (DİA, Künye makale kataloğu) kütüphanede olmayan kayıtları: tek tıkla eklenir ve atıfa konur. */
+/** Yerleşik veritabanının (DİA, Künye makale ve kitap katalogları) kütüphanede olmayan kayıtları: tek tıkla eklenir ve atıfa konur. */
 function builtinRows(): HTMLElement[] {
   const q = $<HTMLInputElement>("q").value;
   const hits = builtinHits(q);
-  if (!hits.dia.length && !hits.articles.length) return [];
+  if (!hits.dia.length && !hits.articles.length && !hits.books.length) return [];
   const have = new Set(S.items.filter((i) => !i.deleted).map((i) => builtinSource(i)).filter(Boolean));
   const row = (title: string, more: string, make: () => Item, warn?: string) => {
     const b = h("button", { type: "button", class: "outside" }, h("div", { class: "r-title" }, `＋ ${title}`), h("div", { class: "r-more" }, more + (warn ? " · kontrol edilecek" : "")));
@@ -122,6 +122,16 @@ function builtinRows(): HTMLElement[] {
     const tek = r[14] === "tek";
     out.push(row(r[2], `${who} · ${r[3]}${vi ? ` ${vi}` : ""}${r[4] ? ` (${r[4]})` : ""}${r[11] ? " · DOI" : ""}${tek ? " · tek kaynak" : ""}`, () => articleItem(r), tek ? "tek kaynakta, künyeyi gözden geçirin" : undefined));
   }
+  for (const r of hits.books) {
+    if (have.has(`${BOOK_CATALOG}#${r[0]}`)) continue;
+    const cr = bookCreators(r);
+    const who = cr.length ? `${cr[0]!.lastName}${cr.length > 2 ? " vd." : cr.length === 2 ? ` – ${cr[1]!.lastName}` : ""}` : "—";
+    const imprint = [r[4], r[3]].filter(Boolean).join(": ");
+    const tek = r[12] === "tek";
+    out.push(row(r[2], `${who} · ${imprint || "kitap"}${r[5] ? ` (${r[5]})` : ""}${r[9] ? " · ISBN" : ""}${tek ? " · tek kaynak" : ""}`, () => bookItem(r), tek ? "tek kaynakta, künyeyi gözden geçirin" : undefined));
+  }
+  if (hits.bookTotal > hits.books.length)
+    out.push(h("div", { class: "r-more muted small" }, `Yerleşik veritabanında ${hits.bookTotal.toLocaleString("tr-TR")} kitap eşleşti; ilk ${hits.books.length} gösteriliyor. Daraltmak için başlıktan bir sözcük ekleyin.`));
   if (hits.total > hits.articles.length)
     out.push(h("div", { class: "r-more muted small" }, `Yerleşik veritabanında ${hits.total.toLocaleString("tr-TR")} makale eşleşti; ilk ${hits.articles.length} gösteriliyor. Daraltmak için başlıktan bir sözcük ekleyin.`));
   return out;

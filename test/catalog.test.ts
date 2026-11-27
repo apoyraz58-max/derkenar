@@ -129,6 +129,34 @@ describe("bibliyografik katalog", () => {
     expect(db.review(0, 10)).not.toContainEqual(expect.objectContaining({ code: "identifier-conflict" }));
   });
 
+  it("yerleşik veritabanına yalnız çelişkisi kalmamış baskıları kalıcı numarayla aktarır", () => {
+    const make = (id: string, extra: Record<string, string>): RecordInput => ({ id, raw: id, url: `https://example.org/${id}`,
+      creators: [{ creator: { creatorType: "author", lastName: "Kaya", firstName: "Ali" }, path: "100" }, { creator: { creatorType: "translator", lastName: "Ak", firstName: "Can" }, path: "700" }],
+      fields: Object.entries({ place: "Ankara", publisher: "Yayınevi", date: "2001", ...extra }).map(([field, value]) => ({ field, value, path: field })) });
+    const build = () => {
+      const db = catalog();
+      db.job("k10plus", "x", "x");
+      db.batch("k10plus", "x", 0, [make("a", { title: "Birinci Kitap", ISBN: "9789751604439" }), make("b", { title: "İkinci Kitap", ISBN: "9786054791712", language: "tr" })], true);
+      db.job("dnb", "y", "y");
+      db.batch("dnb", "y", 0, [make("c", { title: "Birinci Kitap", ISBN: "9789751604439" }), make("d", { title: "İkinci Kitap", ISBN: "9786054791712", language: "en" })], true);
+      return db.builtinBooks(0, 100);
+    };
+    const first = build();
+    expect(first.recs).toHaveLength(1);
+    expect(first.skipped).toBe(1);
+    const [key, creators, title, publisher, place, date, , , , isbn, , , how, sources] = first.recs[0]!;
+    expect({ creators, title, publisher, place, date, isbn, how, sources }).toEqual({ creators: "Kaya|Ali|a;Ak|Can|t", title: "Birinci Kitap",
+      publisher: "Yayınevi", place: "Ankara", date: "2001", isbn: "9789751604439", how: "iki", sources: "dnb,k10plus" });
+    expect(key).toMatch(/^KTP[0-9A-Z]{10}$/);
+    expect(build().recs[0]![0]).toBe(key);
+    const single = catalog();
+    single.job("k10plus", "z", "z");
+    single.batch("k10plus", "z", 0, [make("e", { title: "Kütüphane Kitabı" })], true);
+    single.job("crossref", "w", "w");
+    single.batch("crossref", "w", 0, [make("f", { title: "Yayınevi Kitabı" })], true);
+    expect(single.builtinBooks(0, 10).recs.map(r => [r[2], r[12]])).toEqual([["Kütüphane Kitabı", "kutuphane"], ["Yayınevi Kitabı", "tek"]]);
+  });
+
   it("tarihî ve çok yerli yayın yeri yazımlarında Türkiye kapsamını tanır", () => {
     for (const place of ["Konstantinopel", "Constantinople", "Dersaadet", "Der-i Saadet", "Smyrna", "Angora", "İstanbul [u.a.]",
       "Ankara ; Berlin", "Istanbul : Selbstverl.", "Eskişehir", "Istanbul, Turkiye", "Sarıyer/Istanbul", "Kadıköy-Istanbul",

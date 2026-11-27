@@ -1,3 +1,4 @@
+import { gzipSync } from "node:zlib";
 import { readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -18,6 +19,7 @@ const HELP = `Derkenar bibliyografik katalog • Node.js 22.13+
   npm run catalog -- ingest    --db DB --source ttk|asbu|k10plus|dnb|doab|crossref|ozgur|ozgur-kbart|ozgur-kunye|exchange --file DOSYA [--vefeyat CSV] [--limit N] [--only-tr]
   npm run catalog -- collect   --source doab|crossref|dnb|k10plus|ozgur|ozgur-kbart --file DOSYA [--isbn ISBN | --query CQL [--limit N]]
   npm run catalog -- parts     --db DB --file CROSSREF-BOLUM.jsonl   (kitap bölümleri; collect --source crossref --parts ile)
+  npm run catalog -- builtin-export --db DB [--file data/builtin]   (yerleşik veritabanı: kitap-N.jsonl.gz)
   npm run catalog -- recheck  --db DB --source KAYNAK [--limit N] [--after N]
   npm run catalog -- approve-title --db DB --raw-id N --id BASKI --reason GEREKÇE
   npm run catalog -- stats     --db DB
@@ -106,6 +108,28 @@ async function main() {
         flush();
         const relinked = db.relinkParts().linked;
         output({ parts: total, linked, relinked });
+        break;
+      }
+      case "builtin-export": {
+        // data/builtin/kitap-N.jsonl.gz: denetimi tamamlanmış baskılar, 100.000'lik parçalar (makale-N.jsonl.gz ile aynı düzen).
+        const dir = o.file ?? "data/builtin";
+        const per = 100_000;
+        let after = 0, part = 0, total = 0, skipped = 0, lines: string[] = [];
+        const flush = async () => {
+          if (!lines.length) return;
+          part++;
+          await writeFile(`${dir}/kitap-${part}.jsonl.gz`, gzipSync(lines.join("\n") + "\n", { level: 9 }));
+          lines = [];
+        };
+        for (;;) {
+          const batch = db.builtinBooks(after, 5000);
+          for (const r of batch.recs) { lines.push(JSON.stringify(r)); total++; if (lines.length === per) await flush(); }
+          skipped += batch.skipped;
+          if (batch.after === null) break;
+          after = batch.after;
+        }
+        await flush();
+        output({ books: total, skipped, parts: part, dir });
         break;
       }
       case "recheck":

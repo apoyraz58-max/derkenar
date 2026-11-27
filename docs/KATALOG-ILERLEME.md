@@ -19,6 +19,16 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 22:30 UTC
+
+- Kullanıcı isteğiyle: denetimi tamamlanan kitaplar, DİA ve makalelerle aynı düzende eklentinin yerleşik veritabanına eklendi. Bunun için `main` dalı çalışma dalına birleştirildi (çakışma yok).
+- `npm run catalog -- builtin-export` komutu `data/builtin/kitap-1.jsonl.gz` ve `kitap-2.jsonl.gz` dosyalarını üretiyor (toplam 10 MB). İçerikte 174.880 baskı var. Kaynaklar arasında künye ya da katkı çelişkisi açık kalan 1548 baskı alınmadı.
+- Doğrulama yolları: 168.398 kütüphane kataloğu kaydı (K10plus ya da DNB), 1227 iki bağımsız kaynakta tutan, 656 ortak WorldCat numaralı, 4599 yalnız yayınevi bildirimli (“tek kaynak”). Kayıt numarası (`KTP…`) kaynak kimliğinden türetiliyor ve yeniden kurulumda değişmiyor.
+- Derleme kitap parçalarını üretiyor (6323 dizin, 700 kayıt parçası). Eklentinin Atıf sekmesi kitapları makalelerin yanında arıyor ve tek tıkla İSNAD kaydı olarak ekliyor.
+- Katalog güncel kodla yeniden kuruldu: 176.428 benzersiz baskı, incelemede 21.435 kayıt, 124 geçersiz ISBN.
+- Testler: 263 geçti. Typecheck ve build temiz.
+- Not: katalog büyüdükçe veya düzeltildikçe `builtin-export` yeniden çalıştırılıp `data/builtin/kitap-*.jsonl.gz` commit edilmeli.
+
 ### 2026-11-27 08:50 UTC
 
 - Yapılan: 30 rastgele baskıda İSNAD denetimi yapıldı. Kural gerektiren yeni bir sorun bulunmadı, yalnız kaynaktan gelen tekil yazım hataları görüldü. Kod değişmedi, katalog yeniden kurulmadı.

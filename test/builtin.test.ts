@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   type ArticleRec,
+  type BookRec,
+  bookItem,
+  bookWords,
+  rankBooks,
   articleItem,
   articleWords,
   rankArticles,
@@ -17,7 +21,7 @@ import {
 import { emptyState, planRefresh, putCitation } from "../src/core/docstate.js";
 import { Renderer } from "../src/core/engine.js";
 import { htmlToText } from "../src/core/html.js";
-import { articleShards, diaFromRdf, printedTitle } from "../scripts/builtin.js";
+import { articleShards, bookShards, diaFromRdf, printedTitle } from "../scripts/builtin.js";
 
 const styles = new URL("../data/styles/", import.meta.url);
 const locales = (l: string) => {
@@ -158,5 +162,32 @@ describe("yerleşik veritabanı: makale kataloğu", () => {
     expect(decodePostings(encodePostings([3, 10, 47, 1000]))).toEqual([3, 10, 47, 1000]);
     expect(foldKey("İhyâü Ulûmi’d-Dîn")).toBe(foldKey("ihyau ulumid din"));
     expect(foldKey("el-Gazzâlî")).toBe("gazzali");
+  });
+});
+
+describe("yerleşik veritabanı: kitap kataloğu", () => {
+  const rec: BookRec = ["KTP000000001", "Ögel|Bahaeddin|a;Kaya|Ali|t", "Büyük Hun İmparatorluğu Tarihi", "Türk Tarih Kurumu", "Ankara", "2019", "3", "", "512",
+    "9789751604439", "", "tr", "iki", "dnb,k10plus"];
+  it("a book is an İSNAD record with its imprint, roles and where it came from", () => {
+    const item = bookItem(rec);
+    expect(item.itemType).toBe("book");
+    expect(item.fields).toMatchObject({ title: "Büyük Hun İmparatorluğu Tarihi", publisher: "Türk Tarih Kurumu", place: "Ankara", date: "2019", edition: "3", numPages: "512", ISBN: "9789751604439" });
+    expect(item.creators).toEqual([{ creatorType: "author", lastName: "Ögel", firstName: "Bahaeddin" }, { creatorType: "translator", lastName: "Kaya", firstName: "Ali" }]);
+    expect(builtinSource(item)).toBe("Künye kitap kataloğu#KTP000000001");
+    expect(item.fields.extra).toContain("en az iki bağımsız kaynakta");
+    const { note, bib: entry } = bib(item);
+    expect(note).toContain("Bahaeddin Ögel, Büyük Hun İmparatorluğu Tarihi");
+    expect(note).toContain("(Ankara: Türk Tarih Kurumu, 2019)");
+    expect(entry).toContain("Ögel, Bahaeddin.");
+  });
+  it("splits into shards like the article catalog; author and title words find the book", () => {
+    const other: BookRec = ["KTP000000002", "Kaya|Ayşe|a", "Hun Sanatı", "Yayınevi", "İstanbul", "2001", "", "", "", "", "", "tr", "tek", "k10plus"];
+    const { meta, shards, chunks } = bookShards([JSON.stringify(rec), JSON.stringify(other)], 1);
+    expect(meta).toMatchObject({ name: "Künye kitap kataloğu", count: 2, per: 1 });
+    expect(chunks).toHaveLength(2);
+    expect(postingsFor("hun", shards.get("hun")!)).toEqual([0, 1]);
+    expect(postingsFor("bahaeddin", shards.get("bah")!)).toEqual([0]);
+    expect(bookWords(rec)).toEqual(expect.arrayContaining(["ogel", "bahaeddin", "imparatorlugu"]));
+    expect(rankBooks("kaya hun", [rec, other])[0]![0]).toBe("KTP000000002");
   });
 });

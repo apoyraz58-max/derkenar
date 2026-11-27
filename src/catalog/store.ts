@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import type { DatabaseSync as SqliteDatabase, StatementSync, SupportedValueType } from "node:sqlite";
 import type { Authority } from "./authority.js";
+import type { BookRec } from "../core/builtin.js";
 import { authorKey, cleanClaim, digest, equivalent, otherVolume, samePublisher, parseEditionNumber, publicationScope, SOURCES, validIsbn, type PartInput, type RecordInput, type SourceId } from "./model.js";
 import { checkItem } from "../core/isnad.js";
 import { emptyItem, type Creator, type Item } from "../core/zotero.js";
@@ -464,6 +465,37 @@ export class Catalog {
     const creators = this.rows<{value: string}>(`SELECT c.value FROM contributions k JOIN claims c ON c.id=k.claim_id
       WHERE k.edition_id=? ORDER BY k.role!='author', k.role, k.position`, id).map(r => JSON.parse(r.value) as Creator);
     return { ...emptyItem("book", "catalog"), key: `DK${id}`, fields, creators, dateAdded: edition.created_at, dateModified: edition.created_at };
+  }
+
+  /**
+   * Denetimi tamamlanmış baskılar yerleşik veritabanı kaydı olarak (`BookRec`). Kaynaklar arasında künye
+   * ya da katkı çelişkisi açık kalan baskılar alınmaz. Kayıt numarası, baskının en küçük kaynak kimliğinden
+   * türetilir; aynı anlık görüntülerle yeniden kurulan katalog aynı numaraları verir.
+   */
+  builtinBooks(after: number, limit: number): { recs: BookRec[]; after: number | null; skipped: number } {
+    const ids = this.ids(after, limit);
+    const recs: BookRec[] = [];
+    let skipped = 0;
+    const role: Record<string, string> = { author: "a", editor: "e", translator: "t" };
+    for (const { id } of ids) {
+      if (this.row("SELECT 1 FROM validation WHERE edition_id=? AND code IN ('field-conflict','contributor-conflict') LIMIT 1", id)) { skipped++; continue; }
+      const item = this.item(id);
+      if (!item?.fields.title) { skipped++; continue; }
+      const raws = this.rows<{ source: string; external_id: string }>("SELECT source,external_id FROM raw_records WHERE edition_id=? ORDER BY source,external_id", id);
+      const sources = [...new Set(raws.map(r => r.source))];
+      const independent = new Set(sources.map(s => s.startsWith("ozgur") ? "ozgur" : s));
+      const oclc = this.row("SELECT 1 FROM validation WHERE edition_id=? AND code='oclc-match' LIMIT 1", id);
+      const library = sources.some(s => s === "k10plus" || s === "dnb");
+      const how = independent.size >= 2 ? "iki" : oclc ? "oclc" : library ? "kutuphane" : "tek";
+      const anchor = raws.map(r => `${r.source}:${r.external_id}`).sort()[0] ?? `edition:${id}`;
+      const key = `KTP${BigInt(`0x${digest(anchor).slice(0, 12)}`).toString(36).toUpperCase().padStart(10, "0")}`;
+      const ident = (scheme: string) => this.row<{ value: string }>("SELECT value FROM identifiers WHERE edition_id=? AND scheme=? ORDER BY value LIMIT 1", id, scheme)?.value ?? "";
+      const creators = item.creators.filter(c => role[c.creatorType]).map(c => [c.lastName ?? c.name ?? "", c.firstName ?? "", role[c.creatorType]].join("|")).join(";");
+      const f = item.fields;
+      recs.push([key, creators, f.title ?? "", f.publisher ?? "", f.place ?? "", f.date ?? "", f.edition ?? "", f.volume ?? "", f.numPages ?? "",
+        ident("ISBN"), ident("DOI"), f.language ?? "", how, sources.join(",")]);
+    }
+    return { recs, after: ids.at(-1)?.id ?? null, skipped };
   }
 
   ids(after: number, limit: number) {

@@ -2,15 +2,20 @@
  * Yerleşik veritabanı parçalarını üretir (derleme sırasında `scripts/build.mjs` çağırır).
  *
  *   data/builtin/dia.rdf.gz          -> <out>/dia.json
- *   data/builtin/makale.jsonl.gz     -> <out>/makale/meta.json, makale/t/<abc>.json, makale/r/<n>.json
+ *   data/builtin/makale-N.jsonl.gz   -> <out>/makale/meta.json, makale/t/<abc>.json, makale/r/<n>.json
+ *   data/builtin/kitap-N.jsonl.gz    -> <out>/kitap/meta.json, kitap/t/<abc>.json, kitap/r/<n>.json
  *
  * dia.rdf: TDV İslâm Ansiklopedisi maddelerinin Zotero RDF'i (sabit veritabanı, kullanıcıdan istenmez).
  * makale.jsonl.gz: `katalog/catalog.py builtin-export` çıktısı, satır başına bir ArticleRec.
+ * kitap-N.jsonl.gz: `npm run catalog -- builtin-export` çıktısı, satır başına bir BookRec.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import {
   ARTICLE_CATALOG,
+  BOOK_CATALOG,
+  type BookRec,
+  bookWords,
   type ArticleMeta,
   type ArticleRec,
   DIA_CATALOG,
@@ -142,10 +147,19 @@ export function diaFromRdf(xml: string): DiaData {
 
 /** Makale kataloğu parçaları: kayıtlar biner biner, dizin sözcüklerin ilk üç harfine göre. */
 export function articleShards(lines: string[], per = 250, maxDf = Infinity) {
-  const recs = lines.filter((l) => l.trim()).map((l) => JSON.parse(l) as ArticleRec);
+  return catalogShards(lines, articleWords, (n) => ({ name: ARTICLE_CATALOG, source: `${n} kesin makale` }), per, maxDf);
+}
+
+/** Kitap kataloğu parçaları: makalelerle aynı düzen (`kitap/meta.json`, `kitap/t/`, `kitap/r/`). */
+export function bookShards(lines: string[], per = 250) {
+  return catalogShards<BookRec>(lines, bookWords, (n) => ({ name: BOOK_CATALOG, source: `${n} denetlenmiş kitap baskısı` }), per);
+}
+
+function catalogShards<R>(lines: string[], words: (r: R) => string[], label: (n: number) => { name: string; source: string }, per = 250, maxDf = Infinity) {
+  const recs = lines.filter((l) => l.trim()).map((l) => JSON.parse(l) as R);
   const post = new Map<string, number[]>();
   recs.forEach((r, i) => {
-    for (const w of articleWords(r)) {
+    for (const w of words(r)) {
       const l = post.get(w);
       if (l) l.push(i);
       else post.set(w, [i]);
@@ -159,10 +173,28 @@ export function articleShards(lines: string[], per = 250, maxDf = Infinity) {
     sh[w] = encodePostings(ids);
     shards.set(s, sh);
   }
-  const chunks: ArticleRec[][] = [];
+  const chunks: R[][] = [];
   for (let i = 0; i < recs.length; i += per) chunks.push(recs.slice(i, i + per));
-  const meta: ArticleMeta = { name: ARTICLE_CATALOG, source: `${recs.length} kesin makale`, count: recs.length, per, shards: [...shards.keys()].sort() };
+  const meta: ArticleMeta = { ...label(recs.length), count: recs.length, per, shards: [...shards.keys()].sort() };
   return { meta, shards, chunks };
+}
+
+function writeShards(out: URL, name: string, built: { meta: ArticleMeta; shards: Map<string, Record<string, string>>; chunks: unknown[][] }) {
+  const dir = new URL(`${name}/`, out);
+  mkdirSync(new URL("t/", dir), { recursive: true });
+  mkdirSync(new URL("r/", dir), { recursive: true });
+  writeFileSync(new URL("meta.json", dir), JSON.stringify(built.meta));
+  for (const [s, sh] of built.shards) writeFileSync(new URL(`t/${s}.json`, dir), JSON.stringify(sh));
+  built.chunks.forEach((c, i) => writeFileSync(new URL(`r/${i}.json`, dir), JSON.stringify(c)));
+}
+
+/** data/builtin/<ad>-1.jsonl.gz, <ad>-2.jsonl.gz, … (ya da tek <ad>.jsonl.gz) sırayla, satır satır. */
+function readParts(root: URL, name: string): string[] {
+  const dir = new URL("data/builtin/", root);
+  if (!existsSync(dir)) return [];
+  const re = new RegExp(`^${name}(-\\d+)?\\.jsonl\\.gz$`);
+  return readdirSync(dir).filter((f) => re.test(f)).sort((a, b) => (+(/\d+/.exec(a)?.[0] ?? 0)) - (+(/\d+/.exec(b)?.[0] ?? 0)))
+    .flatMap((f) => gunzipSync(readFileSync(new URL(f, dir))).toString("utf8").split("\n"));
 }
 
 export function writeBuiltin(root: URL, out: URL): string[] {
@@ -174,21 +206,17 @@ export function writeBuiltin(root: URL, out: URL): string[] {
     writeFileSync(new URL("dia.json", out), JSON.stringify(dia));
     notes.push(`DİA: ${dia.entries.length} madde (${dia.entries.filter((e) => e.r).length} işaretli)`);
   }
-  // makale-1.jsonl.gz, makale-2.jsonl.gz, ... (ya da eski tek dosya makale.jsonl.gz), sırayla.
-  const dir0 = new URL("data/builtin/", root);
-  const parts = existsSync(dir0)
-    ? readdirSync(dir0).filter((f) => /^makale(-\d+)?\.jsonl\.gz$/.test(f)).sort((a, b) => (+(/\d+/.exec(a)?.[0] ?? 0)) - (+(/\d+/.exec(b)?.[0] ?? 0)))
-    : [];
-  if (parts.length) {
-    const lines = parts.flatMap((f) => gunzipSync(readFileSync(new URL(f, dir0))).toString("utf8").split("\n"));
-    const { meta, shards, chunks } = articleShards(lines);
-    const dir = new URL("makale/", out);
-    mkdirSync(new URL("t/", dir), { recursive: true });
-    mkdirSync(new URL("r/", dir), { recursive: true });
-    writeFileSync(new URL("meta.json", dir), JSON.stringify(meta));
-    for (const [s, sh] of shards) writeFileSync(new URL(`t/${s}.json`, dir), JSON.stringify(sh));
-    chunks.forEach((c, i) => writeFileSync(new URL(`r/${i}.json`, dir), JSON.stringify(c)));
-    notes.push(`Makale: ${meta.count} kayıt, ${shards.size} dizin parçası, ${chunks.length} kayıt parçası`);
+  const articles = readParts(root, "makale");
+  if (articles.length) {
+    const built = articleShards(articles);
+    writeShards(out, "makale", built);
+    notes.push(`Makale: ${built.meta.count} kayıt, ${built.shards.size} dizin parçası, ${built.chunks.length} kayıt parçası`);
+  }
+  const books = readParts(root, "kitap");
+  if (books.length) {
+    const built = bookShards(books);
+    writeShards(out, "kitap", built);
+    notes.push(`Kitap: ${built.meta.count} kayıt, ${built.shards.size} dizin parçası, ${built.chunks.length} kayıt parçası`);
   }
   return notes;
 }
