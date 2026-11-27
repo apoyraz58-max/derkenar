@@ -19,6 +19,12 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 08:50 UTC
+
+- Yapılan: 30 rastgele baskıda İSNAD denetimi yapıldı. Kural gerektiren yeni bir sorun bulunmadı, yalnız kaynaktan gelen tekil yazım hataları görüldü. Kod değişmedi, katalog yeniden kurulmadı.
+- Durum değişmedi: 176.429 benzersiz baskı, incelemede 21.434 kayıt, 124 geçersiz ISBN.
+- Değerlendirme: otomatik denetim ve izinli kaynaklarda getiri çok düştü. Saatlik çalıştırmanın seyreltilmesi ve kullanıcı kararları bekleniyor.
+
 ### 2026-11-27 07:55 UTC
 
 - Yapılan: yayın yeri bilinen yurt dışı şehir olan kabul edilmiş baskılar denetlendi (57). Bunların 56’sı ortak yayın, yani yayın yerleri arasında bir Türkiye şehri de var, kabul doğru. Tek hata “Frankfurt am Main” idi: çok kelimeli yazım yurt dışı listesindeki “frankfurt” ile eşleşmiyordu, düzeltildi. Tek kaydı etkilediği için katalog yeniden kurulmadı, değişiklik sonraki kurulumda uygulanacak.
