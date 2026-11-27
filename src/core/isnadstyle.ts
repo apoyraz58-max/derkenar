@@ -281,6 +281,8 @@ const TR_CITIES = [
 ];
 
 /** Arabic-world and Persian cities are written in Turkish; Western ones keep their own name (London, Leiden). */
+const PROVINCES = TR_CITIES.indexOf("Lefkoşa");
+
 /** Frequent districts and quarters written before the city without Turkish letters. */
 const DISTRICTS = new Set(["maltepe", "yenimahalle", "yeni mahalle", "balgat", "ulus", "cebeci", "meram", "seyhan", "demirtepe", "dikmen",
   "kocatepe", "oran", "taksim", "ikitelli", "sur", "galatasaray", "bilkent", "fatih", "osmangazi", "beytepe", "emek", "orhangazi", "bebek",
@@ -325,11 +327,12 @@ export function isnadPlace(place: string): string {
   const mapped = PLACES[foldText(p)];
   if (mapped) return mapped;
   // "Cağaloğlu, İstanbul", "Sarıyer/Istanbul", "Kızılay - Ankara": İSNAD writes the city, not the district.
-  const parts = p.split(/\s*[,/]\s*|\s+-\s+/).filter(Boolean);
+  const parts = p.split(/\s*[,/]\s*|\s+-\s+|(?<=\p{L})-(?=\p{Lu})/u).map((x) => x.replace(/^\[|\]$/g, "").trim()).filter(Boolean);
   if (parts.length === 2) {
     const city = PLACES[foldText(parts[1]!)];
     const district = foldText(parts[0]!);
-    const cityItself = TR_CITIES.some((c) => foldText(c) === district);
+    // Only the 81 provinces count as a city of their own here; Üsküdar or Kadıköy before İstanbul is a district.
+    const cityItself = TR_CITIES.slice(0, PROVINCES).some((c) => foldText(c) === district);
     // Only a recognisable district: Turkish letters or a known name ("Paris, Istanbul" stays as written).
     const looksDistrict = /[çğıöşüÇĞİÖŞÜ]/.test(parts[0]!) || DISTRICTS.has(district);
     if (city && TR_CITIES.includes(city) && looksDistrict && (!cityItself || (district === "aksaray" && city === "İstanbul"))) return city;

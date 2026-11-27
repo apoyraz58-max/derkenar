@@ -526,6 +526,10 @@ describe("İSNAD spelling on the way in", async () => {
     expect(isnadPlace("Konya - Ankara")).toBe("Konya - Ankara");
     expect(isnadPlace("Cambridge, Mass.")).toBe("Cambridge, Mass.");
     expect(isnadPlace("Paris, Istanbul")).toBe("Paris, Istanbul");
+    expect(isnadPlace("Üsküdar, İstanbul")).toBe("İstanbul");
+    expect(isnadPlace("Üsküdar, [Istanbul]")).toBe("İstanbul");
+    expect(isnadPlace("Cağaloğlu-İstanbul")).toBe("İstanbul");
+    expect(isnadPlace("Üsküdar")).toBe("Üsküdar");
     expect(isnadPlace("Beirut")).toBe("Beyrut");
     expect(isnadPlace("London")).toBe("London");
     expect(isnadPublisher("Ketebe", true)?.value).toBe("Ketebe Yayınları");

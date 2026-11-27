@@ -19,6 +19,15 @@ Saatlik zamanlanmış çalışma bu dosyayı okuyarak kaldığı yerden devam ed
 
 ## Günlük
 
+### 2026-11-27 04:10 UTC
+
+- Yapılan: İSNAD denetiminde semt düzeltmesinin bazı yazımları kaçırdığı görüldü. İSNAD şehir listesinde Üsküdar, Kadıköy, Fatih ve Beyoğlu da bulunduğu için “Üsküdar, İstanbul” il sanılıyordu. Ayrıca boşluksuz tire (“Cağaloğlu-İstanbul”) ve köşeli parantez (“Üsküdar, [Istanbul]”) tanınmıyordu. İl denetimi artık yalnız 81 ile bakıyor. Katalog yeniden kuruldu (8 dakika 34 saniye).
+- Durum: 176.968 benzersiz baskı. Bileşik yer yazımı kalan baskı 1888 (çoğu “Konya - Ankara” gibi iki şehirli ya da yabancı yer).
+- İncelemede 21.007 kayıt var: 7526 kapsam kanıtı eksikliği, 6597 kimlik çelişkisi (önceki 6760), 3867 olası mükerrer, 2160 kapsam çelişkisi, 1232 birden çok ISBN ve 22 başlık eksikliği.
+- 124 geçersiz ISBN kaydedildi.
+- Eksik alan oranları: baskı numarası %63,0, ISBN %48,4, sayfa sayısı %29,4, dil %8,3, yayınevi %8,1, katkı %5,2, yayın yeri %1,1.
+- Testler: 239 geçti. Typecheck ve build temiz.
+
 ### 2026-11-27 03:15 UTC
 
 - Yapılan: İSNAD denetimi sürdü. Kaynakta kesik gelen Osmanlı takvim notları onarıldı (“1343 [h” → “1343 [h]”, “1341 ([māl.]” → “1341 [māl.]”, 1377 baskı). Milâdî karşılık hesaplanmadı, çünkü kanıtsız veri olurdu. Yayın yeri yalnız “Turkey/Türkiye” olan kayıtlarda değer ülke kanıtı olarak saklanıyor, yer boş kalıyor (İSNAD “y.y.” yazar, 154 baskı). Başlıktaki “: :” tek iki noktaya indirildi. Katalog yeniden kuruldu (9 dakika 51 saniye).
